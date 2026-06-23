@@ -70,4 +70,209 @@ export default defineConfig([
     },
   },
 ])
+
+folder structure 
+src/
+│
+├── api/
+│   ├── axios.ts
+│   ├── auth.api.ts
+│   ├── employee.api.ts
+│   ├── leave.api.ts
+│   ├── attendance.api.ts
+│   └── payroll.api.ts
+│
+├── assets/
+│   ├── icons/
+│   ├── images/
+│   ├── logos/
+│   └── fonts/
+│
+├── auth/
+│   ├── components/
+│   ├── context/
+│   ├── guards/
+│   ├── hooks/
+│   ├── utils/
+│   ├── views/
+│   └── types.ts
+│
+├── components/
+│   ├── button/
+│   ├── input/
+│   ├── modal/
+│   ├── table/
+│   ├── drawer/
+│   ├── datepicker/
+│   ├── upload/
+│   ├── snackbar/
+│   ├── loader/
+│   ├── pagination/
+│   ├── tooltip/
+│   ├── avatar/
+│   ├── breadcrumbs/
+│   └── charts/
+│
+├── hooks/
+│   ├── useDebounce.ts
+│   ├── usePagination.ts
+│   ├── usePermissions.ts
+│   └── useTenant.ts
+│
+├── layouts/
+│   ├── auth/
+│   ├── dashboard/
+│   ├── simple/
+│   ├── public/
+│   ├── components/
+│   └── nav/
+│
+├── pages/
+│
+│   ├── auth/
+│   │   ├── Login/
+│   │   ├── ForgotPassword/
+│   │   └── ResetPassword/
+│   │
+│   ├── dashboard/
+│   │
+│   ├── employees/
+│   │
+│   ├── attendance/
+│   │
+│   ├── leave/
+│   │
+│   ├── payroll/
+│   │
+│   ├── branches/
+│   │
+│   ├── departments/
+│   │
+│   ├── designations/
+│   │
+│   ├── holidays/
+│   │
+│   ├── shifts/
+│   │
+│   ├── reports/
+│   │
+│   ├── settings/
+│   │
+│   ├── profile/
+│   │
+│   ├── unauthorized/
+│   │
+│   └── not-found/
+│
+├── routes/
+│   ├── components/
+│   ├── guards/
+│   ├── paths.ts
+│   └── index.tsx
+│
+├── sections/
+│
+│   ├── dashboard/
+│
+│   ├── employees/
+│   │   ├── employee-list/
+│   │   ├── employee-create/
+│   │   ├── employee-edit/
+│   │   ├── employee-details/
+│   │   └── components/
+│   │
+│   ├── attendance/
+│   │   ├── attendance-list/
+│   │   ├── attendance-regularization/
+│   │   └── components/
+│   │
+│   ├── leave/
+│   │   ├── leave-list/
+│   │   ├── leave-apply/
+│   │   ├── leave-policy/
+│   │   ├── leave-balance/
+│   │   ├── leave-approval/
+│   │   └── components/
+│   │
+│   ├── payroll/
+│   │   ├── salary-structure/
+│   │   ├── payroll-run/
+│   │   ├── payslips/
+│   │   └── components/
+│   │
+│   ├── branches/
+│   │
+│   ├── departments/
+│   │
+│   ├── designations/
+│   │
+│   ├── holidays/
+│   │
+│   ├── shifts/
+│   │
+│   ├── reports/
+│   │
+│   ├── settings/
+│   │
+│   └── profile/
+│
+├── services/
+│   ├── token.service.ts
+│   ├── storage.service.ts
+│   └── permission.service.ts
+│
+├── store/
+│
+│   ├── auth/
+│   │   ├── authSlice.ts
+│   │   ├── authThunk.ts
+│   │   └── index.ts
+│   │
+│   ├── employee/
+│   │   ├── employeeSlice.ts
+│   │   ├── employeeThunk.ts
+│   │   └── index.ts
+│   │
+│   ├── leave/
+│   │   ├── leaveSlice.ts
+│   │   ├── leaveThunk.ts
+│   │   └── index.ts
+│   │
+│   ├── attendance/
+│   │   ├── attendanceSlice.ts
+│   │   ├── attendanceThunk.ts
+│   │   └── index.ts
+│   │
+│   ├── payroll/
+│   │   ├── payrollSlice.ts
+│   │   ├── payrollThunk.ts
+│   │   └── index.ts
+│   │
+│   ├── store.ts
+│   └── rootReducer.ts
+│
+├── theme/
+│   ├── create-theme.ts
+│   ├── theme-provider.tsx
+│   ├── theme-config.ts
+│   └── overrides/
+│
+├── types/
+│   ├── common.ts
+│   ├── api.ts
+│   ├── auth.ts
+│   └── tenant.ts
+│
+├── utils/
+│   ├── constants.ts
+│   ├── regex.ts
+│   ├── permissions.ts
+│   ├── format-date.ts
+│   ├── format-currency.ts
+│   └── handle-api-error.ts
+│
+├── App.tsx
+├── main.tsx
+├── global.css
+└── vite-env.d.ts
 ```
