@@ -11,14 +11,18 @@ function PrimaryButton({
     <button
       type={type}
       className="
-        w-full
+         w-full
         h-12
         rounded-xl
         bg-[#6D5DF6]
         text-white
         font-semibold
-        transition
-        hover:opacity-90
+        shadow-lg
+        transition-all
+        duration-200
+        hover:opacity-95
+        hover:scale-[1.01]
+        active:scale-[0.99]
       "
     >
       {children}
