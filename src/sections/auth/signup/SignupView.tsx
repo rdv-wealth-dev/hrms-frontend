@@ -6,8 +6,13 @@ import AuthDivider from '../../../components/auth/AuthDivider'
 import GoogleAuthButton from '../../../components/auth/GoogleAuthButton'
 import AuthFooter from '../../../components/auth/AuthFooter'
 import AuthHeading from '../../../components/auth/AuthHeading'
+import { useNavigate } from "react-router-dom";
+import { paths } from "../../../routes/paths";
 
 function SignupView() {
+
+  const navigate = useNavigate();
+
   return (
     <AuthLayout>
 
@@ -32,13 +37,13 @@ function SignupView() {
 
         {/* Form */}
         <Box
-  component="form"
-  sx={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 1.5,
-  }}
->
+          component="form"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1.5,
+          }}
+        >
           <TextInput
             label="Company Name"
             placeholder="Enter company Name"
@@ -85,8 +90,9 @@ function SignupView() {
         <GoogleAuthButton />
 
         <AuthFooter
-          text="Already a member?"
+          text="Already have an account?"
           linkText="Sign In"
+          onClick={() => navigate(paths.auth.login)}
         />
 
 
