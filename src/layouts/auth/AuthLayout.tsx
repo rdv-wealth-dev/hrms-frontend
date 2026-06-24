@@ -4,7 +4,7 @@ type Props = {
 
 function AuthLayout({ children }: Props) {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#7066c9] flex items-center justify-center p-6">
+    <div className="relative min-h-screen overflow-hidden bg-[#818CF8] flex items-center justify-center p-6">
 
       {/* Left Large Circle */}
       <div
