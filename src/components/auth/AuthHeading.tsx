@@ -1,6 +1,9 @@
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+
 interface AuthHeadingProps {
-  title: string
-  subtitle?: string
+  title: string;
+  subtitle?: string;
 }
 
 function AuthHeading({
@@ -8,18 +11,39 @@ function AuthHeading({
   subtitle,
 }: AuthHeadingProps) {
   return (
-    <div className="mb-4 text-center">
-      <h1 className="text-3xl md:text-4xl font-semibold text-gray-900">
+    <Box
+      sx={{
+        mb: 4,
+        textAlign: "center",
+      }}
+    >
+      <Typography
+        variant="h3"
+        sx={{
+          fontWeight: 600,
+          color: "#111827",
+          fontSize: {
+            xs: "2rem",
+            md: "2.5rem",
+          },
+        }}
+      >
         {title}
-      </h1>
+      </Typography>
 
       {subtitle && (
-        <p className="mt-2 text-sm text-gray-500">
+        <Typography
+          sx={{
+            mt: 1,
+            fontSize: "14px",
+            color: "#6B7280",
+          }}
+        >
           {subtitle}
-        </p>
+        </Typography>
       )}
-    </div>
-  )
+    </Box>
+  );
 }
 
-export default AuthHeading
+export default AuthHeading;

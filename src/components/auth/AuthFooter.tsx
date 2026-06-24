@@ -1,7 +1,11 @@
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import type { MouseEventHandler } from "react";
+
 interface AuthFooterProps {
-  text: string
-  linkText: string
-  onClick?: () => void
+  text: string;
+  linkText: string;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
 function AuthFooter({
@@ -10,24 +14,39 @@ function AuthFooter({
   onClick,
 }: AuthFooterProps) {
   return (
-    <div className="mt-6 text-center text-sm text-gray-600">
-      {text}{' '}
+    <Typography
+      sx={{
+        mt: 3,
+        textAlign: "center",
+        fontSize: "14px",
+        color: "#4B5563",
+      }}
+    >
+      {text}{" "}
 
-      <button
-        type="button"
+      <Button
+        variant="text"
         onClick={onClick}
-        className="
-          font-medium
-          text-indigo-600
-          hover:text-indigo-700
-          hover:underline
-          transition
-        "
+        sx={{
+          minWidth: "auto",
+          p: 0,
+          fontSize: "14px",
+          fontWeight: 500,
+          textTransform: "none",
+          color: "#4F46E5",
+          verticalAlign: "baseline",
+
+          "&:hover": {
+            backgroundColor: "transparent",
+            textDecoration: "underline",
+            color: "#4338CA",
+          },
+        }}
       >
         {linkText}
-      </button>
-    </div>
-  )
+      </Button>
+    </Typography>
+  );
 }
 
-export default AuthFooter
+export default AuthFooter;

@@ -1,54 +1,32 @@
+import TextField from "@mui/material/TextField";
+
 type TextInputProps = {
-  label: string
-  type?: string
-  placeholder: string
-  variant?: 'outlined' | 'underlined'
-}
+  label: string;
+  type?: string;
+  placeholder: string;
+  variant?: "outlined" | "underlined";
+};
 
 function TextInput({
   label,
-  type = 'text',
+  type = "text",
   placeholder,
-  variant = 'outlined',
+  variant = "outlined",
 }: TextInputProps) {
-  const outlinedStyles = `
-    w-full
-    h-12
-    rounded-xl
-    border
-    border-gray-300
-    px-4
-    outline-none
-    focus:border-[#6D5DF6]
-  `
-
-  const underlinedStyles = `
-    w-full
-    py-2
-    border-b
-    border-gray-300
-    bg-transparent
-    outline-none
-    focus:border-[#6D5DF6]
-  `
-
   return (
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">
         {label}
       </label>
 
-      <input
+      <TextField
+        fullWidth
         type={type}
         placeholder={placeholder}
-        className={
-          variant === 'underlined'
-            ? underlinedStyles
-            : outlinedStyles
-        }
+        variant={variant === "underlined" ? "standard" : "outlined"}
       />
     </div>
-  )
+  );
 }
 
-export default TextInput
+export default TextInput;

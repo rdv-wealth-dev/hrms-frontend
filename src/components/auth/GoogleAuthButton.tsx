@@ -1,47 +1,50 @@
+import Button from "@mui/material/Button";
+import type { MouseEventHandler } from "react";
+
 interface GoogleAuthButtonProps {
-  text?: string
-  onClick?: () => void
+  text?: string;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
 function GoogleAuthButton({
-  text = 'Continue with Google',
+  text = "Continue with Google",
   onClick,
 }: GoogleAuthButtonProps) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className="
-         w-full
-        h-11
-        flex
-        items-center
-        justify-center
-        gap-3
-        rounded-xl
-        border
-        border-gray-300
-        bg-gray-50
-        px-4
-        text-sm
-        font-medium
-        text-gray-700
-        transition-all
-        duration-200
-        hover:bg-gray-50
-        hover:border-gray-300
-        hover:shadow-sm
-      "
-    >
-      <img
-        src="https://www.svgrepo.com/show/475656/google-color.svg"
-        alt="Google"
-        className="h-5 w-5"
-      />
+      fullWidth
+      startIcon={
+        <img
+          src="https://www.svgrepo.com/show/475656/google-color.svg"
+          alt="Google"
+          style={{
+            width: 20,
+            height: 20,
+          }}
+        />
+      }
+      sx={{
+        height: "44px",
+        borderRadius: "12px",
+        border: "1px solid #D1D5DB",
+        backgroundColor: "#F9FAFB",
+        color: "#374151",
+        fontSize: "14px",
+        fontWeight: 500,
+        textTransform: "none",
 
-      <span>{text}</span>
-    </button>
-  )
+        "&:hover": {
+          backgroundColor: "#F9FAFB",
+          border: "1px solid #D1D5DB",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        },
+      }}
+    >
+      {text}
+    </Button>
+  );
 }
 
-export default GoogleAuthButton
+export default GoogleAuthButton;

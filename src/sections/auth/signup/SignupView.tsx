@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box";
 import TextInput from '../../../components/input/TextInput'
 import PrimaryButton from '../../../components/button/PrimaryButton'
 import AuthLayout from '../../../layouts/auth/AuthLayout'
@@ -9,7 +10,9 @@ import AuthHeading from '../../../components/auth/AuthHeading'
 function SignupView() {
   return (
     <AuthLayout>
-      <div className="w-full max-w-lg">
+
+
+      <Box sx={{ width: "100%", maxWidth: "32rem", }}>
 
         {/* Logo */}
         {/* <div className="flex items-center gap-2">
@@ -19,7 +22,6 @@ function SignupView() {
           HRMS
         </span>
       </div> */}
-
         {/* Heading */}
         <AuthHeading
           title="Sign up"
@@ -29,7 +31,14 @@ function SignupView() {
 
 
         {/* Form */}
-        <form className="space-y-3">
+        <Box
+  component="form"
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 1.5,
+  }}
+>
           <TextInput
             label="Company Name"
             placeholder="Enter company Name"
@@ -65,7 +74,7 @@ function SignupView() {
           <PrimaryButton type="submit">
             Create Account
           </PrimaryButton>
-        </form>
+        </Box>
 
 
         {/* Divider */}
@@ -79,7 +88,15 @@ function SignupView() {
           text="Already a member?"
           linkText="Sign In"
         />
-      </div>
+
+
+      </Box>
+
+
+
+
+
+
 
 
     </AuthLayout>
