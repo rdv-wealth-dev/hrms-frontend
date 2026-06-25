@@ -8,10 +8,29 @@ import AuthFooter from '../../../components/auth/AuthFooter'
 import AuthHeading from '../../../components/auth/AuthHeading'
 import { useNavigate } from "react-router-dom";
 import { paths } from "../../../routes/paths";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  signupSchema,
+  type SignupFormData,
+} from "../../../validations/auth/signup.schema";
 
 function SignupView() {
 
   const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+  });
+
+  const onSubmit = (data: SignupFormData) => {
+    console.log("Signup Form Data:", data);
+  };
 
   return (
     <AuthLayout>
@@ -33,20 +52,72 @@ function SignupView() {
 
 
         {/* Form */}
-        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <TextInput label="Company Name" placeholder="Enter company Name" variant="underlined" />
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "1fr 1fr",
+            },
+            gap: 2.5,
+          }}
+        >
+          <TextInput
+            label="Company Name"
+            placeholder="Enter company Name"
+            variant="outlined"
+            registration={register("companyName")}
+            error={errors.companyName?.message}
+          />
 
-          <TextInput label="Company Email" placeholder="Enter company Email" variant="underlined" />
+          <TextInput
+            label="Company Email"
+            placeholder="Enter company Email"
+            variant="outlined"
+            registration={register("email")}
+            error={errors.email?.message}
+          />
 
-          <TextInput label="Company Phone Number" placeholder="Enter company Phone Number" variant="underlined" />
+          <TextInput
+            label="Company Phone Number"
+            placeholder="Enter company Phone Number"
+            variant="outlined"
+            registration={register("phone")}
+            error={errors.phone?.message}
+          />
 
-          <TextInput label="Password" placeholder="Enter Password" type="password" variant="underlined" />
+          <TextInput
+            label="Password"
+            placeholder="Enter Password"
+            type="password"
+            variant="outlined"
+            registration={register("password")}
+            error={errors.password?.message}
+          />
 
-          <TextInput label="Confirm Password" placeholder="Enter Confirm Password" type="password" variant="underlined" />
+          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
+            <TextInput
+              label="Confirm Password"
+              placeholder="Enter Confirm Password"
+              type="password"
+              variant="outlined"
+              registration={register("confirmPassword")}
+              error={errors.confirmPassword?.message}
+            />
+          </Box>
 
-          <PrimaryButton type="submit">
-            Create Account
-          </PrimaryButton>
+          <Box
+            sx={{
+              gridColumn: { xs: "auto", md: "1 / 3" },
+              mt: 2,
+            }}
+          >
+            <PrimaryButton type="submit">
+              Create Account
+            </PrimaryButton>
+          </Box>
         </Box>
 
 
@@ -57,7 +128,7 @@ function SignupView() {
 
         <GoogleAuthButton />
 
-        <AuthFooter text="Already have an account?" linkText="Sign In" onClick={() => navigate(paths.auth.login)}/>
+        <AuthFooter text="Already have an account?" linkText="Sign In" onClick={() => navigate(paths.auth.login)} />
 
       </Box>
 

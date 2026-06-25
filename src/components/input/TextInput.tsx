@@ -1,12 +1,15 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 type TextInputProps = {
   label: string;
   type?: string;
   placeholder: string;
   variant?: "outlined" | "underlined";
+  registration?: UseFormRegisterReturn;
+  error?: string;
 };
 
 function TextInput({
@@ -14,6 +17,8 @@ function TextInput({
   type = "text",
   placeholder,
   variant = "outlined",
+  registration,
+  error,
 }: TextInputProps) {
   return (
     <Box>
@@ -30,46 +35,55 @@ function TextInput({
       </Typography>
 
       <TextField
+        {...registration}
+        error={!!error}
+        helperText={error}
         fullWidth
         type={type}
         placeholder={placeholder}
         variant={variant === "underlined" ? "standard" : "outlined"}
         sx={{
-          "& .MuiInputBase-input": {
-            fontSize: "15px",
-            color: "#111827",
-            padding: variant === "underlined" ? "8px 0" : "12px 16px",
-          },
-
-          "& .MuiInputBase-input::placeholder": {
-            color: "#9CA3AF",
-            opacity: 1,
-          },
-
-          "& .MuiInput-underline:before": {
-            borderBottom: "1px solid #D1D5DB",
-          },
-
-          "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-            borderBottom: "1px solid #D1D5DB",
-          },
-
-          "& .MuiInput-underline:after": {
-            borderBottom: "2px solid #6D5DF6",
-          },
-
           "& .MuiOutlinedInput-root": {
-            borderRadius: "12px",
+            borderRadius: "10px",
+            backgroundColor: "#FFFFFF",
+            height: "52px",
+
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#BFC5D2",
+            },
           },
 
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: "#D1D5DB",
+            borderWidth: "1px",
           },
 
           "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
             {
               borderColor: "#6D5DF6",
+              borderWidth: "2px",
             },
+
+          "& .MuiInputBase-input": {
+            fontSize: "15px",
+            color: "#111827",
+            padding:
+              variant === "underlined"
+                ? "8px 0"
+                : "14px 16px",
+          },
+
+          "& .MuiInputBase-input::placeholder": {
+            fontSize: "13px",
+            color: "#9CA3AF",
+            opacity: 1,
+          },
+
+          "& .MuiFormHelperText-root": {
+            marginLeft: 0,
+            marginTop: "4px",
+            fontSize: "12px",
+          },
         }}
       />
     </Box>
