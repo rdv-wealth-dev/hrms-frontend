@@ -61,7 +61,7 @@ function ForgotPasswordView() {
           <TextInput
             label="Company Email"
             placeholder="Enter company Email"
-            variant="underlined"
+            variant="outlined"
             registration={register("email")}
             error={errors.email?.message}
           />

@@ -56,7 +56,7 @@ function LoginView() {
           <TextInput
             label="Company Email"
             placeholder="Enter company Email"
-            variant="underlined"
+            variant="outlined"
             registration={register("email")}
             error={errors.email?.message}
           />
@@ -65,7 +65,7 @@ function LoginView() {
             label="Password"
             placeholder="Enter Password"
             type="password"
-            variant="underlined"
+            variant="outlined"
             registration={register("password")}
             error={errors.password?.message}
           />

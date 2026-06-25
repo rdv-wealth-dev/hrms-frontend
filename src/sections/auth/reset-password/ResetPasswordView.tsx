@@ -62,7 +62,7 @@ function ResetPasswordView() {
             label="New Password"
             placeholder="Enter New Password"
             type="password"
-            variant="underlined"
+            variant="outlined"
             registration={register("password")}
             error={errors.password?.message}
           />
@@ -71,7 +71,7 @@ function ResetPasswordView() {
             label="Confirm Password"
             placeholder="Confirm New Password"
             type="password"
-            variant="underlined"
+            variant="outlined"
             registration={register("confirmPassword")}
             error={errors.confirmPassword?.message}
           />
