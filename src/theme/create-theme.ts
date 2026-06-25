@@ -1,5 +1,4 @@
 // src/theme/create-theme.ts
-
 import { createTheme } from "@mui/material/styles";
 import { themeConfig } from "./theme-config";
 
@@ -16,5 +15,10 @@ export const theme = createTheme({
       primary: themeConfig.palette.text.primary,
       secondary: themeConfig.palette.text.secondary,
     },
+  },
+
+  typography: {
+    fontFamily:
+      '"Inter", "Segoe UI", "Helvetica", "Arial", sans-serif',
   },
 });

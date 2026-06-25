@@ -4,6 +4,7 @@ export const paths = {
     signup: '/signup',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
+    
   },
 
   dashboard: '/dashboard',

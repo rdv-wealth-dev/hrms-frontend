@@ -17,17 +17,31 @@ function LoginView() {
   const navigate = useNavigate();
   return (
     <AuthLayout>
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: "32rem",
-        }}
-      >
+      <Box sx={{ width: "100%", maxWidth: "32rem", }}>
         <AuthHeading title="Sign In" subtitle="Welcome back!" />
         <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5, }}>
           <TextInput label="Company Email" placeholder="Enter company Email" variant="underlined" />
           <TextInput label="Password" placeholder="Enter Password" type="password" variant="underlined" />
-          <Typography sx={{ alignSelf: "flex-end", fontSize: "14px", fontWeight: 500, color: "#4F46E5", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}>
+          <Typography
+            component="button"
+            type="button"
+            onClick={() => navigate(paths.auth.forgotPassword)}
+            sx={{
+              mt: 0.5,
+              alignSelf: "flex-end",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              fontSize: "14px",
+              color: "#4F46E5",
+              fontWeight: 500,
+              p: 0,
+
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
             Forgot Password?
           </Typography>
 
@@ -37,10 +51,10 @@ function LoginView() {
           <AuthDivider />
           <GoogleAuthButton />
           <AuthFooter
-  text="Don't have an account?"
-  linkText="Sign Up"
-  onClick={() => navigate(paths.auth.signup)}
-/>
+            text="Don't have an account?"
+            linkText="Sign Up"
+            onClick={() => navigate(paths.auth.signup)}
+          />
         </Box>
       </Box>
     </AuthLayout>
