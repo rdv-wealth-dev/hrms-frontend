@@ -28,53 +28,21 @@ function SignupView() {
         </span>
       </div> */}
         {/* Heading */}
-        <AuthHeading
-          title="Sign up"
-          subtitle="Join the community today!"
-        />
+        <AuthHeading title="Sign up" subtitle="Join the community today!" />
 
 
 
         {/* Form */}
-        <Box
-          component="form"
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-          }}
-        >
-          <TextInput
-            label="Company Name"
-            placeholder="Enter company Name"
-            variant="underlined"
-          />
+        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <TextInput label="Company Name" placeholder="Enter company Name" variant="underlined" />
 
-          <TextInput
-            label="Company Email"
-            placeholder="Enter company Email"
-            variant="underlined"
-          />
+          <TextInput label="Company Email" placeholder="Enter company Email" variant="underlined" />
 
-          <TextInput
-            label="Company Phone Number"
-            placeholder="Enter company Phone Number"
-            variant="underlined"
-          />
+          <TextInput label="Company Phone Number" placeholder="Enter company Phone Number" variant="underlined" />
 
-          <TextInput
-            label="Password"
-            placeholder="Enter Password"
-            type="password"
-            variant="underlined"
-          />
+          <TextInput label="Password" placeholder="Enter Password" type="password" variant="underlined" />
 
-          <TextInput
-            label="Confirm Password"
-            placeholder="Enter Confirm Password"
-            type="password"
-            variant="underlined"
-          />
+          <TextInput label="Confirm Password" placeholder="Enter Confirm Password" type="password" variant="underlined" />
 
           <PrimaryButton type="submit">
             Create Account
@@ -89,21 +57,9 @@ function SignupView() {
 
         <GoogleAuthButton />
 
-        <AuthFooter
-          text="Already have an account?"
-          linkText="Sign In"
-          onClick={() => navigate(paths.auth.login)}
-        />
-
+        <AuthFooter text="Already have an account?" linkText="Sign In" onClick={() => navigate(paths.auth.login)}/>
 
       </Box>
-
-
-
-
-
-
-
 
     </AuthLayout>
   )
