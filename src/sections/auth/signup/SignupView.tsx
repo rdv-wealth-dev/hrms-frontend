@@ -11,10 +11,7 @@ import { paths } from "../../../routes/paths";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import {
-  signupSchema,
-  type SignupFormData,
-} from "../../../validations/auth/signup.schema";
+import {signupSchema,type SignupFormData,} from "../../../validations/auth/signup.schema";
 
 function SignupView() {
 
