@@ -6,6 +6,7 @@ import SignUpPage from '../pages/auth/SignUp'
 import LoginPage from '../pages/auth/Login'
 import ForgotPasswordPage from '../pages/auth/ForgotPassword'
 import ResetPasswordPage from "../pages/auth/ResetPassword";
+import EmployeeDirectoryPage from "../pages/employees/directory";
 
 function AppRoutes() {
   return (
@@ -15,9 +16,10 @@ function AppRoutes() {
 
         <Route path={paths.auth.login} element={<LoginPage />} />
 
-        <Route path="*" element={<Navigate to={paths.auth.signup} replace />} />
         <Route path={paths.auth.forgotPassword} element={<ForgotPasswordPage />} />
         <Route path={paths.auth.resetPassword} element={<ResetPasswordPage />} />
+        <Route path={paths.employees.directory} element={<EmployeeDirectoryPage />}/>
+        <Route path="*" element={<Navigate to={paths.auth.signup} replace />} />
       </Routes>
     </BrowserRouter>
   )
