@@ -38,7 +38,7 @@ function LoginView() {
     if (isAuthenticated && user) {
       switch (user.role) {
         case "SUPER_ADMIN":
-          navigate("/admin/dashboard");
+          navigate(paths.dashboard);
           break;
 
         case "HR":
