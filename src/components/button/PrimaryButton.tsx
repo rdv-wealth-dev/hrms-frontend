@@ -1,20 +1,26 @@
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import type { ReactNode } from "react";
 
 type PrimaryButtonProps = {
   type?: "button" | "submit" | "reset";
   children: ReactNode;
+  loading?: boolean;
+  disabled?: boolean;
 };
 
 function PrimaryButton({
   type = "button",
   children,
+  loading = false,
+  disabled = false,
 }: PrimaryButtonProps) {
   return (
     <Button
       type={type}
       fullWidth
       variant="contained"
+      disabled={loading || disabled}
       sx={{
         height: "48px",
         borderRadius: "12px",
@@ -27,15 +33,25 @@ function PrimaryButton({
         "&:hover": {
           backgroundColor: "#6D5DF6",
           opacity: 0.95,
-          transform: "scale(1.01)",
+          transform: loading ? "none" : "scale(1.01)",
         },
 
         "&:active": {
-          transform: "scale(0.99)",
+          transform: loading ? "none" : "scale(0.99)",
+        },
+
+        "&.Mui-disabled": {
+          backgroundColor: "#6D5DF6",
+          color: "#fff",
+          opacity: 0.7,
         },
       }}
     >
-      {children}
+      {loading ? (
+        <CircularProgress size={22} color="inherit" />
+      ) : (
+        children
+      )}
     </Button>
   );
 }
