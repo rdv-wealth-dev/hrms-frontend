@@ -35,7 +35,6 @@ function SignupView() {
     (state: RootState) => state.auth
   );
 
-  // ✅ Navigate to login after successful signup, then reset the flag
   useEffect(() => {
     if (isRegisterSuccess) {
       dispatch(resetAuthState());
@@ -81,31 +80,26 @@ function SignupView() {
           onSubmit={handleSubmit(onSubmit)}
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-            gap: 2.5,
+            gridTemplateColumns: "1fr 1fr", // ✅ always 2 columns
+            gap: 1.5,
           }}
         >
-          {/* Company Name */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
-            <TextInput
-              label="Company Name"
-              placeholder="Enter Company Name"
-              registration={register("companyName")}
-              error={errors.companyName?.message}
-            />
-          </Box>
+          {/* Row 1: Company Name | Industry */}
+          <TextInput
+            label="Company Name"
+            placeholder="Enter Company Name"
+            registration={register("companyName")}
+            error={errors.companyName?.message}
+          />
 
-          {/* Industry */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
-            <TextInput
-              label="Industry"
-              placeholder="Enter Industry"
-              registration={register("industry")}
-              error={errors.industry?.message}
-            />
-          </Box>
+          <TextInput
+            label="Industry"
+            placeholder="Enter Industry"
+            registration={register("industry")}
+            error={errors.industry?.message}
+          />
 
-          {/* First Name */}
+          {/* Row 2: First Name | Last Name */}
           <TextInput
             label="First Name"
             placeholder="Enter First Name"
@@ -113,7 +107,6 @@ function SignupView() {
             error={errors.firstName?.message}
           />
 
-          {/* Last Name */}
           <TextInput
             label="Last Name"
             placeholder="Enter Last Name"
@@ -121,17 +114,14 @@ function SignupView() {
             error={errors.lastName?.message}
           />
 
-          {/* Email */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
-            <TextInput
-              label="Email"
-              placeholder="Enter Email"
-              registration={register("email")}
-              error={errors.email?.message}
-            />
-          </Box>
+          {/* Row 3: Email | Country Code */}
+          <TextInput
+            label="Email"
+            placeholder="Enter Email"
+            registration={register("email")}
+            error={errors.email?.message}
+          />
 
-          {/* Country Code */}
           <TextInput
             label="Country Code"
             placeholder="Enter Country Code"
@@ -139,7 +129,7 @@ function SignupView() {
             error={errors.countryCode?.message}
           />
 
-          {/* Phone */}
+          {/* Row 4: Phone | Timezone */}
           <TextInput
             label="Phone Number"
             placeholder="Enter Phone Number"
@@ -147,49 +137,41 @@ function SignupView() {
             error={errors.phone?.message}
           />
 
-          {/* Timezone */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
-            <TextInput
-              label="Time Zone"
-              placeholder="Enter Time Zone"
-              registration={register("timezone")}
-              error={errors.timezone?.message}
-            />
-          </Box>
+          <TextInput
+            label="Time Zone"
+            placeholder="Enter Time Zone"
+            registration={register("timezone")}
+            error={errors.timezone?.message}
+          />
 
-          {/* Password */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
-            <TextInput
-              label="Password"
-              placeholder="Enter Password"
-              type="password"
-              registration={register("password")}
-              error={errors.password?.message}
-            />
-          </Box>
+          {/* Row 5: Password | Confirm Password */}
+          <TextInput
+            label="Password"
+            placeholder="Enter Password"
+            type="password"
+            registration={register("password")}
+            error={errors.password?.message}
+          />
 
-          {/* Confirm Password */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
-            <TextInput
-              label="Confirm Password"
-              placeholder="Enter Confirm Password"
-              type="password"
-              registration={register("confirmPassword")}
-              error={errors.confirmPassword?.message}
-            />
-          </Box>
+          <TextInput
+            label="Confirm Password"
+            placeholder="Enter Confirm Password"
+            type="password"
+            registration={register("confirmPassword")}
+            error={errors.confirmPassword?.message}
+          />
 
-          {/* API Error */}
+          {/* API Error — full width */}
           {error && (
-            <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" } }}>
+            <Box sx={{ gridColumn: "1 / 3" }}>
               <Typography color="error" variant="body2">
                 {error}
               </Typography>
             </Box>
           )}
 
-          {/* Submit */}
-          <Box sx={{ gridColumn: { xs: "auto", md: "1 / 3" }, mt: 2 }}>
+          {/* Submit — full width */}
+          <Box sx={{ gridColumn: "1 / 3", mt: 2 }}>
             <PrimaryButton type="submit" loading={loading} disabled={loading}>
               Create Account
             </PrimaryButton>

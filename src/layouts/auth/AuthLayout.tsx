@@ -31,7 +31,7 @@ function AuthLayout({ children }: Props) {
 
         {/* Right Small */}
         <div className="absolute   right: -40px; top-6 h-40 w-40 rounded-full bg-[#6D5DF6]/5" />
-        <div className="flex items-center justify-center p-6">
+        <div className="flex items-center justify-center py-3 px-4">
           {children}
         </div>
       </div>
