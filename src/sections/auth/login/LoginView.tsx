@@ -1,8 +1,11 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 
 import AuthLayout from "../../../layouts/auth/AuthLayout";
 import AuthHeading from "../../../components/auth/AuthHeading";
@@ -11,13 +14,46 @@ import PrimaryButton from "../../../components/button/PrimaryButton";
 import AuthDivider from "../../../components/auth/AuthDivider";
 import GoogleAuthButton from "../../../components/auth/GoogleAuthButton";
 import AuthFooter from "../../../components/auth/AuthFooter";
-import { paths } from "../../../routes/paths";
-import { loginSchema, type LoginFormData, } from "../../../validations/auth/login.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 
+import { paths } from "../../../routes/paths";
+
+import { loginSchema, type LoginFormData } from "../../../validations/auth/login.schema";
+
+import { loginRequest } from "../../../store/auth";
+import type { AppDispatch } from "../../../store/store";
+import type { RootState } from "../../../store/rootReducer";
 
 function LoginView() {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const {
+    loading,
+    error,
+    isAuthenticated,
+    user,
+  } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      switch (user.role) {
+        case "SUPER_ADMIN":
+          navigate("/admin/dashboard");
+          break;
+
+        case "HR":
+          navigate("/hr/dashboard");
+          break;
+
+        case "EMPLOYEE":
+          navigate("/employee/dashboard");
+          break;
+
+        default:
+          navigate("/");
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,
@@ -25,10 +61,14 @@ function LoginView() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = (data: LoginFormData) => {
-    console.log("Login Form Data:", data);
+    dispatch(loginRequest(data));
   };
 
   return (
@@ -56,7 +96,6 @@ function LoginView() {
           <TextInput
             label="Company Email"
             placeholder="Enter company Email"
-            variant="outlined"
             registration={register("email")}
             error={errors.email?.message}
           />
@@ -65,7 +104,6 @@ function LoginView() {
             label="Password"
             placeholder="Enter Password"
             type="password"
-            variant="outlined"
             registration={register("password")}
             error={errors.password?.message}
           />
@@ -73,9 +111,7 @@ function LoginView() {
           <Typography
             component="button"
             type="button"
-            onClick={() =>
-              navigate(paths.auth.forgotPassword)
-            }
+            onClick={() => navigate(paths.auth.forgotPassword)}
             sx={{
               mt: 0.5,
               alignSelf: "flex-end",
@@ -94,7 +130,17 @@ function LoginView() {
             Forgot Password?
           </Typography>
 
-          <PrimaryButton type="submit">
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
+
+          <PrimaryButton
+            type="submit"
+            loading={loading}
+            disabled={loading}
+          >
             Sign In
           </PrimaryButton>
 
@@ -105,9 +151,7 @@ function LoginView() {
           <AuthFooter
             text="Don't have an account?"
             linkText="Sign Up"
-            onClick={() =>
-              navigate(paths.auth.signup)
-            }
+            onClick={() => navigate(paths.auth.signup)}
           />
         </Box>
       </Box>

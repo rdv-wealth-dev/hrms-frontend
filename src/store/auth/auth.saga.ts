@@ -2,9 +2,27 @@ import axios from "axios";
 import type { SagaIterator } from "redux-saga";
 import { call, put, takeLatest } from "redux-saga/effects";
 
-import { registerCompany } from "../../api/auth.api";
-import { registerFailure, registerSuccess } from "./auth.actions";
-import { AUTH_ACTIONS, type RegisterRequestPayload } from "./auth.types";
+import {
+  registerCompany,
+  loginUser,
+} from "../../api/auth.api";
+
+import {
+  registerFailure,
+  registerSuccess,
+  loginFailure,
+  loginSuccess,
+} from "./auth.actions";
+
+import {
+  AUTH_ACTIONS,
+  type RegisterRequestPayload,
+  type LoginRequestPayload,
+} from "./auth.types";
+
+// ===========================================
+// Register
+// ===========================================
 
 function* handleRegisterRequest(action: {
   type: typeof AUTH_ACTIONS.REGISTER_REQUEST;
@@ -12,8 +30,10 @@ function* handleRegisterRequest(action: {
 }): SagaIterator {
   try {
     const response = yield call(registerCompany, action.payload);
+
     yield put(registerSuccess(response));
-    // ✅ No navigate here — React handles it via isRegisterSuccess flag
+
+    // React handles navigation using isRegisterSuccess
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(
@@ -27,11 +47,45 @@ function* handleRegisterRequest(action: {
   }
 }
 
-function* handleLoginRequest() {
-  // Login implementation will be added later.
+// ===========================================
+// Login
+// ===========================================
+
+function* handleLoginRequest(action: {
+  type: typeof AUTH_ACTIONS.LOGIN_REQUEST;
+  payload: LoginRequestPayload;
+}): SagaIterator {
+  try {
+    const response = yield call(loginUser, action.payload);
+
+    yield put(loginSuccess(response));
+
+    // React handles navigation using isAuthenticated
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(
+        loginFailure(
+          error.response?.data?.message ?? "Login failed"
+        )
+      );
+    } else {
+      yield put(loginFailure("Something went wrong"));
+    }
+  }
 }
 
-export function* authSaga() {
-  yield takeLatest(AUTH_ACTIONS.REGISTER_REQUEST, handleRegisterRequest);
-  yield takeLatest(AUTH_ACTIONS.LOGIN_REQUEST, handleLoginRequest);
+// ===========================================
+// Watchers
+// ===========================================
+
+export function* authSaga(): SagaIterator {
+  yield takeLatest(
+    AUTH_ACTIONS.REGISTER_REQUEST,
+    handleRegisterRequest
+  );
+
+  yield takeLatest(
+    AUTH_ACTIONS.LOGIN_REQUEST,
+    handleLoginRequest
+  );
 }

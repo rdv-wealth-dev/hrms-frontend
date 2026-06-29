@@ -10,6 +10,11 @@ export interface SignupRequest {
   timezone: string;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -50,7 +55,7 @@ export interface Branch {
   code: string;
 }
 
-export interface SignupResponseData {
+export interface AuthResponseData {
   accessToken: string;
   refreshToken: string;
   user: User;
@@ -62,5 +67,12 @@ export interface SignupResponse {
   succeeded: boolean;
   message: string;
   errors: string[];
-  data: SignupResponseData | null;
+  data: AuthResponseData | null;
+}
+
+export interface LoginResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: AuthResponseData | null;
 }

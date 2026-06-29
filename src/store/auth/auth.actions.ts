@@ -33,7 +33,6 @@ export const registerFailure = (
   payload,
 });
 
-// ✅ Added — resets isRegisterSuccess after navigation
 export const resetAuthState = (): AuthAction => ({
   type: AUTH_ACTIONS.RESET_AUTH_STATE,
 });

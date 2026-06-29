@@ -4,6 +4,8 @@ import type {
   Branch,
   SignupRequest,
   SignupResponse,
+  LoginRequest,
+  LoginResponse,
 } from "../../auth/types";
 
 // ===========================================
@@ -18,7 +20,7 @@ export type AuthState = {
   accessToken: string | null;
   refreshToken: string | null;
 
-  isRegisterSuccess: boolean; // ✅ added — used for post-signup navigation
+  isRegisterSuccess: boolean;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -33,7 +35,7 @@ export const AUTH_ACTIONS = {
   REGISTER_SUCCESS: "auth/registerSuccess",
   REGISTER_FAILURE: "auth/registerFailure",
 
-  RESET_AUTH_STATE: "auth/resetAuthState", // ✅ added — clears isRegisterSuccess after navigation
+  RESET_AUTH_STATE: "auth/resetAuthState",
 
   LOGIN_REQUEST: "auth/loginRequest",
   LOGIN_SUCCESS: "auth/loginSuccess",
@@ -54,17 +56,9 @@ export type RegisterRequestPayload = SignupRequest;
 
 export type RegisterSuccessPayload = SignupResponse;
 
-export type LoginRequestPayload = {
-  email: string;
-  password: string;
-};
+export type LoginRequestPayload = LoginRequest;
 
-// We'll update this after we integrate the login API.
-export type LoginSuccessPayload = {
-  user: User;
-  accessToken: string;
-  refreshToken: string;
-};
+export type LoginSuccessPayload = LoginResponse;
 
 // ===========================================
 // Auth Actions
@@ -72,32 +66,32 @@ export type LoginSuccessPayload = {
 
 export type AuthAction =
   | {
-    type: typeof AUTH_ACTIONS.REGISTER_REQUEST;
-    payload: RegisterRequestPayload;
-  }
+      type: typeof AUTH_ACTIONS.REGISTER_REQUEST;
+      payload: RegisterRequestPayload;
+    }
   | {
-    type: typeof AUTH_ACTIONS.REGISTER_SUCCESS;
-    payload: RegisterSuccessPayload;
-  }
+      type: typeof AUTH_ACTIONS.REGISTER_SUCCESS;
+      payload: RegisterSuccessPayload;
+    }
   | {
-    type: typeof AUTH_ACTIONS.REGISTER_FAILURE;
-    payload: string;
-  }
+      type: typeof AUTH_ACTIONS.REGISTER_FAILURE;
+      payload: string;
+    }
   | {
-    type: typeof AUTH_ACTIONS.RESET_AUTH_STATE; // ✅ added
-  }
+      type: typeof AUTH_ACTIONS.RESET_AUTH_STATE;
+    }
   | {
-    type: typeof AUTH_ACTIONS.LOGIN_REQUEST;
-    payload: LoginRequestPayload;
-  }
+      type: typeof AUTH_ACTIONS.LOGIN_REQUEST;
+      payload: LoginRequestPayload;
+    }
   | {
-    type: typeof AUTH_ACTIONS.LOGIN_SUCCESS;
-    payload: LoginSuccessPayload;
-  }
+      type: typeof AUTH_ACTIONS.LOGIN_SUCCESS;
+      payload: LoginSuccessPayload;
+    }
   | {
-    type: typeof AUTH_ACTIONS.LOGIN_FAILURE;
-    payload: string;
-  }
+      type: typeof AUTH_ACTIONS.LOGIN_FAILURE;
+      payload: string;
+    }
   | {
-    type: typeof AUTH_ACTIONS.LOGOUT;
-  };
+      type: typeof AUTH_ACTIONS.LOGOUT;
+    };

@@ -9,7 +9,7 @@ const initialState: AuthState = {
   accessToken: null,
   refreshToken: null,
 
-  isRegisterSuccess: false, // ✅ added
+  isRegisterSuccess: false,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -30,14 +30,14 @@ export function authReducer(
         ...state,
         loading: true,
         error: null,
-        isRegisterSuccess: false, // ✅ reset on every new request
+        isRegisterSuccess: false,
       };
 
     case AUTH_ACTIONS.REGISTER_SUCCESS:
       return {
         ...state,
         loading: false,
-        isRegisterSuccess: true, // ✅ triggers navigation in SignupView
+        isRegisterSuccess: true,
         error: null,
       };
 
@@ -49,7 +49,6 @@ export function authReducer(
         error: action.payload,
       };
 
-    // ✅ Added — clears isRegisterSuccess after navigation
     case AUTH_ACTIONS.RESET_AUTH_STATE:
       return {
         ...state,
@@ -68,18 +67,32 @@ export function authReducer(
         error: null,
       };
 
-    case AUTH_ACTIONS.LOGIN_SUCCESS:
+    case AUTH_ACTIONS.LOGIN_SUCCESS: {
+      const authData = action.payload.data;
+
+      if (!authData) {
+        return {
+          ...state,
+          loading: false,
+          error: "Invalid login response",
+        };
+      }
+
       return {
         ...state,
         loading: false,
         isAuthenticated: true,
 
-        user: action.payload.user,
-        accessToken: action.payload.accessToken,
-        refreshToken: action.payload.refreshToken,
+        user: authData.user,
+        organization: authData.organization,
+        branch: authData.branch,
+
+        accessToken: authData.accessToken,
+        refreshToken: authData.refreshToken,
 
         error: null,
       };
+    }
 
     case AUTH_ACTIONS.LOGIN_FAILURE:
       return {
