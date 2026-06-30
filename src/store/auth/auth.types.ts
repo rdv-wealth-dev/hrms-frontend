@@ -5,7 +5,6 @@ import type {
   SignupRequest,
   SignupResponse,
   LoginRequest,
-  LoginResponse,
 } from "../../auth/types";
 
 // ===========================================
@@ -58,7 +57,12 @@ export type RegisterSuccessPayload = SignupResponse;
 
 export type LoginRequestPayload = LoginRequest;
 
-export type LoginSuccessPayload = LoginResponse;
+// ✅ Flat shape — matches what the saga dispatches (response.data fields)
+export type LoginSuccessPayload = {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+};
 
 // ===========================================
 // Auth Actions

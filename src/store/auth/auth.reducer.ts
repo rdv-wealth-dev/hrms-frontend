@@ -68,27 +68,14 @@ export function authReducer(
       };
 
     case AUTH_ACTIONS.LOGIN_SUCCESS: {
-      const authData = action.payload.data;
-
-      if (!authData) {
-        return {
-          ...state,
-          loading: false,
-          error: "Invalid login response",
-        };
-      }
-
       return {
         ...state,
         loading: false,
         isAuthenticated: true,
 
-        user: authData.user,
-        organization: authData.organization,
-        branch: authData.branch,
-
-        accessToken: authData.accessToken,
-        refreshToken: authData.refreshToken,
+        user: action.payload.user,
+        accessToken: action.payload.accessToken,
+        refreshToken: action.payload.refreshToken,
 
         error: null,
       };

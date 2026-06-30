@@ -58,15 +58,30 @@ function* handleLoginRequest(action: {
   try {
     const response = yield call(loginUser, action.payload);
 
-    yield put(loginSuccess(response));
+    console.log("Login API Response:", response);
+
+    if (!response.data) {
+      yield put(loginFailure(response.message ?? "Login failed"));
+      return;
+    }
+
+    yield put(
+      loginSuccess({
+        user: response.data.user,
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+      })
+    );
+
+    // ✅ Persist tokens to localStorage
+    localStorage.setItem("accessToken", response.data.accessToken);
+    localStorage.setItem("refreshToken", response.data.refreshToken);
 
     // React handles navigation using isAuthenticated
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(
-        loginFailure(
-          error.response?.data?.message ?? "Login failed"
-        )
+        loginFailure(error.response?.data?.message ?? "Login failed")
       );
     } else {
       yield put(loginFailure("Something went wrong"));
