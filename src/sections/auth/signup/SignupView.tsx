@@ -8,6 +8,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import TextInput from "../../../components/input/TextInput";
+import CountryCodeSelect from "../../../components/input/CountryCodeSelect"; // ✅ added
 import PrimaryButton from "../../../components/button/PrimaryButton";
 import AuthLayout from "../../../layouts/auth/AuthLayout";
 import AuthDivider from "../../../components/auth/AuthDivider";
@@ -38,7 +39,7 @@ function SignupView() {
   useEffect(() => {
     if (isRegisterSuccess) {
       dispatch(resetAuthState());
-      navigate(paths.auth.login);
+      navigate(paths.auth.checkEmail);
     }
   }, [isRegisterSuccess, dispatch, navigate]);
 
@@ -56,31 +57,36 @@ function SignupView() {
       email: "",
       countryCode: "",
       phone: "",
-      timezone: "",
       password: "",
       confirmPassword: "",
     },
   });
 
   const onSubmit = (data: SignupFormData) => {
-    const { confirmPassword, ...payload } = data;
-    dispatch(registerRequest(payload));
+    const { confirmPassword, ...rest } = data;
+
+    // ✅ Auto-detect timezone — never shown to the user, never typed by them
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    dispatch(
+      registerRequest({
+        ...rest,
+        timezone,
+      })
+    );
   };
 
   return (
     <AuthLayout>
       <Box sx={{ width: "100%", maxWidth: "32rem" }}>
-        <AuthHeading
-          title="Sign up"
-          subtitle="Join the community today!"
-        />
+        <AuthHeading title="Sign up" subtitle="Join the community today!" />
 
         <Box
           component="form"
           onSubmit={handleSubmit(onSubmit)}
           sx={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr", // ✅ always 2 columns
+            gridTemplateColumns: "1fr 1fr",
             gap: 1.5,
           }}
         >
@@ -114,22 +120,23 @@ function SignupView() {
             error={errors.lastName?.message}
           />
 
-          {/* Row 3: Email | Country Code */}
-          <TextInput
-            label="Email"
-            placeholder="Enter Email"
-            registration={register("email")}
-            error={errors.email?.message}
-          />
+          {/* Row 3: Email — full width */}
+          <Box sx={{ gridColumn: "1 / 3" }}>
+            <TextInput
+              label="Email"
+              placeholder="Enter Email"
+              registration={register("email")}
+              error={errors.email?.message}
+            />
+          </Box>
 
-          <TextInput
+          {/* Row 4: Country Code dropdown | Phone */}
+          <CountryCodeSelect
             label="Country Code"
-            placeholder="Enter Country Code"
             registration={register("countryCode")}
             error={errors.countryCode?.message}
           />
 
-          {/* Row 4: Phone | Timezone */}
           <TextInput
             label="Phone Number"
             placeholder="Enter Phone Number"
@@ -137,12 +144,7 @@ function SignupView() {
             error={errors.phone?.message}
           />
 
-          <TextInput
-            label="Time Zone"
-            placeholder="Enter Time Zone"
-            registration={register("timezone")}
-            error={errors.timezone?.message}
-          />
+          {/* ✅ Time Zone field removed entirely — auto-detected on submit */}
 
           {/* Row 5: Password | Confirm Password */}
           <TextInput

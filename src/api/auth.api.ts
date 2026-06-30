@@ -5,6 +5,12 @@ import type {
   SignupResponse,
   LoginRequest,
   LoginResponse,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from "../auth/types";
 
 export const registerCompany = async (
@@ -14,7 +20,6 @@ export const registerCompany = async (
     "/auth/register",
     payload
   );
-
   return response.data;
 };
 
@@ -25,6 +30,37 @@ export const loginUser = async (
     "/auth/login",
     payload
   );
+  return response.data;
+};
 
+export const verifyEmail = async (
+  payload: VerifyEmailRequest
+): Promise<VerifyEmailResponse> => {
+  const response = await axiosInstance.post<VerifyEmailResponse>(
+    "/auth/verify-email",
+    payload
+  );
+  return response.data;
+};
+
+// ✅ New
+export const forgotPassword = async (
+  payload: ForgotPasswordRequest
+): Promise<ForgotPasswordResponse> => {
+  const response = await axiosInstance.post<ForgotPasswordResponse>(
+    "/auth/forgot-password",
+    payload
+  );
+  return response.data;
+};
+
+// ✅ New
+export const resetPassword = async (
+  payload: ResetPasswordRequest
+): Promise<ResetPasswordResponse> => {
+  const response = await axiosInstance.post<ResetPasswordResponse>(
+    "/auth/reset-password",
+    payload
+  );
   return response.data;
 };

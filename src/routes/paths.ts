@@ -2,6 +2,8 @@ export const paths = {
   auth: {
     login: "/login",
     signup: "/signup",
+    checkEmail: "/check-email",     
+    verifyEmail: "/verify-email",   
     forgotPassword: "/forgot-password",
     resetPassword: "/reset-password",
   },

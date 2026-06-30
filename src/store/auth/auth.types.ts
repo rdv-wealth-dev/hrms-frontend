@@ -1,9 +1,8 @@
 import type {
   User,
   Organization,
-  Branch,
   SignupRequest,
-  SignupResponse,
+  SignupResponseData,
   LoginRequest,
 } from "../../auth/types";
 
@@ -14,12 +13,26 @@ import type {
 export type AuthState = {
   user: User | null;
   organization: Organization | null;
-  branch: Branch | null;
 
   accessToken: string | null;
-  refreshToken: string | null;
 
   isRegisterSuccess: boolean;
+  registerMessage: string | null;
+
+  isVerifyingEmail: boolean;
+  isEmailVerified: boolean;
+  verifyMessage: string | null;
+
+  // ✅ Forgot Password
+  isSendingResetLink: boolean;
+  isResetLinkSent: boolean;
+  forgotPasswordMessage: string | null;
+
+  // ✅ Reset Password
+  isResettingPassword: boolean;
+  isPasswordReset: boolean;
+  resetPasswordMessage: string | null;
+
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -36,15 +49,25 @@ export const AUTH_ACTIONS = {
 
   RESET_AUTH_STATE: "auth/resetAuthState",
 
+  VERIFY_EMAIL_REQUEST: "auth/verifyEmailRequest",
+  VERIFY_EMAIL_SUCCESS: "auth/verifyEmailSuccess",
+  VERIFY_EMAIL_FAILURE: "auth/verifyEmailFailure",
+
   LOGIN_REQUEST: "auth/loginRequest",
   LOGIN_SUCCESS: "auth/loginSuccess",
   LOGIN_FAILURE: "auth/loginFailure",
 
-  LOGOUT: "auth/logout",
+  // ✅ Forgot Password
+  FORGOT_PASSWORD_REQUEST: "auth/forgotPasswordRequest",
+  FORGOT_PASSWORD_SUCCESS: "auth/forgotPasswordSuccess",
+  FORGOT_PASSWORD_FAILURE: "auth/forgotPasswordFailure",
 
-  REFRESH_TOKEN_REQUEST: "auth/refreshTokenRequest",
-  REFRESH_TOKEN_SUCCESS: "auth/refreshTokenSuccess",
-  REFRESH_TOKEN_FAILURE: "auth/refreshTokenFailure",
+  // ✅ Reset Password
+  RESET_PASSWORD_REQUEST: "auth/resetPasswordRequest",
+  RESET_PASSWORD_SUCCESS: "auth/resetPasswordSuccess",
+  RESET_PASSWORD_FAILURE: "auth/resetPasswordFailure",
+
+  LOGOUT: "auth/logout",
 } as const;
 
 // ===========================================
@@ -52,50 +75,47 @@ export const AUTH_ACTIONS = {
 // ===========================================
 
 export type RegisterRequestPayload = SignupRequest;
-
-export type RegisterSuccessPayload = SignupResponse;
+export type RegisterSuccessPayload = SignupResponseData;
 
 export type LoginRequestPayload = LoginRequest;
 
-// ✅ Flat shape — matches what the saga dispatches (response.data fields)
 export type LoginSuccessPayload = {
   user: User;
   accessToken: string;
-  refreshToken: string;
 };
+
+export type VerifyEmailRequestPayload = { token: string };
+export type VerifyEmailSuccessPayload = { message: string };
+
+// ✅ Forgot Password
+export type ForgotPasswordRequestPayload = { email: string };
+export type ForgotPasswordSuccessPayload = { message: string };
+
+// ✅ Reset Password
+export type ResetPasswordRequestPayload = { token: string; password: string };
+export type ResetPasswordSuccessPayload = { message: string };
 
 // ===========================================
 // Auth Actions
 // ===========================================
 
 export type AuthAction =
-  | {
-      type: typeof AUTH_ACTIONS.REGISTER_REQUEST;
-      payload: RegisterRequestPayload;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.REGISTER_SUCCESS;
-      payload: RegisterSuccessPayload;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.REGISTER_FAILURE;
-      payload: string;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.RESET_AUTH_STATE;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.LOGIN_REQUEST;
-      payload: LoginRequestPayload;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.LOGIN_SUCCESS;
-      payload: LoginSuccessPayload;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.LOGIN_FAILURE;
-      payload: string;
-    }
-  | {
-      type: typeof AUTH_ACTIONS.LOGOUT;
-    };
+  | { type: typeof AUTH_ACTIONS.REGISTER_REQUEST; payload: RegisterRequestPayload }
+  | { type: typeof AUTH_ACTIONS.REGISTER_SUCCESS; payload: RegisterSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.REGISTER_FAILURE; payload: string }
+  | { type: typeof AUTH_ACTIONS.RESET_AUTH_STATE }
+  | { type: typeof AUTH_ACTIONS.VERIFY_EMAIL_REQUEST; payload: VerifyEmailRequestPayload }
+  | { type: typeof AUTH_ACTIONS.VERIFY_EMAIL_SUCCESS; payload: VerifyEmailSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.VERIFY_EMAIL_FAILURE; payload: string }
+  | { type: typeof AUTH_ACTIONS.LOGIN_REQUEST; payload: LoginRequestPayload }
+  | { type: typeof AUTH_ACTIONS.LOGIN_SUCCESS; payload: LoginSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.LOGIN_FAILURE; payload: string }
+  // ✅ Forgot Password
+  | { type: typeof AUTH_ACTIONS.FORGOT_PASSWORD_REQUEST; payload: ForgotPasswordRequestPayload }
+  | { type: typeof AUTH_ACTIONS.FORGOT_PASSWORD_SUCCESS; payload: ForgotPasswordSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.FORGOT_PASSWORD_FAILURE; payload: string }
+  // ✅ Reset Password
+  | { type: typeof AUTH_ACTIONS.RESET_PASSWORD_REQUEST; payload: ResetPasswordRequestPayload }
+  | { type: typeof AUTH_ACTIONS.RESET_PASSWORD_SUCCESS; payload: ResetPasswordSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.RESET_PASSWORD_FAILURE; payload: string }
+  | { type: typeof AUTH_ACTIONS.LOGOUT };

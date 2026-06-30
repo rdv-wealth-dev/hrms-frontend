@@ -1,12 +1,13 @@
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-import type { ReactNode } from "react";
+import type { ReactNode, MouseEventHandler } from "react";
 
 type PrimaryButtonProps = {
   type?: "button" | "submit" | "reset";
   children: ReactNode;
   loading?: boolean;
   disabled?: boolean;
+  onClick?: MouseEventHandler<HTMLButtonElement>; // ✅ added
 };
 
 function PrimaryButton({
@@ -14,6 +15,7 @@ function PrimaryButton({
   children,
   loading = false,
   disabled = false,
+  onClick, // ✅ added
 }: PrimaryButtonProps) {
   return (
     <Button
@@ -21,6 +23,7 @@ function PrimaryButton({
       fullWidth
       variant="contained"
       disabled={loading || disabled}
+      onClick={onClick} // ✅ added
       sx={{
         height: "48px",
         borderRadius: "12px",
