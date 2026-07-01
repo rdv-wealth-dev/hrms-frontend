@@ -2,13 +2,15 @@ export const paths = {
   auth: {
     login: "/login",
     signup: "/signup",
-    checkEmail: "/check-email",     
-    verifyEmail: "/verify-email",   
+    checkEmail: "/check-email",
+    verifyEmail: "/verify-email",
     forgotPassword: "/forgot-password",
     resetPassword: "/reset-password",
   },
 
   dashboard: "/dashboard",
+
+  departments: "/departments", 
 
   employees: {
     directory: "/employees/directory",

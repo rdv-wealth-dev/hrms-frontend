@@ -30,16 +30,14 @@ export interface Organization {
   id: string;
   companyName: string;
   slug: string;
-
-  subscription: {
+  subscription?: {
     plan: string;
     status: string;
     trialEndsAt: string;
     maxEmployees: number;
     maxBranches: number;
   };
-
-  modules: {
+  modules?: {
     attendance: boolean;
     leave: boolean;
     payroll: boolean;
@@ -55,47 +53,10 @@ export interface Branch {
   code: string;
 }
 
-export interface SignupRequest {
-  companyName: string;
-  industry: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone: string;
-  countryCode: string;
-  timezone: string;
-}
+// ===========================================
+// Signup
+// ===========================================
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  isSuperAdmin: boolean;
-  branchIds: string[];
-  permissions: string[];
-}
-
-export interface Organization {
-  id: string;
-  companyName: string;
-  slug: string;
-}
-
-export interface Branch {
-  id: string;
-  name: string;
-  code: string;
-}
-
-// ✅ Matches actual /auth/register response
 export interface SignupResponseData {
   message: string;
   organization: Organization;
@@ -108,7 +69,10 @@ export interface SignupResponse {
   data: SignupResponseData | null;
 }
 
-// ✅ Matches actual /auth/login response
+// ===========================================
+// Login
+// ===========================================
+
 export interface LoginResponseData {
   accessToken: string;
   user: User;
@@ -121,7 +85,10 @@ export interface LoginResponse {
   data: LoginResponseData | null;
 }
 
-// ✅ New — matches /auth/verify-email
+// ===========================================
+// Verify Email
+// ===========================================
+
 export interface VerifyEmailRequest {
   token: string;
 }
@@ -137,7 +104,10 @@ export interface VerifyEmailResponse {
   data: VerifyEmailResponseData | null;
 }
 
-// ✅ Forgot Password
+// ===========================================
+// Forgot Password
+// ===========================================
+
 export interface ForgotPasswordRequest {
   email: string;
 }
@@ -153,7 +123,10 @@ export interface ForgotPasswordResponse {
   data: ForgotPasswordResponseData | null;
 }
 
-// ✅ Reset Password
+// ===========================================
+// Reset Password
+// ===========================================
+
 export interface ResetPasswordRequest {
   token: string;
   password: string;
@@ -168,4 +141,57 @@ export interface ResetPasswordResponse {
   message: string;
   errors: string[];
   data: ResetPasswordResponseData | null;
+}
+
+// ===========================================
+// Department
+// ===========================================
+
+export interface Department {
+  _id: string;
+  name: string;
+  code: string;
+  description?: string;
+  branchId: string;
+  parentId?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDepartmentRequest {
+  name: string;
+  code: string;
+  description?: string;
+  branchId: string;
+  parentId?: string;
+}
+
+export interface UpdateDepartmentRequest {
+  name?: string;
+  code?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface DepartmentListResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: Department[];
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+  firstPage: number | null;
+  lastPage: number | null;
+  nextPage: number | null;
+  previousPage: number | null;
+}
+
+export interface DepartmentResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: Department | null;
 }
