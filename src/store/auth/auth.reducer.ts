@@ -1,11 +1,14 @@
 import type { AuthAction, AuthState } from "./auth.types";
 import { AUTH_ACTIONS } from "./auth.types";
 
+const storedUser = localStorage.getItem("persistentToken");
+const storedToken = localStorage.getItem("accessToken");
+
 const initialState: AuthState = {
-  user: null,
+  user: storedUser ? JSON.parse(storedUser) : null,
   organization: null,
 
-  accessToken: null,
+  accessToken: storedToken ?? null,
 
   isRegisterSuccess: false,
   registerMessage: null,
@@ -22,7 +25,7 @@ const initialState: AuthState = {
   isPasswordReset: false,
   resetPasswordMessage: null,
 
-  isAuthenticated: false,
+  isAuthenticated: !!storedToken,
   loading: false,
   error: null,
 };
@@ -161,3 +164,5 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
       return state;
   }
 }
+
+console.log("Auth reducer initialized with state:", initialState);

@@ -128,7 +128,11 @@ function DeptFormDialog({
                     size="small"
                     placeholder="e.g. ENG"
                     required
-                    inputProps={{ maxLength: 20 }}
+                    slotProps={{
+                        htmlInput: {
+                            maxLength: 20,
+                        },
+                    }}
                 />
 
                 <TextField

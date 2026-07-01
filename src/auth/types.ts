@@ -195,3 +195,61 @@ export interface DepartmentResponse {
   errors: string[];
   data: Department | null;
 }
+
+// ===========================================
+// Designation
+// ===========================================
+
+export interface Designation {
+  _id: string;
+  tenantId: string;
+  branchId: string;
+  name: string;
+  code: string;
+  description?: string;
+  departmentId: string;
+  level: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDesignationRequest {
+  name: string;
+  code: string;
+  description?: string;
+  departmentId: string;
+  branchId: string;
+  level: number;
+}
+
+export interface UpdateDesignationRequest {
+  name?: string;
+  code?: string;
+  description?: string;
+  level?: number;
+  isActive?: boolean;
+}
+
+export interface DesignationResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: Designation | null;
+}
+
+// ✅ New — matches actual /designations list response shape
+export interface DesignationListResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: Designation[] | null;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+  firstPage: string | null;
+  lastPage: string | null;
+  nextPage: string | null;
+  previousPage: string | null;
+}

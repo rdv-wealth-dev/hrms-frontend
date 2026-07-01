@@ -94,7 +94,7 @@ function* handleLoginRequest(action: {
 }): SagaIterator {
   try {
     const response = yield call(loginUser, action.payload);
-
+    console.log("Login response:", response.data.user);
     if (!response.data) {
       yield put(loginFailure(response.message ?? "Login failed"));
       return;
@@ -107,7 +107,9 @@ function* handleLoginRequest(action: {
       })
     );
 
+    // console.log("Login successful, storing access token in localStorage:", response.data);
     localStorage.setItem("accessToken", response.data.accessToken);
+    localStorage.setItem("persistent", JSON.stringify(response.data.user));
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(loginFailure(error.response?.data?.message ?? "Login failed"));

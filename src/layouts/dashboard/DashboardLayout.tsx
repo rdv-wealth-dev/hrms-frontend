@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
@@ -25,16 +25,21 @@ import type { RootState } from "../../store/rootReducer";
 const SIDEBAR_WIDTH = 240;
 
 const navItems = [
-    {
-        label: "Dashboard",
-        icon: <DashboardOutlinedIcon fontSize="small" />,
-        path: paths.dashboard,
-    },
-    {
-        label: "Departments",
-        icon: <ApartmentOutlinedIcon fontSize="small" />,
-        path: paths.departments,
-    },
+  {
+    label: "Dashboard",
+    icon: <DashboardOutlinedIcon fontSize="small" />,
+    path: paths.dashboard,
+  },
+  {
+    label: "Departments",
+    icon: <ApartmentOutlinedIcon fontSize="small" />,
+    path: paths.departments,
+  },
+  {
+    label: "Designations", // ✅ new
+    icon: <BadgeOutlinedIcon fontSize="small" />,
+    path: paths.designations,
+  },
 ];
 
 type Props = {
