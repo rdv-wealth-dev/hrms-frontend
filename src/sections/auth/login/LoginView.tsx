@@ -144,9 +144,7 @@ function LoginView() {
             Sign In
           </PrimaryButton>
 
-          <AuthDivider />
-
-          <GoogleAuthButton />
+         
 
           <AuthFooter
             text="Don't have an account?"

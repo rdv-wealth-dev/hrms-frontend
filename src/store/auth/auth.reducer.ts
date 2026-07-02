@@ -1,7 +1,9 @@
 import type { AuthAction, AuthState } from "./auth.types";
 import { AUTH_ACTIONS } from "./auth.types";
 
-const storedUser = localStorage.getItem("persistentToken");
+// ✅ Fixed key name — saga writes to "persistent", this was reading "persistentToken"
+// (mismatch meant this initial rehydration attempt never actually worked)
+const storedUser = localStorage.getItem("persistent");
 const storedToken = localStorage.getItem("accessToken");
 
 const initialState: AuthState = {
@@ -24,6 +26,10 @@ const initialState: AuthState = {
   isResettingPassword: false,
   isPasswordReset: false,
   resetPasswordMessage: null,
+
+  // ✅ New — session rehydration tracking
+  isRestoringSession: false,
+  sessionChecked: false,
 
   isAuthenticated: !!storedToken,
   loading: false,
@@ -154,15 +160,45 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
       };
 
     // ==========================
+    // Restore Session
+    // ==========================
+
+    case AUTH_ACTIONS.RESTORE_SESSION_REQUEST:
+      return { ...state, isRestoringSession: true };
+
+    case AUTH_ACTIONS.RESTORE_SESSION_SUCCESS:
+      return {
+        ...state,
+        isRestoringSession: false,
+        sessionChecked: true,
+        isAuthenticated: true,
+        user: action.payload,
+      };
+
+    case AUTH_ACTIONS.RESTORE_SESSION_FAILURE:
+      return {
+        ...state,
+        isRestoringSession: false,
+        sessionChecked: true,
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+      };
+
+    // ==========================
     // Logout
     // ==========================
 
     case AUTH_ACTIONS.LOGOUT:
-      return initialState;
+      return {
+        ...initialState,
+        user: null,
+        accessToken: null,
+        isAuthenticated: false,
+        sessionChecked: true, // ✅ stay "checked" — don't show the loading spinner again after logout
+      };
 
     default:
       return state;
   }
 }
-
-console.log("Auth reducer initialized with state:", initialState);

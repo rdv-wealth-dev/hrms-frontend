@@ -20,10 +20,15 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  fullName?: string;
+  phone?: string;
   role: string;
   isSuperAdmin: boolean;
+  isActive?: boolean;
+  isEmailVerified?: boolean;
   branchIds: string[];
   permissions: string[];
+  tenantId?: string;
 }
 
 export interface Organization {
@@ -252,4 +257,32 @@ export interface DesignationListResponse {
   lastPage: string | null;
   nextPage: string | null;
   previousPage: string | null;
+}
+
+// ===========================================
+// Get Current User (/auth/me)
+// ===========================================
+
+export interface MeResponseData {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  fullName?: string;
+  phone?: string;
+  role: string;
+  isSuperAdmin: boolean;
+  isActive?: boolean;
+  isEmailVerified?: boolean;
+  branchIds: string[];
+  tenantId?: string;
+  lastLoginAt?: string;
+  createdAt?: string;
+}
+
+export interface MeResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: MeResponseData | null;
 }

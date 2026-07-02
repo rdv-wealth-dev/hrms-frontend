@@ -10,6 +10,7 @@ import type {
   ForgotPasswordSuccessPayload,
   ResetPasswordRequestPayload,
   ResetPasswordSuccessPayload,
+  RestoreSessionSuccessPayload,
 } from "./auth.types";
 
 import { AUTH_ACTIONS } from "./auth.types";
@@ -111,6 +112,25 @@ export const resetPasswordSuccess = (payload: ResetPasswordSuccessPayload): Auth
 export const resetPasswordFailure = (payload: string): AuthAction => ({
   type: AUTH_ACTIONS.RESET_PASSWORD_FAILURE,
   payload,
+});
+
+// ===========================================
+// Restore Session
+// ===========================================
+
+export const restoreSessionRequest = (): AuthAction => ({
+  type: AUTH_ACTIONS.RESTORE_SESSION_REQUEST,
+});
+
+export const restoreSessionSuccess = (
+  payload: RestoreSessionSuccessPayload
+): AuthAction => ({
+  type: AUTH_ACTIONS.RESTORE_SESSION_SUCCESS,
+  payload,
+});
+
+export const restoreSessionFailure = (): AuthAction => ({
+  type: AUTH_ACTIONS.RESTORE_SESSION_FAILURE,
 });
 
 // ===========================================

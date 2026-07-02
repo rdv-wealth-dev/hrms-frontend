@@ -7,17 +7,17 @@ import type {
     DesignationListResponse,
 } from "../auth/types";
 
-// const getAuthHeader = () => {
-//     const token = localStorage.getItem("accessToken");
+const getAuthHeader = () => {
+    const token = localStorage.getItem("accessToken");
 
-//     if (!token) {
-//         throw new Error("No access token found. Please log in again.");
-//     }
+    if (!token) {
+        throw new Error("No access token found. Please log in again.");
+    }
 
-//     return {
-//         Authorization: `Bearer ${token}`,
-//     };
-// };
+    return {
+        Authorization: `Bearer ${token}`,
+    };
+};
 
 export const createDesignation = async (
     payload: CreateDesignationRequest

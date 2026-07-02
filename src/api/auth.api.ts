@@ -11,6 +11,7 @@ import type {
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  MeResponse, // ✅ new
 } from "../auth/types";
 
 export const registerCompany = async (
@@ -62,5 +63,16 @@ export const resetPassword = async (
     "/auth/reset-password",
     payload
   );
+  return response.data;
+};
+
+const getAuthHeader = () => ({
+  Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+});
+
+export const getMe = async (): Promise<MeResponse> => {
+  const response = await axiosInstance.get<MeResponse>("/auth/me", {
+    headers: getAuthHeader(),
+  });
   return response.data;
 };

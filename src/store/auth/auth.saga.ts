@@ -8,6 +8,7 @@ import {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  getMe,
 } from "../../api/auth.api";
 
 import {
@@ -21,6 +22,8 @@ import {
   forgotPasswordFailure,
   resetPasswordSuccess,
   resetPasswordFailure,
+  restoreSessionSuccess,
+  restoreSessionFailure,
 } from "./auth.actions";
 
 import {
@@ -94,7 +97,7 @@ function* handleLoginRequest(action: {
 }): SagaIterator {
   try {
     const response = yield call(loginUser, action.payload);
-    console.log("Login response:", response.data.user);
+
     if (!response.data) {
       yield put(loginFailure(response.message ?? "Login failed"));
       return;
@@ -107,7 +110,6 @@ function* handleLoginRequest(action: {
       })
     );
 
-    // console.log("Login successful, storing access token in localStorage:", response.data);
     localStorage.setItem("accessToken", response.data.accessToken);
     localStorage.setItem("persistent", JSON.stringify(response.data.user));
   } catch (error: unknown) {
@@ -172,6 +174,58 @@ function* handleResetPasswordRequest(action: {
 }
 
 // ===========================================
+// Restore Session (on app load)
+// ===========================================
+
+function* handleRestoreSession(): SagaIterator {
+  const token = localStorage.getItem("accessToken");
+
+  // No token at all — nothing to restore, don't even call the API
+  if (!token) {
+    yield put(restoreSessionFailure());
+    return;
+  }
+
+  try {
+    const response = yield call(getMe);
+
+    if (!response.succeeded || !response.data) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("persistent");
+      yield put(restoreSessionFailure());
+      return;
+    }
+
+    // ⚠️ NOTE: /auth/me does not return `permissions`. Defaulting to [] until
+    // the backend includes it here too — permission-based RoleGuard checks
+    // will fail-closed after a refresh until that's added.
+    yield put(
+      restoreSessionSuccess({
+        ...response.data,
+        permissions: [],
+      })
+    );
+
+    // Keep the "persistent" cache in sync with the freshest server data
+    localStorage.setItem("persistent", JSON.stringify(response.data));
+  } catch (error: unknown) {
+    // Token invalid/expired/rejected — clear it, don't leave a dead session lying around
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("persistent");
+    yield put(restoreSessionFailure());
+  }
+}
+
+// ===========================================
+// Logout
+// ===========================================
+
+function* handleLogout(): SagaIterator {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("persistent");
+}
+
+// ===========================================
 // Watchers
 // ===========================================
 
@@ -181,4 +235,6 @@ export function* authSaga(): SagaIterator {
   yield takeLatest(AUTH_ACTIONS.LOGIN_REQUEST, handleLoginRequest);
   yield takeLatest(AUTH_ACTIONS.FORGOT_PASSWORD_REQUEST, handleForgotPasswordRequest);
   yield takeLatest(AUTH_ACTIONS.RESET_PASSWORD_REQUEST, handleResetPasswordRequest);
+  yield takeLatest(AUTH_ACTIONS.RESTORE_SESSION_REQUEST, handleRestoreSession);
+  yield takeLatest(AUTH_ACTIONS.LOGOUT, handleLogout);
 }

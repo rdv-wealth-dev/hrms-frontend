@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -18,6 +19,8 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
+import type { AppDispatch } from "../../store/store";
+import { logout } from "../../store/auth";
 
 import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
@@ -25,21 +28,21 @@ import type { RootState } from "../../store/rootReducer";
 const SIDEBAR_WIDTH = 240;
 
 const navItems = [
-  {
-    label: "Dashboard",
-    icon: <DashboardOutlinedIcon fontSize="small" />,
-    path: paths.dashboard,
-  },
-  {
-    label: "Departments",
-    icon: <ApartmentOutlinedIcon fontSize="small" />,
-    path: paths.departments,
-  },
-  {
-    label: "Designations", // ✅ new
-    icon: <BadgeOutlinedIcon fontSize="small" />,
-    path: paths.designations,
-  },
+    {
+        label: "Dashboard",
+        icon: <DashboardOutlinedIcon fontSize="small" />,
+        path: paths.dashboard,
+    },
+    {
+        label: "Departments",
+        icon: <ApartmentOutlinedIcon fontSize="small" />,
+        path: paths.departments,
+    },
+    {
+        label: "Designations", // ✅ new
+        icon: <BadgeOutlinedIcon fontSize="small" />,
+        path: paths.designations,
+    },
 ];
 
 type Props = {
@@ -52,6 +55,7 @@ function DashboardLayout({ children }: Props) {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const user = useSelector((state: RootState) => state.auth?.user);
+    const dispatch = useDispatch<AppDispatch>();
 
     const sidebarContent = (
         <Box
@@ -178,7 +182,10 @@ function DashboardLayout({ children }: Props) {
                 </Box>
 
                 <ListItemButton
-                    onClick={() => navigate(paths.auth.login)}
+                    onClick={() => {
+                        dispatch(logout());
+                        navigate(paths.auth.login);
+                    }}
                     sx={{
                         borderRadius: 2,
                         px: 1.5,

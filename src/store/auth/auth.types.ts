@@ -23,15 +23,19 @@ export type AuthState = {
   isEmailVerified: boolean;
   verifyMessage: string | null;
 
-  // ✅ Forgot Password
+  // Forgot Password
   isSendingResetLink: boolean;
   isResetLinkSent: boolean;
   forgotPasswordMessage: string | null;
 
-  // ✅ Reset Password
+  // Reset Password
   isResettingPassword: boolean;
   isPasswordReset: boolean;
   resetPasswordMessage: string | null;
+
+  // ✅ New — session rehydration on app load (via /auth/me)
+  isRestoringSession: boolean;
+  sessionChecked: boolean; // true once the initial restore attempt has finished (success OR failure)
 
   isAuthenticated: boolean;
   loading: boolean;
@@ -57,15 +61,20 @@ export const AUTH_ACTIONS = {
   LOGIN_SUCCESS: "auth/loginSuccess",
   LOGIN_FAILURE: "auth/loginFailure",
 
-  // ✅ Forgot Password
+  // Forgot Password
   FORGOT_PASSWORD_REQUEST: "auth/forgotPasswordRequest",
   FORGOT_PASSWORD_SUCCESS: "auth/forgotPasswordSuccess",
   FORGOT_PASSWORD_FAILURE: "auth/forgotPasswordFailure",
 
-  // ✅ Reset Password
+  // Reset Password
   RESET_PASSWORD_REQUEST: "auth/resetPasswordRequest",
   RESET_PASSWORD_SUCCESS: "auth/resetPasswordSuccess",
   RESET_PASSWORD_FAILURE: "auth/resetPasswordFailure",
+
+  // ✅ New — Restore Session
+  RESTORE_SESSION_REQUEST: "auth/restoreSessionRequest",
+  RESTORE_SESSION_SUCCESS: "auth/restoreSessionSuccess",
+  RESTORE_SESSION_FAILURE: "auth/restoreSessionFailure",
 
   LOGOUT: "auth/logout",
 } as const;
@@ -87,13 +96,16 @@ export type LoginSuccessPayload = {
 export type VerifyEmailRequestPayload = { token: string };
 export type VerifyEmailSuccessPayload = { message: string };
 
-// ✅ Forgot Password
+// Forgot Password
 export type ForgotPasswordRequestPayload = { email: string };
 export type ForgotPasswordSuccessPayload = { message: string };
 
-// ✅ Reset Password
+// Reset Password
 export type ResetPasswordRequestPayload = { token: string; password: string };
 export type ResetPasswordSuccessPayload = { message: string };
+
+// ✅ New — Restore Session
+export type RestoreSessionSuccessPayload = User;
 
 // ===========================================
 // Auth Actions
@@ -110,12 +122,16 @@ export type AuthAction =
   | { type: typeof AUTH_ACTIONS.LOGIN_REQUEST; payload: LoginRequestPayload }
   | { type: typeof AUTH_ACTIONS.LOGIN_SUCCESS; payload: LoginSuccessPayload }
   | { type: typeof AUTH_ACTIONS.LOGIN_FAILURE; payload: string }
-  // ✅ Forgot Password
+  // Forgot Password
   | { type: typeof AUTH_ACTIONS.FORGOT_PASSWORD_REQUEST; payload: ForgotPasswordRequestPayload }
   | { type: typeof AUTH_ACTIONS.FORGOT_PASSWORD_SUCCESS; payload: ForgotPasswordSuccessPayload }
   | { type: typeof AUTH_ACTIONS.FORGOT_PASSWORD_FAILURE; payload: string }
-  // ✅ Reset Password
+  // Reset Password
   | { type: typeof AUTH_ACTIONS.RESET_PASSWORD_REQUEST; payload: ResetPasswordRequestPayload }
   | { type: typeof AUTH_ACTIONS.RESET_PASSWORD_SUCCESS; payload: ResetPasswordSuccessPayload }
   | { type: typeof AUTH_ACTIONS.RESET_PASSWORD_FAILURE; payload: string }
+  // ✅ New — Restore Session
+  | { type: typeof AUTH_ACTIONS.RESTORE_SESSION_REQUEST }
+  | { type: typeof AUTH_ACTIONS.RESTORE_SESSION_SUCCESS; payload: RestoreSessionSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.RESTORE_SESSION_FAILURE }
   | { type: typeof AUTH_ACTIONS.LOGOUT };

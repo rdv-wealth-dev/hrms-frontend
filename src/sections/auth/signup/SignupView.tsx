@@ -180,9 +180,7 @@ function SignupView() {
           </Box>
         </Box>
 
-        <AuthDivider />
-        <GoogleAuthButton />
-
+        
         <AuthFooter
           text="Already have an account?"
           linkText="Sign In"
