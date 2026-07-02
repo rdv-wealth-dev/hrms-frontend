@@ -8,7 +8,7 @@ import AppRoutes from "./routes";
 
 import type { AppDispatch } from "./store/store";
 import type { RootState } from "./store/rootReducer";
-import { restoreSessionRequest } from "./store/auth";
+import { restoreSessionRequest, logout } from "./store/auth";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -17,9 +17,40 @@ function App() {
     (state: RootState) => state.auth?.sessionChecked ?? false
   );
 
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth?.isAuthenticated ?? false
+  );
+
+  // Restore session on app load
   useEffect(() => {
     dispatch(restoreSessionRequest());
   }, [dispatch]);
+
+  // Monitor access token deletion
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Listen to token deletion from other tabs/windows
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "accessToken" && !event.newValue) {
+        dispatch(logout());
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // Poll to detect token deletion in the current tab (e.g. via DevTools)
+    const intervalId = setInterval(() => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        dispatch(logout());
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, [isAuthenticated, dispatch]);
 
   // ✅ Don't render any routes/guards until we know for sure whether the
   // existing token (if any) is actually valid. Prevents AuthGuard/GuestGuard

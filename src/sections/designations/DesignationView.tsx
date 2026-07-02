@@ -22,7 +22,6 @@ import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 
 import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 
@@ -35,9 +34,7 @@ import type { Designation } from "../../auth/types";
 import {
   createDesignationRequest,
   listDesignationsRequest,
-  getDesignationByIdRequest,
   updateDesignationRequest,
-  clearSelectedDesignation,
   clearDesignationError,
 } from "../../store/designation";
 
@@ -46,11 +43,10 @@ const canManage = (role?: string) => role === "HR" || role === "SUPER_ADMIN";
 function DesignationView() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { designations, selectedDesignation, submitting, loading, error } = useSelector(
+  const { designations, submitting, loading, error } = useSelector(
     (state: RootState) =>
       state.designation ?? {
         designations: [],
-        selectedDesignation: null,
         submitting: false,
         loading: false,
         error: null,
@@ -63,7 +59,7 @@ function DesignationView() {
 
   // Create dialog state
   const [createOpen, setCreateOpen] = useState(false);
-  const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false); // ✅
+  const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
@@ -72,23 +68,19 @@ function DesignationView() {
 
   // Update dialog state
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false); // ✅
+  const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
   const [editTarget, setEditTarget] = useState<Designation | null>(null);
   const [editName, setEditName] = useState("");
   const [editCode, setEditCode] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editLevel, setEditLevel] = useState("1");
 
-  // Get By ID dialog state
-  const [getByIdOpen, setGetByIdOpen] = useState(false);
-  const [searchId, setSearchId] = useState("");
-
   // Fetch list on mount
   useEffect(() => {
     dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 10 }));
   }, [dispatch]);
 
-  // ✅ Only close create dialog after an actual submit succeeded
+  // Only close create dialog after an actual submit succeeded
   useEffect(() => {
     if (hasSubmittedCreate && !submitting && !error && createOpen) {
       setCreateOpen(false);
@@ -103,7 +95,7 @@ function DesignationView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitting, error, hasSubmittedCreate]);
 
-  // ✅ Only close update dialog after an actual submit succeeded
+  // Only close update dialog after an actual submit succeeded
   useEffect(() => {
     if (hasSubmittedUpdate && !submitting && !error && updateOpen) {
       setUpdateOpen(false);
@@ -116,7 +108,7 @@ function DesignationView() {
   const handleCreate = () => {
     if (!name?.trim() || !code?.trim() || !departmentId?.trim()) return;
 
-    setHasSubmittedCreate(true); // ✅
+    setHasSubmittedCreate(true);
 
     dispatch(
       createDesignationRequest({
@@ -136,7 +128,7 @@ function DesignationView() {
     setEditCode(dept?.code ?? "");
     setEditDescription(dept?.description ?? "");
     setEditLevel(String(dept?.level ?? 1));
-    setHasSubmittedUpdate(false); // ✅ reset — dialog is opening fresh, not submitting yet
+    setHasSubmittedUpdate(false);
     dispatch(clearDesignationError());
     setUpdateOpen(true);
   };
@@ -144,7 +136,7 @@ function DesignationView() {
   const handleUpdate = () => {
     if (!editTarget?._id) return;
 
-    setHasSubmittedUpdate(true); // ✅ mark real submit
+    setHasSubmittedUpdate(true);
 
     dispatch(
       updateDesignationRequest({
@@ -157,18 +149,6 @@ function DesignationView() {
         },
       })
     );
-  };
-
-  const handleSearchById = () => {
-    if (!searchId?.trim()) return;
-    dispatch(getDesignationByIdRequest(searchId.trim()));
-  };
-
-  const closeGetById = () => {
-    setGetByIdOpen(false);
-    setSearchId("");
-    dispatch(clearSelectedDesignation());
-    dispatch(clearDesignationError());
   };
 
   return (
@@ -203,7 +183,7 @@ function DesignationView() {
               size="small"
               startIcon={<AddIcon />}
               onClick={() => {
-                setHasSubmittedCreate(false); // ✅ reset on fresh open
+                setHasSubmittedCreate(false);
                 dispatch(clearDesignationError());
                 setCreateOpen(true);
               }}
@@ -219,25 +199,8 @@ function DesignationView() {
           )}
         </Box>
 
-        {/* Get By ID button — visible to everyone */}
-        <Box sx={{ mb: 2 }}>
-          <Button
-            variant="text"
-            size="small"
-            startIcon={<SearchIcon />}
-            onClick={() => {
-              dispatch(clearSelectedDesignation());
-              dispatch(clearDesignationError());
-              setGetByIdOpen(true);
-            }}
-            sx={{ textTransform: "none", color: "#6D5DF6" }}
-          >
-            Get Designation by ID
-          </Button>
-        </Box>
-
         {/* Error Banner (only when all dialogs are closed) */}
-        {error && !createOpen && !getByIdOpen && !updateOpen && (
+        {error && !createOpen && !updateOpen && (
           <Alert
             severity="error"
             onClose={() => dispatch(clearDesignationError())}
@@ -248,7 +211,7 @@ function DesignationView() {
         )}
 
         {/* Designation Table */}
-        {loading && !getByIdOpen ? (
+        {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
             <CircularProgress />
           </Box>
@@ -351,7 +314,7 @@ function DesignationView() {
       >
         <DialogTitle sx={{ fontWeight: 700 }}>Create Designation</DialogTitle>
 
-        <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ pt: "24px !important", display: "flex", flexDirection: "column", gap: 2 }}>
           {error && createOpen && <Alert severity="error">{error}</Alert>}
 
           <TextField
@@ -372,7 +335,11 @@ function DesignationView() {
             size="small"
             placeholder="e.g. SDE1"
             required
-            inputProps={{ maxLength: 20 }}
+           slotProps={{
+              htmlInput: {
+                maxLength: 20,
+              },
+            }}
           />
 
           <TextField
@@ -445,7 +412,7 @@ function DesignationView() {
       >
         <DialogTitle sx={{ fontWeight: 700 }}>Update Designation</DialogTitle>
 
-        <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ pt: "24px !important", display: "flex", flexDirection: "column", gap: 2 }}>
           {error && updateOpen && <Alert severity="error">{error}</Alert>}
 
           <TextField
@@ -459,12 +426,17 @@ function DesignationView() {
 
           <TextField
             label="Code"
-            value={editCode}
-            onChange={(e) => setEditCode((e.target.value ?? "").toUpperCase())}
+            value={code}
+            onChange={(e) => setCode((e.target.value ?? "").toUpperCase())}
             fullWidth
             size="small"
+            placeholder="e.g. SDE1"
             required
-            inputProps={{ maxLength: 20 }}
+            slotProps={{
+              htmlInput: {
+                maxLength: 20,
+              },
+            }}
           />
 
           <TextField
@@ -507,68 +479,6 @@ function DesignationView() {
             sx={{ backgroundColor: "#6D5DF6", "&:hover": { backgroundColor: "#5B4BEA" } }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Update"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Get Designation by ID Dialog */}
-      <Dialog open={getByIdOpen} onClose={closeGetById} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Get Designation by ID</DialogTitle>
-
-        <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <TextField
-              label="Designation ID"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value ?? "")}
-              fullWidth
-              size="small"
-              placeholder="Paste designation _id here"
-            />
-            <IconButton
-              onClick={handleSearchById}
-              disabled={loading || !searchId?.trim()}
-              sx={{ border: 1, borderColor: "divider", borderRadius: 2 }}
-            >
-              <SearchIcon />
-            </IconButton>
-          </Box>
-
-          {loading && (
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <CircularProgress size={24} />
-            </Box>
-          )}
-
-          {error && getByIdOpen && <Alert severity="error">{error}</Alert>}
-
-          {!loading && selectedDesignation && (
-            <Box sx={{ backgroundColor: "#F5F6FA", borderRadius: 2, p: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                {selectedDesignation?.name ?? ""} ({selectedDesignation?.code ?? ""})
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block">
-                ID: {selectedDesignation?._id ?? ""}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Department ID: {selectedDesignation?.departmentId ?? ""}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Level: {selectedDesignation?.level ?? "—"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Description: {selectedDesignation?.description || "—"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Active: {selectedDesignation?.isActive ? "Yes" : "No"}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={closeGetById} color="inherit">
-            Close
           </Button>
         </DialogActions>
       </Dialog>

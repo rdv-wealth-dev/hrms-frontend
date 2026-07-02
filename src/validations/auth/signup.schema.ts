@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 export const signupSchema = z
   .object({
@@ -15,14 +16,16 @@ export const signupSchema = z
       .min(1, "Email is required")
       .email("Please enter a valid email"),
 
+    // ISO alpha-2 country code, e.g. "IN" — sent to backend and used for phone validation
     countryCode: z.string().min(1, "Country code is required"),
 
+    // Digits only — no +, spaces, or dashes. Validated per-country below.
     phone: z
       .string()
       .min(1, "Phone number is required")
-      .min(10, "Phone number must be at least 10 digits"),
+      .regex(/^\d+$/, "Phone number must contain digits only"),
 
-    // ✅ timezone removed from the form schema — it's auto-detected, not user input
+    // ✅ timezone removed from the form schema — it's auto-detected on submit
 
     password: z
       .string()
@@ -34,6 +37,22 @@ export const signupSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  });
+  })
+  // Per-country phone validation using libphonenumber-js
+  // Only runs when both countryCode and phone are present
+  .refine(
+    (data) => {
+      if (!data.countryCode || !data.phone) return true;
+      try {
+        return isValidPhoneNumber(data.phone, data.countryCode as Parameters<typeof isValidPhoneNumber>[1]);
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "Invalid phone number for the selected country",
+      path: ["phone"],
+    }
+  );
 
 export type SignupFormData = z.infer<typeof signupSchema>;

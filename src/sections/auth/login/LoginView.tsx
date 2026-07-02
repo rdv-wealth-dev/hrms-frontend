@@ -11,8 +11,6 @@ import AuthLayout from "../../../layouts/auth/AuthLayout";
 import AuthHeading from "../../../components/auth/AuthHeading";
 import TextInput from "../../../components/input/TextInput";
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import AuthDivider from "../../../components/auth/AuthDivider";
-import GoogleAuthButton from "../../../components/auth/GoogleAuthButton";
 import AuthFooter from "../../../components/auth/AuthFooter";
 
 import { paths } from "../../../routes/paths";

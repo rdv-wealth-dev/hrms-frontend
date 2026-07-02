@@ -11,8 +11,6 @@ import TextInput from "../../../components/input/TextInput";
 import CountryCodeSelect from "../../../components/input/CountryCodeSelect"; // ✅ added
 import PrimaryButton from "../../../components/button/PrimaryButton";
 import AuthLayout from "../../../layouts/auth/AuthLayout";
-import AuthDivider from "../../../components/auth/AuthDivider";
-import GoogleAuthButton from "../../../components/auth/GoogleAuthButton";
 import AuthFooter from "../../../components/auth/AuthFooter";
 import AuthHeading from "../../../components/auth/AuthHeading";
 
@@ -68,9 +66,13 @@ function SignupView() {
     // ✅ Auto-detect timezone — never shown to the user, never typed by them
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+    // Strip all non-digit characters — API expects subscriber digits only (no +, spaces, dashes)
+    const phone = rest.phone.replace(/\D/g, "");
+
     dispatch(
       registerRequest({
         ...rest,
+        phone,
         timezone,
       })
     );
@@ -139,7 +141,8 @@ function SignupView() {
 
           <TextInput
             label="Phone Number"
-            placeholder="Enter Phone Number"
+            placeholder="e.g. 9876543210"
+            type="tel"
             registration={register("phone")}
             error={errors.phone?.message}
           />

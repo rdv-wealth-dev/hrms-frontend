@@ -23,7 +23,6 @@ import IconButton from "@mui/material/IconButton";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
@@ -34,14 +33,12 @@ import type { Department } from "../../auth/types";
 
 import {
     listDepartmentsRequest,
-    getDepartmentByIdRequest,
     createDepartmentRequest,
     updateDepartmentRequest,
-    clearSelectedDepartment,
     clearDepartmentError,
 } from "../../store/department";
 
-// ✅ Permission check helper — only HR and SUPER_ADMIN can create/update
+// Permission check helper — only HR and SUPER_ADMIN can create/update
 const canManage = (role?: string) =>
     role === "HR" || role === "SUPER_ADMIN";
 
@@ -103,7 +100,13 @@ function DeptFormDialog({
                 {mode === "create" ? "Create Department" : "Update Department"}
             </DialogTitle>
 
-            <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+            <DialogContent sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                pt: "24px !important",
+            }}
+            >
                 {error && (
                     <Alert severity="error" sx={{ mb: 1 }}>
                         {error}
@@ -118,6 +121,11 @@ function DeptFormDialog({
                     size="small"
                     placeholder="e.g. Engineering"
                     required
+                    slotProps={{
+                        htmlInput: {
+                            maxLength: 20,
+                        },
+                    }}
                 />
 
                 <TextField
@@ -165,99 +173,15 @@ function DeptFormDialog({
 }
 
 // ============================================================
-// Get By ID Dialog
-// ============================================================
-
-type GetByIdDialogProps = {
-    open: boolean;
-    loading: boolean;
-    department: Department | null;
-    error: string | null;
-    onClose: () => void;
-    onSearch: (id: string) => void;
-};
-
-function GetByIdDialog({
-    open,
-    loading,
-    department,
-    error,
-    onClose,
-    onSearch,
-}: GetByIdDialogProps) {
-    const [id, setId] = useState("");
-
-    useEffect(() => {
-        if (!open) setId("");
-    }, [open]);
-
-    return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ fontWeight: 700 }}>Get Department by ID</DialogTitle>
-
-            <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                    <TextField
-                        label="Department ID"
-                        value={id}
-                        onChange={(e) => setId(e.target.value ?? "")}
-                        fullWidth
-                        size="small"
-                        placeholder="Paste department _id here"
-                    />
-                    <IconButton
-                        onClick={() => { if (id?.trim()) onSearch(id.trim()); }}
-                        disabled={loading || !id?.trim()}
-                        sx={{ border: 1, borderColor: "divider", borderRadius: 2 }}
-                    >
-                        <SearchIcon />
-                    </IconButton>
-                </Box>
-
-                {loading && <CircularProgress size={24} sx={{ alignSelf: "center" }} />}
-
-                {error && <Alert severity="error">{error}</Alert>}
-
-                {!loading && department && (
-                    <Box sx={{ backgroundColor: "#F5F6FA", borderRadius: 2, p: 2 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                            {department.name ?? ""} ({department.code ?? ""})
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-                            ID: {department._id ?? ""}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-                            Description: {department.description ?? "—"}
-                        </Typography>
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: "block" }}
-                        >
-                            Active: {department.isActive ? "Yes" : "No"}
-                        </Typography>
-                    </Box>
-                )}
-            </DialogContent>
-
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} color="inherit">Close</Button>
-            </DialogActions>
-        </Dialog>
-    );
-}
-
-// ============================================================
 // Main Department View
 // ============================================================
 
 function DepartmentView() {
     const dispatch = useDispatch<AppDispatch>();
 
-    const { departments, selectedDepartment, loading, submitting, error, total } =
+    const { departments, loading, submitting, error, total } =
         useSelector((state: RootState) => state.department ?? {
             departments: [],
-            selectedDepartment: null,
             loading: false,
             submitting: false,
             error: null,
@@ -269,9 +193,11 @@ function DepartmentView() {
     const userCanManage = canManage(user?.role);
 
     const [createOpen, setCreateOpen] = useState(false);
+    const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false); // ✅ bugfix applied here too
     const [createHROpen, setCreateHROpen] = useState(false);
+    const [hasSubmittedCreateHR, setHasSubmittedCreateHR] = useState(false); // ✅
     const [updateOpen, setUpdateOpen] = useState(false);
-    const [getByIdOpen, setGetByIdOpen] = useState(false);
+    const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false); // ✅
     const [editTarget, setEditTarget] = useState<Department | null>(null);
 
     // Load on mount
@@ -279,14 +205,35 @@ function DepartmentView() {
         dispatch(listDepartmentsRequest());
     }, [dispatch]);
 
-    // Close create dialog on success
+    // ✅ Only close "Create" dialog after an actual submit succeeded
     useEffect(() => {
-        if (!submitting && !error) {
+        if (hasSubmittedCreate && !submitting && !error && createOpen) {
             setCreateOpen(false);
-            setCreateHROpen(false);
-            setUpdateOpen(false);
+            setHasSubmittedCreate(false);
+            dispatch(listDepartmentsRequest());
         }
-    }, [submitting, error]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [submitting, error, hasSubmittedCreate]);
+
+    // ✅ Only close "Create Dept (HR)" dialog after an actual submit succeeded
+    useEffect(() => {
+        if (hasSubmittedCreateHR && !submitting && !error && createHROpen) {
+            setCreateHROpen(false);
+            setHasSubmittedCreateHR(false);
+            dispatch(listDepartmentsRequest());
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [submitting, error, hasSubmittedCreateHR]);
+
+    // ✅ Only close "Update" dialog after an actual submit succeeded
+    useEffect(() => {
+        if (hasSubmittedUpdate && !submitting && !error && updateOpen) {
+            setUpdateOpen(false);
+            setHasSubmittedUpdate(false);
+            setEditTarget(null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [submitting, error, hasSubmittedUpdate]);
 
     const handleCreate = (data: {
         name: string;
@@ -294,6 +241,17 @@ function DepartmentView() {
         description: string;
         branchId: string;
     }) => {
+        setHasSubmittedCreate(true); // ✅
+        dispatch(createDepartmentRequest({ ...data, branchId }));
+    };
+
+    const handleCreateHR = (data: {
+        name: string;
+        code: string;
+        description: string;
+        branchId: string;
+    }) => {
+        setHasSubmittedCreateHR(true); // ✅
         dispatch(createDepartmentRequest({ ...data, branchId }));
     };
 
@@ -303,6 +261,7 @@ function DepartmentView() {
         description: string;
     }) => {
         if (!editTarget?._id) return;
+        setHasSubmittedUpdate(true); // ✅
         dispatch(
             updateDepartmentRequest({
                 id: editTarget._id,
@@ -317,12 +276,9 @@ function DepartmentView() {
 
     const openEdit = (dept: Department) => {
         setEditTarget(dept);
+        setHasSubmittedUpdate(false); // ✅ reset on fresh open
         dispatch(clearDepartmentError());
         setUpdateOpen(true);
-    };
-
-    const handleGetById = (id: string) => {
-        dispatch(getDepartmentByIdRequest(id));
     };
 
     return (
@@ -361,6 +317,7 @@ function DepartmentView() {
                                 size="small"
                                 startIcon={<AddIcon />}
                                 onClick={() => {
+                                    setHasSubmittedCreateHR(false); // ✅
                                     dispatch(clearDepartmentError());
                                     setCreateHROpen(true);
                                 }}
@@ -374,6 +331,7 @@ function DepartmentView() {
                                 size="small"
                                 startIcon={<AddIcon />}
                                 onClick={() => {
+                                    setHasSubmittedCreate(false); // ✅
                                     dispatch(clearDepartmentError());
                                     setCreateOpen(true);
                                 }}
@@ -388,23 +346,6 @@ function DepartmentView() {
                             </Button>
                         </Box>
                     )}
-                </Box>
-
-                {/* Get By ID Button — visible to everyone */}
-                <Box sx={{ mb: 2 }}>
-                    <Button
-                        variant="text"
-                        size="small"
-                        startIcon={<SearchIcon />}
-                        onClick={() => {
-                            dispatch(clearSelectedDepartment());
-                            dispatch(clearDepartmentError());
-                            setGetByIdOpen(true);
-                        }}
-                        sx={{ textTransform: "none", color: "#6D5DF6" }}
-                    >
-                        Get Department by ID
-                    </Button>
                 </Box>
 
                 {/* Error Banner */}
@@ -516,7 +457,11 @@ function DepartmentView() {
                 branchId={branchId}
                 submitting={submitting}
                 error={createOpen ? (error ?? null) : null}
-                onClose={() => { setCreateOpen(false); dispatch(clearDepartmentError()); }}
+                onClose={() => {
+                    setCreateOpen(false);
+                    setHasSubmittedCreate(false);
+                    dispatch(clearDepartmentError());
+                }}
                 onSubmit={handleCreate}
             />
 
@@ -528,8 +473,12 @@ function DepartmentView() {
                 branchId={branchId}
                 submitting={submitting}
                 error={createHROpen ? (error ?? null) : null}
-                onClose={() => { setCreateHROpen(false); dispatch(clearDepartmentError()); }}
-                onSubmit={handleCreate}
+                onClose={() => {
+                    setCreateHROpen(false);
+                    setHasSubmittedCreateHR(false);
+                    dispatch(clearDepartmentError());
+                }}
+                onSubmit={handleCreateHR}
             />
 
             {/* Update Department Dialog */}
@@ -542,24 +491,11 @@ function DepartmentView() {
                 error={updateOpen ? (error ?? null) : null}
                 onClose={() => {
                     setUpdateOpen(false);
+                    setHasSubmittedUpdate(false);
                     setEditTarget(null);
                     dispatch(clearDepartmentError());
                 }}
                 onSubmit={handleUpdate}
-            />
-
-            {/* Get By ID Dialog */}
-            <GetByIdDialog
-                open={getByIdOpen}
-                loading={loading}
-                department={selectedDepartment}
-                error={getByIdOpen ? (error ?? null) : null}
-                onClose={() => {
-                    setGetByIdOpen(false);
-                    dispatch(clearSelectedDepartment());
-                    dispatch(clearDepartmentError());
-                }}
-                onSearch={handleGetById}
             />
         </DashboardLayout>
     );

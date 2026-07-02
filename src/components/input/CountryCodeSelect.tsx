@@ -73,7 +73,7 @@ function CountryCodeSelect({
         }}
       >
         <MenuItem value="" disabled>
-          Select Country
+          Select country
         </MenuItem>
         {countryCodes.map((country) => (
           <MenuItem key={country.code} value={country.code}>
