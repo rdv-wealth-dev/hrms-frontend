@@ -14,9 +14,7 @@ import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
@@ -33,16 +31,6 @@ const navItems = [
         label: "Dashboard",
         icon: <DashboardOutlinedIcon fontSize="small" />,
         path: paths.dashboard,
-    },
-    {
-        label: "Departments",
-        icon: <ApartmentOutlinedIcon fontSize="small" />,
-        path: paths.departments,
-    },
-    {
-        label: "Designations",
-        icon: <BadgeOutlinedIcon fontSize="small" />,
-        path: paths.designations,
     },
     {
         label: "Settings",
