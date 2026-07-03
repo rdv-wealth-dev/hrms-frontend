@@ -19,6 +19,7 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
 
@@ -39,9 +40,14 @@ const navItems = [
         path: paths.departments,
     },
     {
-        label: "Designations", // ✅ new
+        label: "Designations",
         icon: <BadgeOutlinedIcon fontSize="small" />,
         path: paths.designations,
+    },
+    {
+        label: "Settings",
+        icon: <SettingsOutlinedIcon fontSize="small" />,
+        path: paths.settings,
     },
 ];
 

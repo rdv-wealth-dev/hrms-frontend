@@ -15,6 +15,7 @@ import DashboardPage from "../pages/dashboard/DashboardView";
 import DepartmentsPage from "../pages/departments";
 import DesignationsPage from "../pages/designations";
 import EmployeeDirectoryPage from "../pages/employees/directory";
+import SettingsPage from "../pages/settings";
 
 function AppRoutes() {
   return (
@@ -58,6 +59,10 @@ function AppRoutes() {
         <Route
           path={paths.employees.directory}
           element={<AuthGuard><EmployeeDirectoryPage /></AuthGuard>}
+        />
+        <Route
+          path={paths.settings}
+          element={<AuthGuard><SettingsPage /></AuthGuard>}
         />
 
         <Route path="*" element={<Navigate to={paths.auth.login} replace />} />

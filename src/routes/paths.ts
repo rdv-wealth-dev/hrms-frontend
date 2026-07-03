@@ -10,6 +10,8 @@ export const paths = {
 
   dashboard: "/dashboard",
 
+  settings: "/settings",
+
   departments: "/departments",
   designations: "/designations", // ✅
 
