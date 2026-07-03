@@ -20,6 +20,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -35,6 +36,7 @@ import {
   updateDesignationRequest,
   clearDesignationError,
 } from "../../../store/designation";
+import { listDepartmentsRequest } from "../../../store/department";
 
 const canManage = (role?: string) => role === "HR" || role === "SUPER_ADMIN";
 
@@ -59,6 +61,10 @@ function DesignationContent() {
   const branchId = user?.branchIds?.[0] ?? "";
   const userCanManage = canManage(user?.role);
 
+  const departments = useSelector(
+    (state: RootState) => state.department?.departments ?? []
+  );
+
   // Create dialog state
   const [createOpen, setCreateOpen] = useState(false);
   const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
@@ -81,6 +87,13 @@ function DesignationContent() {
   useEffect(() => {
     dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 10 }));
   }, [dispatch]);
+
+  // Fetch departments if cache is empty
+  useEffect(() => {
+    if (departments.length === 0) {
+      dispatch(listDepartmentsRequest());
+    }
+  }, [dispatch, departments.length]);
 
   // Only close create dialog after an actual submit succeeded
   useEffect(() => {
@@ -337,15 +350,23 @@ function DesignationContent() {
           />
 
           <TextField
-            label="Department ID"
+            select
+            label="Department"
             value={departmentId}
             onChange={(e) => setDepartmentId(e.target.value ?? "")}
             fullWidth
             size="small"
-            placeholder="Paste department _id here"
             required
-            helperText="Copy this from the Departments page"
-          />
+          >
+            <MenuItem value="" disabled>
+              Select Department
+            </MenuItem>
+            {departments.map((dept) => (
+              <MenuItem key={dept._id} value={dept._id}>
+                {dept.name} ({dept.code})
+              </MenuItem>
+            ))}
+          </TextField>
 
           <TextField
             label="Level"
