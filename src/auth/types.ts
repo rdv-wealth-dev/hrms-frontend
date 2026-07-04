@@ -286,3 +286,26 @@ export interface MeResponse {
   errors: string[];
   data: MeResponseData | null;
 }
+
+// ===========================================
+// Activate Account
+// ===========================================
+
+export interface ActivateAccountRequest {
+  token: string;
+  password: string;
+}
+
+export interface ActivateAccountResponseData {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+  message?: string;
+}
+
+export interface ActivateAccountResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: ActivateAccountResponseData | null;
+}

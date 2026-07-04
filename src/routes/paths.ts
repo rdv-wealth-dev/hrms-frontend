@@ -6,6 +6,7 @@ export const paths = {
     verifyEmail: "/verify-email",
     forgotPassword: "/forgot-password",
     resetPassword: "/reset-password",
+    activateAccount: "/activate-account",
   },
 
   dashboard: "/dashboard",
@@ -17,6 +18,8 @@ export const paths = {
 
   employees: {
     directory: "/employees/directory",
+    create: "/employees/create",
+    list: "/employees/list",
   },
 
   attendance: "/attendance",

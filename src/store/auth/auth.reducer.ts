@@ -186,6 +186,26 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
       };
 
     // ==========================
+    // Activate Account
+    // ==========================
+
+    case AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST:
+      return { ...state, loading: true, error: null };
+
+    case AUTH_ACTIONS.ACTIVATE_ACCOUNT_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: true,
+        user: action.payload.user,
+        accessToken: action.payload.accessToken,
+        error: null,
+      };
+
+    case AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE:
+      return { ...state, loading: false, error: action.payload };
+
+    // ==========================
     // Logout
     // ==========================
 

@@ -11,6 +11,8 @@ import type {
   ResetPasswordRequestPayload,
   ResetPasswordSuccessPayload,
   RestoreSessionSuccessPayload,
+  ActivateAccountRequestPayload,
+  ActivateAccountSuccessPayload,
 } from "./auth.types";
 
 import { AUTH_ACTIONS } from "./auth.types";
@@ -139,4 +141,27 @@ export const restoreSessionFailure = (): AuthAction => ({
 
 export const logout = (): AuthAction => ({
   type: AUTH_ACTIONS.LOGOUT,
+});
+
+// ===========================================
+// Activate Account
+// ===========================================
+
+export const activateAccountRequest = (
+  payload: ActivateAccountRequestPayload
+): AuthAction => ({
+  type: AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST,
+  payload,
+});
+
+export const activateAccountSuccess = (
+  payload: ActivateAccountSuccessPayload
+): AuthAction => ({
+  type: AUTH_ACTIONS.ACTIVATE_ACCOUNT_SUCCESS,
+  payload,
+});
+
+export const activateAccountFailure = (payload: string): AuthAction => ({
+  type: AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE,
+  payload,
 });

@@ -12,6 +12,8 @@ import type {
   ResetPasswordRequest,
   ResetPasswordResponse,
   MeResponse, // ✅ new
+  ActivateAccountRequest,
+  ActivateAccountResponse,
 } from "../auth/types";
 
 export const registerCompany = async (
@@ -74,5 +76,15 @@ export const getMe = async (): Promise<MeResponse> => {
   const response = await axiosInstance.get<MeResponse>("/auth/me", {
     headers: getAuthHeader(),
   });
+  return response.data;
+};
+
+export const activateAccount = async (
+  payload: ActivateAccountRequest
+): Promise<ActivateAccountResponse> => {
+  const response = await axiosInstance.post<ActivateAccountResponse>(
+    "/auth/activate-account",
+    payload
+  );
   return response.data;
 };

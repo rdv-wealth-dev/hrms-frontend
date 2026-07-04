@@ -4,6 +4,8 @@ import type {
   SignupRequest,
   SignupResponseData,
   LoginRequest,
+  ActivateAccountRequest,
+  ActivateAccountResponseData,
 } from "../../auth/types";
 
 // ===========================================
@@ -76,6 +78,10 @@ export const AUTH_ACTIONS = {
   RESTORE_SESSION_SUCCESS: "auth/restoreSessionSuccess",
   RESTORE_SESSION_FAILURE: "auth/restoreSessionFailure",
 
+  ACTIVATE_ACCOUNT_REQUEST: "auth/activateAccountRequest",
+  ACTIVATE_ACCOUNT_SUCCESS: "auth/activateAccountSuccess",
+  ACTIVATE_ACCOUNT_FAILURE: "auth/activateAccountFailure",
+
   LOGOUT: "auth/logout",
 } as const;
 
@@ -107,6 +113,9 @@ export type ResetPasswordSuccessPayload = { message: string };
 // ✅ New — Restore Session
 export type RestoreSessionSuccessPayload = User;
 
+export type ActivateAccountRequestPayload = ActivateAccountRequest;
+export type ActivateAccountSuccessPayload = ActivateAccountResponseData;
+
 // ===========================================
 // Auth Actions
 // ===========================================
@@ -134,4 +143,7 @@ export type AuthAction =
   | { type: typeof AUTH_ACTIONS.RESTORE_SESSION_REQUEST }
   | { type: typeof AUTH_ACTIONS.RESTORE_SESSION_SUCCESS; payload: RestoreSessionSuccessPayload }
   | { type: typeof AUTH_ACTIONS.RESTORE_SESSION_FAILURE }
+  | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST; payload: ActivateAccountRequestPayload }
+  | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_SUCCESS; payload: ActivateAccountSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE; payload: string }
   | { type: typeof AUTH_ACTIONS.LOGOUT };

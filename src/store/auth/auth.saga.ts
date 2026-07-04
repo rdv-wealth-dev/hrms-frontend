@@ -9,6 +9,7 @@ import {
   forgotPassword,
   resetPassword,
   getMe,
+  activateAccount,
 } from "../../api/auth.api";
 
 import {
@@ -24,6 +25,8 @@ import {
   resetPasswordFailure,
   restoreSessionSuccess,
   restoreSessionFailure,
+  activateAccountSuccess,
+  activateAccountFailure,
 } from "./auth.actions";
 
 import {
@@ -33,6 +36,7 @@ import {
   type VerifyEmailRequestPayload,
   type ForgotPasswordRequestPayload,
   type ResetPasswordRequestPayload,
+  type ActivateAccountRequestPayload,
 } from "./auth.types";
 
 // ===========================================
@@ -208,11 +212,40 @@ function* handleRestoreSession(): SagaIterator {
 
     // Keep the "persistent" cache in sync with the freshest server data
     localStorage.setItem("persistent", JSON.stringify(response.data));
-  } catch (error: unknown) {
+  } catch {
     // Token invalid/expired/rejected — clear it, don't leave a dead session lying around
     localStorage.removeItem("accessToken");
     localStorage.removeItem("persistent");
     yield put(restoreSessionFailure());
+  }
+}
+
+// ===========================================
+// Activate Account
+// ===========================================
+
+function* handleActivateAccountRequest(action: {
+  type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST;
+  payload: ActivateAccountRequestPayload;
+}): SagaIterator {
+  try {
+    const response = yield call(activateAccount, action.payload);
+
+    if (!response.data) {
+      yield put(activateAccountFailure(response.message ?? "Account activation failed"));
+      return;
+    }
+
+    yield put(activateAccountSuccess(response.data));
+
+    localStorage.setItem("accessToken", response.data.accessToken);
+    localStorage.setItem("persistent", JSON.stringify(response.data.user));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(activateAccountFailure(error.response?.data?.message ?? "Account activation failed"));
+    } else {
+      yield put(activateAccountFailure("Something went wrong"));
+    }
   }
 }
 
@@ -223,6 +256,7 @@ function* handleRestoreSession(): SagaIterator {
 function* handleLogout(): SagaIterator {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("persistent");
+  yield call(() => {});
 }
 
 // ===========================================
@@ -236,5 +270,6 @@ export function* authSaga(): SagaIterator {
   yield takeLatest(AUTH_ACTIONS.FORGOT_PASSWORD_REQUEST, handleForgotPasswordRequest);
   yield takeLatest(AUTH_ACTIONS.RESET_PASSWORD_REQUEST, handleResetPasswordRequest);
   yield takeLatest(AUTH_ACTIONS.RESTORE_SESSION_REQUEST, handleRestoreSession);
+  yield takeLatest(AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST, handleActivateAccountRequest);
   yield takeLatest(AUTH_ACTIONS.LOGOUT, handleLogout);
 }

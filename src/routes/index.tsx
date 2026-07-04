@@ -11,10 +11,13 @@ import ForgotPasswordPage from "../pages/auth/ForgotPassword";
 import ResetPasswordPage from "../pages/auth/ResetPassword";
 import CheckEmailPage from "../pages/auth/CheckEmail";
 import VerifyEmailPage from "../pages/auth/VerifyEmail";
+import ActivateAccountPage from "../pages/auth/ActivateAccount";
 import DashboardPage from "../pages/dashboard/DashboardView";
 import DepartmentsPage from "../pages/departments";
 import DesignationsPage from "../pages/designations";
 import EmployeeDirectoryPage from "../pages/employees/directory";
+import EmployeeCreatePage from "../pages/employees/create";
+import EmployeeListPage from "../pages/employees/list";
 import SettingsPage from "../pages/settings";
 
 function AppRoutes() {
@@ -38,8 +41,8 @@ function AppRoutes() {
           path={paths.auth.checkEmail}
           element={<GuestGuard><CheckEmailPage /></GuestGuard>}
         />
-
         {/* Intentionally NOT wrapped in GuestGuard — see note in GuestGuard.tsx */}
+        <Route path={paths.auth.activateAccount} element={<ActivateAccountPage />} />
         <Route path={paths.auth.resetPassword} element={<ResetPasswordPage />} />
         <Route path={paths.auth.verifyEmail} element={<VerifyEmailPage />} />
 
@@ -59,6 +62,14 @@ function AppRoutes() {
         <Route
           path={paths.employees.directory}
           element={<AuthGuard><EmployeeDirectoryPage /></AuthGuard>}
+        />
+        <Route
+          path={paths.employees.create}
+          element={<AuthGuard><EmployeeCreatePage /></AuthGuard>}
+        />
+        <Route
+          path={paths.employees.list}
+          element={<AuthGuard><EmployeeListPage /></AuthGuard>}
         />
         <Route
           path={paths.settings}
