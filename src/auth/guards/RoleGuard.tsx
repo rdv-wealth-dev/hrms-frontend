@@ -24,8 +24,8 @@ type RoleGuardProps = {
 function RoleGuard({ children, allow, permission }: RoleGuardProps) {
   const { hasRole, hasPermission, role } = useRole();
 
-  // SUPER_ADMIN always passes, mirroring the backend's checkPermission() bypass
-  if (role === "SUPER_ADMIN") {
+  // ORG_ADMIN always passes, mirroring the backend's checkPermission() bypass
+  if (role === "ORG_ADMIN") {
     return <>{children}</>;
   }
 

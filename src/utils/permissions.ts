@@ -1,1 +1,48 @@
-export {}
+// Map roles to their permissions on the frontend as a fallback
+export const ROLE_PERMISSIONS: Record<string, string[]> = {
+  ORG_ADMIN: [
+    "employee.read", "employee.create", "employee.update", "employee.delete",
+    "attendance.read", "attendance.create", "attendance.update",
+    "leave.read", "leave.create", "leave.update", "leave.approve",
+    "payroll.read", "payroll.create", "payroll.run", "payroll.approve",
+    "branch.read", "branch.create", "branch.update",
+    "department.read", "department.create", "department.update",
+    "designation.read", "designation.create", "designation.update",
+    "role.read", "role.create", "role.update",
+    "report.read", "settings.read", "settings.update",
+  ],
+  HR_ADMIN: [
+    "employee.read", "employee.create", "employee.update",
+    "attendance.read", "attendance.create", "attendance.update",
+    "leave.read", "leave.create", "leave.update", "leave.approve",
+    "department.read", "designation.read", "report.read",
+  ],
+  // Support both "HR" and "HR_ADMIN" in case they have it stored as "HR" in the database
+  HR: [
+    "employee.read", "employee.create", "employee.update",
+    "attendance.read", "attendance.create", "attendance.update",
+    "leave.read", "leave.create", "leave.update", "leave.approve",
+    "department.read", "designation.read", "report.read",
+  ],
+  LEADERSHIP: [
+    "employee.read", "attendance.read",
+    "leave.read", "payroll.read",
+    "branch.read", "department.read",
+    "designation.read", "report.read",
+  ],
+  MANAGER: [
+    "employee.read", "attendance.read",
+    "leave.read", "leave.approve",
+    "department.read", "designation.read",
+    "report.read",
+  ],
+  PRODUCT_MANAGER: [
+    "employee.read", "attendance.read",
+    "leave.read", "leave.approve",
+    "department.read", "designation.read",
+  ],
+  EMPLOYEE: [
+    "leave.read", "leave.create",
+    "payroll.read",
+  ],
+};

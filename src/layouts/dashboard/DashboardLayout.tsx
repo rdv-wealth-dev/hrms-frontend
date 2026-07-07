@@ -19,18 +19,32 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
 
 import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
+import { usePermissions } from "../../hooks/usePermissions";
 
 const navItems = [
     {
         label: "Dashboard",
         icon: <DashboardOutlinedIcon fontSize="small" />,
         path: paths.dashboard,
+    },
+    {
+        label: "Employees",
+        icon: <PeopleAltOutlinedIcon fontSize="small" />,
+        path: paths.employees.list,
+        permission: "employee.read",
+    },
+    {
+        label: "My Attendance",
+        icon: <CalendarMonthOutlinedIcon fontSize="small" />,
+        path: paths.attendance,
     },
     {
         label: "Settings",
@@ -52,6 +66,12 @@ function DashboardLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
 
     const user = useSelector((state: RootState) => state.auth?.user);
+    const { hasPermission } = usePermissions();
+
+    const visibleNavItems = navItems.filter((item) => {
+        if (!item.permission) return true;
+        return hasPermission(item.permission);
+    });
 
     const sidebarWidth = collapsed ? 76 : 240;
 
@@ -106,7 +126,7 @@ function DashboardLayout({ children }: Props) {
 
                 {/* Nav Items */}
                 <List sx={{ px: 1.5, py: 2, flexGrow: 1 }}>
-                    {navItems.map((item) => {
+                    {visibleNavItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
                             <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
@@ -212,7 +232,16 @@ function DashboardLayout({ children }: Props) {
                                         display: "block",
                                     }}
                                 >
-                                    {user?.role ?? ""}
+                                    {user?.role
+                                        ? user.role
+                                            .split("_")
+                                            .map(
+                                                (w) =>
+                                                    w.charAt(0).toUpperCase() +
+                                                    w.slice(1).toLowerCase()
+                                            )
+                                            .join(" ")
+                                        : ""}
                                 </Typography>
                             </Box>
                         )}

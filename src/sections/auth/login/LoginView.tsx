@@ -35,7 +35,7 @@ function LoginView() {
   useEffect(() => {
     if (isAuthenticated && user) {
       switch (user.role) {
-        case "SUPER_ADMIN":
+        case "ORG_ADMIN":
           navigate(paths.dashboard);
           break;
 

@@ -28,6 +28,7 @@ import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import type { Department } from "../../../auth/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 import {
     listDepartmentsRequest,
@@ -35,10 +36,6 @@ import {
     updateDepartmentRequest,
     clearDepartmentError,
 } from "../../../store/department";
-
-// Permission check helper — only HR and SUPER_ADMIN can create/update
-const canManage = (role?: string) =>
-    role === "HR" || role === "SUPER_ADMIN";
 
 // ============================================================
 // Create / Update Form Dialog
@@ -188,7 +185,10 @@ function DepartmentContent() {
 
     const user = useSelector((state: RootState) => state.auth?.user);
     const branchId = user?.branchIds?.[0] ?? "";
-    const userCanManage = canManage(user?.role);
+    
+    const { hasPermission } = usePermissions();
+    const canCreate = hasPermission("department.create");
+    const canUpdate = hasPermission("department.update");
 
     const [createOpen, setCreateOpen] = useState(false);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
@@ -308,7 +308,7 @@ function DepartmentContent() {
                     </Box>
 
                     {/* Action Buttons — only for HR/SUPER_ADMIN */}
-                    {userCanManage && (
+                    {canCreate && (
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             <Button
                                 variant="outlined"
@@ -374,7 +374,7 @@ function DepartmentContent() {
                                     <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
                                     <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Description</TableCell>
                                     <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                                    {userCanManage && (
+                                    {canUpdate && (
                                         <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
                                     )}
                                 </TableRow>
@@ -383,14 +383,14 @@ function DepartmentContent() {
                             <TableBody>
                                 {(departments ?? []).length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={userCanManage ? 5 : 4} align="center">
+                                        <TableCell colSpan={canUpdate ? 5 : 4} align="center">
                                             <Box sx={{ py: 6 }}>
                                                 <ApartmentOutlinedIcon
                                                     sx={{ fontSize: 48, color: "#D1D5DB", mb: 1 }}
                                                 />
                                                 <Typography variant="body2" color="text.secondary">
                                                     No departments yet.
-                                                    {userCanManage ? " Click \"Create Department\" to add one." : ""}
+                                                    {canCreate ? " Click \"Create Department\" to add one." : ""}
                                                 </Typography>
                                             </Box>
                                         </TableCell>
@@ -428,7 +428,7 @@ function DepartmentContent() {
                                                     variant="outlined"
                                                 />
                                             </TableCell>
-                                            {userCanManage && (
+                                            {canUpdate && (
                                                 <TableCell>
                                                     <IconButton
                                                         size="small"

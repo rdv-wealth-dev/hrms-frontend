@@ -13,6 +13,7 @@ export type SettingsSubItem = {
   id: string;
   label: string;
   categoryId: string;
+  permission?: string;
 };
 
 export const SETTINGS_CATEGORIES: SettingsCategory[] = [
@@ -25,11 +26,11 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
 ];
 
 export const SETTINGS_SUB_ITEMS: SettingsSubItem[] = [
-  { id: "departments",  label: "Departments",  categoryId: "master-data" },
-  { id: "designations", label: "Designations", categoryId: "master-data" },
+  { id: "departments",  label: "Departments",  categoryId: "master-data", permission: "department.read" },
+  { id: "designations", label: "Designations", categoryId: "master-data", permission: "designation.read" },
   // future: { id: "grades",       label: "Grades / Bands",      categoryId: "master-data" },
   // future: { id: "locations",    label: "Locations",           categoryId: "master-data" },
   // future: { id: "branches",     label: "Business Units",      categoryId: "master-data" },
   // future: { id: "leave-types",  label: "Leave Types",         categoryId: "master-data" },
-  // future: { id: "shift-master", label: "Shift Master",        categoryId: "master-data" },
+  { id: "shift-master", label: "Shift Master",        categoryId: "master-data", permission: "attendance.read" },
 ];

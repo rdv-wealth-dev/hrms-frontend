@@ -5,7 +5,18 @@ export const createEmployeeSchema = z.object({
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().trim().min(1, "Email is required").email("Please enter a valid email"),
   phone: z.string().trim().min(10, "Phone number must be at least 10 digits"),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  dateOfBirth: z.string()
+    .min(1, "Date of birth is required")
+    .refine((val) => {
+      const birthDate = new Date(val);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age >= 18;
+    }, "Employee must be at least 18 years old"),
   gender: z.enum(["MALE", "FEMALE", "OTHER"], { message: "Gender is required" }),
   bloodGroup: z.string().trim().min(1, "Blood group is required"),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"], { message: "Marital status is required" }),

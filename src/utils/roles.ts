@@ -3,7 +3,7 @@
 // ===========================================
 
 export const ROLES = {
-  SUPER_ADMIN: "SUPER_ADMIN",
+  ORG_ADMIN: "ORG_ADMIN",
   HR_ADMIN: "HR_ADMIN",
   BRANCH_ADMIN: "BRANCH_ADMIN", // ✅ not yet seeded on backend — add here once it exists
   LEADERSHIP: "LEADERSHIP",
@@ -19,10 +19,10 @@ export type RoleSlug = (typeof ROLES)[keyof typeof ROLES];
 // Add more groups here as new shared permission patterns emerge
 // ===========================================
 
-export const ADMIN_ROLES: RoleSlug[] = [ROLES.SUPER_ADMIN, ROLES.HR_ADMIN];
+export const ADMIN_ROLES: RoleSlug[] = [ROLES.ORG_ADMIN, ROLES.HR_ADMIN];
 
 export const MANAGEMENT_ROLES: RoleSlug[] = [
-  ROLES.SUPER_ADMIN,
+  ROLES.ORG_ADMIN,
   ROLES.HR_ADMIN,
   ROLES.BRANCH_ADMIN,
   ROLES.LEADERSHIP,

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -25,8 +25,11 @@ function VerifyEmailView() {
   const { isVerifyingEmail, isEmailVerified, verifyMessage, error } =
     useSelector((state: RootState) => state.auth);
 
+  const hasDispatched = useRef(false);
+
   useEffect(() => {
-    if (token) {
+    if (token && !hasDispatched.current) {
+      hasDispatched.current = true;
       dispatch(verifyEmailRequest({ token }));
     }
   }, [token, dispatch]);

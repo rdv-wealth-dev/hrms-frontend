@@ -4,6 +4,7 @@ import { paths } from "./paths";
 
 import AuthGuard from "../../src/auth/guards/AuthGuard";
 import GuestGuard from "../../src/auth/guards/GuestGuard";
+import RoleGuard from "../../src/auth/guards/RoleGuard";
 
 import SignUpPage from "../pages/auth/SignUp";
 import LoginPage from "../pages/auth/Login";
@@ -19,6 +20,7 @@ import EmployeeDirectoryPage from "../pages/employees/directory";
 import EmployeeCreatePage from "../pages/employees/create";
 import EmployeeListPage from "../pages/employees/list";
 import SettingsPage from "../pages/settings";
+import MyAttendancePage from "../pages/attendance";
 
 function AppRoutes() {
   return (
@@ -53,27 +55,69 @@ function AppRoutes() {
         />
         <Route
           path={paths.departments}
-          element={<AuthGuard><DepartmentsPage /></AuthGuard>}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="department.read">
+                <DepartmentsPage />
+              </RoleGuard>
+            </AuthGuard>
+          }
         />
         <Route
           path={paths.designations}
-          element={<AuthGuard><DesignationsPage /></AuthGuard>}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="designation.read">
+                <DesignationsPage />
+              </RoleGuard>
+            </AuthGuard>
+          }
         />
         <Route
           path={paths.employees.directory}
-          element={<AuthGuard><EmployeeDirectoryPage /></AuthGuard>}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="employee.read">
+                <EmployeeDirectoryPage />
+              </RoleGuard>
+            </AuthGuard>
+          }
         />
         <Route
           path={paths.employees.create}
-          element={<AuthGuard><EmployeeCreatePage /></AuthGuard>}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="employee.create">
+                <EmployeeCreatePage />
+              </RoleGuard>
+            </AuthGuard>
+          }
         />
         <Route
           path={paths.employees.list}
-          element={<AuthGuard><EmployeeListPage /></AuthGuard>}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="employee.read">
+                <EmployeeListPage />
+              </RoleGuard>
+            </AuthGuard>
+          }
         />
         <Route
           path={paths.settings}
-          element={<AuthGuard><SettingsPage /></AuthGuard>}
+          element={
+            <AuthGuard>
+              <SettingsPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.attendance}
+          element={
+            <AuthGuard>
+              <MyAttendancePage />
+            </AuthGuard>
+          }
         />
 
         <Route path="*" element={<Navigate to={paths.auth.login} replace />} />

@@ -26,6 +26,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
@@ -40,6 +41,8 @@ import type { EmployeeListItem } from "../../../store/employee/employee.types";
 import { listDepartmentsRequest } from "../../../store/department";
 import { listDesignationsRequest } from "../../../store/designation";
 import EmployeeEditDialog from "./components/EmployeeEditDialog";
+import { usePermissions } from "../../../hooks/usePermissions";
+import ManualAttendanceDialog from "../../attendance/components/ManualAttendanceDialog";
 
 function EmployeeListView() {
   const dispatch = useDispatch<AppDispatch>();
@@ -48,8 +51,9 @@ function EmployeeListView() {
   const { employees = [], loading, error, total = 0, pageNumber = 1, pageSize = 10, search, status } =
     useSelector((state: RootState) => state.employee);
 
-  const user = useSelector((state: RootState) => state.auth?.user);
-  const userCanManage = user?.role === "HR" || user?.role === "SUPER_ADMIN";
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission("employee.create");
+  const canUpdate = hasPermission("employee.update");
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<EmployeeListItem | null>(null);
@@ -58,6 +62,9 @@ function EmployeeListView() {
 
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(null);
   const [statusMenuTarget, setStatusMenuTarget] = useState<EmployeeListItem | null>(null);
+
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualTarget, setManualTarget] = useState<EmployeeListItem | null>(null);
 
   const isFirstRun = useRef(true);
 
@@ -300,22 +307,24 @@ function EmployeeListView() {
               <MenuItem value="ON_LEAVE">On Leave</MenuItem>
             </TextField>
 
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={() => navigate(paths.employees.create)}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                backgroundColor: "#6D5DF6",
-                height: 40,
-                px: 2.5,
-                "&:hover": { backgroundColor: "#5B4BEA" },
-              }}
-            >
-              Add Employee
-            </Button>
+            {canCreate && (
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => navigate(paths.employees.create)}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  backgroundColor: "#6D5DF6",
+                  height: 40,
+                  px: 2.5,
+                  "&:hover": { backgroundColor: "#5B4BEA" },
+                }}
+              >
+                Add Employee
+              </Button>
+            )}
           </Box>
         </Box>
 
@@ -351,7 +360,7 @@ function EmployeeListView() {
                       <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                      {userCanManage && (
+                      {(canUpdate || hasPermission("attendance.create")) && (
                         <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
                       )}
                     </TableRow>
@@ -360,11 +369,11 @@ function EmployeeListView() {
                   <TableBody>
                     {employees.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={userCanManage ? 10 : 9} align="center">
+                        <TableCell colSpan={canUpdate ? 10 : 9} align="center">
                           <Box sx={{ py: 8 }}>
                             <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
                             <Typography variant="body2" color="text.secondary">
-                              No employees found. Click "Add Employee" to create one.
+                              No employees found. {canCreate && 'Click "Add Employee" to create one.'}
                             </Typography>
                           </Box>
                         </TableCell>
@@ -410,7 +419,7 @@ function EmployeeListView() {
                               {...getStatusChipProps(emp.status)}
                               size="small"
                               onClick={
-                                userCanManage
+                                canUpdate
                                   ? (e) => {
                                       setStatusMenuAnchor(e.currentTarget);
                                       setStatusMenuTarget(emp);
@@ -418,8 +427,8 @@ function EmployeeListView() {
                                   : undefined
                               }
                               sx={{
-                                cursor: userCanManage ? "pointer" : "default",
-                                "&:hover": userCanManage
+                                cursor: canUpdate ? "pointer" : "default",
+                                "&:hover": canUpdate
                                   ? {
                                       backgroundColor: "rgba(0, 0, 0, 0.04)",
                                     }
@@ -427,18 +436,35 @@ function EmployeeListView() {
                               }}
                             />
                           </TableCell>
-                          {userCanManage && (
+                          {(canUpdate || hasPermission("attendance.create")) && (
                             <TableCell>
-                              <IconButton
-                                size="small"
-                                onClick={() => {
-                                  setEditTarget(emp);
-                                  setEditOpen(true);
-                                }}
-                                sx={{ color: "#6D5DF6" }}
-                              >
-                                <EditOutlinedIcon fontSize="small" />
-                              </IconButton>
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                {canUpdate && (
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setEditTarget(emp);
+                                      setEditOpen(true);
+                                    }}
+                                    sx={{ color: "#6D5DF6" }}
+                                  >
+                                    <EditOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                                {hasPermission("attendance.create") && (
+                                  <IconButton
+                                    size="small"
+                                    title="Record Manual Attendance"
+                                    onClick={() => {
+                                      setManualTarget(emp);
+                                      setManualOpen(true);
+                                    }}
+                                    sx={{ color: "#10B981" }}
+                                  >
+                                    <CalendarMonthOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                              </Box>
                             </TableCell>
                           )}
                         </TableRow>
@@ -525,6 +551,17 @@ function EmployeeListView() {
           On Leave
         </MenuItem>
       </Menu>
+
+      {hasPermission("attendance.create") && (
+        <ManualAttendanceDialog
+          open={manualOpen}
+          onClose={() => {
+            setManualOpen(false);
+            setManualTarget(null);
+          }}
+          employee={manualTarget}
+        />
+      )}
     </DashboardLayout>
   );
 }

@@ -29,6 +29,7 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import type { Designation } from "../../../auth/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 import {
   createDesignationRequest,
@@ -37,8 +38,6 @@ import {
   clearDesignationError,
 } from "../../../store/designation";
 import { listDepartmentsRequest } from "../../../store/department";
-
-const canManage = (role?: string) => role === "HR" || role === "SUPER_ADMIN";
 
 // ============================================================
 // Designation Content — layout-agnostic, embeddable anywhere
@@ -59,7 +58,10 @@ function DesignationContent() {
 
   const user = useSelector((state: RootState) => state.auth?.user);
   const branchId = user?.branchIds?.[0] ?? "";
-  const userCanManage = canManage(user?.role);
+  
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission("designation.create");
+  const canUpdate = hasPermission("designation.update");
 
   const departments = useSelector(
     (state: RootState) => state.department?.departments ?? []
@@ -188,7 +190,7 @@ function DesignationContent() {
             </Box>
           </Box>
 
-          {userCanManage && (
+          {canCreate && (
             <Button
               variant="contained"
               size="small"
@@ -239,7 +241,7 @@ function DesignationContent() {
                   <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Level</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Description</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                  {userCanManage && (
+                  {canUpdate && (
                     <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
                   )}
                 </TableRow>
@@ -248,12 +250,12 @@ function DesignationContent() {
               <TableBody>
                 {(designations ?? []).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={userCanManage ? 6 : 5} align="center">
+                    <TableCell colSpan={canUpdate ? 6 : 5} align="center">
                       <Box sx={{ py: 6 }}>
                         <BadgeOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1 }} />
                         <Typography variant="body2" color="text.secondary">
                           No designations yet.
-                          {userCanManage ? " Click \"Create Designation\" to add one." : ""}
+                          {canCreate ? " Click \"Create Designation\" to add one." : ""}
                         </Typography>
                       </Box>
                     </TableCell>
@@ -292,7 +294,7 @@ function DesignationContent() {
                           variant="outlined"
                         />
                       </TableCell>
-                      {userCanManage && (
+                      {canUpdate && (
                         <TableCell>
                           <IconButton
                             size="small"
