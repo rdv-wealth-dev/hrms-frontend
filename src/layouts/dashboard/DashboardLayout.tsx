@@ -21,6 +21,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -40,6 +41,12 @@ const navItems = [
         icon: <PeopleAltOutlinedIcon fontSize="small" />,
         path: paths.employees.list,
         permission: "employee.read",
+    },
+    {
+        label: "Branches",
+        icon: <ApartmentOutlinedIcon fontSize="small" />,
+        path: paths.branches,
+        permission: "branch.read",
     },
     {
         label: "My Attendance",

@@ -1,0 +1,176 @@
+export interface OrganizationAddress {
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  countryCode?: string;
+  zip?: string;
+}
+
+export interface OrganizationBranding {
+  logoUrl?: string;
+  primaryColor?: string;
+  website?: string;
+  supportEmail?: string;
+  supportPhone?: string;
+}
+
+export interface OrganizationLocale {
+  currencyCode: string;
+  timezone: string;
+  countryCode: string;
+  dateFormat: string;
+  timeFormat: string;
+  fiscalYearStart: string;
+  weeklyOffDays: string[];
+  workingHoursPerDay: number;
+}
+
+export interface OrganizationSubscription {
+  plan: string;
+  status: string;
+  trialEndsAt?: string;
+  renewsAt?: string;
+  maxEmployees: number;
+  maxBranches: number;
+}
+
+export interface OrganizationModules {
+  attendance: boolean;
+  leave: boolean;
+  payroll: boolean;
+  performance: boolean;
+  recruitment: boolean;
+  assets: boolean;
+}
+
+export interface OrganizationStatutory {
+  pfEnabled: boolean;
+  esiEnabled: boolean;
+  tdsEnabled: boolean;
+  ptEnabled: boolean;
+  lwfEnabled: boolean;
+}
+
+export interface Organization {
+  _id: string;
+  companyName: string;
+  slug: string;
+  legalName?: string;
+  cin?: string;
+  gstin?: string;
+  pan?: string;
+  tan?: string;
+  industry?: string;
+  employeeStrength: number;
+  phone?: string;
+  address?: OrganizationAddress;
+  branding?: OrganizationBranding;
+  locale: OrganizationLocale;
+  subscription: OrganizationSubscription;
+  modules: OrganizationModules;
+  statutory: OrganizationStatutory;
+  isActive: boolean;
+  isDeleted: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetOrganizationResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: Organization | null;
+}
+
+export interface UpdateOrganizationRequest {
+  companyName?: string;
+  legalName?: string;
+  industry?: string;
+  phone?: string;
+  gstin?: string;
+  pan?: string;
+  cin?: string;
+  tan?: string;
+  address?: Partial<OrganizationAddress>;
+  branding?: Partial<OrganizationBranding>;
+  locale?: Partial<OrganizationLocale>;
+}
+
+export interface UpdateOrganizationResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: Organization | null;
+}
+
+// ===========================================
+// Organization State
+// ===========================================
+export interface OrganizationState {
+  organization: Organization | null;
+  loading: boolean;
+  submitting: boolean;
+  success: boolean;
+  error: string | null;
+}
+
+// ===========================================
+// Action Names
+// ===========================================
+export const ORGANIZATION_ACTIONS = {
+  LOAD_REQUEST: "organization/loadRequest",
+  LOAD_SUCCESS: "organization/loadSuccess",
+  LOAD_FAILURE: "organization/loadFailure",
+
+  UPDATE_REQUEST: "organization/updateRequest",
+  UPDATE_SUCCESS: "organization/updateSuccess",
+  UPDATE_FAILURE: "organization/updateFailure",
+  RESET_STATUS: "organization/resetStatus",
+} as const;
+
+// ===========================================
+// Action Types
+// ===========================================
+export type LoadOrganizationRequestAction = {
+  type: typeof ORGANIZATION_ACTIONS.LOAD_REQUEST;
+};
+
+export type LoadOrganizationSuccessAction = {
+  type: typeof ORGANIZATION_ACTIONS.LOAD_SUCCESS;
+  payload: Organization;
+};
+
+export type LoadOrganizationFailureAction = {
+  type: typeof ORGANIZATION_ACTIONS.LOAD_FAILURE;
+  payload: string;
+};
+
+export type UpdateOrganizationRequestAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_REQUEST;
+  payload: UpdateOrganizationRequest;
+};
+
+export type UpdateOrganizationSuccessAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_SUCCESS;
+  payload: Organization;
+};
+
+export type UpdateOrganizationFailureAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_FAILURE;
+  payload: string;
+};
+
+export type ResetOrganizationStatusAction = {
+  type: typeof ORGANIZATION_ACTIONS.RESET_STATUS;
+};
+
+export type OrganizationAction =
+  | LoadOrganizationRequestAction
+  | LoadOrganizationSuccessAction
+  | LoadOrganizationFailureAction
+  | UpdateOrganizationRequestAction
+  | UpdateOrganizationSuccessAction
+  | UpdateOrganizationFailureAction
+  | ResetOrganizationStatusAction;

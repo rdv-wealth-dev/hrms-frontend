@@ -17,8 +17,8 @@ export type SettingsSubItem = {
 };
 
 export const SETTINGS_CATEGORIES: SettingsCategory[] = [
+  { id: "company", label: "Company Settings" },
   { id: "master-data", label: "Master Data" },
-  // future: { id: "company",       label: "Company Settings" },
   // future: { id: "roles",         label: "Roles & Permissions" },
   // future: { id: "notifications", label: "Notification Templates" },
   // future: { id: "security",      label: "Security Settings" },
@@ -26,6 +26,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
 ];
 
 export const SETTINGS_SUB_ITEMS: SettingsSubItem[] = [
+  { id: "org-profile",  label: "Organization Profile", categoryId: "company", permission: "settings.read" },
   { id: "departments",  label: "Departments",  categoryId: "master-data", permission: "department.read" },
   { id: "designations", label: "Designations", categoryId: "master-data", permission: "designation.read" },
   // future: { id: "grades",       label: "Grades / Bands",      categoryId: "master-data" },

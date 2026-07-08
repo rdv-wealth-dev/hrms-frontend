@@ -16,6 +16,7 @@ import ActivateAccountPage from "../pages/auth/ActivateAccount";
 import DashboardPage from "../pages/dashboard/DashboardView";
 import DepartmentsPage from "../pages/departments";
 import DesignationsPage from "../pages/designations";
+import BranchesPage from "../pages/branches/index";
 import EmployeeDirectoryPage from "../pages/employees/directory";
 import EmployeeCreatePage from "../pages/employees/create";
 import EmployeeListPage from "../pages/employees/list";
@@ -69,6 +70,16 @@ function AppRoutes() {
             <AuthGuard>
               <RoleGuard permission="designation.read">
                 <DesignationsPage />
+              </RoleGuard>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.branches}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="branch.read">
+                <BranchesPage />
               </RoleGuard>
             </AuthGuard>
           }
