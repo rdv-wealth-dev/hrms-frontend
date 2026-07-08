@@ -105,6 +105,37 @@ export interface UpdateOrganizationResponse {
   data: Organization | null;
 }
 
+export interface UpdateModulesRequest {
+  attendance?: boolean;
+  leave?: boolean;
+  payroll?: boolean;
+  performance?: boolean;
+  recruitment?: boolean;
+  assets?: boolean;
+}
+
+export interface UpdateModulesResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: Organization | null;
+}
+
+export interface UpdateStatutoryRequest {
+  pfEnabled?: boolean;
+  esiEnabled?: boolean;
+  tdsEnabled?: boolean;
+  ptEnabled?: boolean;
+  lwfEnabled?: boolean;
+}
+
+export interface UpdateStatutoryResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: Organization | null;
+}
+
 // ===========================================
 // Organization State
 // ===========================================
@@ -127,6 +158,15 @@ export const ORGANIZATION_ACTIONS = {
   UPDATE_REQUEST: "organization/updateRequest",
   UPDATE_SUCCESS: "organization/updateSuccess",
   UPDATE_FAILURE: "organization/updateFailure",
+
+  UPDATE_MODS_REQUEST: "organization/updateModsRequest",
+  UPDATE_MODS_SUCCESS: "organization/updateModsSuccess",
+  UPDATE_MODS_FAILURE: "organization/updateModsFailure",
+
+  UPDATE_STATUTORY_REQUEST: "organization/updateStatutoryRequest",
+  UPDATE_STATUTORY_SUCCESS: "organization/updateStatutorySuccess",
+  UPDATE_STATUTORY_FAILURE: "organization/updateStatutoryFailure",
+
   RESET_STATUS: "organization/resetStatus",
 } as const;
 
@@ -162,6 +202,36 @@ export type UpdateOrganizationFailureAction = {
   payload: string;
 };
 
+export type UpdateModulesRequestAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_MODS_REQUEST;
+  payload: UpdateModulesRequest;
+};
+
+export type UpdateModulesSuccessAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_MODS_SUCCESS;
+  payload: Organization;
+};
+
+export type UpdateModulesFailureAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_MODS_FAILURE;
+  payload: string;
+};
+
+export type UpdateStatutoryRequestAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_STATUTORY_REQUEST;
+  payload: UpdateStatutoryRequest;
+};
+
+export type UpdateStatutorySuccessAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_STATUTORY_SUCCESS;
+  payload: Organization;
+};
+
+export type UpdateStatutoryFailureAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_STATUTORY_FAILURE;
+  payload: string;
+};
+
 export type ResetOrganizationStatusAction = {
   type: typeof ORGANIZATION_ACTIONS.RESET_STATUS;
 };
@@ -173,4 +243,10 @@ export type OrganizationAction =
   | UpdateOrganizationRequestAction
   | UpdateOrganizationSuccessAction
   | UpdateOrganizationFailureAction
+  | UpdateModulesRequestAction
+  | UpdateModulesSuccessAction
+  | UpdateModulesFailureAction
+  | UpdateStatutoryRequestAction
+  | UpdateStatutorySuccessAction
+  | UpdateStatutoryFailureAction
   | ResetOrganizationStatusAction;

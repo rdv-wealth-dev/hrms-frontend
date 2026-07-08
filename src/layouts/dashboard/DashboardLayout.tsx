@@ -57,6 +57,7 @@ const navItems = [
         label: "Settings",
         icon: <SettingsOutlinedIcon fontSize="small" />,
         path: paths.settings,
+        permission: "settings.read",
     },
 ];
 
@@ -73,9 +74,12 @@ function DashboardLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
 
     const user = useSelector((state: RootState) => state.auth?.user);
-    const { hasPermission } = usePermissions();
+    const { hasPermission, role } = usePermissions();
 
     const visibleNavItems = navItems.filter((item) => {
+        if (item.label === "My Attendance" && role === "ORG_ADMIN") {
+            return false;
+        }
         if (!item.permission) return true;
         return hasPermission(item.permission);
     });

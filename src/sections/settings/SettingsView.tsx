@@ -10,6 +10,8 @@ import DepartmentContent from "../departments/components/DepartmentContent";
 import DesignationContent from "../designations/components/DesignationContent";
 import ShiftContent from "../attendance/components/ShiftContent";
 import OrganizationProfileContent from "./components/OrganizationProfileContent";
+import OrganizationModulesContent from "./components/OrganizationModulesContent";
+import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
 import { usePermissions } from "../../hooks/usePermissions";
 
 import {
@@ -24,6 +26,8 @@ import {
 
 const CONTENT_MAP: Record<string, ReactNode> = {
   "org-profile": <OrganizationProfileContent />,
+  "org-modules": <OrganizationModulesContent />,
+  "org-statutory": <OrganizationStatutoryContent />,
   departments:  <DepartmentContent />,
   designations: <DesignationContent />,
   "shift-master": <ShiftContent />,

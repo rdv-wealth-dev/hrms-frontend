@@ -2,15 +2,28 @@ import axios from "axios";
 import type { SagaIterator } from "redux-saga";
 import { call, put, takeLatest } from "redux-saga/effects";
 
-import { getOrganization, updateOrganization } from "../../api/organization.api";
+import {
+  getOrganization,
+  updateOrganization,
+  updateModules,
+  updateStatutory,
+} from "../../api/organization.api";
 import {
   loadOrganizationSuccess,
   loadOrganizationFailure,
   updateOrganizationSuccess,
   updateOrganizationFailure,
+  updateModulesSuccess,
+  updateModulesFailure,
+  updateStatutorySuccess,
+  updateStatutoryFailure,
 } from "./organization.actions";
 import { ORGANIZATION_ACTIONS } from "./organization.types";
-import type { UpdateOrganizationRequestAction } from "./organization.types";
+import type {
+  UpdateOrganizationRequestAction,
+  UpdateModulesRequestAction,
+  UpdateStatutoryRequestAction,
+} from "./organization.types";
 
 function* handleLoadOrganization(): SagaIterator {
   try {
@@ -72,7 +85,74 @@ function* handleUpdateOrganization(
   }
 }
 
+function* handleUpdateModules(
+  action: UpdateModulesRequestAction
+): SagaIterator {
+  try {
+    const response = yield call(updateModules, action.payload);
+
+    if (!response || !response.succeeded || !response.data) {
+      yield put(
+        updateModulesFailure(
+          response?.message ?? "Failed to update organization modules"
+        )
+      );
+      return;
+    }
+
+    yield put(updateModulesSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(
+        updateModulesFailure(
+          error.response?.data?.message ?? "Failed to update organization modules"
+        )
+      );
+    } else if (error instanceof Error) {
+      yield put(updateModulesFailure(error.message));
+    } else {
+      yield put(updateModulesFailure("Something went wrong"));
+    }
+  }
+}
+
+function* handleUpdateStatutory(
+  action: UpdateStatutoryRequestAction
+): SagaIterator {
+  try {
+    const response = yield call(updateStatutory, action.payload);
+
+    if (!response || !response.succeeded || !response.data) {
+      yield put(
+        updateStatutoryFailure(
+          response?.message ?? "Failed to update organization statutory settings"
+        )
+      );
+      return;
+    }
+
+    yield put(updateStatutorySuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(
+        updateStatutoryFailure(
+          error.response?.data?.message ?? "Failed to update organization statutory settings"
+        )
+      );
+    } else if (error instanceof Error) {
+      yield put(updateStatutoryFailure(error.message));
+    } else {
+      yield put(updateStatutoryFailure("Something went wrong"));
+    }
+  }
+}
+
 export function* organizationSaga(): SagaIterator {
   yield takeLatest(ORGANIZATION_ACTIONS.LOAD_REQUEST, handleLoadOrganization);
   yield takeLatest(ORGANIZATION_ACTIONS.UPDATE_REQUEST, handleUpdateOrganization);
+  yield takeLatest(ORGANIZATION_ACTIONS.UPDATE_MODS_REQUEST, handleUpdateModules);
+  yield takeLatest(
+    ORGANIZATION_ACTIONS.UPDATE_STATUTORY_REQUEST,
+    handleUpdateStatutory
+  );
 }

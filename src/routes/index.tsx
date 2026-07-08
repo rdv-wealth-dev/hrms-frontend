@@ -118,7 +118,9 @@ function AppRoutes() {
           path={paths.settings}
           element={
             <AuthGuard>
-              <SettingsPage />
+              <RoleGuard permission="settings.read">
+                <SettingsPage />
+              </RoleGuard>
             </AuthGuard>
           }
         />

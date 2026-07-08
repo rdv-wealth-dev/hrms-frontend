@@ -3,6 +3,10 @@ import type {
   GetOrganizationResponse,
   UpdateOrganizationRequest,
   UpdateOrganizationResponse,
+  UpdateModulesRequest,
+  UpdateModulesResponse,
+  UpdateStatutoryRequest,
+  UpdateStatutoryResponse,
 } from "../store/organization/organization.types";
 
 const getAuthHeader = () => ({
@@ -22,6 +26,28 @@ export const updateOrganization = async (
 ): Promise<UpdateOrganizationResponse> => {
   const response = await axiosInstance.patch<UpdateOrganizationResponse>(
     "/organizations/me",
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export const updateModules = async (
+  payload: UpdateModulesRequest
+): Promise<UpdateModulesResponse> => {
+  const response = await axiosInstance.patch<UpdateModulesResponse>(
+    "/organizations/me/modules",
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export const updateStatutory = async (
+  payload: UpdateStatutoryRequest
+): Promise<UpdateStatutoryResponse> => {
+  const response = await axiosInstance.patch<UpdateStatutoryResponse>(
+    "/organizations/me/statutory",
     payload,
     { headers: getAuthHeader() }
   );

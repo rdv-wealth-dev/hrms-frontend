@@ -9,9 +9,11 @@ import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../routes/paths";
 import PermissionGuard from "../../components/auth/PermissionGuard";
 import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard";
+import { usePermissions } from "../../hooks/usePermissions";
 
 function DashboardView() {
   const navigate = useNavigate();
+  const { role } = usePermissions();
 
   return (
     <DashboardLayout>
@@ -24,9 +26,11 @@ function DashboardView() {
         </Typography>
 
         {/* Daily Punch Card Widget */}
-        <Box sx={{ mb: 4 }}>
-          <DailyPunchCard />
-        </Box>
+        {role !== "ORG_ADMIN" && (
+          <Box sx={{ mb: 4 }}>
+            <DailyPunchCard />
+          </Box>
+        )}
 
         {/* Quick Action Cards */}
 
