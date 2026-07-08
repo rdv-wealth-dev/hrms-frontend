@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import UnauthorizedScreen from "../../components/unauthorized/UnauthorizedScreen";
-import { useRole } from "../hooks/use-role";
+import { usePermissions } from "../../hooks/usePermissions";
 import type { RoleSlug } from "../../utils/roles";
 
 type RoleGuardProps = {
@@ -22,7 +22,7 @@ type RoleGuardProps = {
 // ===========================================
 
 function RoleGuard({ children, allow, permission }: RoleGuardProps) {
-  const { hasRole, hasPermission, role } = useRole();
+  const { hasRole, hasPermission, role } = usePermissions();
 
   // ORG_ADMIN always passes, mirroring the backend's checkPermission() bypass
   if (role === "ORG_ADMIN") {
