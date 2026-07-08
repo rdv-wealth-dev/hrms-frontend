@@ -23,7 +23,6 @@ import Snackbar from "@mui/material/Snackbar";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
-import StarBorderIcon from "@mui/icons-material/StarBorderOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 
 import type { AppDispatch } from "../../../store/store";
