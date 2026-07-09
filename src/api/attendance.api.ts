@@ -102,4 +102,36 @@ export const getMyRegularizationRequests = async (): Promise<RegularizationListR
     return response.data;
 };
 
+export interface ReviewRegularizationRequest {
+  status: "APPROVED" | "REJECTED";
+  reviewComments?: string;
+}
+
+export interface ReviewRegularizationResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: any;
+}
+
+export const getPendingRegularizationRequests = async (): Promise<RegularizationListResponse> => {
+  const response = await axiosInstance.get<RegularizationListResponse>(
+    "/attendance/regularizations/pending",
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export const reviewRegularizationRequest = async (
+  id: string,
+  payload: ReviewRegularizationRequest
+): Promise<ReviewRegularizationResponse> => {
+  const response = await axiosInstance.patch<ReviewRegularizationResponse>(
+    `/attendance/regularizations/${id}/review`,
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
  

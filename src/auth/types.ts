@@ -29,6 +29,10 @@ export interface User {
   branchIds: string[];
   permissions: string[];
   tenantId?: string;
+  employeeId?: string;
+  isOrgAdmin?: boolean;
+  createdAt?: string;
+  lastLoginAt?: string;
 }
 
 export interface Organization {

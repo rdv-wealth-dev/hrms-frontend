@@ -121,6 +121,8 @@ export type EmployeeState = {
 export interface UpdateEmployeeRequest {
   maritalStatus?: string;
   confirmationDate?: string;
+  departmentId?: string;
+  designationId?: string;
   currentAddress?: {
     addressLine1?: string;
     addressLine2?: string;

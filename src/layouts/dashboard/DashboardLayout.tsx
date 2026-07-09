@@ -54,6 +54,12 @@ const navItems = [
         path: paths.attendance,
     },
     {
+        label: "Regularizations",
+        icon: <CalendarMonthOutlinedIcon fontSize="small" />,
+        path: paths.attendanceRegularizations,
+        permission: "attendance.approve",
+    },
+    {
         label: "Settings",
         icon: <SettingsOutlinedIcon fontSize="small" />,
         path: paths.settings,
@@ -197,12 +203,19 @@ function DashboardLayout({ children }: Props) {
                 {/* User Footer */}
                 <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2 }}>
                     <Box
+                        onClick={() => navigate(paths.profile)}
                         sx={{
                             display: "flex",
                             alignItems: "center",
                             justifyContent: isCollapsed ? "center" : "flex-start",
                             gap: isCollapsed ? 0 : 1.5,
                             mb: 1.5,
+                            cursor: "pointer",
+                            padding: "6px",
+                            borderRadius: "8px",
+                            "&:hover": {
+                                backgroundColor: "rgba(255, 255, 255, 0.05)"
+                            }
                         }}
                     >
                         <Avatar

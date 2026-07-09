@@ -27,6 +27,9 @@ export const paths = {
   leave: "/leave",
   payroll: "/payroll",
 
+  profile: "/profile",
+  attendanceRegularizations: "/attendance/regularizations",
+
   unauthorized: "/unauthorized",
   notFound: "/404",
 } as const;

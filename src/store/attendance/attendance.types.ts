@@ -15,8 +15,10 @@ export interface CreateShiftRequest {
   startTime: string; // HH:MM
   endTime: string;   // HH:MM
   gracePeriodMinutes?: number;
+  graceLimitPerMonth?: number;
   halfDayThresholdMinutes?: number;
   fullDayMinutes?: number;
+  breakDurationMinutes?: number;
   isDefault?: boolean;
 }
 
@@ -29,6 +31,7 @@ export interface Shift {
   startTime: string;
   endTime: string;
   gracePeriodMinutes: number;
+  graceLimitPerMonth: number;
   halfDayThresholdMinutes: number;
   fullDayMinutes: number;
   breakDurationMinutes: number;

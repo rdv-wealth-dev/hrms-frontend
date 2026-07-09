@@ -47,6 +47,7 @@ function ShiftFormDialog({
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [gracePeriod, setGracePeriod] = useState(15);
+  const [graceLimit, setGraceLimit] = useState(0);
   const [halfDayThreshold, setHalfDayThreshold] = useState(240);
   const [fullDayMinutes, setFullDayMinutes] = useState(480);
   const [isDefault, setIsDefault] = useState(false);
@@ -86,6 +87,7 @@ function ShiftFormDialog({
     if (!validateTime(startTime)) errors.startTime = "Use HH:MM 24h format (e.g. 09:00)";
     if (!validateTime(endTime)) errors.endTime = "Use HH:MM 24h format (e.g. 18:00)";
     if (gracePeriod < 0) errors.gracePeriod = "Must be at least 0";
+    if (graceLimit < 0) errors.graceLimit = "Must be at least 0";
     if (halfDayThreshold < 0) errors.halfDayThreshold = "Must be at least 0";
     if (fullDayMinutes < 0) errors.fullDayMinutes = "Must be at least 0";
 
@@ -101,6 +103,7 @@ function ShiftFormDialog({
       startTime,
       endTime,
       gracePeriodMinutes: gracePeriod,
+      graceLimitPerMonth: graceLimit,
       halfDayThresholdMinutes: halfDayThreshold,
       fullDayMinutes: fullDayMinutes,
       isDefault,
@@ -113,6 +116,7 @@ function ShiftFormDialog({
     setStartTime("09:00");
     setEndTime("18:00");
     setGracePeriod(15);
+    setGraceLimit(0);
     setHalfDayThreshold(240);
     setFullDayMinutes(480);
     setIsDefault(false);
@@ -200,6 +204,20 @@ function ShiftFormDialog({
             helperText={formValidationErrors.gracePeriod}
           />
           <TextField
+            label="Grace Limit Per Month"
+            type="number"
+            value={graceLimit}
+            onChange={(e) => setGraceLimit(Number(e.target.value))}
+            fullWidth
+            size="small"
+            placeholder="0 = Unlimited"
+            error={!!formValidationErrors.graceLimit}
+            helperText={formValidationErrors.graceLimit || "Enter 0 for unlimited"}
+          />
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
             label="Half Day Min (Mins)"
             type="number"
             value={halfDayThreshold}
@@ -209,18 +227,17 @@ function ShiftFormDialog({
             error={!!formValidationErrors.halfDayThreshold}
             helperText={formValidationErrors.halfDayThreshold}
           />
+          <TextField
+            label="Full Day Duration (Mins)"
+            type="number"
+            value={fullDayMinutes}
+            onChange={(e) => setFullDayMinutes(Number(e.target.value))}
+            fullWidth
+            size="small"
+            error={!!formValidationErrors.fullDayMinutes}
+            helperText={formValidationErrors.fullDayMinutes}
+          />
         </Box>
-
-        <TextField
-          label="Full Day Duration (Mins)"
-          type="number"
-          value={fullDayMinutes}
-          onChange={(e) => setFullDayMinutes(Number(e.target.value))}
-          fullWidth
-          size="small"
-          error={!!formValidationErrors.fullDayMinutes}
-          helperText={formValidationErrors.fullDayMinutes}
-        />
 
         <FormControlLabel
           control={
@@ -429,6 +446,7 @@ export default function ShiftContent() {
                 <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Timings</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Grace Period</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Grace Limit / Month</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Rules (Half/Full Day)</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
               </TableRow>
@@ -460,6 +478,11 @@ export default function ShiftContent() {
                   </TableCell>
                   <TableCell>{shift.startTime} - {shift.endTime}</TableCell>
                   <TableCell>{shift.gracePeriodMinutes} mins</TableCell>
+                  <TableCell>
+                    {shift.graceLimitPerMonth && shift.graceLimitPerMonth > 0
+                      ? `${shift.graceLimitPerMonth} times`
+                      : "Unlimited"}
+                  </TableCell>
                   <TableCell>
                     <Typography variant="caption" color="text.secondary">
                       Half: {shift.halfDayThresholdMinutes}m / Full: {shift.fullDayMinutes}m

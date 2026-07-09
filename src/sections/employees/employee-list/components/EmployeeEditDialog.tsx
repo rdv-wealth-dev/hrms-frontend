@@ -86,8 +86,17 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     (state: RootState) => state.employee
   );
 
+  const departments = useSelector(
+    (state: RootState) => state.department?.departments ?? []
+  );
+  const designations = useSelector(
+    (state: RootState) => state.designation?.designations ?? []
+  );
+
   // Form states initialized directly from props (since dialog is mounted conditionally)
   const [maritalStatus, setMaritalStatus] = useState(employee?.maritalStatus || "SINGLE");
+  const [departmentId, setDepartmentId] = useState(employee?.departmentId || "");
+  const [designationId, setDesignationId] = useState(employee?.designationId || "");
   const [confirmationDate, setConfirmationDate] = useState(() => {
     if (employee?.confirmationDate) {
       const d = new Date(employee.confirmationDate);
@@ -123,7 +132,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
   const handleSubmit = () => {
     if (!employee?._id) return;
-    if (!addressLine1.trim() || !city.trim() || !stateName.trim() || !zip.trim()) {
+    if (!addressLine1.trim() || !city.trim() || !stateName.trim() || !zip.trim() || !departmentId || !designationId) {
       return;
     }
 
@@ -132,6 +141,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       updateEmployeeRequest(employee._id, {
         maritalStatus,
         confirmationDate: confirmationDate || undefined,
+        departmentId: departmentId || undefined,
+        designationId: designationId || undefined,
         currentAddress: {
           addressLine1: addressLine1.trim(),
           city: city.trim(),
@@ -147,7 +158,9 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     !addressLine1.trim() ||
     !city.trim() ||
     !stateName.trim() ||
-    !zip.trim();
+    !zip.trim() ||
+    !departmentId ||
+    !designationId;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -195,6 +208,60 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             onChange={(e) => setConfirmationDate(e.target.value)}
             sx={textFieldSx}
           />
+        </Box>
+
+        {/* Department */}
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
+          >
+            Department
+          </Typography>
+          <TextField
+            select
+            fullWidth
+            value={departmentId}
+            onChange={(e) => setDepartmentId(e.target.value)}
+            sx={selectFieldSx}
+            slotProps={{ select: { displayEmpty: true } }}
+          >
+            <MenuItem value="" disabled>
+              Choose a department
+            </MenuItem>
+            {departments.map((dept) => (
+              <MenuItem key={dept._id} value={dept._id}>
+                {dept.name} ({dept.code})
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+
+        {/* Designation */}
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
+          >
+            Designation
+          </Typography>
+          <TextField
+            select
+            fullWidth
+            value={designationId}
+            onChange={(e) => setDesignationId(e.target.value)}
+            sx={selectFieldSx}
+            slotProps={{ select: { displayEmpty: true } }}
+          >
+            <MenuItem value="" disabled>
+              Choose a designation
+            </MenuItem>
+            {designations.map((desig) => (
+              <MenuItem key={desig._id} value={desig._id}>
+                {desig.name}
+              </MenuItem>
+            ))}
+          </TextField>
         </Box>
 
         {/* Current Address Header */}

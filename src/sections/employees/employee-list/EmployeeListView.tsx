@@ -43,6 +43,9 @@ import { listDesignationsRequest } from "../../../store/designation";
 import EmployeeEditDialog from "./components/EmployeeEditDialog";
 import { usePermissions } from "../../../hooks/usePermissions";
 import ManualAttendanceDialog from "../../attendance/components/ManualAttendanceDialog";
+import ManageRoleDialog from "./components/ManageRoleDialog";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import { listUsers, type UserAccountData } from "../../../api/user.api";
 
 function EmployeeListView() {
   const dispatch = useDispatch<AppDispatch>();
@@ -54,6 +57,8 @@ function EmployeeListView() {
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("employee.create");
   const canUpdate = hasPermission("employee.update");
+  const canManageRoles = hasPermission("role.update");
+  const canReadRoles = hasPermission("role.read");
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<EmployeeListItem | null>(null);
@@ -65,6 +70,81 @@ function EmployeeListView() {
 
   const [manualOpen, setManualOpen] = useState(false);
   const [manualTarget, setManualTarget] = useState<EmployeeListItem | null>(null);
+  const [roleOpen, setRoleOpen] = useState(false);
+  const [roleTarget, setRoleTarget] = useState<EmployeeListItem | null>(null);
+
+  const [usersList, setUsersList] = useState<UserAccountData[]>([]);
+
+  const fetchUsersList = async () => {
+    try {
+      const users = await listUsers();
+      setUsersList(users);
+    } catch (err) {
+      console.error("Failed to fetch users for system roles", err);
+    }
+  };
+
+  const getUserRole = (emp: EmployeeListItem) => {
+    const user = usersList.find(
+      (u) =>
+        u.employeeId === emp._id ||
+        u.email.toLowerCase() === emp.email.toLowerCase()
+    );
+    return user ? user.role : "EMPLOYEE";
+  };
+
+  const getUserRoleLabel = (emp: EmployeeListItem) => {
+    const role = getUserRole(emp);
+    const roleLabels: Record<string, string> = {
+      ORG_ADMIN: "Org Admin",
+      HR_ADMIN: "HR Admin",
+      BRANCH_ADMIN: "Branch Admin",
+      LEADERSHIP: "Leadership",
+      MANAGER: "Manager",
+      PRODUCT_MANAGER: "Product Manager",
+      TEAM_LEADER: "Team Leader",
+      EMPLOYEE: "Employee",
+    };
+    return roleLabels[role] || role;
+  };
+
+  const getUserRoleChipColor = (role: string) => {
+    switch (role) {
+      case "ORG_ADMIN":
+        return "#FEE2E2";
+      case "HR_ADMIN":
+        return "#F3E8FF";
+      case "BRANCH_ADMIN":
+        return "#E0F2FE";
+      case "LEADERSHIP":
+      case "MANAGER":
+      case "PRODUCT_MANAGER":
+      case "TEAM_LEADER":
+        return "#ECFDF5";
+      case "EMPLOYEE":
+      default:
+        return "#F3F4F6";
+    }
+  };
+
+  const getUserRoleChipTextColor = (role: string) => {
+    switch (role) {
+      case "ORG_ADMIN":
+        return "#991B1B";
+      case "HR_ADMIN":
+        return "#6B21A8";
+      case "BRANCH_ADMIN":
+        return "#075985";
+      case "LEADERSHIP":
+      case "MANAGER":
+      case "PRODUCT_MANAGER":
+      case "TEAM_LEADER":
+        return "#065F46";
+      case "EMPLOYEE":
+      default:
+        return "#374151";
+    }
+  };
 
   const isFirstRun = useRef(true);
 
@@ -105,6 +185,13 @@ function EmployeeListView() {
     }
     dispatch(clearEmployeeError());
   }, [dispatch, departments.length, designations.length]);
+
+  // Fetch users list for system roles if permitted
+  useEffect(() => {
+    if (canReadRoles) {
+      fetchUsersList();
+    }
+  }, [canReadRoles]);
 
   // Debounced search & status trigger
   useEffect(() => {
@@ -360,7 +447,10 @@ function EmployeeListView() {
                       <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                      {(canUpdate || hasPermission("attendance.create")) && (
+                      {canReadRoles && (
+                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
+                      )}
+                      {(canUpdate || hasPermission("attendance.create") || canManageRoles) && (
                         <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
                       )}
                     </TableRow>
@@ -369,7 +459,10 @@ function EmployeeListView() {
                   <TableBody>
                     {employees.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={canUpdate ? 10 : 9} align="center">
+                        <TableCell
+                          colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)}
+                          align="center"
+                        >
                           <Box sx={{ py: 8 }}>
                             <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
                             <Typography variant="body2" color="text.secondary">
@@ -436,7 +529,21 @@ function EmployeeListView() {
                               }}
                             />
                           </TableCell>
-                          {(canUpdate || hasPermission("attendance.create")) && (
+                          {canReadRoles && (
+                            <TableCell>
+                              <Chip
+                                label={getUserRoleLabel(emp)}
+                                size="small"
+                                sx={{
+                                  backgroundColor: getUserRoleChipColor(getUserRole(emp)),
+                                  color: getUserRoleChipTextColor(getUserRole(emp)),
+                                  fontWeight: 600,
+                                  fontSize: 11,
+                                }}
+                              />
+                            </TableCell>
+                          )}
+                          {(canUpdate || hasPermission("attendance.create") || canManageRoles) && (
                             <TableCell>
                               <Box sx={{ display: "flex", gap: 1 }}>
                                 {canUpdate && (
@@ -449,6 +556,19 @@ function EmployeeListView() {
                                     sx={{ color: "#6D5DF6" }}
                                   >
                                     <EditOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                                {canManageRoles && (
+                                  <IconButton
+                                    size="small"
+                                    title="Manage System Role"
+                                    onClick={() => {
+                                      setRoleTarget(emp);
+                                      setRoleOpen(true);
+                                    }}
+                                    sx={{ color: "#8B5CF6" }}
+                                  >
+                                    <AdminPanelSettingsIcon fontSize="small" />
                                   </IconButton>
                                 )}
                                 {hasPermission("attendance.create") && (
@@ -560,6 +680,28 @@ function EmployeeListView() {
             setManualTarget(null);
           }}
           employee={manualTarget}
+        />
+      )}
+
+      {canManageRoles && (
+        <ManageRoleDialog
+          open={roleOpen}
+          onClose={() => {
+            setRoleOpen(false);
+            setRoleTarget(null);
+          }}
+          onSuccess={() => {
+            fetchUsersList();
+            dispatch(
+              listEmployeesRequest({
+                pageNumber,
+                pageSize,
+                search,
+                status,
+              })
+            );
+          }}
+          employee={roleTarget}
         />
       )}
     </DashboardLayout>

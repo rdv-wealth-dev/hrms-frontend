@@ -22,6 +22,8 @@ import EmployeeCreatePage from "../pages/employees/create";
 import EmployeeListPage from "../pages/employees/list";
 import SettingsPage from "../pages/settings";
 import MyAttendancePage from "../pages/attendance";
+import ProfilePage from "../pages/profile";
+import RegularizationListPage from "../pages/attendance/regularizations";
 
 function AppRoutes() {
   return (
@@ -129,6 +131,24 @@ function AppRoutes() {
           element={
             <AuthGuard>
               <MyAttendancePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.profile}
+          element={
+            <AuthGuard>
+              <ProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.attendanceRegularizations}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="attendance.approve">
+                <RegularizationListPage />
+              </RoleGuard>
             </AuthGuard>
           }
         />
