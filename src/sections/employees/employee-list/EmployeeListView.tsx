@@ -14,7 +14,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
-import TablePagination from "@mui/material/TablePagination";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
@@ -27,6 +26,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
@@ -46,6 +46,9 @@ import ManualAttendanceDialog from "../../attendance/components/ManualAttendance
 import ManageRoleDialog from "./components/ManageRoleDialog";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { listUsers, type UserAccountData } from "../../../api/user.api";
+import { deleteEmployee } from "../../../api/employee.api";
+import { ConfirmDialog } from "../../../components/modal";
+import CustomTablePagination from "../../../components/pagination";
 
 function EmployeeListView() {
   const dispatch = useDispatch<AppDispatch>();
@@ -59,6 +62,7 @@ function EmployeeListView() {
   const canUpdate = hasPermission("employee.update");
   const canManageRoles = hasPermission("role.update");
   const canReadRoles = hasPermission("role.read");
+  const canDelete = hasPermission("employee.delete");
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<EmployeeListItem | null>(null);
@@ -73,7 +77,38 @@ function EmployeeListView() {
   const [roleOpen, setRoleOpen] = useState(false);
   const [roleTarget, setRoleTarget] = useState<EmployeeListItem | null>(null);
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<EmployeeListItem | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+
   const [usersList, setUsersList] = useState<UserAccountData[]>([]);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    setDeleteError(null);
+    setDeleteSuccess(null);
+    try {
+      const res = await deleteEmployee(deleteTarget._id);
+      if (res.succeeded) {
+        setDeleteSuccess(res.message || "Employee deleted successfully");
+        setDeleteOpen(false);
+        setDeleteTarget(null);
+        // Refresh the list
+        dispatch(listEmployeesRequest({ pageNumber, pageSize, search, status }));
+      } else {
+        setDeleteError(res.message || "Failed to delete employee");
+      }
+    } catch (err: any) {
+      setDeleteError(
+        err.response?.data?.message || err.message || "Something went wrong while deleting employee"
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const fetchUsersList = async () => {
     try {
@@ -426,6 +461,26 @@ function EmployeeListView() {
           </Alert>
         )}
 
+        {deleteError && (
+          <Alert
+            severity="error"
+            onClose={() => setDeleteError(null)}
+            sx={{ mb: 3, borderRadius: 2 }}
+          >
+            {deleteError}
+          </Alert>
+        )}
+
+        {deleteSuccess && (
+          <Alert
+            severity="success"
+            onClose={() => setDeleteSuccess(null)}
+            sx={{ mb: 3, borderRadius: 2 }}
+          >
+            {deleteSuccess}
+          </Alert>
+        )}
+
         {/* Table List Card */}
         <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
           {loading && employees.length === 0 ? (
@@ -543,7 +598,7 @@ function EmployeeListView() {
                               />
                             </TableCell>
                           )}
-                          {(canUpdate || hasPermission("attendance.create") || canManageRoles) && (
+                          {(canUpdate || hasPermission("attendance.create") || canManageRoles || canDelete) && (
                             <TableCell>
                               <Box sx={{ display: "flex", gap: 1 }}>
                                 {canUpdate && (
@@ -584,6 +639,19 @@ function EmployeeListView() {
                                     <CalendarMonthOutlinedIcon fontSize="small" />
                                   </IconButton>
                                 )}
+                                {canDelete && (
+                                  <IconButton
+                                    size="small"
+                                    title="Delete Employee"
+                                    onClick={() => {
+                                      setDeleteTarget(emp);
+                                      setDeleteOpen(true);
+                                    }}
+                                    sx={{ color: "#EF4444" }}
+                                  >
+                                    <DeleteOutlineIcon fontSize="small" />
+                                  </IconButton>
+                                )}
                               </Box>
                             </TableCell>
                           )}
@@ -595,25 +663,13 @@ function EmployeeListView() {
               </TableContainer>
 
               {/* Table Pagination */}
-              {total > 0 && (
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={total}
-                  rowsPerPage={pageSize}
-                  page={pageNumber - 1}
-                  onPageChange={(_, newPage) => handlePageChange(newPage + 1)}
-                  onRowsPerPageChange={(e) =>
-                    handleRowsPerPageChange(parseInt(e.target.value, 10))
-                  }
-                  sx={{
-                    borderTop: "1px solid rgba(224, 224, 224, 1)",
-                    "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
-                      fontSize: "13px",
-                    },
-                  }}
-                />
-              )}
+              <CustomTablePagination
+                count={total}
+                rowsPerPage={pageSize}
+                page={pageNumber}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+              />
             </>
           )}
         </Card>
@@ -704,6 +760,24 @@ function EmployeeListView() {
           employee={roleTarget}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Delete Employee"
+        content={
+          deleteTarget
+            ? `Are you sure you want to delete employee ${deleteTarget.firstName} ${deleteTarget.lastName}? This action will soft-delete their profile record and cannot be undone.`
+            : "Are you sure you want to delete this employee?"
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteConfirm}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleteTarget(null);
+        }}
+        loading={deleteLoading}
+      />
     </DashboardLayout>
   );
 }

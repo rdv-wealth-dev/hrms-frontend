@@ -43,11 +43,20 @@ function RegularizationListPage() {
         listEmployees(1, 1000), // Get first 1000 employees for mapping
       ]);
 
-      if (regRes.succeeded && regRes.data) {
-        setRequests(regRes.data);
+      let fetchedRequests: RegularizationRequest[] = [];
+
+      if (Array.isArray(regRes)) {
+        fetchedRequests = regRes;
+      } else if (regRes && Array.isArray((regRes as any).data)) {
+        fetchedRequests = (regRes as any).data;
+      } else if ((regRes as any)?.succeeded && Array.isArray((regRes as any).data)) {
+        fetchedRequests = (regRes as any).data;
       } else {
-        setError(regRes.message || "Failed to load regularization requests");
+        setError((regRes as any)?.message || "Failed to load regularization requests");
+        return;
       }
+
+      setRequests(fetchedRequests);
 
       if (empRes.succeeded && empRes.data) {
         setEmployeesList(empRes.data);

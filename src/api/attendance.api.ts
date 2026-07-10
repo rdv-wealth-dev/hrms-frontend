@@ -114,8 +114,8 @@ export interface ReviewRegularizationResponse {
   data: any;
 }
 
-export const getPendingRegularizationRequests = async (): Promise<RegularizationListResponse> => {
-  const response = await axiosInstance.get<RegularizationListResponse>(
+export const getPendingRegularizationRequests = async (): Promise<RegularizationListResponse | RegularizationRequest[]> => {
+  const response = await axiosInstance.get<RegularizationListResponse | RegularizationRequest[]>(
     "/attendance/regularizations/pending",
     { headers: getAuthHeader() }
   );

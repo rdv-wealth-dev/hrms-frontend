@@ -73,3 +73,20 @@ export const updateEmployeeStatus = async (
   );
   return response.data;
 };
+
+export interface DeleteEmployeeResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: {
+    message: string;
+  };
+}
+
+export const deleteEmployee = async (id: string): Promise<DeleteEmployeeResponse> => {
+  const response = await axiosInstance.delete<DeleteEmployeeResponse>(
+    `/employees/${id}`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
