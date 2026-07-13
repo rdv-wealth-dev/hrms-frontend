@@ -118,7 +118,7 @@ export const getPendingLeaveRequestsFailure = (payload: string): LeaveAction => 
 });
 
 // Review Request
-export const reviewLeaveRequestRequest = (payload: { id: string; status: "APPROVED" | "REJECTED" }): LeaveAction => ({
+export const reviewLeaveRequestRequest = (payload: { id: string; status: "APPROVED" | "REJECTED"; reviewComments?: string }): LeaveAction => ({
   type: LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST,
   payload,
 });

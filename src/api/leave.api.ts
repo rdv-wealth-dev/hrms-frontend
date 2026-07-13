@@ -294,11 +294,12 @@ export const getPendingLeaveRequests = async (
 
 export const reviewLeaveRequest = async (
   id: string,
-  status: "APPROVED" | "REJECTED"
+  status: "APPROVED" | "REJECTED",
+  reviewComments?: string
 ): Promise<ReviewLeaveRequestResponse> => {
   const response = await axiosInstance.patch<ReviewLeaveRequestResponse>(
     `/leave/requests/${id}/review`,
-    { status },
+    { status, reviewComments },
     { headers: getAuthHeader() }
   );
   return response.data;

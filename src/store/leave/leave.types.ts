@@ -158,7 +158,7 @@ export type GetPendingLeaveRequestsFailureAction = {
 
 export type ReviewLeaveRequestRequestAction = {
   type: typeof LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST;
-  payload: { id: string; status: "APPROVED" | "REJECTED" };
+  payload: { id: string; status: "APPROVED" | "REJECTED"; reviewComments?: string };
 };
 
 export type ReviewLeaveRequestSuccessAction = {

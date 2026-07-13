@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Box from "@mui/material/Box";
@@ -15,6 +15,11 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
 import TablePagination from "@mui/material/TablePagination";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
 
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -25,6 +30,7 @@ import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import { usePagination } from "../../../hooks/usePagination";
 import { useSubmitSuccess } from "../../../hooks/useSubmitSuccess";
+import { useDialog } from "../../../hooks/useDialog";
 import {
   getPendingLeaveRequestsRequest,
   reviewLeaveRequestRequest,
@@ -53,6 +59,9 @@ export default function LeaveApprovalsView() {
   const { pageNumber, pageSize, handlePageChange, handleRowsPerPageChange } =
     usePagination({ initialPageSize: 10 });
 
+  const [reviewComments, setReviewComments] = useState("");
+  const reviewDialog = useDialog<{ id: string; status: "APPROVED" | "REJECTED" }>();
+
   // Fetch pending requests when page/pageSize changes
   useEffect(() => {
     dispatch(
@@ -63,12 +72,13 @@ export default function LeaveApprovalsView() {
     );
   }, [dispatch, pageNumber, pageSize]);
 
-  // Handle auto-refresh on successful approval/rejection
+  // Handle auto-refresh and modal close on successful approval/rejection
   useSubmitSuccess({
     submitting,
     success,
     error,
     onSuccess: () => {
+      reviewDialog.close();
       dispatch(
         getPendingLeaveRequestsRequest({
           pageNumber,
@@ -78,8 +88,27 @@ export default function LeaveApprovalsView() {
     },
   });
 
-  const handleAction = (id: string, status: "APPROVED" | "REJECTED") => {
-    dispatch(reviewLeaveRequestRequest({ id, status }));
+  useEffect(() => {
+    if (reviewDialog.isOpen) {
+      setReviewComments("");
+    }
+  }, [reviewDialog.isOpen]);
+
+  const handleOpenReview = (id: string, status: "APPROVED" | "REJECTED") => {
+    reviewDialog.open({ id, status });
+  };
+
+  const handleConfirmReview = () => {
+    const target = reviewDialog.target;
+    if (target) {
+      dispatch(
+        reviewLeaveRequestRequest({
+          id: target.id,
+          status: target.status,
+          reviewComments: reviewComments.trim() || undefined,
+        })
+      );
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -113,7 +142,7 @@ export default function LeaveApprovalsView() {
         </Box>
 
         {/* Global Action Errors */}
-        {error && (
+        {error && !reviewDialog.isOpen && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
@@ -227,7 +256,7 @@ export default function LeaveApprovalsView() {
                               color="success"
                               size="small"
                               startIcon={<CheckIcon />}
-                              onClick={() => handleAction(request._id, "APPROVED")}
+                              onClick={() => handleOpenReview(request._id, "APPROVED")}
                               disabled={submitting}
                               sx={{
                                 textTransform: "none",
@@ -247,7 +276,7 @@ export default function LeaveApprovalsView() {
                               color="error"
                               size="small"
                               startIcon={<CloseIcon />}
-                              onClick={() => handleAction(request._id, "REJECTED")}
+                              onClick={() => handleOpenReview(request._id, "REJECTED")}
                               disabled={submitting}
                               sx={{
                                 textTransform: "none",
@@ -282,6 +311,61 @@ export default function LeaveApprovalsView() {
           </Paper>
         )}
       </Box>
+
+      {/* Review Request Comments Modal */}
+      <Dialog
+        open={reviewDialog.isOpen}
+        onClose={reviewDialog.close}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {reviewDialog.target?.status === "APPROVED" ? "Approve Leave Request" : "Reject Leave Request"}
+        </DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "16px !important" }}>
+          {error && reviewDialog.isOpen && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {error}
+            </Alert>
+          )}
+          <Typography variant="body2" color="text.secondary">
+            Are you sure you want to {reviewDialog.target?.status === "APPROVED" ? "approve" : "reject"} this leave request? You can add review comments below.
+          </Typography>
+          <TextField
+            label="Review Comments"
+            value={reviewComments}
+            onChange={(e) => setReviewComments(e.target.value)}
+            fullWidth
+            size="small"
+            multiline
+            rows={3}
+            placeholder="Add comments or notes..."
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={reviewDialog.close} disabled={submitting} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmReview}
+            disabled={submitting}
+            variant="contained"
+            color={reviewDialog.target?.status === "APPROVED" ? "success" : "error"}
+            sx={{
+              fontWeight: 600,
+              px: 3,
+            }}
+          >
+            {submitting ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : reviewDialog.target?.status === "APPROVED" ? (
+              "Confirm Approve"
+            ) : (
+              "Confirm Reject"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardLayout>
   );
 }

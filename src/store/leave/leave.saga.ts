@@ -114,7 +114,7 @@ function* getPendingLeaveRequestsSaga(action: GetPendingLeaveRequestsRequestActi
 
 function* reviewLeaveRequestSaga(action: ReviewLeaveRequestRequestAction): SagaIterator {
   try {
-    yield call(reviewLeaveRequest, action.payload.id, action.payload.status);
+    yield call(reviewLeaveRequest, action.payload.id, action.payload.status, action.payload.reviewComments);
     yield put(reviewLeaveRequestSuccess());
   } catch (error: any) {
     const message = error.response?.data?.message || error.message || 'Failed to review leave request';
