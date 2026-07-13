@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Box from "@mui/material/Box";
@@ -39,6 +39,8 @@ import {
   deleteBranchRequest,
 } from "../../../../store/branch";
 import { usePermissions } from "../../../../hooks/usePermissions";
+import { useDialog } from "../../../../hooks/useDialog";
+import { useSubmitSuccess } from "../../../../hooks/useSubmitSuccess";
 import BranchFormDialog from "./BranchFormDialog";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
 
@@ -53,82 +55,56 @@ function BranchListContent() {
     (state: RootState) => state.branch
   );
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [formMode, setFormMode] = useState<"create" | "update">("create");
-  const [editTarget, setEditTarget] = useState<Branch | null>(null);
-  const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
-
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Branch | null>(null);
+  const formDialog = useDialog<Branch>();
+  const deleteDialog = useDialog<Branch>();
 
   useEffect(() => {
     dispatch(listBranchesRequest());
     dispatch(getHeadOfficeRequest());
   }, [dispatch]);
 
-  // Handle delete modal close on success
-  useEffect(() => {
-    if (deleteConfirmOpen && !submitting && !error && success) {
-      setDeleteConfirmOpen(false);
-      setDeleteTarget(null);
-      dispatch(listBranchesRequest());
-      dispatch(getHeadOfficeRequest());
-    }
-  }, [submitting, error, success, deleteConfirmOpen, dispatch]);
-
-  // Handle modal close on success
-  useEffect(() => {
-    if (hasSubmittedCreate && !submitting && !error && success && createOpen) {
-      setCreateOpen(false);
-      setHasSubmittedCreate(false);
-      setEditTarget(null);
-      dispatch(listBranchesRequest());
-      dispatch(getHeadOfficeRequest());
-    }
-  }, [submitting, error, success, hasSubmittedCreate, createOpen, dispatch]);
+  useSubmitSuccess({
+    submitting,
+    success,
+    error,
+    onSuccess: () => {
+      if (formDialog.isOpen) {
+        formDialog.close();
+        dispatch(listBranchesRequest());
+        dispatch(getHeadOfficeRequest());
+      }
+      if (deleteDialog.isOpen) {
+        deleteDialog.close();
+        dispatch(listBranchesRequest());
+        dispatch(getHeadOfficeRequest());
+      }
+    },
+  });
 
   const handleOpenCreate = () => {
     dispatch(resetBranchStatus());
-    setFormMode("create");
-    setEditTarget(null);
-    setCreateOpen(true);
-    setHasSubmittedCreate(false);
+    formDialog.open();
   };
 
   const handleOpenEdit = (branch: Branch) => {
     dispatch(resetBranchStatus());
-    setFormMode("update");
-    setEditTarget(branch);
-    setCreateOpen(true);
-    setHasSubmittedCreate(false);
+    formDialog.open(branch);
   };
 
   const handleOpenDelete = (branch: Branch) => {
     dispatch(resetBranchStatus());
-    setDeleteTarget(branch);
-    setDeleteConfirmOpen(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDeleteConfirmOpen(false);
-    setDeleteTarget(null);
+    deleteDialog.open(branch);
   };
 
   const handleDeleteConfirm = () => {
-    if (deleteTarget) {
-      dispatch(deleteBranchRequest(deleteTarget._id));
+    if (deleteDialog.target) {
+      dispatch(deleteBranchRequest(deleteDialog.target._id));
     }
   };
 
-  const handleCloseCreate = () => {
-    setCreateOpen(false);
-    setEditTarget(null);
-  };
-
   const handleCreateSubmit = (data: CreateBranchRequest) => {
-    setHasSubmittedCreate(true);
-    if (formMode === "update" && editTarget) {
-      dispatch(updateBranchRequest(editTarget._id, data));
+    if (formDialog.target) {
+      dispatch(updateBranchRequest(formDialog.target._id, data));
     } else {
       dispatch(createBranchRequest(data));
     }
@@ -584,19 +560,19 @@ function BranchListContent() {
 
       {/* Form Dialog */}
       <BranchFormDialog
-        open={createOpen}
-        mode={formMode}
-        initialValues={editTarget}
+        open={formDialog.isOpen}
+        mode={formDialog.target ? "update" : "create"}
+        initialValues={formDialog.target}
         submitting={submitting}
         error={error}
-        onClose={handleCloseCreate}
+        onClose={formDialog.close}
         onSubmit={handleCreateSubmit}
       />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
-        open={deleteConfirmOpen}
-        onClose={handleCloseDelete}
+        open={deleteDialog.isOpen}
+        onClose={deleteDialog.close}
         maxWidth="xs"
         fullWidth
         slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
@@ -606,14 +582,14 @@ function BranchListContent() {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-            Are you sure you want to delete the branch <strong>{deleteTarget?.name}</strong> ({deleteTarget?.code})?
+            Are you sure you want to delete the branch <strong>{deleteDialog.target?.name}</strong> ({deleteDialog.target?.code})?
           </Typography>
           <Typography variant="caption" sx={{ color: "error.main", display: "block", fontWeight: 600 }}>
             ⚠️ Warning: This action cannot be undone and will permanently remove this branch and all its settings.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleCloseDelete} disabled={submitting} variant="outlined" color="inherit">
+          <Button onClick={deleteDialog.close} disabled={submitting} variant="outlined" color="inherit">
             Cancel
           </Button>
           <Button

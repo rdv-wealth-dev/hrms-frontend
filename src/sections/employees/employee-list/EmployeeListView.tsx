@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -42,6 +42,8 @@ import { listDepartmentsRequest } from "../../../store/department";
 import { listDesignationsRequest } from "../../../store/designation";
 import EmployeeEditDialog from "./components/EmployeeEditDialog";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { useDebounce } from "../../../hooks/useDebounce";
+import { usePagination } from "../../../hooks/usePagination";
 import ManualAttendanceDialog from "../../attendance/components/ManualAttendanceDialog";
 import ManageRoleDialog from "./components/ManageRoleDialog";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
@@ -54,8 +56,16 @@ function EmployeeListView() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const { employees = [], loading, error, total = 0, pageNumber = 1, pageSize = 10, search, status } =
-    useSelector((state: RootState) => state.employee);
+  const { 
+    employees = [], 
+    loading, 
+    error, 
+    total = 0, 
+    pageNumber: initialPageNumber = 1, 
+    pageSize: initialPageSize = 10, 
+    search, 
+    status 
+  } = useSelector((state: RootState) => state.employee);
 
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("employee.create");
@@ -64,10 +74,23 @@ function EmployeeListView() {
   const canReadRoles = hasPermission("role.read");
   const canDelete = hasPermission("employee.delete");
 
+  const {
+    pageNumber,
+    pageSize,
+    handlePageChange,
+    handleRowsPerPageChange,
+    setPageNumber,
+  } = usePagination({
+    initialPage: initialPageNumber,
+    initialPageSize: initialPageSize,
+  });
+
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<EmployeeListItem | null>(null);
   const [searchVal, setSearchVal] = useState(search || "");
   const [statusVal, setStatusVal] = useState(status || "");
+
+  const debouncedSearchVal = useDebounce(searchVal, 500);
 
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(null);
   const [statusMenuTarget, setStatusMenuTarget] = useState<EmployeeListItem | null>(null);
@@ -97,7 +120,7 @@ function EmployeeListView() {
         setDeleteOpen(false);
         setDeleteTarget(null);
         // Refresh the list
-        dispatch(listEmployeesRequest({ pageNumber, pageSize, search, status }));
+        dispatch(listEmployeesRequest({ pageNumber, pageSize, search: debouncedSearchVal, status }));
       } else {
         setDeleteError(res.message || "Failed to delete employee");
       }
@@ -181,8 +204,6 @@ function EmployeeListView() {
     }
   };
 
-  const isFirstRun = useRef(true);
-
   const getStatusChipProps = (statusStr: string) => {
     switch (statusStr) {
       case "ACTIVE":
@@ -228,59 +249,22 @@ function EmployeeListView() {
     }
   }, [canReadRoles]);
 
-  // Debounced search & status trigger
+  // Sync page state and fetch data
   useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      if (employees.length > 0 && !searchVal && !statusVal) {
-        return;
-      }
-      dispatch(
-        listEmployeesRequest({
-          pageNumber: 1,
-          pageSize,
-          search: searchVal,
-          status: statusVal || undefined,
-        })
-      );
-      return;
-    }
-
-    const delayDebounce = setTimeout(() => {
-      dispatch(
-        listEmployeesRequest({
-          pageNumber: 1,
-          pageSize,
-          search: searchVal,
-          status: statusVal || undefined,
-        })
-      );
-    }, 500);
-
-    return () => clearTimeout(delayDebounce);
-  }, [searchVal, statusVal, pageSize, dispatch, employees.length]);
-
-  const handlePageChange = (newPage: number) => {
     dispatch(
       listEmployeesRequest({
-        pageNumber: newPage,
+        pageNumber,
         pageSize,
-        search: searchVal,
+        search: debouncedSearchVal,
         status: statusVal || undefined,
       })
     );
-  };
+  }, [dispatch, pageNumber, pageSize, debouncedSearchVal, statusVal]);
 
-  const handleRowsPerPageChange = (newSize: number) => {
-    dispatch(
-      listEmployeesRequest({
-        pageNumber: 1,
-        pageSize: newSize,
-        search: searchVal,
-        status: statusVal || undefined,
-      })
-    );
-  };
+  // Reset to first page when search filter or status changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedSearchVal, statusVal, setPageNumber]);
 
   // Helper mapping IDs to human-readable names
   const getDepartmentName = (id: string) => {

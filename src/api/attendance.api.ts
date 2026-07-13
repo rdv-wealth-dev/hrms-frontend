@@ -7,7 +7,8 @@ import type {
     AttendanceHistoryResponse, 
     ManualAttendanceRequest,
     CreateRegularizationRequest,
-    RegularizationListResponse
+    RegularizationListResponse,
+    RegularizationRequest
 } from "../store/attendance/attendance.types";
 
 const getAuthHeader = () => {
