@@ -66,6 +66,12 @@ const navItems = [
         permission: "attendance.approve",
     },
     {
+        label: "Leave Approvals",
+        icon: <PolicyOutlinedIcon fontSize="small" />,
+        path: paths.leaveApprovals,
+        permission: "leave.approve",
+    },
+    {
         label: "Holidays",
         icon: <CalendarMonthOutlinedIcon fontSize="small" />,
         path: paths.holidays,

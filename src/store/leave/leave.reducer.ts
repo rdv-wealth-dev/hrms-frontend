@@ -5,6 +5,8 @@ const initialState: LeaveState = {
   leaveTypes: [],
   holidays: [],
   balances: [],
+  pendingRequests: [],
+  totalPendingRecords: 0,
   loading: false,
   loadingBalances: false,
   submitting: false,
@@ -30,6 +32,7 @@ export function leaveReducer(
 
     case LEAVE_ACTIONS.LIST_REQUEST:
     case LEAVE_ACTIONS.LIST_HOLIDAYS_REQUEST:
+    case LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST:
       return {
         ...state,
         loading: true,
@@ -67,8 +70,18 @@ export function leaveReducer(
         error: null,
       }
 
+    case LEAVE_ACTIONS.GET_PENDING_REQUESTS_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        pendingRequests: action.payload.data,
+        totalPendingRecords: action.payload.totalRecords,
+        error: null,
+      }
+
     case LEAVE_ACTIONS.LIST_FAILURE:
     case LEAVE_ACTIONS.LIST_HOLIDAYS_FAILURE:
+    case LEAVE_ACTIONS.GET_PENDING_REQUESTS_FAILURE:
       return {
         ...state,
         loading: false,
@@ -85,6 +98,7 @@ export function leaveReducer(
     case LEAVE_ACTIONS.CREATE_REQUEST:
     case LEAVE_ACTIONS.CREATE_HOLIDAY_REQUEST:
     case LEAVE_ACTIONS.APPLY_LEAVE_REQUEST:
+    case LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST:
       return {
         ...state,
         submitting: true,
@@ -111,6 +125,7 @@ export function leaveReducer(
       }
 
     case LEAVE_ACTIONS.APPLY_LEAVE_SUCCESS:
+    case LEAVE_ACTIONS.REVIEW_REQUEST_SUCCESS:
       return {
         ...state,
         submitting: false,
@@ -121,6 +136,7 @@ export function leaveReducer(
     case LEAVE_ACTIONS.CREATE_FAILURE:
     case LEAVE_ACTIONS.CREATE_HOLIDAY_FAILURE:
     case LEAVE_ACTIONS.APPLY_LEAVE_FAILURE:
+    case LEAVE_ACTIONS.REVIEW_REQUEST_FAILURE:
       return {
         ...state,
         submitting: false,

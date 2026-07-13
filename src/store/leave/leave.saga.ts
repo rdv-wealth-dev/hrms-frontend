@@ -1,6 +1,15 @@
 import type { SagaIterator } from 'redux-saga';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
-import { createLeaveType, listLeaveTypes, createHoliday, listHolidays, getMyLeaveBalances, applyForLeave } from '../../api/leave.api';
+import {
+  createLeaveType,
+  listLeaveTypes,
+  createHoliday,
+  listHolidays,
+  getMyLeaveBalances,
+  applyForLeave,
+  getPendingLeaveRequests,
+  reviewLeaveRequest,
+} from '../../api/leave.api';
 import {
   createLeaveTypeFailure,
   createLeaveTypeSuccess,
@@ -14,9 +23,21 @@ import {
   getMyLeaveBalancesSuccess,
   applyLeaveFailure,
   applyLeaveSuccess,
+  getPendingLeaveRequestsFailure,
+  getPendingLeaveRequestsSuccess,
+  reviewLeaveRequestFailure,
+  reviewLeaveRequestSuccess,
 } from './leave.actions';
 import { LEAVE_ACTIONS } from './leave.types';
-import type { CreateLeaveTypeRequestAction, CreateHolidayRequestAction, ListHolidaysRequestAction, GetMyLeaveBalancesRequestAction, ApplyLeaveRequestAction } from './leave.types';
+import type {
+  CreateLeaveTypeRequestAction,
+  CreateHolidayRequestAction,
+  ListHolidaysRequestAction,
+  GetMyLeaveBalancesRequestAction,
+  ApplyLeaveRequestAction,
+  GetPendingLeaveRequestsRequestAction,
+  ReviewLeaveRequestRequestAction,
+} from './leave.types';
 
 function* listLeaveTypesSaga(): SagaIterator {
   try {
@@ -81,6 +102,26 @@ function* applyLeaveSaga(action: ApplyLeaveRequestAction): SagaIterator {
   }
 }
 
+function* getPendingLeaveRequestsSaga(action: GetPendingLeaveRequestsRequestAction): SagaIterator {
+  try {
+    const response = yield call(getPendingLeaveRequests, action.payload.pageNumber, action.payload.pageSize);
+    yield put(getPendingLeaveRequestsSuccess(response));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to fetch pending leave requests';
+    yield put(getPendingLeaveRequestsFailure(message));
+  }
+}
+
+function* reviewLeaveRequestSaga(action: ReviewLeaveRequestRequestAction): SagaIterator {
+  try {
+    yield call(reviewLeaveRequest, action.payload.id, action.payload.status);
+    yield put(reviewLeaveRequestSuccess());
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to review leave request';
+    yield put(reviewLeaveRequestFailure(message));
+  }
+}
+
 export function* leaveSaga(): SagaIterator {
   yield all([
     takeLatest(LEAVE_ACTIONS.LIST_REQUEST, listLeaveTypesSaga),
@@ -89,5 +130,7 @@ export function* leaveSaga(): SagaIterator {
     takeLatest(LEAVE_ACTIONS.CREATE_HOLIDAY_REQUEST, createHolidaySaga),
     takeLatest(LEAVE_ACTIONS.GET_MY_BALANCES_REQUEST, getMyBalancesSaga),
     takeLatest(LEAVE_ACTIONS.APPLY_LEAVE_REQUEST, applyLeaveSaga),
+    takeLatest(LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST, getPendingLeaveRequestsSaga),
+    takeLatest(LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST, reviewLeaveRequestSaga),
   ]);
 }

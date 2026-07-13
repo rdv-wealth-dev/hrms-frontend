@@ -229,3 +229,77 @@ export const applyForLeave = async (
   );
   return response.data;
 };
+
+export interface LeaveRequest {
+  _id: string;
+  tenantId: string;
+  branchId: string;
+  employeeId: {
+    _id: string;
+    employeeCode: string;
+    firstName: string;
+    lastName: string;
+  };
+  leaveTypeId: {
+    _id: string;
+    name: string;
+    code: string;
+  };
+  fromDate: string;
+  toDate: string;
+  fromSession: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  toSession: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  totalDays: number;
+  baseDays: number;
+  isSandwiched: boolean;
+  reason: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  currentApprovalLevel: number;
+  approvals: Array<{
+    level: number;
+    approverRole: string;
+    status: "PENDING" | "APPROVED" | "REJECTED";
+  }>;
+  appliedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaveRequestsPaginatedResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: LeaveRequest[];
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+}
+
+export interface ReviewLeaveRequestResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+}
+
+export const getPendingLeaveRequests = async (
+  pageNumber = 1,
+  pageSize = 20
+): Promise<LeaveRequestsPaginatedResponse> => {
+  const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
+    `/leave/requests/pending?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export const reviewLeaveRequest = async (
+  id: string,
+  status: "APPROVED" | "REJECTED"
+): Promise<ReviewLeaveRequestResponse> => {
+  const response = await axiosInstance.patch<ReviewLeaveRequestResponse>(
+    `/leave/requests/${id}/review`,
+    { status },
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};

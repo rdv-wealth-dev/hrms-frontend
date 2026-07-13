@@ -26,6 +26,7 @@ import ProfilePage from "../pages/profile";
 import RegularizationListPage from "../pages/attendance/regularizations";
 import HolidaysPage from "../pages/holidays";
 import MyLeavePage from "../pages/leave";
+import LeaveApprovalsPage from "../pages/leave-approvals";
 
 function AppRoutes() {
   return (
@@ -149,6 +150,16 @@ function AppRoutes() {
           element={
             <AuthGuard>
               <ProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.leaveApprovals}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="leave.approve">
+                <LeaveApprovalsPage />
+              </RoleGuard>
             </AuthGuard>
           }
         />

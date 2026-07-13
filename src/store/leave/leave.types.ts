@@ -1,9 +1,11 @@
-import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, LeaveBalance, CreateLeaveRequest } from "../../api/leave.api";
+import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, LeaveBalance, CreateLeaveRequest, LeaveRequest, LeaveRequestsPaginatedResponse } from "../../api/leave.api";
 
 export type LeaveState = {
   leaveTypes: LeaveType[];
   holidays: Holiday[];
   balances: LeaveBalance[];
+  pendingRequests: LeaveRequest[];
+  totalPendingRecords: number;
   loading: boolean;
   loadingBalances: boolean;
   submitting: boolean;
@@ -38,6 +40,14 @@ export const LEAVE_ACTIONS = {
   APPLY_LEAVE_REQUEST: 'leave/apply_leave_request',
   APPLY_LEAVE_SUCCESS: 'leave/apply_leave_success',
   APPLY_LEAVE_FAILURE: 'leave/apply_leave_failure',
+
+  GET_PENDING_REQUESTS_REQUEST: 'leave/get_pending_requests_request',
+  GET_PENDING_REQUESTS_SUCCESS: 'leave/get_pending_requests_success',
+  GET_PENDING_REQUESTS_FAILURE: 'leave/get_pending_requests_failure',
+
+  REVIEW_REQUEST_REQUEST: 'leave/review_request_request',
+  REVIEW_REQUEST_SUCCESS: 'leave/review_request_success',
+  REVIEW_REQUEST_FAILURE: 'leave/review_request_failure',
 } as const;
 
 export type ResetAction = { type: typeof LEAVE_ACTIONS.RESET };
@@ -131,6 +141,35 @@ export type ApplyLeaveFailureAction = {
   payload: string;
 };
 
+export type GetPendingLeaveRequestsRequestAction = {
+  type: typeof LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST;
+  payload: { pageNumber: number; pageSize: number };
+};
+
+export type GetPendingLeaveRequestsSuccessAction = {
+  type: typeof LEAVE_ACTIONS.GET_PENDING_REQUESTS_SUCCESS;
+  payload: LeaveRequestsPaginatedResponse;
+};
+
+export type GetPendingLeaveRequestsFailureAction = {
+  type: typeof LEAVE_ACTIONS.GET_PENDING_REQUESTS_FAILURE;
+  payload: string;
+};
+
+export type ReviewLeaveRequestRequestAction = {
+  type: typeof LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST;
+  payload: { id: string; status: "APPROVED" | "REJECTED" };
+};
+
+export type ReviewLeaveRequestSuccessAction = {
+  type: typeof LEAVE_ACTIONS.REVIEW_REQUEST_SUCCESS;
+};
+
+export type ReviewLeaveRequestFailureAction = {
+  type: typeof LEAVE_ACTIONS.REVIEW_REQUEST_FAILURE;
+  payload: string;
+};
+
 export type LeaveAction =
   | ResetAction
   | ResetStatusAction
@@ -151,4 +190,10 @@ export type LeaveAction =
   | GetMyLeaveBalancesFailureAction
   | ApplyLeaveRequestAction
   | ApplyLeaveSuccessAction
-  | ApplyLeaveFailureAction;
+  | ApplyLeaveFailureAction
+  | GetPendingLeaveRequestsRequestAction
+  | GetPendingLeaveRequestsSuccessAction
+  | GetPendingLeaveRequestsFailureAction
+  | ReviewLeaveRequestRequestAction
+  | ReviewLeaveRequestSuccessAction
+  | ReviewLeaveRequestFailureAction;

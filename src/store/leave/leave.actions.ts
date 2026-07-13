@@ -1,4 +1,4 @@
-import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest } from "../../api/leave.api";
+import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest, LeaveRequestsPaginatedResponse } from "../../api/leave.api";
 import { LEAVE_ACTIONS } from "./leave.types";
 import type { LeaveAction } from "./leave.types";
 
@@ -98,5 +98,36 @@ export const applyLeaveSuccess = (): LeaveAction => ({
 
 export const applyLeaveFailure = (payload: string): LeaveAction => ({
   type: LEAVE_ACTIONS.APPLY_LEAVE_FAILURE,
+  payload,
+});
+
+// Pending Approvals
+export const getPendingLeaveRequestsRequest = (payload: { pageNumber: number; pageSize: number }): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST,
+  payload,
+});
+
+export const getPendingLeaveRequestsSuccess = (payload: LeaveRequestsPaginatedResponse): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_PENDING_REQUESTS_SUCCESS,
+  payload,
+});
+
+export const getPendingLeaveRequestsFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_PENDING_REQUESTS_FAILURE,
+  payload,
+});
+
+// Review Request
+export const reviewLeaveRequestRequest = (payload: { id: string; status: "APPROVED" | "REJECTED" }): LeaveAction => ({
+  type: LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST,
+  payload,
+});
+
+export const reviewLeaveRequestSuccess = (): LeaveAction => ({
+  type: LEAVE_ACTIONS.REVIEW_REQUEST_SUCCESS,
+});
+
+export const reviewLeaveRequestFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.REVIEW_REQUEST_FAILURE,
   payload,
 });
