@@ -34,6 +34,6 @@ export const SETTINGS_SUB_ITEMS: SettingsSubItem[] = [
   // future: { id: "grades",       label: "Grades / Bands",      categoryId: "master-data" },
   // future: { id: "locations",    label: "Locations",           categoryId: "master-data" },
   // future: { id: "branches",     label: "Business Units",      categoryId: "master-data" },
-  // future: { id: "leave-types",  label: "Leave Types",         categoryId: "master-data" },
+  { id: "leave-types",  label: "Leave Types",         categoryId: "master-data", permission: "leave.read" },
   { id: "shift-master", label: "Shift Master",        categoryId: "master-data", permission: "attendance.read" },
 ];

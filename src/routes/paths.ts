@@ -16,6 +16,7 @@ export const paths = {
   departments: "/departments",
   designations: "/designations", // ✅
   branches: "/branches",
+  holidays: "/holidays",
 
   employees: {
     directory: "/employees/directory",

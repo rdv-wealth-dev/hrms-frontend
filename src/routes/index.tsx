@@ -24,6 +24,7 @@ import SettingsPage from "../pages/settings";
 import MyAttendancePage from "../pages/attendance";
 import ProfilePage from "../pages/profile";
 import RegularizationListPage from "../pages/attendance/regularizations";
+import HolidaysPage from "../pages/holidays";
 
 function AppRoutes() {
   return (
@@ -139,6 +140,16 @@ function AppRoutes() {
           element={
             <AuthGuard>
               <ProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.holidays}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="leave.read">
+                <HolidaysPage />
+              </RoleGuard>
             </AuthGuard>
           }
         />

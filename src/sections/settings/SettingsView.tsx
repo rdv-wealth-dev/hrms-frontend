@@ -9,6 +9,7 @@ import SettingsContentPanel from "../../components/settings/SettingsContentPanel
 import DepartmentContent from "../departments/components/DepartmentContent";
 import DesignationContent from "../designations/components/DesignationContent";
 import ShiftContent from "../attendance/components/ShiftContent";
+import LeaveTypeContent from "../leave/leave-policy/LeaveTypeContent";
 import OrganizationProfileContent from "./components/OrganizationProfileContent";
 import OrganizationModulesContent from "./components/OrganizationModulesContent";
 import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
@@ -30,6 +31,7 @@ const CONTENT_MAP: Record<string, ReactNode> = {
   "org-statutory": <OrganizationStatutoryContent />,
   departments:  <DepartmentContent />,
   designations: <DesignationContent />,
+  "leave-types": <LeaveTypeContent />,
   "shift-master": <ShiftContent />,
 };
 

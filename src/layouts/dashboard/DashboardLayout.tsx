@@ -60,6 +60,12 @@ const navItems = [
         permission: "attendance.approve",
     },
     {
+        label: "Holidays",
+        icon: <CalendarMonthOutlinedIcon fontSize="small" />,
+        path: paths.holidays,
+        permission: "leave.read",
+    },
+    {
         label: "Settings",
         icon: <SettingsOutlinedIcon fontSize="small" />,
         path: paths.settings,
