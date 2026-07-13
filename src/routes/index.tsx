@@ -25,6 +25,7 @@ import MyAttendancePage from "../pages/attendance";
 import ProfilePage from "../pages/profile";
 import RegularizationListPage from "../pages/attendance/regularizations";
 import HolidaysPage from "../pages/holidays";
+import MyLeavePage from "../pages/leave";
 
 function AppRoutes() {
   return (
@@ -132,6 +133,14 @@ function AppRoutes() {
           element={
             <AuthGuard>
               <MyAttendancePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={paths.leave}
+          element={
+            <AuthGuard>
+              <MyLeavePage />
             </AuthGuard>
           }
         />

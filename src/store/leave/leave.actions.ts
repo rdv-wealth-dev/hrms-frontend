@@ -1,4 +1,4 @@
-import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday } from "../../api/leave.api";
+import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest } from "../../api/leave.api";
 import { LEAVE_ACTIONS } from "./leave.types";
 import type { LeaveAction } from "./leave.types";
 
@@ -40,8 +40,9 @@ export const createLeaveTypeFailure = (payload: string): LeaveAction => ({
 });
 
 // Holidays
-export const listHolidaysRequest = (): LeaveAction => ({
+export const listHolidaysRequest = (payload?: number): LeaveAction => ({
   type: LEAVE_ACTIONS.LIST_HOLIDAYS_REQUEST,
+  payload,
 });
 
 export const listHolidaysSuccess = (payload: Holiday[]): LeaveAction => ({
@@ -66,5 +67,36 @@ export const createHolidaySuccess = (payload: Holiday): LeaveAction => ({
 
 export const createHolidayFailure = (payload: string): LeaveAction => ({
   type: LEAVE_ACTIONS.CREATE_HOLIDAY_FAILURE,
+  payload,
+});
+
+// Balances
+export const getMyLeaveBalancesRequest = (payload?: number): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_MY_BALANCES_REQUEST,
+  payload,
+});
+
+export const getMyLeaveBalancesSuccess = (payload: LeaveBalance[]): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_MY_BALANCES_SUCCESS,
+  payload,
+});
+
+export const getMyLeaveBalancesFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_MY_BALANCES_FAILURE,
+  payload,
+});
+
+// Apply Leave
+export const applyLeaveRequest = (payload: CreateLeaveRequest): LeaveAction => ({
+  type: LEAVE_ACTIONS.APPLY_LEAVE_REQUEST,
+  payload,
+});
+
+export const applyLeaveSuccess = (): LeaveAction => ({
+  type: LEAVE_ACTIONS.APPLY_LEAVE_SUCCESS,
+});
+
+export const applyLeaveFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.APPLY_LEAVE_FAILURE,
   payload,
 });

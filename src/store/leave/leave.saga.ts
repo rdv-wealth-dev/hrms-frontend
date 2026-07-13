@@ -1,6 +1,6 @@
 import type { SagaIterator } from 'redux-saga';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
-import { createLeaveType, listLeaveTypes, createHoliday, listHolidays } from '../../api/leave.api';
+import { createLeaveType, listLeaveTypes, createHoliday, listHolidays, getMyLeaveBalances, applyForLeave } from '../../api/leave.api';
 import {
   createLeaveTypeFailure,
   createLeaveTypeSuccess,
@@ -10,9 +10,13 @@ import {
   createHolidaySuccess,
   listHolidaysFailure,
   listHolidaysSuccess,
+  getMyLeaveBalancesFailure,
+  getMyLeaveBalancesSuccess,
+  applyLeaveFailure,
+  applyLeaveSuccess,
 } from './leave.actions';
 import { LEAVE_ACTIONS } from './leave.types';
-import type { CreateLeaveTypeRequestAction, CreateHolidayRequestAction } from './leave.types';
+import type { CreateLeaveTypeRequestAction, CreateHolidayRequestAction, ListHolidaysRequestAction, GetMyLeaveBalancesRequestAction, ApplyLeaveRequestAction } from './leave.types';
 
 function* listLeaveTypesSaga(): SagaIterator {
   try {
@@ -35,9 +39,9 @@ function* createLeaveTypeSaga(action: CreateLeaveTypeRequestAction): SagaIterato
   }
 }
 
-function* listHolidaysSaga(): SagaIterator {
+function* listHolidaysSaga(action: ListHolidaysRequestAction): SagaIterator {
   try {
-    const response = yield call(listHolidays);
+    const response = yield call(listHolidays, action.payload);
     const data = response?.data || [];
     yield put(listHolidaysSuccess(data));
   } catch (error: any) {
@@ -56,11 +60,34 @@ function* createHolidaySaga(action: CreateHolidayRequestAction): SagaIterator {
   }
 }
 
+function* getMyBalancesSaga(action: GetMyLeaveBalancesRequestAction): SagaIterator {
+  try {
+    const response = yield call(getMyLeaveBalances, action.payload);
+    const data = response?.data || [];
+    yield put(getMyLeaveBalancesSuccess(data));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to fetch leave balances';
+    yield put(getMyLeaveBalancesFailure(message));
+  }
+}
+
+function* applyLeaveSaga(action: ApplyLeaveRequestAction): SagaIterator {
+  try {
+    yield call(applyForLeave, action.payload);
+    yield put(applyLeaveSuccess());
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to submit leave request';
+    yield put(applyLeaveFailure(message));
+  }
+}
+
 export function* leaveSaga(): SagaIterator {
   yield all([
     takeLatest(LEAVE_ACTIONS.LIST_REQUEST, listLeaveTypesSaga),
     takeLatest(LEAVE_ACTIONS.CREATE_REQUEST, createLeaveTypeSaga),
     takeLatest(LEAVE_ACTIONS.LIST_HOLIDAYS_REQUEST, listHolidaysSaga),
     takeLatest(LEAVE_ACTIONS.CREATE_HOLIDAY_REQUEST, createHolidaySaga),
+    takeLatest(LEAVE_ACTIONS.GET_MY_BALANCES_REQUEST, getMyBalancesSaga),
+    takeLatest(LEAVE_ACTIONS.APPLY_LEAVE_REQUEST, applyLeaveSaga),
   ]);
 }

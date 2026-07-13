@@ -1,9 +1,11 @@
-import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest } from "../../api/leave.api";
+import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, LeaveBalance, CreateLeaveRequest } from "../../api/leave.api";
 
 export type LeaveState = {
   leaveTypes: LeaveType[];
   holidays: Holiday[];
+  balances: LeaveBalance[];
   loading: boolean;
+  loadingBalances: boolean;
   submitting: boolean;
   success: boolean;
   error: string | null;
@@ -28,6 +30,14 @@ export const LEAVE_ACTIONS = {
   CREATE_HOLIDAY_REQUEST: 'leave/create_holiday_request',
   CREATE_HOLIDAY_SUCCESS: 'leave/create_holiday_success',
   CREATE_HOLIDAY_FAILURE: 'leave/create_holiday_failure',
+
+  GET_MY_BALANCES_REQUEST: 'leave/get_my_balances_request',
+  GET_MY_BALANCES_SUCCESS: 'leave/get_my_balances_success',
+  GET_MY_BALANCES_FAILURE: 'leave/get_my_balances_failure',
+
+  APPLY_LEAVE_REQUEST: 'leave/apply_leave_request',
+  APPLY_LEAVE_SUCCESS: 'leave/apply_leave_success',
+  APPLY_LEAVE_FAILURE: 'leave/apply_leave_failure',
 } as const;
 
 export type ResetAction = { type: typeof LEAVE_ACTIONS.RESET };
@@ -64,6 +74,7 @@ export type CreateLeaveTypeFailureAction = {
 
 export type ListHolidaysRequestAction = {
   type: typeof LEAVE_ACTIONS.LIST_HOLIDAYS_REQUEST;
+  payload?: number;
 };
 
 export type ListHolidaysSuccessAction = {
@@ -91,6 +102,35 @@ export type CreateHolidayFailureAction = {
   payload: string;
 };
 
+export type GetMyLeaveBalancesRequestAction = {
+  type: typeof LEAVE_ACTIONS.GET_MY_BALANCES_REQUEST;
+  payload?: number;
+};
+
+export type GetMyLeaveBalancesSuccessAction = {
+  type: typeof LEAVE_ACTIONS.GET_MY_BALANCES_SUCCESS;
+  payload: LeaveBalance[];
+};
+
+export type GetMyLeaveBalancesFailureAction = {
+  type: typeof LEAVE_ACTIONS.GET_MY_BALANCES_FAILURE;
+  payload: string;
+};
+
+export type ApplyLeaveRequestAction = {
+  type: typeof LEAVE_ACTIONS.APPLY_LEAVE_REQUEST;
+  payload: CreateLeaveRequest;
+};
+
+export type ApplyLeaveSuccessAction = {
+  type: typeof LEAVE_ACTIONS.APPLY_LEAVE_SUCCESS;
+};
+
+export type ApplyLeaveFailureAction = {
+  type: typeof LEAVE_ACTIONS.APPLY_LEAVE_FAILURE;
+  payload: string;
+};
+
 export type LeaveAction =
   | ResetAction
   | ResetStatusAction
@@ -105,4 +145,10 @@ export type LeaveAction =
   | ListHolidaysFailureAction
   | CreateHolidayRequestAction
   | CreateHolidaySuccessAction
-  | CreateHolidayFailureAction;
+  | CreateHolidayFailureAction
+  | GetMyLeaveBalancesRequestAction
+  | GetMyLeaveBalancesSuccessAction
+  | GetMyLeaveBalancesFailureAction
+  | ApplyLeaveRequestAction
+  | ApplyLeaveSuccessAction
+  | ApplyLeaveFailureAction;

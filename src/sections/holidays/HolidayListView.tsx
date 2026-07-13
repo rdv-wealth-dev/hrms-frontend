@@ -188,12 +188,13 @@ export default function HolidayListView() {
     (state: RootState) => state.leave ?? { holidays: [], loading: false, submitting: false, success: false, error: null }
   );
 
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const formDialog = useDialog<any>();
 
-  // Fetch list on mount
+  // Fetch list when selectedYear changes
   useEffect(() => {
-    dispatch(listHolidaysRequest());
-  }, [dispatch]);
+    dispatch(listHolidaysRequest(selectedYear));
+  }, [dispatch, selectedYear]);
 
   // Handle success auto-close
   useSubmitSuccess({
@@ -202,7 +203,7 @@ export default function HolidayListView() {
     error,
     onSuccess: () => {
       formDialog.close();
-      dispatch(listHolidaysRequest());
+      dispatch(listHolidaysRequest(selectedYear));
     },
   });
 
@@ -283,6 +284,26 @@ export default function HolidayListView() {
               Add Holiday
             </Button>
           )}
+        </Box>
+
+        {/* Year Filter Dropdown */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+            Select Year:
+          </Typography>
+          <TextField
+            select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value) || new Date().getFullYear())}
+            size="small"
+            sx={{ width: 120 }}
+          >
+            <MenuItem value={2024}>2024</MenuItem>
+            <MenuItem value={2025}>2025</MenuItem>
+            <MenuItem value={2026}>2026</MenuItem>
+            <MenuItem value={2027}>2027</MenuItem>
+            <MenuItem value={2028}>2028</MenuItem>
+          </TextField>
         </Box>
 
         {/* Content Section */}

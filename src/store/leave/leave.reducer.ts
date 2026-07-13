@@ -4,7 +4,9 @@ import { LEAVE_ACTIONS } from './leave.types'
 const initialState: LeaveState = {
   leaveTypes: [],
   holidays: [],
+  balances: [],
   loading: false,
+  loadingBalances: false,
   submitting: false,
   success: false,
   error: null,
@@ -34,6 +36,13 @@ export function leaveReducer(
         error: null,
       }
 
+    case LEAVE_ACTIONS.GET_MY_BALANCES_REQUEST:
+      return {
+        ...state,
+        loadingBalances: true,
+        error: null,
+      }
+
     case LEAVE_ACTIONS.LIST_SUCCESS:
       return {
         ...state,
@@ -50,6 +59,14 @@ export function leaveReducer(
         error: null,
       }
 
+    case LEAVE_ACTIONS.GET_MY_BALANCES_SUCCESS:
+      return {
+        ...state,
+        loadingBalances: false,
+        balances: action.payload,
+        error: null,
+      }
+
     case LEAVE_ACTIONS.LIST_FAILURE:
     case LEAVE_ACTIONS.LIST_HOLIDAYS_FAILURE:
       return {
@@ -58,8 +75,16 @@ export function leaveReducer(
         error: action.payload,
       }
 
+    case LEAVE_ACTIONS.GET_MY_BALANCES_FAILURE:
+      return {
+        ...state,
+        loadingBalances: false,
+        error: action.payload,
+      }
+
     case LEAVE_ACTIONS.CREATE_REQUEST:
     case LEAVE_ACTIONS.CREATE_HOLIDAY_REQUEST:
+    case LEAVE_ACTIONS.APPLY_LEAVE_REQUEST:
       return {
         ...state,
         submitting: true,
@@ -85,8 +110,17 @@ export function leaveReducer(
         error: null,
       }
 
+    case LEAVE_ACTIONS.APPLY_LEAVE_SUCCESS:
+      return {
+        ...state,
+        submitting: false,
+        success: true,
+        error: null,
+      }
+
     case LEAVE_ACTIONS.CREATE_FAILURE:
     case LEAVE_ACTIONS.CREATE_HOLIDAY_FAILURE:
+    case LEAVE_ACTIONS.APPLY_LEAVE_FAILURE:
       return {
         ...state,
         submitting: false,
