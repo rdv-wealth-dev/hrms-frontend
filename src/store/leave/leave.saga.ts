@@ -10,6 +10,8 @@ import {
   getPendingLeaveRequests,
   reviewLeaveRequest,
   getMyLeaveRequests,
+  cancelLeaveRequest,
+  getMyCompOffBalances,
 } from '../../api/leave.api';
 import {
   createLeaveTypeFailure,
@@ -30,6 +32,10 @@ import {
   reviewLeaveRequestSuccess,
   getMyLeaveRequestsFailure,
   getMyLeaveRequestsSuccess,
+  cancelLeaveRequestFailure,
+  cancelLeaveRequestSuccess,
+  getMyCompOffBalancesFailure,
+  getMyCompOffBalancesSuccess,
 } from './leave.actions';
 import { LEAVE_ACTIONS } from './leave.types';
 import type {
@@ -41,6 +47,7 @@ import type {
   GetPendingLeaveRequestsRequestAction,
   ReviewLeaveRequestRequestAction,
   GetMyLeaveRequestsRequestAction,
+  CancelLeaveRequestRequestAction,
 } from './leave.types';
 
 function* listLeaveTypesSaga(): SagaIterator {
@@ -136,6 +143,27 @@ function* getMyLeaveRequestsSaga(action: GetMyLeaveRequestsRequestAction): SagaI
   }
 }
 
+function* cancelLeaveRequestSaga(action: CancelLeaveRequestRequestAction): SagaIterator {
+  try {
+    yield call(cancelLeaveRequest, action.payload.id, action.payload.cancelReason);
+    yield put(cancelLeaveRequestSuccess());
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to cancel leave request';
+    yield put(cancelLeaveRequestFailure(message));
+  }
+}
+
+function* getCompOffSaga(): SagaIterator {
+  try {
+    const response = yield call(getMyCompOffBalances);
+    const data = response?.data || [];
+    yield put(getMyCompOffBalancesSuccess(data));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to fetch comp-off balance';
+    yield put(getMyCompOffBalancesFailure(message));
+  }
+}
+
 export function* leaveSaga(): SagaIterator {
   yield all([
     takeLatest(LEAVE_ACTIONS.LIST_REQUEST, listLeaveTypesSaga),
@@ -147,5 +175,7 @@ export function* leaveSaga(): SagaIterator {
     takeLatest(LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST, getPendingLeaveRequestsSaga),
     takeLatest(LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST, reviewLeaveRequestSaga),
     takeLatest(LEAVE_ACTIONS.GET_MY_REQUESTS_REQUEST, getMyLeaveRequestsSaga),
+    takeLatest(LEAVE_ACTIONS.CANCEL_LEAVE_REQUEST, cancelLeaveRequestSaga),
+    takeLatest(LEAVE_ACTIONS.GET_COMP_OFF_REQUEST, getCompOffSaga),
   ]);
 }

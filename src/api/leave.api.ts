@@ -254,6 +254,8 @@ export interface LeaveRequest {
   isSandwiched: boolean;
   reason: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  cancelReason?: string;
+  cancelledAt?: string;
   currentApprovalLevel: number;
   approvals: Array<{
     level: number;
@@ -318,4 +320,81 @@ export const getMyLeaveRequests = async (
   );
   return response.data;
 };
+
+export interface CancelLeaveRequestResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: LeaveRequest;
+}
+
+export const cancelLeaveRequest = async (
+  id: string,
+  cancelReason: string
+): Promise<CancelLeaveRequestResponse> => {
+  const response = await axiosInstance.patch<CancelLeaveRequestResponse>(
+    `/leave/requests/${id}/cancel`,
+    { cancelReason },
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface CompOffRecord {
+  _id: string;
+  tenantId: string;
+  branchId: string;
+  createdBy: string;
+  updatedBy: string;
+  isDeleted: boolean;
+  version: number;
+  employeeId: string;
+  workDate: string;
+  sourceType: "PUBLIC_HOLIDAY" | "WEEKEND_WORK";
+  creditedDate: string;
+  expiryDate: string;
+  status: "AVAILABLE" | "USED" | "EXPIRED";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompOffBalanceResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: CompOffRecord[];
+}
+
+export const getMyCompOffBalances = async (): Promise<CompOffBalanceResponse> => {
+  const response = await axiosInstance.get<CompOffBalanceResponse>(
+    "/leave/comp-off/me",
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface CreditCompOffRequest {
+  employeeId: string;
+  workDate: string;
+  sourceType: "PUBLIC_HOLIDAY" | "WEEKEND_WORK";
+}
+
+export interface CreditCompOffResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: CompOffRecord;
+}
+
+export const creditCompOff = async (
+  payload: CreditCompOffRequest
+): Promise<CreditCompOffResponse> => {
+  const response = await axiosInstance.post<CreditCompOffResponse>(
+    "/leave/comp-off",
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
 

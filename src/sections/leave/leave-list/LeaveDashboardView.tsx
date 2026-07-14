@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -33,6 +32,7 @@ import AddIcon from "@mui/icons-material/Add";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import type { AppDispatch } from "../../../store/store";
@@ -46,145 +46,59 @@ import {
   applyLeaveRequest,
   resetLeaveStatus,
   getMyLeaveRequestsRequest,
+  cancelLeaveRequestRequest,
+  getMyCompOffBalancesRequest,
 } from "../../../store/leave";
-import type { LeaveBalance, LeaveType, CreateLeaveRequest, LeaveRequest } from "../../../api/leave.api";
+import type { CreateLeaveRequest, LeaveRequest, CompOffRecord } from "../../../api/leave.api";
+import ApplyLeaveDialog from "../leave-apply/ApplyLeaveDialog";
+import LeaveBalancesGrid from "../leave-balance/LeaveBalancesGrid";
 
 // ============================================================
-// Apply Leave Form Dialog Component
+// Cancel Leave Confirmation Dialog Component
 // ============================================================
 
-interface ApplyLeaveDialogProps {
+interface CancelLeaveDialogProps {
   open: boolean;
   submitting: boolean;
   error: string | null;
-  balances: LeaveBalance[];
-  leaveTypes: LeaveType[];
   onClose: () => void;
-  onSubmit: (data: CreateLeaveRequest) => void;
+  onSubmit: (reason: string) => void;
 }
 
-function ApplyLeaveDialog({
+function CancelLeaveDialog({
   open,
   submitting,
   error,
-  balances,
-  leaveTypes,
   onClose,
   onSubmit,
-}: ApplyLeaveDialogProps) {
-  const [leaveTypeId, setLeaveTypeId] = useState("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [fromSession, setFromSession] = useState<"FULL_DAY" | "FIRST_HALF" | "SECOND_HALF">("FULL_DAY");
-  const [toSession, setToSession] = useState<"FULL_DAY" | "FIRST_HALF" | "SECOND_HALF">("FULL_DAY");
+}: CancelLeaveDialogProps) {
   const [reason, setReason] = useState("");
 
   useEffect(() => {
     if (open) {
-      setLeaveTypeId(balances[0]?.leaveTypeId || "");
-      setFromDate("");
-      setToDate("");
-      setFromSession("FULL_DAY");
-      setToSession("FULL_DAY");
       setReason("");
     }
-  }, [open, balances]);
+  }, [open]);
 
   const handleSubmit = () => {
-    if (!leaveTypeId || !fromDate || !toDate || reason.trim().length < 5) return;
-    onSubmit({
-      leaveTypeId,
-      fromDate,
-      toDate,
-      fromSession,
-      toSession,
-      reason: reason.trim(),
-    });
-  };
-
-  const getLeaveTypeName = (id: string) => {
-    const type = leaveTypes.find((t) => t._id === id);
-    return type ? `${type.name} (${type.code})` : "Other Leave";
+    if (reason.trim().length < 5) return;
+    onSubmit(reason.trim());
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>Apply for Leave</DialogTitle>
-      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: "16px !important" }}>
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ fontWeight: 700 }}>Cancel Leave Request</DialogTitle>
+      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "16px !important" }}>
         {error && (
           <Alert severity="error" sx={{ mb: 1 }}>
             {error}
           </Alert>
         )}
-
+        <Typography variant="body2" color="text.secondary">
+          Are you sure you want to cancel this leave request? Please provide a reason for cancellation.
+        </Typography>
         <TextField
-          select
-          label="Leave Type"
-          value={leaveTypeId}
-          onChange={(e) => setLeaveTypeId(e.target.value)}
-          fullWidth
-          size="small"
-          required
-        >
-          {balances.map((b) => (
-            <MenuItem key={b._id} value={b.leaveTypeId}>
-              {getLeaveTypeName(b.leaveTypeId)} — Balance: {b.available}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="From Date"
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            fullWidth
-            size="small"
-            required
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <TextField
-            select
-            label="From Session"
-            value={fromSession}
-            onChange={(e) => setFromSession(e.target.value as any)}
-            fullWidth
-            size="small"
-          >
-            <MenuItem value="FULL_DAY">Full Day</MenuItem>
-            <MenuItem value="FIRST_HALF">First Half</MenuItem>
-            <MenuItem value="SECOND_HALF">Second Half</MenuItem>
-          </TextField>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="To Date"
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            fullWidth
-            size="small"
-            required
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <TextField
-            select
-            label="To Session"
-            value={toSession}
-            onChange={(e) => setToSession(e.target.value as any)}
-            fullWidth
-            size="small"
-          >
-            <MenuItem value="FULL_DAY">Full Day</MenuItem>
-            <MenuItem value="FIRST_HALF">First Half</MenuItem>
-            <MenuItem value="SECOND_HALF">Second Half</MenuItem>
-          </TextField>
-        </Box>
-
-        <TextField
-          label="Reason for Leave"
+          label="Reason for Cancellation"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           fullWidth
@@ -199,20 +113,19 @@ function ApplyLeaveDialog({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button onClick={onClose} disabled={submitting} color="inherit">
-          Cancel
+          Close
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={submitting || !leaveTypeId || !fromDate || !toDate || reason.trim().length < 5}
+          disabled={submitting || reason.trim().length < 5}
           variant="contained"
+          color="error"
           sx={{
-            backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4EE4" },
             fontWeight: 600,
             px: 3,
           }}
         >
-          {submitting ? <CircularProgress size={20} color="inherit" /> : "Submit"}
+          {submitting ? <CircularProgress size={20} color="inherit" /> : "Confirm Cancel"}
         </Button>
       </DialogActions>
     </Dialog>
@@ -233,6 +146,7 @@ export default function LeaveDashboardView() {
     leaveTypes = [],
     myRequests = [],
     totalMyRecords = 0,
+    compOffs = [],
     loading,
     loadingBalances,
     submitting,
@@ -243,6 +157,7 @@ export default function LeaveDashboardView() {
     leaveTypes: [],
     myRequests: [],
     totalMyRecords: 0,
+    compOffs: [],
     loading: false,
     loadingBalances: false,
     submitting: false,
@@ -252,6 +167,7 @@ export default function LeaveDashboardView() {
 
   const applyDialog = useDialog<any>();
   const detailDialog = useDialog<LeaveRequest>();
+  const cancelDialog = useDialog<LeaveRequest>();
   const { pageNumber, pageSize, handlePageChange, handleRowsPerPageChange } =
     usePagination({ initialPageSize: 10 });
 
@@ -260,8 +176,10 @@ export default function LeaveDashboardView() {
     if (tabValue === 0) {
       dispatch(getMyLeaveBalancesRequest(selectedYear));
       dispatch(listLeaveTypesRequest());
-    } else {
+    } else if (tabValue === 1) {
       dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
+    } else if (tabValue === 2) {
+      dispatch(getMyCompOffBalancesRequest());
     }
   }, [dispatch, selectedYear, tabValue, pageNumber, pageSize]);
 
@@ -272,10 +190,12 @@ export default function LeaveDashboardView() {
     error,
     onSuccess: () => {
       applyDialog.close();
-      if (tabValue === 0) {
-        dispatch(getMyLeaveBalancesRequest(selectedYear));
-      } else {
+      cancelDialog.close();
+      dispatch(getMyLeaveBalancesRequest(selectedYear));
+      if (tabValue === 1) {
         dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
+      } else if (tabValue === 2) {
+        dispatch(getMyCompOffBalancesRequest());
       }
     },
   });
@@ -289,8 +209,10 @@ export default function LeaveDashboardView() {
     dispatch(applyLeaveRequest(data));
   };
 
-  const getLeaveTypeInfo = (leaveTypeId: string): LeaveType | undefined => {
-    return leaveTypes.find((type: LeaveType) => type._id === leaveTypeId);
+  const handleCancelSubmit = (reason: string) => {
+    if (cancelDialog.target) {
+      dispatch(cancelLeaveRequestRequest({ id: cancelDialog.target._id, cancelReason: reason }));
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -345,7 +267,48 @@ export default function LeaveDashboardView() {
     );
   };
 
-  const isDataLoading = loadingBalances || (loading && leaveTypes.length === 0 && tabValue === 0) || (loading && tabValue === 1);
+  const getCompOffStatusChip = (status: string) => {
+    let color = "#10B981";
+    let bg = "rgba(16, 185, 129, 0.08)";
+    let border = "1px solid rgba(16, 185, 129, 0.15)";
+    let label = "Available";
+
+    if (status === "USED") {
+      color = "#6B7280";
+      bg = "rgba(107, 114, 128, 0.08)";
+      border = "1px solid rgba(107, 114, 128, 0.15)";
+      label = "Used";
+    } else if (status === "EXPIRED") {
+      color = "#EF4444";
+      bg = "rgba(239, 68, 68, 0.08)";
+      border = "1px solid rgba(239, 68, 68, 0.15)";
+      label = "Expired";
+    }
+
+    return (
+      <Chip
+        label={label}
+        size="small"
+        sx={{
+          fontWeight: 600,
+          fontSize: "0.75rem",
+          color,
+          backgroundColor: bg,
+          border,
+        }}
+      />
+    );
+  };
+
+  const formatSourceType = (src: string) => {
+    if (src === "PUBLIC_HOLIDAY") return "Public Holiday";
+    if (src === "WEEKEND_WORK") return "Weekend Work";
+    return src;
+  };
+
+  const availableCompOffs = compOffs.filter((c: CompOffRecord) => c.status === "AVAILABLE").length;
+
+  const isDataLoading = loadingBalances || (loading && leaveTypes.length === 0 && tabValue === 0) || (loading && tabValue === 1) || (loading && tabValue === 2);
 
   return (
     <DashboardLayout>
@@ -408,6 +371,7 @@ export default function LeaveDashboardView() {
         >
           <Tab label="Leave Balances" />
           <Tab label="My Requests" />
+          <Tab label="Comp-Off Balances" />
         </Tabs>
 
         {/* Tab 0: Leave Balances View */}
@@ -437,7 +401,7 @@ export default function LeaveDashboardView() {
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
                 <CircularProgress sx={{ color: "#6D5DF6" }} />
               </Box>
-            ) : error && !applyDialog.isOpen ? (
+            ) : error && !applyDialog.isOpen && !cancelDialog.isOpen ? (
               <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
               </Alert>
@@ -459,112 +423,7 @@ export default function LeaveDashboardView() {
                 </Typography>
               </Paper>
             ) : (
-              <Grid container spacing={3}>
-                {balances.map((balance: LeaveBalance) => {
-                  const typeInfo = getLeaveTypeInfo(balance.leaveTypeId);
-                  const name = typeInfo?.name ?? "Other Leave";
-                  const code = typeInfo?.code ?? "OL";
-                  const isPaid = typeInfo?.isPaid ?? true;
-
-                  return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={balance._id}>
-                      <Card
-                        sx={{
-                          borderRadius: 3,
-                          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-                          border: "1px solid rgba(224, 224, 224, 0.8)",
-                          overflow: "hidden",
-                          transition: "transform 0.2s, box-shadow 0.2s",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: "0px 12px 24px rgba(0, 0, 0, 0.08)",
-                          },
-                        }}
-                      >
-                        {/* Top Accent Strip */}
-                        <Box
-                          sx={{
-                            height: 6,
-                            backgroundColor: isPaid ? "#10B981" : "#EF4444",
-                          }}
-                        />
-                        <CardContent sx={{ p: 3 }}>
-                          {/* Card Header */}
-                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 700, pr: 1 }} noWrap>
-                              {name}
-                            </Typography>
-                            <Chip
-                              label={code}
-                              size="small"
-                              sx={{
-                                fontWeight: 600,
-                                backgroundColor: "#E0F2FE",
-                                color: "#0369A1",
-                                borderRadius: 1,
-                              }}
-                            />
-                          </Box>
-
-                          {/* Main Stat Block */}
-                          <Box sx={{ my: 3 }}>
-                            <Typography variant="h3" sx={{ fontWeight: 800, color: "#6D5DF6", display: "inline-block" }}>
-                              {balance.available}
-                            </Typography>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{
-                                display: "inline-block",
-                                ml: 1,
-                                fontWeight: 600,
-                                color: "text.secondary",
-                              }}
-                            >
-                              {balance.available === 1 ? "Day" : "Days"} Available
-                            </Typography>
-                          </Box>
-
-                          {/* Breakdown Stats */}
-                          <Box
-                            sx={{
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr 1fr",
-                              gap: 1.5,
-                              pt: 2.5,
-                              borderTop: "1px solid rgba(224, 224, 224, 0.5)",
-                            }}
-                          >
-                            <Box sx={{ textAlign: "center" }}>
-                              <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                                Allocated
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5 }}>
-                                {balance.allocated}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: "center" }}>
-                              <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                                Used
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5, color: "#EF4444" }}>
-                                {balance.used}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: "center" }}>
-                              <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                                Pending
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5, color: "#F59E0B" }}>
-                                {balance.pending}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  );
-                })}
-              </Grid>
+              <LeaveBalancesGrid balances={balances} leaveTypes={leaveTypes} />
             )}
           </Box>
         )}
@@ -576,7 +435,7 @@ export default function LeaveDashboardView() {
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
                 <CircularProgress sx={{ color: "#6D5DF6" }} />
               </Box>
-            ) : error && !applyDialog.isOpen ? (
+            ) : error && !applyDialog.isOpen && !cancelDialog.isOpen ? (
               <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
               </Alert>
@@ -608,13 +467,15 @@ export default function LeaveDashboardView() {
                         <TableCell sx={{ fontWeight: 600 }}>Total Days</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Reason</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Details</TableCell>
+                        <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {myRequests.map((request: LeaveRequest) => {
                         const typeName = request.leaveTypeId?.name ?? "Other Leave";
                         const typeCode = request.leaveTypeId?.code ?? "OL";
+                        const isFuture = new Date(request.fromDate).getTime() > Date.now();
+                        const canCancel = (request.status === "PENDING" || request.status === "APPROVED") && isFuture;
 
                         return (
                           <TableRow key={request._id} hover>
@@ -668,15 +529,36 @@ export default function LeaveDashboardView() {
                               {getLeaveStatusChip(request.status)}
                             </TableCell>
 
-                            {/* Details Action */}
+                            {/* Details & Cancel Action */}
                             <TableCell sx={{ textAlign: "center" }}>
-                              <IconButton
-                                size="small"
-                                onClick={() => detailDialog.open(request)}
-                                sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
-                              >
-                                <InfoOutlinedIcon fontSize="small" />
-                              </IconButton>
+                              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => detailDialog.open(request)}
+                                  sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                                  title="View Details"
+                                >
+                                  <InfoOutlinedIcon fontSize="small" />
+                                </IconButton>
+                                {canCancel && (
+                                  <Button
+                                    size="small"
+                                    color="error"
+                                    variant="text"
+                                    onClick={() => cancelDialog.open(request)}
+                                    sx={{
+                                      textTransform: "none",
+                                      fontWeight: 600,
+                                      fontSize: "0.75rem",
+                                      minWidth: 0,
+                                      padding: "2px 8px",
+                                      borderRadius: 1.5,
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                )}
+                              </Box>
                             </TableCell>
                           </TableRow>
                         );
@@ -697,6 +579,93 @@ export default function LeaveDashboardView() {
             )}
           </Box>
         )}
+
+        {/* Tab 2: Comp-Off Balances View */}
+        {tabValue === 2 && (
+          <Box>
+            {isDataLoading && compOffs.length === 0 ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                <CircularProgress sx={{ color: "#6D5DF6" }} />
+              </Box>
+            ) : error && !applyDialog.isOpen && !cancelDialog.isOpen ? (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            ) : compOffs.length === 0 ? (
+              <Paper
+                sx={{
+                  p: 6,
+                  textAlign: "center",
+                  borderRadius: 3,
+                  border: "1px dashed rgba(224, 224, 224, 1)",
+                  boxShadow: "none",
+                }}
+              >
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No Comp-Off Records Found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  You do not have any compensatory off credits assigned to your profile.
+                </Typography>
+              </Paper>
+            ) : (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3.5 }}>
+                {/* Summary Card Banner */}
+                <Card sx={{ maxWidth: 320, borderRadius: 3, border: "1px solid rgba(224, 224, 224, 0.8)", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)" }}>
+                  <CardContent sx={{ display: "flex", alignItems: "center", gap: 2.5, p: "24px !important" }}>
+                    <AccessTimeIcon sx={{ fontSize: 44, color: "#6D5DF6" }} />
+                    <Box>
+                      <Typography variant="h4" sx={{ fontWeight: 800, color: "#6D5DF6" }}>
+                        {availableCompOffs}
+                      </Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+                        Available Comp-Off {availableCompOffs === 1 ? "Day" : "Days"}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+
+                {/* Data Table */}
+                <Paper sx={{ borderRadius: 3, boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)", border: "1px solid rgba(224, 224, 224, 0.8)", overflow: "hidden" }}>
+                  <TableContainer>
+                    <Table>
+                      <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Work Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Earned Source</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Credited Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Expiry Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {compOffs.map((row: CompOffRecord) => (
+                          <TableRow key={row._id} hover>
+                            <TableCell sx={{ fontWeight: 600, color: "#111827" }}>
+                              {formatDate(row.workDate)}
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                              {formatSourceType(row.sourceType)}
+                            </TableCell>
+                            <TableCell sx={{ color: "#4B5563" }}>
+                              {formatDate(row.creditedDate)}
+                            </TableCell>
+                            <TableCell sx={{ color: "#4B5563" }}>
+                              {formatDate(row.expiryDate)}
+                            </TableCell>
+                            <TableCell>
+                              {getCompOffStatusChip(row.status)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Box>
+            )}
+          </Box>
+        )}
       </Box>
 
       {/* Apply Leave Dialog */}
@@ -708,6 +677,15 @@ export default function LeaveDashboardView() {
         leaveTypes={leaveTypes}
         onClose={applyDialog.close}
         onSubmit={handleApplySubmit}
+      />
+
+      {/* Cancel Leave Dialog */}
+      <CancelLeaveDialog
+        open={cancelDialog.isOpen}
+        submitting={submitting}
+        error={error}
+        onClose={cancelDialog.close}
+        onSubmit={handleCancelSubmit}
       />
 
       {/* Request Details Dialog */}
@@ -765,13 +743,25 @@ export default function LeaveDashboardView() {
 
               <Divider />
 
-              <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-                  Reason
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#374151", mt: 0.5 }}>
-                  {detailDialog.target.reason || "—"}
-                </Typography>
+              <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                <Box sx={{ flex: "1 1 200px" }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                    Reason
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#374151", mt: 0.5 }}>
+                    {detailDialog.target.reason || "—"}
+                  </Typography>
+                </Box>
+                {detailDialog.target.cancelReason && (
+                  <Box sx={{ flex: "1 1 200px" }}>
+                    <Typography variant="caption" color="error" sx={{ display: "block", fontWeight: 600 }}>
+                      Cancellation Reason
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#EF4444", mt: 0.5, fontWeight: 500 }}>
+                      {detailDialog.target.cancelReason}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
 
               {detailDialog.target.approvals && detailDialog.target.approvals.length > 0 && (

@@ -1,4 +1,4 @@
-import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest, LeaveRequestsPaginatedResponse } from "../../api/leave.api";
+import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest, LeaveRequestsPaginatedResponse, CompOffRecord } from "../../api/leave.api";
 import { LEAVE_ACTIONS } from "./leave.types";
 import type { LeaveAction } from "./leave.types";
 
@@ -148,3 +148,32 @@ export const getMyLeaveRequestsFailure = (payload: string): LeaveAction => ({
   payload,
 });
 
+// Cancel Request
+export const cancelLeaveRequestRequest = (payload: { id: string; cancelReason: string }): LeaveAction => ({
+  type: LEAVE_ACTIONS.CANCEL_LEAVE_REQUEST,
+  payload,
+});
+
+export const cancelLeaveRequestSuccess = (): LeaveAction => ({
+  type: LEAVE_ACTIONS.CANCEL_LEAVE_SUCCESS,
+});
+
+export const cancelLeaveRequestFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.CANCEL_LEAVE_FAILURE,
+  payload,
+});
+
+// Comp-Off Balances
+export const getMyCompOffBalancesRequest = (): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_COMP_OFF_REQUEST,
+});
+
+export const getMyCompOffBalancesSuccess = (payload: CompOffRecord[]): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_COMP_OFF_SUCCESS,
+  payload,
+});
+
+export const getMyCompOffBalancesFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_COMP_OFF_FAILURE,
+  payload,
+});

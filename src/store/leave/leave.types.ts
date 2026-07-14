@@ -1,4 +1,4 @@
-import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, LeaveBalance, CreateLeaveRequest, LeaveRequest, LeaveRequestsPaginatedResponse } from "../../api/leave.api";
+import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, LeaveBalance, CreateLeaveRequest, LeaveRequest, LeaveRequestsPaginatedResponse, CompOffRecord } from "../../api/leave.api";
 
 export type LeaveState = {
   leaveTypes: LeaveType[];
@@ -8,6 +8,7 @@ export type LeaveState = {
   totalPendingRecords: number;
   myRequests: LeaveRequest[];
   totalMyRecords: number;
+  compOffs: CompOffRecord[];
   loading: boolean;
   loadingBalances: boolean;
   submitting: boolean;
@@ -54,6 +55,14 @@ export const LEAVE_ACTIONS = {
   GET_MY_REQUESTS_REQUEST: 'leave/get_my_requests_request',
   GET_MY_REQUESTS_SUCCESS: 'leave/get_my_requests_success',
   GET_MY_REQUESTS_FAILURE: 'leave/get_my_requests_failure',
+
+  CANCEL_LEAVE_REQUEST: 'leave/cancel_leave_request',
+  CANCEL_LEAVE_SUCCESS: 'leave/cancel_leave_success',
+  CANCEL_LEAVE_FAILURE: 'leave/cancel_leave_failure',
+
+  GET_COMP_OFF_REQUEST: 'leave/get_comp_off_request',
+  GET_COMP_OFF_SUCCESS: 'leave/get_comp_off_success',
+  GET_COMP_OFF_FAILURE: 'leave/get_comp_off_failure',
 } as const;
 
 export type ResetAction = { type: typeof LEAVE_ACTIONS.RESET };
@@ -191,6 +200,34 @@ export type GetMyLeaveRequestsFailureAction = {
   payload: string;
 };
 
+export type CancelLeaveRequestRequestAction = {
+  type: typeof LEAVE_ACTIONS.CANCEL_LEAVE_REQUEST;
+  payload: { id: string; cancelReason: string };
+};
+
+export type CancelLeaveRequestSuccessAction = {
+  type: typeof LEAVE_ACTIONS.CANCEL_LEAVE_SUCCESS;
+};
+
+export type CancelLeaveRequestFailureAction = {
+  type: typeof LEAVE_ACTIONS.CANCEL_LEAVE_FAILURE;
+  payload: string;
+};
+
+export type GetMyCompOffBalancesRequestAction = {
+  type: typeof LEAVE_ACTIONS.GET_COMP_OFF_REQUEST;
+};
+
+export type GetMyCompOffBalancesSuccessAction = {
+  type: typeof LEAVE_ACTIONS.GET_COMP_OFF_SUCCESS;
+  payload: CompOffRecord[];
+};
+
+export type GetMyCompOffBalancesFailureAction = {
+  type: typeof LEAVE_ACTIONS.GET_COMP_OFF_FAILURE;
+  payload: string;
+};
+
 export type LeaveAction =
   | ResetAction
   | ResetStatusAction
@@ -220,4 +257,10 @@ export type LeaveAction =
   | ReviewLeaveRequestFailureAction
   | GetMyLeaveRequestsRequestAction
   | GetMyLeaveRequestsSuccessAction
-  | GetMyLeaveRequestsFailureAction;
+  | GetMyLeaveRequestsFailureAction
+  | CancelLeaveRequestRequestAction
+  | CancelLeaveRequestSuccessAction
+  | CancelLeaveRequestFailureAction
+  | GetMyCompOffBalancesRequestAction
+  | GetMyCompOffBalancesSuccessAction
+  | GetMyCompOffBalancesFailureAction;

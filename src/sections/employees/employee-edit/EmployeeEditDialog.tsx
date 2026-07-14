@@ -14,13 +14,13 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import type { AppDispatch } from "../../../../store/store";
-import type { RootState } from "../../../../store/rootReducer";
-import type { EmployeeListItem } from "../../../../store/employee/employee.types";
+import type { AppDispatch } from "../../../store/store";
+import type { RootState } from "../../../store/rootReducer";
+import type { EmployeeListItem } from "../../../store/employee/employee.types";
 import {
   updateEmployeeRequest,
   clearEmployeeError,
-} from "../../../../store/employee";
+} from "../../../store/employee";
 
 type Props = {
   open: boolean;

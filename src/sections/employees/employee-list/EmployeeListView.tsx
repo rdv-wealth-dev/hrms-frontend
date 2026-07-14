@@ -27,11 +27,13 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
+import CreditCompOffDialog from "../../leave/components/CreditCompOffDialog";
 import {
   listEmployeesRequest,
   clearEmployeeError,
@@ -40,7 +42,7 @@ import {
 import type { EmployeeListItem } from "../../../store/employee/employee.types";
 import { listDepartmentsRequest } from "../../../store/department";
 import { listDesignationsRequest } from "../../../store/designation";
-import EmployeeEditDialog from "./components/EmployeeEditDialog";
+import EmployeeEditDialog from "../employee-edit/EmployeeEditDialog";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { usePagination } from "../../../hooks/usePagination";
@@ -88,6 +90,10 @@ function EmployeeListView() {
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<EmployeeListItem | null>(null);
   const [searchVal, setSearchVal] = useState(search || "");
+
+  const [compOffOpen, setCompOffOpen] = useState(false);
+  const [compOffTarget, setCompOffTarget] = useState<EmployeeListItem | null>(null);
+  const [compOffSuccess, setCompOffSuccess] = useState<string | null>(null);
   const [statusVal, setStatusVal] = useState(status || "");
 
   const debouncedSearchVal = useDebounce(searchVal, 500);
@@ -465,6 +471,16 @@ function EmployeeListView() {
           </Alert>
         )}
 
+        {compOffSuccess && (
+          <Alert
+            severity="success"
+            onClose={() => setCompOffSuccess(null)}
+            sx={{ mb: 3, borderRadius: 2 }}
+          >
+            {compOffSuccess}
+          </Alert>
+        )}
+
         {/* Table List Card */}
         <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
           {loading && employees.length === 0 ? (
@@ -489,7 +505,7 @@ function EmployeeListView() {
                       {canReadRoles && (
                         <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
                       )}
-                      {(canUpdate || hasPermission("attendance.create") || canManageRoles) && (
+                      {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
                         <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
                       )}
                     </TableRow>
@@ -582,7 +598,7 @@ function EmployeeListView() {
                               />
                             </TableCell>
                           )}
-                          {(canUpdate || hasPermission("attendance.create") || canManageRoles || canDelete) && (
+                          {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
                             <TableCell>
                               <Box sx={{ display: "flex", gap: 1 }}>
                                 {canUpdate && (
@@ -621,6 +637,19 @@ function EmployeeListView() {
                                     sx={{ color: "#10B981" }}
                                   >
                                     <CalendarMonthOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                                {hasPermission("leave.create") && (
+                                  <IconButton
+                                    size="small"
+                                    title="Credit Comp-Off"
+                                    onClick={() => {
+                                      setCompOffTarget(emp);
+                                      setCompOffOpen(true);
+                                    }}
+                                    sx={{ color: "#D97706" }}
+                                  >
+                                    <AccessTimeIcon fontSize="small" />
                                   </IconButton>
                                 )}
                                 {canDelete && (
@@ -742,6 +771,21 @@ function EmployeeListView() {
             );
           }}
           employee={roleTarget}
+        />
+      )}
+
+      {compOffTarget && (
+        <CreditCompOffDialog
+          open={compOffOpen}
+          employeeId={compOffTarget._id}
+          employeeName={`${compOffTarget.firstName} ${compOffTarget.lastName}`}
+          onClose={() => {
+            setCompOffOpen(false);
+            setCompOffTarget(null);
+          }}
+          onSuccess={() => {
+            setCompOffSuccess(`Comp-off balance credited successfully for ${compOffTarget.firstName} ${compOffTarget.lastName}.`);
+          }}
         />
       )}
 
