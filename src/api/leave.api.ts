@@ -259,6 +259,9 @@ export interface LeaveRequest {
     level: number;
     approverRole: string;
     status: "PENDING" | "APPROVED" | "REJECTED";
+    comments?: string;
+    actedAt?: string;
+    approverId?: string;
   }>;
   appliedAt: string;
   createdAt: string;
@@ -304,3 +307,15 @@ export const reviewLeaveRequest = async (
   );
   return response.data;
 };
+
+export const getMyLeaveRequests = async (
+  pageNumber = 1,
+  pageSize = 10
+): Promise<LeaveRequestsPaginatedResponse> => {
+  const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
+    `/leave/requests/me?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+

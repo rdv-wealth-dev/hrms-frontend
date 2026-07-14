@@ -23,6 +23,7 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
+import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -76,6 +77,12 @@ const navItems = [
         icon: <CalendarMonthOutlinedIcon fontSize="small" />,
         path: paths.holidays,
         permission: "leave.read",
+    },
+    {
+        label: "Reports",
+        icon: <AssessmentOutlinedIcon fontSize="small" />,
+        path: paths.reports,
+        permission: "report.read",
     },
     {
         label: "Settings",

@@ -9,6 +9,7 @@ import {
   applyForLeave,
   getPendingLeaveRequests,
   reviewLeaveRequest,
+  getMyLeaveRequests,
 } from '../../api/leave.api';
 import {
   createLeaveTypeFailure,
@@ -27,6 +28,8 @@ import {
   getPendingLeaveRequestsSuccess,
   reviewLeaveRequestFailure,
   reviewLeaveRequestSuccess,
+  getMyLeaveRequestsFailure,
+  getMyLeaveRequestsSuccess,
 } from './leave.actions';
 import { LEAVE_ACTIONS } from './leave.types';
 import type {
@@ -37,6 +40,7 @@ import type {
   ApplyLeaveRequestAction,
   GetPendingLeaveRequestsRequestAction,
   ReviewLeaveRequestRequestAction,
+  GetMyLeaveRequestsRequestAction,
 } from './leave.types';
 
 function* listLeaveTypesSaga(): SagaIterator {
@@ -122,6 +126,16 @@ function* reviewLeaveRequestSaga(action: ReviewLeaveRequestRequestAction): SagaI
   }
 }
 
+function* getMyLeaveRequestsSaga(action: GetMyLeaveRequestsRequestAction): SagaIterator {
+  try {
+    const response = yield call(getMyLeaveRequests, action.payload.pageNumber, action.payload.pageSize);
+    yield put(getMyLeaveRequestsSuccess(response));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to fetch my leave requests';
+    yield put(getMyLeaveRequestsFailure(message));
+  }
+}
+
 export function* leaveSaga(): SagaIterator {
   yield all([
     takeLatest(LEAVE_ACTIONS.LIST_REQUEST, listLeaveTypesSaga),
@@ -132,5 +146,6 @@ export function* leaveSaga(): SagaIterator {
     takeLatest(LEAVE_ACTIONS.APPLY_LEAVE_REQUEST, applyLeaveSaga),
     takeLatest(LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST, getPendingLeaveRequestsSaga),
     takeLatest(LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST, reviewLeaveRequestSaga),
+    takeLatest(LEAVE_ACTIONS.GET_MY_REQUESTS_REQUEST, getMyLeaveRequestsSaga),
   ]);
 }

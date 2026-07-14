@@ -142,5 +142,14 @@ export interface RegularizationListResponse {
   totalRecords: number;
 }
 
-
-
+export interface AttendanceReportResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: {
+    data: AttendanceRecord[];
+    totalRecords: number;
+    pageNumber: number;
+    pageSize: number;
+  };
+}

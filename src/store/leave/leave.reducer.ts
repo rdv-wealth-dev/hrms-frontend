@@ -7,6 +7,8 @@ const initialState: LeaveState = {
   balances: [],
   pendingRequests: [],
   totalPendingRecords: 0,
+  myRequests: [],
+  totalMyRecords: 0,
   loading: false,
   loadingBalances: false,
   submitting: false,
@@ -33,6 +35,7 @@ export function leaveReducer(
     case LEAVE_ACTIONS.LIST_REQUEST:
     case LEAVE_ACTIONS.LIST_HOLIDAYS_REQUEST:
     case LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST:
+    case LEAVE_ACTIONS.GET_MY_REQUESTS_REQUEST:
       return {
         ...state,
         loading: true,
@@ -79,9 +82,19 @@ export function leaveReducer(
         error: null,
       }
 
+    case LEAVE_ACTIONS.GET_MY_REQUESTS_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        myRequests: action.payload.data,
+        totalMyRecords: action.payload.totalRecords,
+        error: null,
+      }
+
     case LEAVE_ACTIONS.LIST_FAILURE:
     case LEAVE_ACTIONS.LIST_HOLIDAYS_FAILURE:
     case LEAVE_ACTIONS.GET_PENDING_REQUESTS_FAILURE:
+    case LEAVE_ACTIONS.GET_MY_REQUESTS_FAILURE:
       return {
         ...state,
         loading: false,

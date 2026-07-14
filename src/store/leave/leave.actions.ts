@@ -131,3 +131,20 @@ export const reviewLeaveRequestFailure = (payload: string): LeaveAction => ({
   type: LEAVE_ACTIONS.REVIEW_REQUEST_FAILURE,
   payload,
 });
+
+// Get My Requests
+export const getMyLeaveRequestsRequest = (payload: { pageNumber: number; pageSize: number }): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_MY_REQUESTS_REQUEST,
+  payload,
+});
+
+export const getMyLeaveRequestsSuccess = (payload: LeaveRequestsPaginatedResponse): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_MY_REQUESTS_SUCCESS,
+  payload,
+});
+
+export const getMyLeaveRequestsFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.GET_MY_REQUESTS_FAILURE,
+  payload,
+});
+

@@ -6,6 +6,8 @@ export type LeaveState = {
   balances: LeaveBalance[];
   pendingRequests: LeaveRequest[];
   totalPendingRecords: number;
+  myRequests: LeaveRequest[];
+  totalMyRecords: number;
   loading: boolean;
   loadingBalances: boolean;
   submitting: boolean;
@@ -48,6 +50,10 @@ export const LEAVE_ACTIONS = {
   REVIEW_REQUEST_REQUEST: 'leave/review_request_request',
   REVIEW_REQUEST_SUCCESS: 'leave/review_request_success',
   REVIEW_REQUEST_FAILURE: 'leave/review_request_failure',
+
+  GET_MY_REQUESTS_REQUEST: 'leave/get_my_requests_request',
+  GET_MY_REQUESTS_SUCCESS: 'leave/get_my_requests_success',
+  GET_MY_REQUESTS_FAILURE: 'leave/get_my_requests_failure',
 } as const;
 
 export type ResetAction = { type: typeof LEAVE_ACTIONS.RESET };
@@ -170,6 +176,21 @@ export type ReviewLeaveRequestFailureAction = {
   payload: string;
 };
 
+export type GetMyLeaveRequestsRequestAction = {
+  type: typeof LEAVE_ACTIONS.GET_MY_REQUESTS_REQUEST;
+  payload: { pageNumber: number; pageSize: number };
+};
+
+export type GetMyLeaveRequestsSuccessAction = {
+  type: typeof LEAVE_ACTIONS.GET_MY_REQUESTS_SUCCESS;
+  payload: LeaveRequestsPaginatedResponse;
+};
+
+export type GetMyLeaveRequestsFailureAction = {
+  type: typeof LEAVE_ACTIONS.GET_MY_REQUESTS_FAILURE;
+  payload: string;
+};
+
 export type LeaveAction =
   | ResetAction
   | ResetStatusAction
@@ -196,4 +217,7 @@ export type LeaveAction =
   | GetPendingLeaveRequestsFailureAction
   | ReviewLeaveRequestRequestAction
   | ReviewLeaveRequestSuccessAction
-  | ReviewLeaveRequestFailureAction;
+  | ReviewLeaveRequestFailureAction
+  | GetMyLeaveRequestsRequestAction
+  | GetMyLeaveRequestsSuccessAction
+  | GetMyLeaveRequestsFailureAction;

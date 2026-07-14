@@ -8,7 +8,8 @@ import type {
     ManualAttendanceRequest,
     CreateRegularizationRequest,
     RegularizationListResponse,
-    RegularizationRequest
+    RegularizationRequest,
+    AttendanceReportResponse
 } from "../store/attendance/attendance.types";
 
 const getAuthHeader = () => {
@@ -135,4 +136,19 @@ export const reviewRegularizationRequest = async (
   return response.data;
 };
 
- 
+export const getAttendanceReport = async (
+  fromDate: string,
+  toDate: string,
+  pageNumber = 1,
+  pageSize = 20,
+  status?: string
+): Promise<AttendanceReportResponse> => {
+  const response = await axiosInstance.get<AttendanceReportResponse>(
+    "/attendance/report",
+    {
+      params: { fromDate, toDate, pageNumber, pageSize, status },
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
