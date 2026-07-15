@@ -34,7 +34,7 @@ function* handleListDepartments(): SagaIterator {
   try {
     const response = yield call(listDepartments);
 
-    if (!response?.succeeded || !response?.data) {
+    if (!response?.data) {
       yield put(listDepartmentsFailure(response?.message ?? "Failed to load departments"));
       return;
     }

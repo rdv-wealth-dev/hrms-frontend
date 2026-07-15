@@ -110,8 +110,8 @@ export default function RegularizeRequestDialog({
 
     try {
       const datePart = record.attendanceDate
-        ? record.attendanceDate.split("T")[0]
-        : new Date().toISOString().split("T")[0];
+        ? new Date(record.attendanceDate).toLocaleDateString("en-CA")
+        : new Date().toLocaleDateString("en-CA");
 
       let requestedCheckIn: string | undefined = undefined;
       let checkInDate: Date | null = null;

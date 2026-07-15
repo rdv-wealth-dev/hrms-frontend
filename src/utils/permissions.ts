@@ -15,7 +15,9 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "employee.read", "employee.create", "employee.update",
     "attendance.read", "attendance.create", "attendance.update", "attendance.approve",
     "leave.read", "leave.create", "leave.update", "leave.approve",
-    "department.read", "designation.read", "report.read",
+    "department.read", "department.create", "department.update",
+    "designation.read", "designation.create", "designation.update",
+    "report.read",
     "settings.read", "settings.update",
   ],
   // Support both "HR" and "HR_ADMIN" in case they have it stored as "HR" in the database
@@ -23,7 +25,9 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "employee.read", "employee.create", "employee.update",
     "attendance.read", "attendance.create", "attendance.update", "attendance.approve",
     "leave.read", "leave.create", "leave.update", "leave.approve",
-    "department.read", "designation.read", "report.read",
+    "department.read", "department.create", "department.update",
+    "designation.read", "designation.create", "designation.update",
+    "report.read",
     "settings.read", "settings.update",
   ],
   LEADERSHIP: [

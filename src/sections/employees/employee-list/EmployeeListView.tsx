@@ -273,13 +273,27 @@ function EmployeeListView() {
   }, [debouncedSearchVal, statusVal, setPageNumber]);
 
   // Helper mapping IDs to human-readable names
-  const getDepartmentName = (id: string) => {
+  const getDepartmentName = (id: any) => {
+    if (!id) return "—";
+    if (typeof id === "object") {
+      if (id.name) {
+        return `${id.name} (${id.code || "—"})`;
+      }
+      id = id._id;
+    }
     if (!id || !Array.isArray(departments)) return "—";
     const dept = departments.find((d) => d && d._id === id);
     return dept ? `${dept.name || "—"} (${dept.code || "—"})` : "—";
   };
 
-  const getDesignationName = (id: string) => {
+  const getDesignationName = (id: any) => {
+    if (!id) return "—";
+    if (typeof id === "object") {
+      if (id.name) {
+        return id.name;
+      }
+      id = id._id;
+    }
     if (!id || !Array.isArray(designations)) return "—";
     const desig = designations.find((d) => d && d._id === id);
     return desig ? desig.name || "—" : "—";

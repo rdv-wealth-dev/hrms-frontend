@@ -14,7 +14,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
-import { getMyTodayAttendance, recordPunch } from "../../../api/attendance.api";
+import { getMyTodayAttendance, recordPunch, listShifts } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../../utils/time";
 
@@ -25,6 +25,7 @@ export default function DailyPunchCard() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [time, setTime] = useState(new Date());
+  const [defaultShiftId, setDefaultShiftId] = useState<string | null>(null);
 
   // Update localized digital clock every second
   useEffect(() => {
@@ -61,7 +62,26 @@ export default function DailyPunchCard() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await recordPunch("CHECK_IN");
+      let shiftIdToUse = defaultShiftId || record?.shiftId;
+
+      if (!shiftIdToUse) {
+        try {
+          const shiftsRes = await listShifts();
+          if (shiftsRes.succeeded && shiftsRes.data && shiftsRes.data.length > 0) {
+            const defaultShift = shiftsRes.data.find((s) => s.isDefault) || shiftsRes.data[0];
+            shiftIdToUse = defaultShift._id;
+            setDefaultShiftId(shiftIdToUse);
+          }
+        } catch (shiftErr) {
+          console.warn("Failed to fetch shifts list:", shiftErr);
+        }
+      }
+
+      if (!shiftIdToUse) {
+        throw new Error("No active shifts available. Please set up a shift in the system settings first.");
+      }
+
+      const response = await recordPunch("CHECK_IN", shiftIdToUse);
       if (response.succeeded && response.data) {
         setRecord(response.data);
         setSuccess("Checked in successfully!");
