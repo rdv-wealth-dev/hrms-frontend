@@ -28,6 +28,7 @@ import HolidaysPage from "../pages/holidays";
 import MyLeavePage from "../pages/leave";
 import LeaveApprovalsPage from "../pages/leave-approvals";
 import ReportsPage from "../pages/reports";
+import DocumentVerificationPage from "../pages/hr/documents-verification";
 
 function AppRoutes() {
   return (
@@ -195,6 +196,16 @@ function AppRoutes() {
           }
         />
 
+        <Route
+          path={paths.documentVerification}
+          element={
+            <AuthGuard>
+              <RoleGuard permission="document.read">
+                <DocumentVerificationPage />
+              </RoleGuard>
+            </AuthGuard>
+          }
+        />
         <Route path="*" element={<Navigate to={paths.auth.login} replace />} />
       </Routes>
     </BrowserRouter>

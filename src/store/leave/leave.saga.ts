@@ -53,7 +53,11 @@ import type {
 function* listLeaveTypesSaga(): SagaIterator {
   try {
     const response = yield call(listLeaveTypes);
-    const data = response?.data || [];
+    const data = Array.isArray(response)
+      ? response
+      : Array.isArray(response?.data)
+        ? response.data
+        : [];
     yield put(listLeaveTypesSuccess(data));
   } catch (error: any) {
     const message = error.response?.data?.message || error.message || 'Failed to fetch leave types';

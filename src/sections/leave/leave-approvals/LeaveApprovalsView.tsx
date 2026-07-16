@@ -43,6 +43,7 @@ export default function LeaveApprovalsView() {
   const {
     pendingRequests = [],
     totalPendingRecords = 0,
+    leaveTypes = [],
     loading,
     submitting,
     success,
@@ -50,6 +51,7 @@ export default function LeaveApprovalsView() {
   } = useSelector((state: RootState) => state.leave ?? {
     pendingRequests: [],
     totalPendingRecords: 0,
+    leaveTypes: [],
     loading: false,
     submitting: false,
     success: false,
@@ -61,6 +63,24 @@ export default function LeaveApprovalsView() {
 
   const [reviewComments, setReviewComments] = useState("");
   const reviewDialog = useDialog<{ id: string; status: "APPROVED" | "REJECTED" }>();
+
+  const getLeaveTypeName = (leaveTypeId: string | { _id?: string; name?: string; code?: string } | undefined): string => {
+    if (!leaveTypeId) return "Other Leave";
+    if (typeof leaveTypeId === "string") {
+      const type = leaveTypes.find((t) => t._id === leaveTypeId);
+      return type?.name ?? "Other Leave";
+    }
+    return leaveTypeId.name || "Other Leave";
+  };
+
+  const getLeaveTypeCode = (leaveTypeId: string | { _id?: string; name?: string; code?: string } | undefined): string => {
+    if (!leaveTypeId) return "OL";
+    if (typeof leaveTypeId === "string") {
+      const type = leaveTypes.find((t) => t._id === leaveTypeId);
+      return type?.code ?? "OL";
+    }
+    return leaveTypeId.code || "OL";
+  };
 
   // Fetch pending requests when page/pageSize changes
   useEffect(() => {
@@ -190,8 +210,8 @@ export default function LeaveApprovalsView() {
                       ? `${request.employeeId.firstName} ${request.employeeId.lastName}`
                       : "Unknown Employee";
                     const empCode = request.employeeId?.employeeCode || "—";
-                    const typeName = request.leaveTypeId?.name ?? "Other Leave";
-                    const typeCode = request.leaveTypeId?.code ?? "OL";
+                    const typeName = getLeaveTypeName(request.leaveTypeId);
+                    const typeCode = getLeaveTypeCode(request.leaveTypeId);
 
                     return (
                       <TableRow key={request._id} hover>

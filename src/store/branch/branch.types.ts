@@ -66,6 +66,7 @@ export interface CreateBranchRequest {
   code: string;
   address?: BranchAddress;
   contact?: BranchContact;
+  geo?: BranchGeo;
   workPolicy?: BranchWorkPolicy;
   statutory?: BranchStatutory;
 }
@@ -82,6 +83,7 @@ export interface UpdateBranchRequest {
   code?: string;
   address?: Partial<BranchAddress>;
   contact?: Partial<BranchContact>;
+  geo?: BranchGeo;
   workPolicy?: Partial<BranchWorkPolicy>;
   statutory?: Partial<BranchStatutory>;
 }

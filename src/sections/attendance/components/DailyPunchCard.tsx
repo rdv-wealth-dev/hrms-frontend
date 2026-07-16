@@ -17,6 +17,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { getMyTodayAttendance, recordPunch, listShifts } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../../utils/time";
+import { getCurrentPosition } from "../../../utils/geolocation";
 
 export default function DailyPunchCard() {
   const [record, setRecord] = useState<AttendanceRecord | null>(null);
@@ -26,6 +27,15 @@ export default function DailyPunchCard() {
   const [success, setSuccess] = useState<string | null>(null);
   const [time, setTime] = useState(new Date());
   const [defaultShiftId, setDefaultShiftId] = useState<string | null>(null);
+
+  const getLocation = async (): Promise<{ longitude: number; latitude: number } | null> => {
+    try {
+      const pos = await getCurrentPosition();
+      return { longitude: pos.lng, latitude: pos.lat };
+    } catch {
+      return null;
+    }
+  };
 
   // Update localized digital clock every second
   useEffect(() => {
@@ -81,7 +91,8 @@ export default function DailyPunchCard() {
         throw new Error("No active shifts available. Please set up a shift in the system settings first.");
       }
 
-      const response = await recordPunch("CHECK_IN", shiftIdToUse);
+      const loc = await getLocation();
+      const response = await recordPunch("CHECK_IN", shiftIdToUse, loc?.longitude, loc?.latitude);
       if (response.succeeded && response.data) {
         setRecord(response.data);
         setSuccess("Checked in successfully!");
@@ -102,7 +113,8 @@ export default function DailyPunchCard() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await recordPunch("CHECK_OUT");
+      const loc = await getLocation();
+      const response = await recordPunch("CHECK_OUT", undefined, loc?.longitude, loc?.latitude);
       if (response.succeeded && response.data) {
         setRecord(response.data);
         setSuccess("Checked out successfully!");
@@ -123,7 +135,8 @@ export default function DailyPunchCard() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await recordPunch("BREAK_OUT");
+      const loc = await getLocation();
+      const response = await recordPunch("BREAK_OUT", undefined, loc?.longitude, loc?.latitude);
       if (response.succeeded && response.data) {
         setRecord(response.data);
         setSuccess("Took a break successfully!");
@@ -144,7 +157,8 @@ export default function DailyPunchCard() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await recordPunch("BREAK_IN");
+      const loc = await getLocation();
+      const response = await recordPunch("BREAK_IN", undefined, loc?.longitude, loc?.latitude);
       if (response.succeeded && response.data) {
         setRecord(response.data);
         setSuccess("Resumed shift successfully!");

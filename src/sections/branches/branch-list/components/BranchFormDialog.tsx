@@ -161,6 +161,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         ptApplicable,
         ptStateCode: ptStateCode.trim() || undefined,
       },
+      geo: { geofenceEnabled: true },
     };
 
     onSubmit(payload);
@@ -438,7 +439,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 size="small"
                 disabled={!ptApplicable}
               />
-            </Grid>
+              </Grid>
           </Grid>
         </DialogContent>
 

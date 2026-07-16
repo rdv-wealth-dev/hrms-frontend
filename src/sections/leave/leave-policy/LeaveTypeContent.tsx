@@ -38,6 +38,7 @@ import {
   resetLeaveStatus,
 } from "../../../store/leave";
 import type { LeaveType, CreateLeaveTypeRequest } from "../../../api/leave.api";
+import { createLeaveTypeSchema } from "../../../validations/leave/create-leave-type.schema";
 
 // ============================================================
 // Create Leave Type Form Dialog
@@ -69,6 +70,8 @@ function LeaveTypeFormDialog({
   const [advanceNoticeDays, setAdvanceNoticeDays] = useState(0);
   const [approvalLevels, setApprovalLevels] = useState(1);
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
   // Switches
   const [isPaid, setIsPaid] = useState(true);
   const [requiresApproval, setRequiresApproval] = useState(true);
@@ -78,6 +81,7 @@ function LeaveTypeFormDialog({
 
   useEffect(() => {
     if (open) {
+      setFormErrors({});
       setName("");
       setCode("");
       setDescription("");
@@ -97,9 +101,7 @@ function LeaveTypeFormDialog({
   }, [open]);
 
   const handleSubmit = () => {
-    if (!name.trim() || !code.trim() || annualQuota < 0) return;
-
-    onSubmit({
+    const data: CreateLeaveTypeRequest = {
       name: name.trim(),
       code: code.trim().toUpperCase(),
       description: description.trim(),
@@ -115,7 +117,22 @@ function LeaveTypeFormDialog({
       allowNegativeBalance,
       probationEligible,
       applySandwichPolicy,
-    });
+    };
+
+    const result = createLeaveTypeSchema.safeParse(data);
+
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as string;
+        if (!errors[field]) errors[field] = issue.message;
+      }
+      setFormErrors(errors);
+      return;
+    }
+
+    setFormErrors({});
+    onSubmit(data);
   };
 
   return (
@@ -173,9 +190,18 @@ function LeaveTypeFormDialog({
               type="number"
               value={annualQuota}
               onChange={(e) => setAnnualQuota(Math.max(0, parseInt(e.target.value) || 0))}
+              error={!!formErrors.annualQuota}
+              helperText={formErrors.annualQuota}
               fullWidth
               size="small"
               required
+              sx={{
+                "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                  WebkitAppearance: "none",
+                  margin: 0,
+                },
+                "& input[type=number]": { MozAppearance: "textfield" },
+              }}
             />
 
             <TextField
@@ -201,8 +227,17 @@ function LeaveTypeFormDialog({
                 type="number"
                 value={accrualAmountPerCycle}
                 onChange={(e) => setAccrualAmountPerCycle(Math.max(0, parseFloat(e.target.value) || 0))}
+                error={!!formErrors.accrualAmountPerCycle}
+                helperText={formErrors.accrualAmountPerCycle}
                 fullWidth
                 size="small"
+                sx={{
+                  "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                    WebkitAppearance: "none",
+                    margin: 0,
+                  },
+                  "& input[type=number]": { MozAppearance: "textfield" },
+                }}
               />
             )}
           </Grid>
@@ -220,8 +255,17 @@ function LeaveTypeFormDialog({
                   type="number"
                   value={maxCarryForwardDays}
                   onChange={(e) => setMaxCarryForwardDays(Math.max(0, parseInt(e.target.value) || 0))}
+                  error={!!formErrors.maxCarryForwardDays}
+                  helperText={formErrors.maxCarryForwardDays}
                   fullWidth
                   size="small"
+                  sx={{
+                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                      WebkitAppearance: "none",
+                      margin: 0,
+                    },
+                    "& input[type=number]": { MozAppearance: "textfield" },
+                  }}
                 />
               </Grid>
               <Grid size={{ xs: 6 }}>
@@ -230,8 +274,17 @@ function LeaveTypeFormDialog({
                   type="number"
                   value={maxConsecutiveDays}
                   onChange={(e) => setMaxConsecutiveDays(Math.max(0, parseInt(e.target.value) || 0))}
+                  error={!!formErrors.maxConsecutiveDays}
+                  helperText={formErrors.maxConsecutiveDays}
                   fullWidth
                   size="small"
+                  sx={{
+                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                      WebkitAppearance: "none",
+                      margin: 0,
+                    },
+                    "& input[type=number]": { MozAppearance: "textfield" },
+                  }}
                 />
               </Grid>
               <Grid size={{ xs: 6 }}>
@@ -240,8 +293,17 @@ function LeaveTypeFormDialog({
                   type="number"
                   value={advanceNoticeDays}
                   onChange={(e) => setAdvanceNoticeDays(Math.max(0, parseInt(e.target.value) || 0))}
+                  error={!!formErrors.advanceNoticeDays}
+                  helperText={formErrors.advanceNoticeDays}
                   fullWidth
                   size="small"
+                  sx={{
+                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                      WebkitAppearance: "none",
+                      margin: 0,
+                    },
+                    "& input[type=number]": { MozAppearance: "textfield" },
+                  }}
                 />
               </Grid>
               <Grid size={{ xs: 6 }}>
@@ -250,9 +312,18 @@ function LeaveTypeFormDialog({
                   type="number"
                   value={approvalLevels}
                   onChange={(e) => setApprovalLevels(Math.min(3, Math.max(1, parseInt(e.target.value) || 1)))}
+                  error={!!formErrors.approvalLevels}
+                  helperText={formErrors.approvalLevels}
                   fullWidth
                   size="small"
                   slotProps={{ htmlInput: { min: 1, max: 3 } }}
+                  sx={{
+                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                      WebkitAppearance: "none",
+                      margin: 0,
+                    },
+                    "& input[type=number]": { MozAppearance: "textfield" },
+                  }}
                 />
               </Grid>
             </Grid>

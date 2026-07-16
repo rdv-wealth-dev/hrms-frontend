@@ -229,6 +229,24 @@ export default function LeaveDashboardView() {
     }
   };
 
+  const getLeaveTypeName = (leaveTypeId: string | { _id?: string; name?: string; code?: string } | undefined): string => {
+    if (!leaveTypeId) return "Other Leave";
+    if (typeof leaveTypeId === "string") {
+      const type = leaveTypes.find((t) => t._id === leaveTypeId);
+      return type?.name ?? "Other Leave";
+    }
+    return leaveTypeId.name || "Other Leave";
+  };
+
+  const getLeaveTypeCode = (leaveTypeId: string | { _id?: string; name?: string; code?: string } | undefined): string => {
+    if (!leaveTypeId) return "OL";
+    if (typeof leaveTypeId === "string") {
+      const type = leaveTypes.find((t) => t._id === leaveTypeId);
+      return type?.code ?? "OL";
+    }
+    return leaveTypeId.code || "OL";
+  };
+
   const getLeaveStatusChip = (status: string) => {
     let color = "#F59E0B";
     let bg = "rgba(245, 158, 11, 0.08)";
@@ -472,8 +490,8 @@ export default function LeaveDashboardView() {
                     </TableHead>
                     <TableBody>
                       {myRequests.map((request: LeaveRequest) => {
-                        const typeName = request.leaveTypeId?.name ?? "Other Leave";
-                        const typeCode = request.leaveTypeId?.code ?? "OL";
+                        const typeName = getLeaveTypeName(request.leaveTypeId);
+                        const typeCode = getLeaveTypeCode(request.leaveTypeId);
                         const isFuture = new Date(request.fromDate).getTime() > Date.now();
                         const canCancel = (request.status === "PENDING" || request.status === "APPROVED") && isFuture;
 
@@ -713,7 +731,7 @@ export default function LeaveDashboardView() {
                     Leave Type
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                    {detailDialog.target.leaveTypeId?.name || "Other Leave"}
+                    {getLeaveTypeName(detailDialog.target.leaveTypeId)}
                   </Typography>
                 </Box>
                 <Box>

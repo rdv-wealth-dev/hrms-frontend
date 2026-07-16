@@ -24,6 +24,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -89,6 +90,12 @@ const navItems = [
         icon: <SettingsOutlinedIcon fontSize="small" />,
         path: paths.settings,
         permission: "settings.read",
+    },
+    {
+        label: "Document Verification",
+        icon: <FactCheckOutlinedIcon fontSize="small" />,
+        path: paths.documentVerification,
+        permission: "document.read",
     },
 ];
 

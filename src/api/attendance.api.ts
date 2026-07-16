@@ -51,11 +51,13 @@ export const getMyTodayAttendance = async (): Promise<AttendanceRecordResponse> 
 
 export const recordPunch = async (
     type: "CHECK_IN" | "BREAK_OUT" | "BREAK_IN" | "CHECK_OUT",
-    shiftId?: string
+    shiftId?: string,
+    longitude?: number,
+    latitude?: number
 ): Promise<AttendanceRecordResponse> => {
     const response = await axiosInstance.post<AttendanceRecordResponse>(
         "/attendance/me/punch/web",
-        { type, shiftId },
+        { type, shiftId, longitude, latitude },
         { headers: getAuthHeader() }
     );
     return response.data;

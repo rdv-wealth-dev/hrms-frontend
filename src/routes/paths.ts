@@ -32,6 +32,7 @@ export const paths = {
   attendanceRegularizations: "/attendance/regularizations",
   leaveApprovals: "/leave-approvals",
   reports: "/reports",
+  documentVerification: "/hr/documents-verification",
 
   unauthorized: "/unauthorized",
   notFound: "/404",

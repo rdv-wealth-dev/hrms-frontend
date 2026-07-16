@@ -85,7 +85,7 @@ export const createLeaveType = async (
 
 export const listLeaveTypes = async (): Promise<LeaveTypesPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveTypesPaginatedResponse>(
-    "/leave/types",
+    "/leave/types?pageNumber=1&pageSize=50",
     { headers: getAuthHeader() }
   );
   return response.data;
