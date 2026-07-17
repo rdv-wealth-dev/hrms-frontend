@@ -288,13 +288,12 @@ export default function AttendanceReportView() {
                   </TableHead>
                   <TableBody>
                     {records.map((row) => {
-                      const empName = row.employeeId
-                        // @ts-ignore
-                        ? `${row.employeeId.firstName} ${row.employeeId.lastName}`
+                      const empName = row.employeeId && typeof row.employeeId === "object"
+                        ? `${(row.employeeId as any).firstName ?? ""} ${(row.employeeId as any).lastName ?? ""}`.trim() || "Unknown Employee"
                         : "Unknown Employee";
-                      const empCode = 
-                        // @ts-ignore
-                        row.employeeId?.employeeCode || "—";
+                      const empCode = row.employeeId && typeof row.employeeId === "object"
+                        ? (row.employeeId as any)?.employeeCode || "—"
+                        : "—";
 
                       return (
                         <TableRow key={row._id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
@@ -376,8 +375,9 @@ export default function AttendanceReportView() {
                       Employee
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                      {/* @ts-ignore */}
-                      {detailDialog.target.employeeId ? `${detailDialog.target.employeeId.firstName} ${detailDialog.target.employeeId.lastName}` : "Unknown"}
+                      {detailDialog.target.employeeId && typeof detailDialog.target.employeeId === "object"
+                        ? `${(detailDialog.target.employeeId as any).firstName ?? ""} ${(detailDialog.target.employeeId as any).lastName ?? ""}`.trim() || "Unknown"
+                        : "Unknown"}
                     </Typography>
                   </Box>
                   <Box>

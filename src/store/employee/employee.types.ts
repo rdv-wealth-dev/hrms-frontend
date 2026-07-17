@@ -1,37 +1,75 @@
 export interface Address {
-  addressLine1: string;
+  addressLine1?: string;
   addressLine2?: string;
-  city: string;
-  state: string;
-  countryCode: string;
-  zip: string;
+  city?: string;
+  state?: string;
+  countryCode?: string;
+  zip?: string;
 }
 
 export interface EmergencyContact {
   name: string;
   relationship: string;
   phone: string;
+  email?: string;
+}
+
+export interface SalaryComponent {
+  componentCode: string;
+  amount: number;
+  isPartOfWages: boolean;
+}
+
+export interface SalaryStructure {
+  type: "CTC" | "HOURLY_RATE" | "FIXED_MONTHLY" | "STIPEND" | "UNPAID";
+  amount?: number;
+  currency?: string;
+  hourlyRate?: number;
+  workingHoursPerWeek?: number;
+  workingDaysPerMonth?: number;
+  frequency?: "MONTHLY" | "WEEKLY" | "ONE_TIME";
+  description?: string;
+  components?: SalaryComponent[];
+}
+
+export interface Benefits {
+  hasHealthInsurance?: boolean;
+  hasRetirementPlan?: boolean;
+  hasLeaveEncashment?: boolean;
+  leaveEncashmentRate?: number;
+}
+
+export interface SalarySetup {
+  employeePayType: string;
+  structure: SalaryStructure;
+  effectiveFrom?: string;
+  benefits?: Benefits;
 }
 
 export interface CreateEmployeeRequest {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  dateOfBirth: string;
-  gender: string;
-  bloodGroup: string;
-  maritalStatus: string;
-  nationality: string;
-  pan: string;
+  phone?: string;
+  countryCode?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bloodGroup?: string;
+  maritalStatus?: string;
+  nationality?: string;
+  pan?: string;
+  aadhaar?: string;
   branchId: string;
-  countryCode: string;
   departmentId: string;
   designationId: string;
+  managerId?: string;
   employeeType: string;
   joiningDate: string;
-  currentAddress: Address;
-  emergencyContacts: EmergencyContact[];
+  probationEndDate?: string;
+  currentAddress?: Address;
+  permanentAddress?: Address;
+  emergencyContacts?: EmergencyContact[];
+  salarySetup?: SalarySetup;
 }
 
 export interface EmployeeResponseData {
