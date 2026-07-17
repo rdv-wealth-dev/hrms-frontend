@@ -61,9 +61,11 @@ export default function ApplyLeaveDialog({
     });
   };
 
-  const getLeaveTypeName = (id: string) => {
-    const type = leaveTypes.find((t) => t._id === id);
-    return type ? `${type.name} (${type.code})` : "Other Leave";
+  const getLeaveTypeName = (id: string | { _id?: string; name?: string; code?: string }) => {
+    if (!id) return "Other Leave";
+    const typeId = typeof id === "string" ? id : id._id;
+    const type = leaveTypes.find((t) => t._id === typeId);
+    return type ? `${type.name} (${type.code})` : id?.name || "Other Leave";
   };
 
   return (

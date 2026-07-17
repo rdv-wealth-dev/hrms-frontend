@@ -13,17 +13,19 @@ interface LeaveBalancesGridProps {
 }
 
 export default function LeaveBalancesGrid({ balances, leaveTypes }: LeaveBalancesGridProps) {
-  const getLeaveTypeInfo = (leaveTypeId: string): LeaveType | undefined => {
-    return leaveTypes.find((type: LeaveType) => type._id === leaveTypeId);
+  const getLeaveTypeInfo = (leaveTypeId: string | { _id?: string; name?: string; code?: string; isPaid?: boolean }): { name: string; code: string; isPaid: boolean } => {
+    if (!leaveTypeId) return { name: "Other Leave", code: "OL", isPaid: true };
+    if (typeof leaveTypeId === "string") {
+      const type = leaveTypes.find((t: LeaveType) => t._id === leaveTypeId);
+      return { name: type?.name ?? "Other Leave", code: type?.code ?? "OL", isPaid: type?.isPaid ?? true };
+    }
+    return { name: leaveTypeId.name || "Other Leave", code: leaveTypeId.code || "OL", isPaid: leaveTypeId.isPaid ?? true };
   };
 
   return (
     <Grid container spacing={3}>
       {balances.map((balance: LeaveBalance) => {
-        const typeInfo = getLeaveTypeInfo(balance.leaveTypeId);
-        const name = typeInfo?.name ?? "Other Leave";
-        const code = typeInfo?.code ?? "OL";
-        const isPaid = typeInfo?.isPaid ?? true;
+        const { name, code, isPaid } = getLeaveTypeInfo(balance.leaveTypeId);
 
         return (
           <Grid size={{ xs: 12, sm: 6, md: 4 }} key={balance._id}>
