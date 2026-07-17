@@ -182,7 +182,7 @@ function HolidayFormDialog({
 export default function HolidayListView() {
   const dispatch = useDispatch<AppDispatch>();
   const { hasPermission } = usePermissions();
-  const canCreate = hasPermission("leave.create");
+  const canCreate = hasPermission("holiday.create");
 
   const { holidays = [], loading, submitting, success, error } = useSelector(
     (state: RootState) => state.leave ?? { holidays: [], loading: false, submitting: false, success: false, error: null }

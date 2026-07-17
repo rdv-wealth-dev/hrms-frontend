@@ -288,12 +288,11 @@ export default function AttendanceReportView() {
                   </TableHead>
                   <TableBody>
                     {records.map((row) => {
-                      const empName = row.employeeId && typeof row.employeeId === "object"
-                        ? `${(row.employeeId as any).firstName ?? ""} ${(row.employeeId as any).lastName ?? ""}`.trim() || "Unknown Employee"
+                      const empData = row.employee || (typeof row.employeeId === "object" ? row.employeeId : null);
+                      const empName = empData
+                        ? `${empData.firstName ?? ""} ${empData.lastName ?? ""}`.trim() || empData.fullName || "Unknown Employee"
                         : "Unknown Employee";
-                      const empCode = row.employeeId && typeof row.employeeId === "object"
-                        ? (row.employeeId as any)?.employeeCode || "—"
-                        : "—";
+                      const empCode = empData?.employeeCode || "—";
 
                       return (
                         <TableRow key={row._id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
@@ -375,9 +374,10 @@ export default function AttendanceReportView() {
                       Employee
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                      {detailDialog.target.employeeId && typeof detailDialog.target.employeeId === "object"
-                        ? `${(detailDialog.target.employeeId as any).firstName ?? ""} ${(detailDialog.target.employeeId as any).lastName ?? ""}`.trim() || "Unknown"
-                        : "Unknown"}
+                      {(() => {
+                        const emp = detailDialog.target.employee || (typeof detailDialog.target.employeeId === "object" ? detailDialog.target.employeeId : null);
+                        return emp ? `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || emp.fullName || "Unknown" : "Unknown";
+                      })()}
                     </Typography>
                   </Box>
                   <Box>
