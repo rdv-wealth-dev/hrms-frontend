@@ -23,6 +23,8 @@ import Snackbar from "@mui/material/Snackbar";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 
 import type { AppDispatch } from "../../../store/store";
@@ -111,6 +113,7 @@ function OrganizationProfileContent() {
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState(8);
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     dispatch(loadOrganizationRequest());
@@ -146,16 +149,41 @@ function OrganizationProfileContent() {
     }
   }, [organization]);
 
-  // Trigger snackbar on success
+  // Trigger snackbar on success and exit edit mode
   useEffect(() => {
     if (success) {
       setSnackbarOpen(true);
+      setIsEditing(false);
       dispatch(resetOrganizationStatus());
     }
   }, [success, dispatch]);
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
+  };
+
+  const handleCancel = () => {
+    if (organization) {
+      setCompanyName(organization.companyName || "");
+      setLegalName(organization.legalName || "");
+      setIndustry(organization.industry || "");
+      setPhone(organization.phone || "");
+      setAddressLine1(organization.address?.addressLine1 || "");
+      setCity(organization.address?.city || "");
+      setStateName(organization.address?.state || "");
+      setCountryCode(organization.address?.countryCode || "IN");
+      setZip(organization.address?.zip || "");
+      setPrimaryColor(organization.branding?.primaryColor || "#2886CE");
+      setWebsite(organization.branding?.website || "");
+      setSupportEmail(organization.branding?.supportEmail || "");
+      setTimezone(organization.locale?.timezone || "Asia/Kolkata");
+      setDateFormat(organization.locale?.dateFormat || "DD/MM/YYYY");
+      setTimeFormat(organization.locale?.timeFormat === "24h" ? "24h" : "12h");
+      setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
+      setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
+      setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
+    }
+    setIsEditing(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -246,7 +274,7 @@ function OrganizationProfileContent() {
               >
                 <BusinessOutlinedIcon sx={{ fontSize: 32 }} />
               </Box>
-              <Box>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="h6" sx={{ fontWeight: 750, color: "#111827" }}>
                   Basic Details
                 </Typography>
@@ -254,6 +282,17 @@ function OrganizationProfileContent() {
                   Manage your organization's general information
                 </Typography>
               </Box>
+              {canUpdate && !isEditing && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EditOutlinedIcon />}
+                  onClick={() => setIsEditing(true)}
+                  sx={{ textTransform: "none", fontWeight: 600, borderRadius: 2, borderColor: "#D1D5DB", color: "#374151" }}
+                >
+                  Edit
+                </Button>
+              )}
             </Box>
 
             <Divider />
@@ -265,7 +304,7 @@ function OrganizationProfileContent() {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   required
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
@@ -276,7 +315,7 @@ function OrganizationProfileContent() {
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -286,7 +325,7 @@ function OrganizationProfileContent() {
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -296,7 +335,7 @@ function OrganizationProfileContent() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -393,7 +432,7 @@ function OrganizationProfileContent() {
                   value={addressLine1}
                   onChange={(e) => setAddressLine1(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -403,7 +442,7 @@ function OrganizationProfileContent() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -413,7 +452,7 @@ function OrganizationProfileContent() {
                   value={stateName}
                   onChange={(e) => setStateName(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -424,7 +463,7 @@ function OrganizationProfileContent() {
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                 >
                   {COUNTRIES.map((c) => (
                     <MenuItem key={c.code} value={c.code}>
@@ -439,7 +478,7 @@ function OrganizationProfileContent() {
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -473,7 +512,7 @@ function OrganizationProfileContent() {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -483,7 +522,7 @@ function OrganizationProfileContent() {
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -494,7 +533,7 @@ function OrganizationProfileContent() {
                   value={supportEmail}
                   onChange={(e) => setSupportEmail(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
@@ -531,7 +570,7 @@ function OrganizationProfileContent() {
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                 >
                   {TIMEZONES.map((tz) => (
                     <MenuItem key={tz.value} value={tz.value}>
@@ -547,7 +586,7 @@ function OrganizationProfileContent() {
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                 >
                   {DATE_FORMATS.map((df) => (
                     <MenuItem key={df} value={df}>
@@ -563,7 +602,7 @@ function OrganizationProfileContent() {
                   value={timeFormat}
                   onChange={(e) => setTimeFormat(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                 >
                   {TIME_FORMATS.map((tf) => (
                     <MenuItem key={tf} value={tf}>
@@ -579,7 +618,7 @@ function OrganizationProfileContent() {
                   value={fiscalYearStart}
                   onChange={(e) => setFiscalYearStart(e.target.value)}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                 >
                   {FISCAL_STARTS.map((m) => (
                     <MenuItem key={m} value={m}>
@@ -595,12 +634,12 @@ function OrganizationProfileContent() {
                   value={workingHoursPerDay}
                   onChange={(e) => setWorkingHoursPerDay(Number(e.target.value))}
                   fullWidth
-                  disabled={!canUpdate}
+                  disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { min: 1, max: 24, style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <FormControl fullWidth disabled={!canUpdate}>
+                <FormControl fullWidth disabled={!canUpdate || !isEditing}>
                   <InputLabel id="weekly-off-label">Weekly Off Days</InputLabel>
                   <Select
                     labelId="weekly-off-label"
@@ -689,9 +728,18 @@ function OrganizationProfileContent() {
         </Grid>
 
         {/* Submit Actions Bar */}
-        {canUpdate && (
+        {canUpdate && isEditing && (
           <Grid size={12}>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
+              <Button
+                variant="outlined"
+                disabled={submitting}
+                onClick={handleCancel}
+                startIcon={<CloseOutlinedIcon />}
+                sx={{ textTransform: "none", fontWeight: 600, borderRadius: 2.5, px: 3, py: 1.5, borderColor: "#D1D5DB", color: "#374151" }}
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
                 variant="contained"
@@ -718,7 +766,7 @@ function OrganizationProfileContent() {
                   },
                 }}
               >
-                {submitting ? "Saving..." : "Save Settings"}
+                {submitting ? "Saving..." : "Save Changes"}
               </Button>
             </Box>
           </Grid>

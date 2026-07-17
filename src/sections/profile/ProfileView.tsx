@@ -458,7 +458,7 @@ function ProfileView() {
                       >
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                           <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937", truncate: true }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {doc.fileName}
                             </Typography>
                             <Box sx={{ display: "flex", gap: 0.5, mt: 0.5, flexWrap: "wrap" }}>
