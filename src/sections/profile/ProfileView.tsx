@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -8,7 +8,6 @@ import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Alert from "@mui/material/Alert";
@@ -37,10 +36,16 @@ import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
 
 import type { RootState } from "../../store/rootReducer";
 import { paths } from "../../routes/paths";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
+import ConfirmDialog from "../../components/modal/ConfirmDialog";
+import { useDialog } from "../../hooks/useDialog";
+import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
+import EmergencyContactDialog from "./components/EmergencyContactDialog";
 import {
   addBankAccount,
   deleteBankAccount,
@@ -49,11 +54,12 @@ import {
   getEmployeeDocuments,
   getDownloadUrl,
   getEmployeeCompleteProfile,
+  getLoggedInEmployeeProfile,
   type AddBankAccountRequest,
   type BankAccount,
   type EmployeeDocument,
   type CompleteProfileEmployee,
-  type CompleteProfileCompletion,
+  type EmergencyContact,
 } from "../../api/employee.api";
 
 interface ProfileViewProps {
@@ -85,34 +91,105 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const [empProfile, setEmpProfile] = useState<CompleteProfileEmployee | null>(null);
   const [missingDocTypes, setMissingDocTypes] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!employeeId) {
+  // ── Edit Personal Details dialog ──────────────────────────────────────────
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editProfileSuccess, setEditProfileSuccess] = useState(false);
+
+  const [editPhone, setEditPhone] = useState("");
+  const [editDob, setEditDob] = useState("");
+  const [editGender, setEditGender] = useState("");
+  const [editAddressLine1, setEditAddressLine1] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editState, setEditState] = useState("");
+  const [editZip, setEditZip] = useState("");
+  const [editCountryCode, setEditCountryCode] = useState("IN");
+
+  // ── Emergency Contacts ────────────────────────────────────────────────────
+  const ecDialog = useDialog<void>();
+  const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
+  const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);
+  const [ecSuccessOpen, setEcSuccessOpen] = useState(false);
+  const [ecSuccessMessage, setEcSuccessMessage] = useState("");
+
+  const loadProfileData = async (cancelled = false) => {
+    if (!employeeId && isViewingOther) {
       setBankAccountsLoading(false);
       setDocumentsLoading(false);
       return;
     }
-    let cancelled = false;
-    const fetch = async () => {
+
+    let loadedSelf = false;
+    if (employeeId) {
       try {
         const res = await getEmployeeCompleteProfile(employeeId);
         if (!cancelled && res.succeeded) {
           setEmpProfile(res.data.employee || null);
           setBankAccounts((res.data.bankAccounts || []) as BankAccount[]);
           setDocuments((res.data.documents || []) as EmployeeDocument[]);
-          setMissingDocTypes(res.data.missingDocuments || []);
+          setMissingDocTypes(res.data.organizationRequirements?.missingDocuments || []);
+          loadedSelf = true;
         }
-      } catch {
-        // silently ignore
-      } finally {
-        if (!cancelled) {
-          setBankAccountsLoading(false);
-          setDocumentsLoading(false);
-        }
+      } catch (err: any) {
+        // Fall through to self load if we are viewing ourselves
       }
+    }
+
+    if (!loadedSelf && !cancelled && !isViewingOther) {
+      try {
+        const [profileRes, bankRes, docRes] = await Promise.all([
+          getLoggedInEmployeeProfile(),
+          getBankAccounts(),
+          getEmployeeDocuments(),
+        ]);
+
+        if (profileRes.succeeded) {
+          setEmpProfile(profileRes.data || null);
+        }
+        if (bankRes.succeeded) {
+          setBankAccounts((bankRes.data || []) as BankAccount[]);
+        }
+        if (docRes.succeeded) {
+          setDocuments((docRes.data || []) as EmployeeDocument[]);
+        }
+        setMissingDocTypes([]);
+      } catch (fallbackErr) {
+        console.error("Fallback load failed:", fallbackErr);
+      }
+    }
+
+    if (!cancelled) {
+      setBankAccountsLoading(false);
+      setDocumentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    loadProfileData(cancelled);
+    return () => {
+      cancelled = true;
     };
-    fetch();
-    return () => { cancelled = true; };
-  }, [employeeId]);
+  }, [employeeId, isViewingOther, user]);
+
+  // Shared self-update hook for personal details
+  const onProfileUpdated = useCallback(async () => {
+    await loadProfileData();
+    setEditProfileSuccess(true);
+    setEditProfileOpen(false);
+  }, []);
+
+  const personalDetailsUpdater = useProfileSelfUpdate(onProfileUpdated);
+
+  // Shared self-update hook for emergency contacts
+  const onEcUpdated = useCallback(async () => {
+    await loadProfileData();
+    ecDialog.close();
+    setEcDeleteConfirmOpen(false);
+    setEcDeleteTarget(null);
+    setEcSuccessOpen(true);
+  }, [ecDialog]);
+
+  const ecUpdater = useProfileSelfUpdate(onEcUpdated);
 
   const resetBankForm = () => {
     setBankName("");
@@ -147,8 +224,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       setBankSuccess(true);
       setBankDialogOpen(false);
       resetBankForm();
-      const refreshRes = await getBankAccounts();
-      if (refreshRes.succeeded) setBankAccounts(refreshRes.data);
+      await loadProfileData();
     } catch (err: unknown) {
       setBankError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -234,8 +310,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       setDocUploadSuccess(true);
       setDocUploadDialogOpen(false);
       resetDocUploadForm();
-      const refreshRes = await getEmployeeDocuments();
-      if (refreshRes.succeeded) setDocuments(refreshRes.data);
+      await loadProfileData();
     } catch (err: unknown) {
       setDocUploadError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -248,11 +323,13 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     setBankDeleting(true);
     setBankError(null);
     try {
-      const res = await deleteBankAccount(bankDeleteTarget.employeeId || user?.employeeId || "", bankDeleteTarget._id);
+      const bankId = bankDeleteTarget.id || bankDeleteTarget._id || "";
+      const res = await deleteBankAccount(bankDeleteTarget.employeeId || user?.employeeId || "", bankId);
       if (res.succeeded) {
-        setBankAccounts((prev) => prev.filter((a) => a._id !== bankDeleteTarget._id));
+        setBankAccounts((prev) => prev.filter((a) => (a.id || a._id) !== bankId));
         setBankDeleteTarget(null);
         setBankDeleteSuccess(true);
+        await loadProfileData();
       } else {
         setBankError(res.message || "Failed to delete bank account");
       }
@@ -261,6 +338,52 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     } finally {
       setBankDeleting(false);
     }
+  };
+
+  const handleOpenEditProfile = () => {
+    setEditPhone(empProfile?.phone || "");
+    let dobVal = "";
+    if (empProfile?.dateOfBirth) dobVal = empProfile.dateOfBirth.split("T")[0];
+    setEditDob(dobVal);
+    setEditGender(empProfile?.gender || "");
+    const addr = (empProfile?.currentAddress || {}) as any;
+    setEditAddressLine1(addr.addressLine1 || "");
+    setEditCity(addr.city || "");
+    setEditState(addr.state || "");
+    setEditZip(addr.zip || "");
+    setEditCountryCode(addr.countryCode || "IN");
+    personalDetailsUpdater.clearError();
+    setEditProfileOpen(true);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await personalDetailsUpdater.submit({
+      phone: editPhone.trim(),
+      dateOfBirth: editDob || undefined,
+      gender: editGender || undefined,
+      countryCode: editCountryCode || "IN",
+      currentAddress: {
+        addressLine1: editAddressLine1.trim(),
+        city: editCity.trim(),
+        state: editState.trim(),
+        countryCode: editCountryCode || "IN",
+        zip: editZip.trim(),
+      },
+    });
+  };
+
+  const handleAddEmergencyContact = async (contact: EmergencyContact) => {
+    const current = empProfile?.emergencyContacts ?? [];
+    setEcSuccessMessage("Emergency contact added successfully");
+    await ecUpdater.submit({ emergencyContacts: [...current, contact] });
+  };
+
+  const handleDeleteEmergencyContact = async () => {
+    if (ecDeleteTarget === null) return;
+    const updated = (empProfile?.emergencyContacts ?? []).filter((_, i) => i !== ecDeleteTarget);
+    setEcSuccessMessage("Emergency contact removed successfully");
+    await ecUpdater.submit({ emergencyContacts: updated });
   };
 
   const getRoleLabel = (role: string) => {
@@ -374,57 +497,76 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         </Card>
 
         {/* Profile Completion */}
-        {empProfile && (
-          <Card
-            sx={{
-              p: 3,
-              mb: 4,
-              borderRadius: 4,
-              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-              backgroundColor: "#fff",
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                <CheckCircleOutlinedIcon sx={{ color: empProfile.isProfileComplete ? "#10B981" : "#F59E0B" }} />
-                Profile {empProfile.isProfileComplete ? "Complete" : "Incomplete"}
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: empProfile.isProfileComplete ? "#10B981" : "#F59E0B" }}>
-                {Object.values(empProfile.profileCompletion || {}).filter(Boolean).length}/5 completed
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-              {[
-                { key: "personalDetails", label: "Personal Details" },
-                { key: "address", label: "Address" },
-                { key: "emergencyContact", label: "Emergency Contact" },
-                { key: "bankDetails", label: "Bank Details" },
-                { key: "mandatoryDocs", label: "Mandatory Documents" },
-              ].map((item) => {
-                const done = empProfile.profileCompletion?.[item.key as keyof CompleteProfileCompletion] ?? false;
-                return (
-                  <Chip
-                    key={item.key}
-                    icon={done ? <CheckCircleOutlinedIcon sx={{ fontSize: "14px !important" }} /> : <HourglassEmptyOutlinedIcon sx={{ fontSize: "14px !important" }} />}
-                    label={item.label}
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      backgroundColor: done ? "#D1FAE5" : "#FEF3C7",
-                      color: done ? "#065F46" : "#92400E",
-                      borderRadius: 2,
-                    }}
-                  />
-                );
-              })}
-            </Box>
-            {(missingDocTypes || []).length > 0 && (
-              <Alert severity="warning" sx={{ mt: 2, borderRadius: 2 }}>
-                Missing documents: <strong>{(missingDocTypes || []).join(", ")}</strong>
-              </Alert>
-            )}
-          </Card>
-        )}
+        {empProfile && (() => {
+          const computedCompletion = {
+            personalDetails: !!(empProfile.phone && empProfile.dateOfBirth && empProfile.gender) || (empProfile.profileCompletion?.personalDetails ?? false),
+            address: !!(
+              empProfile.currentAddress &&
+              (empProfile.currentAddress as any).addressLine1 &&
+              (empProfile.currentAddress as any).city &&
+              (empProfile.currentAddress as any).state &&
+              (empProfile.currentAddress as any).zip
+            ) || (empProfile.profileCompletion?.address ?? false),
+            emergencyContact: !!(empProfile.emergencyContacts && empProfile.emergencyContacts.length > 0) || (empProfile.profileCompletion?.emergencyContact ?? false),
+            bankDetails: bankAccounts.length > 0 || (empProfile.profileCompletion?.bankDetails ?? false),
+            mandatoryDocs: (documents.length > 0 && missingDocTypes.length === 0) || (empProfile.profileCompletion?.mandatoryDocs ?? false),
+          };
+
+          const isProfileComplete = Object.values(computedCompletion).every(Boolean);
+          const completedCount = Object.values(computedCompletion).filter(Boolean).length;
+
+          return (
+            <Card
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 4,
+                boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
+                backgroundColor: "#fff",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
+                  <CheckCircleOutlinedIcon sx={{ color: isProfileComplete ? "#10B981" : "#F59E0B" }} />
+                  Profile {isProfileComplete ? "Complete" : "Incomplete"}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: isProfileComplete ? "#10B981" : "#F59E0B" }}>
+                  {completedCount}/5 completed
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                {[
+                  { key: "personalDetails", label: "Personal Details" },
+                  { key: "address", label: "Address" },
+                  { key: "emergencyContact", label: "Emergency Contact" },
+                  { key: "bankDetails", label: "Bank Details" },
+                  { key: "mandatoryDocs", label: "Mandatory Documents" },
+                ].map((item) => {
+                  const done = computedCompletion[item.key as keyof typeof computedCompletion] ?? false;
+                  return (
+                    <Chip
+                      key={item.key}
+                      icon={done ? <CheckCircleOutlinedIcon sx={{ fontSize: "14px !important" }} /> : <HourglassEmptyOutlinedIcon sx={{ fontSize: "14px !important" }} />}
+                      label={item.label}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        backgroundColor: done ? "#D1FAE5" : "#FEF3C7",
+                        color: done ? "#065F46" : "#92400E",
+                        borderRadius: 2,
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+              {(missingDocTypes || []).length > 0 && (
+                <Alert severity="warning" sx={{ mt: 2, borderRadius: 2 }}>
+                  Missing documents: <strong>{(missingDocTypes || []).join(", ")}</strong>
+                </Alert>
+              )}
+            </Card>
+          );
+        })()}
 
         {/* Content Cards */}
         <Grid container spacing={3}>
@@ -439,10 +581,22 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   backgroundColor: "#fff",
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                  <BadgeOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                  Personal Information
-                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
+                    <BadgeOutlinedIcon sx={{ color: "#6D5DF6" }} />
+                    Personal Information
+                  </Typography>
+                  {!isViewingOther && (
+                    <Button
+                      size="small"
+                      startIcon={<EditOutlinedIcon />}
+                      onClick={handleOpenEditProfile}
+                      sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </Box>
                 <Grid container spacing={2.5}>
                   <Grid size={6}>
                     <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>First Name</Typography>
@@ -515,6 +669,28 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                       </Typography>
                     </Grid>
                   )}
+                  <Grid size={6}>
+                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Phone Number</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile?.phone || "—"}</Typography>
+                  </Grid>
+                  <Grid size={6}>
+                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Gender</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile?.gender || "—"}</Typography>
+                  </Grid>
+                  <Grid size={6}>
+                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Date of Birth</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>
+                      {empProfile?.dateOfBirth ? new Date(empProfile.dateOfBirth).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" }) : "—"}
+                    </Typography>
+                  </Grid>
+                  <Grid size={12}>
+                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Current Address</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5, lineHeight: 1.5 }}>
+                      {empProfile?.currentAddress?.addressLine1 ? (
+                        `${empProfile.currentAddress.addressLine1}, ${empProfile.currentAddress.city || ""}, ${empProfile.currentAddress.state || ""}, ${empProfile.currentAddress.countryCode || ""} ${empProfile.currentAddress.zip || ""}`
+                      ) : "—"}
+                    </Typography>
+                  </Grid>
                 </Grid>
               </Card>
 
@@ -566,7 +742,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                     {documents.map((doc, index) => (
                       <Box
-                        key={doc._id || index}
+                        key={doc.id || doc._id || index}
                         sx={{
                           p: 1.5,
                           borderRadius: 2,
@@ -590,7 +766,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                           </Box>
                           <Button
                             size="small"
-                            onClick={() => handleDocDownload(doc._id)}
+                            onClick={() => handleDocDownload(doc.id || doc._id)}
                             sx={{ minWidth: 32, p: 0.5, color: "#6D5DF6" }}
                           >
                             <DownloadOutlinedIcon fontSize="small" />
@@ -615,6 +791,72 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                         Upload Document
                       </Button>
                     )}
+                  </Box>
+                )}
+              </Card>
+
+              {/* Emergency Contacts */}
+              <Card
+                sx={{
+                  p: 3.5,
+                  borderRadius: 4,
+                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
+                    <ContactEmergencyOutlinedIcon sx={{ color: "#6D5DF6" }} />
+                    Emergency Contacts
+                  </Typography>
+                  {!isViewingOther && (
+                    <Button
+                      size="small"
+                      startIcon={<AddIcon />}
+                      onClick={() => ecDialog.open()}
+                      sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+                    >
+                      Add
+                    </Button>
+                  )}
+                </Box>
+
+                {(empProfile?.emergencyContacts ?? []).length === 0 ? (
+                  <Typography variant="body2" sx={{ color: "#9CA3AF", textAlign: "center", py: 2 }}>
+                    No emergency contacts added yet
+                  </Typography>
+                ) : (
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    {(empProfile!.emergencyContacts!).map((ec, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          p: 1.5,
+                          borderRadius: 2,
+                          border: "1px solid #E5E7EB",
+                          backgroundColor: "#F9FAFB",
+                        }}
+                      >
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: "#1F2937" }}>{ec.name}</Typography>
+                          <Typography variant="caption" sx={{ color: "#6B7280" }}>
+                            {ec.relationship} · {ec.phone}
+                          </Typography>
+                        </Box>
+                        {!isViewingOther && (
+                          <IconButton
+                            size="small"
+                            onClick={() => { setEcDeleteTarget(idx); setEcDeleteConfirmOpen(true); }}
+                            sx={{ color: "#9CA3AF", p: 0.3 }}
+                          >
+                            <DeleteOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    ))}
                   </Box>
                 )}
               </Card>
@@ -716,7 +958,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {bankAccounts.map((acc, index) => (
                       <Box
-                        key={acc._id || index}
+                        key={acc.id || acc._id || index}
                         sx={{
                           p: 2,
                           borderRadius: 2,
@@ -1058,6 +1300,194 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       >
         <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setDocUploadSuccess(false)}>
           Document uploaded — awaiting HR verification
+        </Alert>
+      </Snackbar>
+      {/* Edit Personal Details Dialog */}
+      <Dialog
+        open={editProfileOpen}
+        onClose={() => { if (!personalDetailsUpdater.submitting) setEditProfileOpen(false); }}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
+          Edit Personal Details & Address
+        </DialogTitle>
+        <Box component="form" onSubmit={handleSaveProfile}>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
+            {personalDetailsUpdater.error && <Alert severity="error" sx={{ borderRadius: 2 }}>{personalDetailsUpdater.error}</Alert>}
+            
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4B5563" }}>
+              Personal Information
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid size={6}>
+                <TextField
+                  label="Phone Number"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  fullWidth
+                  required
+                  placeholder="e.g. 9876543210"
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
+                  select
+                  label="Gender"
+                  value={editGender}
+                  onChange={(e) => setEditGender(e.target.value)}
+                  fullWidth
+                  required
+                  disabled={personalDetailsUpdater.submitting}
+                >
+                  <MenuItem value="MALE">Male</MenuItem>
+                  <MenuItem value="FEMALE">Female</MenuItem>
+                  <MenuItem value="OTHER">Other</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={12}>
+                <TextField
+                  type="date"
+                  label="Date of Birth"
+                  value={editDob}
+                  onChange={(e) => setEditDob(e.target.value)}
+                  fullWidth
+                  required
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 1 }} />
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4B5563" }}>
+              Current Address
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid size={12}>
+                <TextField
+                  label="Address Line 1"
+                  value={editAddressLine1}
+                  onChange={(e) => setEditAddressLine1(e.target.value)}
+                  fullWidth
+                  required
+                  placeholder="Street name, floor, apartment number"
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
+                  label="City"
+                  value={editCity}
+                  onChange={(e) => setEditCity(e.target.value)}
+                  fullWidth
+                  required
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
+                  label="State"
+                  value={editState}
+                  onChange={(e) => setEditState(e.target.value)}
+                  fullWidth
+                  required
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
+                  label="ZIP / Postal Code"
+                  value={editZip}
+                  onChange={(e) => setEditZip(e.target.value)}
+                  fullWidth
+                  required
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
+                  label="Country Code"
+                  value={editCountryCode}
+                  onChange={(e) => setEditCountryCode(e.target.value)}
+                  fullWidth
+                  required
+                  placeholder="e.g. IN"
+                  disabled={personalDetailsUpdater.submitting}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => setEditProfileOpen(false)}
+              disabled={personalDetailsUpdater.submitting}
+              sx={{ textTransform: "none", color: "#6B7280" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={personalDetailsUpdater.submitting}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+                backgroundColor: "#6D5DF6",
+                "&:hover": { backgroundColor: "#5B4CE5" },
+              }}
+            >
+              {personalDetailsUpdater.submitting ? "Saving..." : "Save Details"}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+
+      {/* Edit Profile Success Snackbar */}
+      <Snackbar
+        open={editProfileSuccess}
+        autoHideDuration={4000}
+        onClose={() => setEditProfileSuccess(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setEditProfileSuccess(false)}>
+          Personal details and address updated successfully
+        </Alert>
+      </Snackbar>
+
+      {/* Add Emergency Contact Dialog */}
+      <EmergencyContactDialog
+        open={ecDialog.isOpen}
+        onClose={ecDialog.close}
+        onSave={handleAddEmergencyContact}
+        submitting={ecUpdater.submitting}
+        error={ecUpdater.error}
+      />
+
+      {/* Delete Emergency Contact Confirm Dialog */}
+      <ConfirmDialog
+        open={ecDeleteConfirmOpen}
+        title="Remove Emergency Contact"
+        content="Are you sure you want to remove this emergency contact? This action cannot be undone."
+        confirmLabel="Remove"
+        onConfirm={handleDeleteEmergencyContact}
+        onClose={() => { setEcDeleteConfirmOpen(false); setEcDeleteTarget(null); }}
+        loading={ecUpdater.submitting}
+      />
+
+      {/* Emergency Contact Action Snackbar */}
+      <Snackbar
+        open={ecSuccessOpen}
+        autoHideDuration={3000}
+        onClose={() => setEcSuccessOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setEcSuccessOpen(false)}>
+          {ecSuccessMessage}
         </Alert>
       </Snackbar>
     </DashboardLayout>

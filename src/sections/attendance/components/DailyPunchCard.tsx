@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
@@ -13,13 +14,16 @@ import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import { getMyTodayAttendance, recordPunch, listShifts } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../../utils/time";
 import { getCurrentPosition } from "../../../utils/geolocation";
+import { useProfileBlockDetect } from "../../../hooks/useProfileBlockDetect";
 
 export default function DailyPunchCard() {
+  const navigate = useNavigate();
   const [record, setRecord] = useState<AttendanceRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [punching, setPunching] = useState(false);
@@ -27,6 +31,7 @@ export default function DailyPunchCard() {
   const [success, setSuccess] = useState<string | null>(null);
   const [time, setTime] = useState(new Date());
   const [defaultShiftId, setDefaultShiftId] = useState<string | null>(null);
+  const { isBlocked, pendingSections, detectBlock, reset } = useProfileBlockDetect();
 
   const getLocation = async (): Promise<{ longitude: number; latitude: number } | null> => {
     try {
@@ -46,6 +51,7 @@ export default function DailyPunchCard() {
   const loadTodayAttendance = async () => {
     setLoading(true);
     setError(null);
+    reset();
     try {
       const response = await getMyTodayAttendance();
       if (response.succeeded && response.data) {
@@ -54,9 +60,12 @@ export default function DailyPunchCard() {
         setError(response.message || "Failed to load daily attendance status");
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "Failed to load daily attendance status"
-      );
+      const handled = await detectBlock(err);
+      if (!handled) {
+        setError(
+          err.response?.data?.message || err.message || "Failed to load daily attendance status"
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -280,8 +289,73 @@ export default function DailyPunchCard() {
         }}
       />
 
-      {/* Title & Live Status Chip */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {isBlocked ? (
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 3, gap: 2.5 }}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: "50%",
+              backgroundColor: "rgba(245, 158, 11, 0.08)",
+              color: "#F59E0B",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <LockOutlinedIcon sx={{ fontSize: 36 }} />
+          </Box>
+          <Box sx={{ textAlign: "center", px: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1E1B4B", mb: 1, fontFamily: "'Outfit', 'Inter', sans-serif" }}>
+              Profile Completion Required
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360, lineHeight: 1.6, fontSize: "0.9rem", mb: 1.5 }}>
+              Complete the following sections to access attendance features:
+            </Typography>
+            {pendingSections.length > 0 && (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, justifyContent: "center" }}>
+                {pendingSections.map((section) => (
+                  <Chip
+                    key={section}
+                    label={section}
+                    size="small"
+                    sx={{
+                      backgroundColor: "rgba(245, 158, 11, 0.1)",
+                      color: "#B45309",
+                      fontWeight: 600,
+                      fontSize: "0.72rem",
+                      border: "1px solid rgba(245, 158, 11, 0.25)",
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/profile")}
+            sx={{
+              mt: 1,
+              px: 4,
+              py: 1.2,
+              borderRadius: 2.5,
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 4px 14px rgba(109, 93, 246, 0.25)",
+              "&:hover": {
+                backgroundColor: "#5B4BEA",
+                boxShadow: "0 6px 20px rgba(109, 93, 246, 0.35)",
+              },
+            }}
+          >
+            Complete Profile
+          </Button>
+        </Box>
+      ) : (
+        <>
+          {/* Title & Live Status Chip */}
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <AccessTimeIcon sx={{ color: isOnBreak ? "#F59E0B" : isActiveShift ? "#10B981" : hasCheckedOut ? "#6366F1" : "#6D5DF6" }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
@@ -564,6 +638,8 @@ export default function DailyPunchCard() {
             </Box>
           )}
         </Box>
+      )}
+        </>
       )}
     </Paper>
   );

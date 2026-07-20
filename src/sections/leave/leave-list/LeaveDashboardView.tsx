@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -33,6 +34,7 @@ import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import type { AppDispatch } from "../../../store/store";
@@ -40,6 +42,7 @@ import type { RootState } from "../../../store/rootReducer";
 import { useDialog } from "../../../hooks/useDialog";
 import { useSubmitSuccess } from "../../../hooks/useSubmitSuccess";
 import { usePagination } from "../../../hooks/usePagination";
+import { useProfileBlockDetect } from "../../../hooks/useProfileBlockDetect";
 import {
   getMyLeaveBalancesRequest,
   listLeaveTypesRequest,
@@ -140,6 +143,7 @@ export default function LeaveDashboardView() {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [tabValue, setTabValue] = useState(0);
+  const navigate = useNavigate();
 
   const {
     balances = [],
@@ -164,6 +168,16 @@ export default function LeaveDashboardView() {
     success: false,
     error: null,
   });
+
+  const { isBlocked: isProfileBlocked, pendingSections, detectBlock, reset } = useProfileBlockDetect();
+
+  useEffect(() => {
+    if (error) {
+      detectBlock(error);
+    } else {
+      reset();
+    }
+  }, [error, detectBlock, reset]);
 
   const applyDialog = useDialog<any>();
   const detailDialog = useDialog<LeaveRequest>();
@@ -354,24 +368,103 @@ export default function LeaveDashboardView() {
             </Box>
           </Box>
 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenApply}
-            sx={{
-              backgroundColor: "#6D5DF6",
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: 2,
-              "&:hover": { backgroundColor: "#5B4EE4" },
-            }}
-          >
-            Apply Leave
-          </Button>
+          {!isProfileBlocked && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenApply}
+              sx={{
+                backgroundColor: "#6D5DF6",
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+                "&:hover": { backgroundColor: "#5B4EE4" },
+              }}
+            >
+              Apply Leave
+            </Button>
+          )}
         </Box>
 
-        {/* Tab Selection */}
-        <Tabs
+        {isProfileBlocked ? (
+          <Paper
+            sx={{
+              p: 6,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 3,
+              border: "1px dashed rgba(224, 224, 224, 1)",
+              boxShadow: "none",
+              gap: 2.5,
+              mt: 2
+            }}
+          >
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: "50%",
+                backgroundColor: "rgba(245, 158, 11, 0.08)",
+                color: "#F59E0B",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <LockOutlinedIcon sx={{ fontSize: 38 }} />
+            </Box>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#1E1B4B", mb: 1 }}>
+                Access Restricted — Profile Verification Required
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 450, mx: "auto", lineHeight: 1.6, mb: 2 }}>
+                Complete the following sections to request leaves or track balances:
+              </Typography>
+              {pendingSections.length > 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, justifyContent: "center", mb: 1 }}>
+                  {pendingSections.map((section) => (
+                    <Chip
+                      key={section}
+                      label={section}
+                      size="small"
+                      sx={{
+                        backgroundColor: "rgba(245, 158, 11, 0.1)",
+                        color: "#B45309",
+                        fontWeight: 600,
+                        fontSize: "0.72rem",
+                        border: "1px solid rgba(245, 158, 11, 0.25)",
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/profile")}
+              sx={{
+                mt: 1,
+                px: 5,
+                py: 1.2,
+                borderRadius: 2.5,
+                textTransform: "none",
+                fontWeight: 600,
+                backgroundColor: "#6D5DF6",
+                boxShadow: "0 4px 14px rgba(109, 93, 246, 0.25)",
+                "&:hover": {
+                  backgroundColor: "#5B4BEA",
+                  boxShadow: "0 6px 20px rgba(109, 93, 246, 0.35)",
+                },
+              }}
+            >
+              Complete Profile
+            </Button>
+          </Paper>
+        ) : (
+          <>
+            {/* Tab Selection */}
+            <Tabs
           value={tabValue}
           onChange={(_, newValue) => setTabValue(newValue)}
           sx={{
@@ -683,6 +776,8 @@ export default function LeaveDashboardView() {
               </Box>
             )}
           </Box>
+        )}
+          </>
         )}
       </Box>
 

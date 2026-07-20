@@ -7,6 +7,7 @@ import {
   updateOrganization,
   updateModules,
   updateStatutory,
+  updateMandatoryDocs,
 } from "../../api/organization.api";
 import {
   loadOrganizationSuccess,
@@ -17,12 +18,15 @@ import {
   updateModulesFailure,
   updateStatutorySuccess,
   updateStatutoryFailure,
+  updateMandatoryDocsSuccess,
+  updateMandatoryDocsFailure,
 } from "./organization.actions";
 import { ORGANIZATION_ACTIONS } from "./organization.types";
 import type {
   UpdateOrganizationRequestAction,
   UpdateModulesRequestAction,
   UpdateStatutoryRequestAction,
+  UpdateMandatoryDocsRequestAction,
 } from "./organization.types";
 
 function* handleLoadOrganization(): SagaIterator {
@@ -147,6 +151,37 @@ function* handleUpdateStatutory(
   }
 }
 
+function* handleUpdateMandatoryDocs(
+  action: UpdateMandatoryDocsRequestAction
+): SagaIterator {
+  try {
+    const response = yield call(updateMandatoryDocs, action.payload);
+
+    if (!response || !response.succeeded || !response.data) {
+      yield put(
+        updateMandatoryDocsFailure(
+          response?.message ?? "Failed to update organization mandatory documents"
+        )
+      );
+      return;
+    }
+
+    yield put(updateMandatoryDocsSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(
+        updateMandatoryDocsFailure(
+          error.response?.data?.message ?? "Failed to update organization mandatory documents"
+        )
+      );
+    } else if (error instanceof Error) {
+      yield put(updateMandatoryDocsFailure(error.message));
+    } else {
+      yield put(updateMandatoryDocsFailure("Something went wrong"));
+    }
+  }
+}
+
 export function* organizationSaga(): SagaIterator {
   yield takeLatest(ORGANIZATION_ACTIONS.LOAD_REQUEST, handleLoadOrganization);
   yield takeLatest(ORGANIZATION_ACTIONS.UPDATE_REQUEST, handleUpdateOrganization);
@@ -154,5 +189,9 @@ export function* organizationSaga(): SagaIterator {
   yield takeLatest(
     ORGANIZATION_ACTIONS.UPDATE_STATUTORY_REQUEST,
     handleUpdateStatutory
+  );
+  yield takeLatest(
+    ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_REQUEST,
+    handleUpdateMandatoryDocs
   );
 }

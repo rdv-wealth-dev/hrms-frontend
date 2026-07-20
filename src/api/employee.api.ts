@@ -120,6 +120,7 @@ export interface AddBankAccountResponse {
 }
 
 export interface BankAccount {
+  id?: string;
   _id: string;
   tenantId: string;
   branchId: string;
@@ -289,6 +290,7 @@ export const uploadDocument = async (
 };
 
 export interface EmployeeDocument {
+  id?: string;
   _id: string;
   employeeId: string | { _id: string; employeeCode?: string; firstName?: string; lastName?: string };
   documentType: string;
@@ -400,6 +402,12 @@ export interface CompleteProfileCompletion {
   mandatoryDocs: boolean;
 }
 
+export interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phone: string;
+}
+
 export interface CompleteProfileEmployee {
   _id: string;
   employeeCode: string;
@@ -410,7 +418,7 @@ export interface CompleteProfileEmployee {
   dateOfBirth?: string;
   gender?: string;
   currentAddress?: Record<string, unknown>;
-  emergencyContacts?: Record<string, unknown>[];
+  emergencyContacts?: EmergencyContact[];
   departmentId?: { _id: string; name: string; code: string };
   designationId?: { _id: string; name: string };
   managerId?: { _id: string; firstName: string; lastName: string };
@@ -419,7 +427,8 @@ export interface CompleteProfileEmployee {
 }
 
 export interface CompleteProfileDocument {
-  _id: string;
+  id?: string;
+  _id?: string;
   documentType: string;
   fileName: string;
   s3Key: string;
@@ -428,7 +437,8 @@ export interface CompleteProfileDocument {
 }
 
 export interface CompleteProfileBankAccount {
-  _id: string;
+  id?: string;
+  _id?: string;
   employeeId?: string;
   bankName: string;
   accountNumber: string;
@@ -445,8 +455,11 @@ export interface CompleteEmployeeProfileResponse {
     employee: CompleteProfileEmployee;
     documents: CompleteProfileDocument[];
     bankAccounts: CompleteProfileBankAccount[];
-    mandatoryDocumentTypes: string[];
-    missingDocuments: string[];
+    organizationRequirements: {
+      mandatoryDocumentTypes: string[];
+      missingDocuments: string[];
+      documentLabels: Record<string, string>;
+    };
   };
 }
 
@@ -455,6 +468,54 @@ export const getEmployeeCompleteProfile = async (
 ): Promise<CompleteEmployeeProfileResponse> => {
   const response = await axiosInstance.get<CompleteEmployeeProfileResponse>(
     `/employees/${employeeId}/complete-profile`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface GetLoggedInEmployeeResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: CompleteProfileEmployee;
+}
+
+export const getLoggedInEmployeeProfile = async (): Promise<GetLoggedInEmployeeResponse> => {
+  const response = await axiosInstance.get<GetLoggedInEmployeeResponse>(
+    "/employees/me",
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface UpdateLoggedInEmployeeRequest {
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  countryCode?: string;
+  currentAddress?: {
+    addressLine1?: string;
+    city?: string;
+    state?: string;
+    countryCode?: string;
+    zip?: string;
+  };
+  emergencyContacts?: EmergencyContact[];
+}
+
+export interface UpdateLoggedInEmployeeResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: CompleteProfileEmployee;
+}
+
+export const updateLoggedInEmployeeProfile = async (
+  payload: UpdateLoggedInEmployeeRequest
+): Promise<UpdateLoggedInEmployeeResponse> => {
+  const response = await axiosInstance.patch<UpdateLoggedInEmployeeResponse>(
+    "/employees/me",
+    payload,
     { headers: getAuthHeader() }
   );
   return response.data;

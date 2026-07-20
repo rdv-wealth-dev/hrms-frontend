@@ -65,6 +65,21 @@ export const updateStatutoryFailure = (error: string) => ({
   payload: error,
 });
 
+export const updateMandatoryDocsRequest = (payload: { mandatoryDocumentTypes: string[] }) => ({
+  type: ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_REQUEST,
+  payload,
+});
+
+export const updateMandatoryDocsSuccess = (organization: Organization) => ({
+  type: ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_SUCCESS,
+  payload: organization,
+});
+
+export const updateMandatoryDocsFailure = (error: string) => ({
+  type: ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_FAILURE,
+  payload: error,
+});
+
 export const resetOrganizationStatus = () => ({
   type: ORGANIZATION_ACTIONS.RESET_STATUS,
 });

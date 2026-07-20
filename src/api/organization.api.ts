@@ -53,3 +53,14 @@ export const updateStatutory = async (
   );
   return response.data;
 };
+
+export const updateMandatoryDocs = async (
+  payload: { mandatoryDocumentTypes: string[] }
+): Promise<UpdateOrganizationResponse> => {
+  const response = await axiosInstance.patch<UpdateOrganizationResponse>(
+    "/organizations/me/mandatory-docs",
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};

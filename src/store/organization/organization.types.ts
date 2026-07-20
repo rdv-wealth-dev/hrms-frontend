@@ -75,6 +75,7 @@ export interface Organization {
   version: number;
   createdAt: string;
   updatedAt: string;
+  mandatoryDocumentTypes?: string[];
 }
 
 export interface GetOrganizationResponse {
@@ -167,6 +168,10 @@ export const ORGANIZATION_ACTIONS = {
   UPDATE_STATUTORY_SUCCESS: "organization/updateStatutorySuccess",
   UPDATE_STATUTORY_FAILURE: "organization/updateStatutoryFailure",
 
+  UPDATE_MANDATORY_DOCS_REQUEST: "organization/updateMandatoryDocsRequest",
+  UPDATE_MANDATORY_DOCS_SUCCESS: "organization/updateMandatoryDocsSuccess",
+  UPDATE_MANDATORY_DOCS_FAILURE: "organization/updateMandatoryDocsFailure",
+
   RESET_STATUS: "organization/resetStatus",
 } as const;
 
@@ -232,6 +237,25 @@ export type UpdateStatutoryFailureAction = {
   payload: string;
 };
 
+export interface UpdateMandatoryDocsRequest {
+  mandatoryDocumentTypes: string[];
+}
+
+export type UpdateMandatoryDocsRequestAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_REQUEST;
+  payload: UpdateMandatoryDocsRequest;
+};
+
+export type UpdateMandatoryDocsSuccessAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_SUCCESS;
+  payload: Organization;
+};
+
+export type UpdateMandatoryDocsFailureAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_FAILURE;
+  payload: string;
+};
+
 export type ResetOrganizationStatusAction = {
   type: typeof ORGANIZATION_ACTIONS.RESET_STATUS;
 };
@@ -249,4 +273,7 @@ export type OrganizationAction =
   | UpdateStatutoryRequestAction
   | UpdateStatutorySuccessAction
   | UpdateStatutoryFailureAction
+  | UpdateMandatoryDocsRequestAction
+  | UpdateMandatoryDocsSuccessAction
+  | UpdateMandatoryDocsFailureAction
   | ResetOrganizationStatusAction;

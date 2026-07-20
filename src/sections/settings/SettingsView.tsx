@@ -13,6 +13,7 @@ import LeaveTypeContent from "../leave/leave-policy/LeaveTypeContent";
 import OrganizationProfileContent from "./components/OrganizationProfileContent";
 import OrganizationModulesContent from "./components/OrganizationModulesContent";
 import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
+import OrganizationDocumentsContent from "./components/OrganizationDocumentsContent";
 import { usePermissions } from "../../hooks/usePermissions";
 
 import {
@@ -29,6 +30,7 @@ const CONTENT_MAP: Record<string, ReactNode> = {
   "org-profile": <OrganizationProfileContent />,
   "org-modules": <OrganizationModulesContent />,
   "org-statutory": <OrganizationStatutoryContent />,
+  "org-documents": <OrganizationDocumentsContent />,
   departments:  <DepartmentContent />,
   designations: <DesignationContent />,
   "leave-types": <LeaveTypeContent />,
