@@ -23,6 +23,10 @@ import Chip from "@mui/material/Chip";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -35,6 +39,8 @@ import RegularizeRequestDialog from "../components/RegularizeRequestDialog";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { getMyAttendanceHistory, getMyRegularizationRequests } from "../../../api/attendance.api";
+import { listCompanyEvents, type CompanyEvent } from "../../../api/event.api";
+import CreateEventDialog from "../components/CreateEventDialog";
 import type { AttendanceRecord, RegularizationRequest } from "../../../store/attendance/attendance.types";
 import AttendanceStatusChip from "../components/AttendanceStatusChip";
 import { formatWorkedTime } from "../../../utils/time";
@@ -61,8 +67,85 @@ export default function MyAttendanceView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  // Company Events state
+  const [companyEvents, setCompanyEvents] = useState<CompanyEvent[]>([]);
+  const [createEventOpen, setCreateEventOpen] = useState(false);
+  const [choiceOpen, setChoiceOpen] = useState(false);
+  const [choiceDate, setChoiceDate] = useState("");
+  const [selectedEventDetails, setSelectedEventDetails] = useState<CompanyEvent | null>(null);
+  const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
+
+  // Map attendance records and company events to calendar events
+  const calendarEvents = [
+    ...records.map((rec) => {
+      let title: string = rec.status;
+      let color = "#6B7280"; // Default grey
+      
+      if (rec.status === "PRESENT") {
+        color = "#10B981"; // Green
+        title = `Present (${formatWorkedTime(rec.workedMinutes)})`;
+      } else if (rec.status === "LATE") {
+        color = "#F59E0B"; // Orange
+        title = `Late (${formatWorkedTime(rec.workedMinutes)})`;
+      } else if (rec.status === "HALF_DAY") {
+        color = "#F59E0B"; // Orange
+        title = `Half Day (${formatWorkedTime(rec.workedMinutes)})`;
+      } else if (rec.status === "ABSENT") {
+        color = "#EF4444"; // Red
+        title = "Absent";
+      } else if (rec.status === "ON_LEAVE") {
+        color = "#3B82F6"; // Blue
+        title = "On Leave";
+      }
+
+      return {
+        title,
+        start: rec.attendanceDate ? rec.attendanceDate.split("T")[0] : "",
+        backgroundColor: color,
+        borderColor: color,
+        allDay: true,
+        extendedProps: { type: "attendance", record: rec },
+      };
+    }),
+    ...companyEvents.map((evt) => ({
+      title: `📢 ${evt.title}`,
+      start: evt.date ? evt.date.split("T")[0] : "",
+      backgroundColor: "#6D5DF6",
+      borderColor: "#6D5DF6",
+      allDay: true,
+      extendedProps: { type: "company_event", event: evt },
+    }))
+  ];
+
+  const handleEventClick = (info: any) => {
+    const ext = info.event.extendedProps;
+    if (ext.type === "attendance") {
+      if (ext.record) {
+        handleOpenDetails(ext.record);
+      }
+    } else if (ext.type === "company_event") {
+      if (ext.event) {
+        setSelectedEventDetails(ext.event);
+        setEventDetailsOpen(true);
+      }
+    }
+  };
+
+  const handleDateClick = (info: any) => {
+    const clickedDateStr = info.dateStr;
+    const existing = records.find(r => r.attendanceDate && r.attendanceDate.split("T")[0] === clickedDateStr);
+    
+    if (existing) {
+      handleOpenDetails(existing);
+    } else if (canCreate) {
+      setChoiceDate(clickedDateStr);
+      setChoiceOpen(true);
+    }
+  };
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -113,9 +196,21 @@ export default function MyAttendanceView() {
     }
   };
 
+  const fetchEvents = async () => {
+    try {
+      const response = await listCompanyEvents(1, 50);
+      if (response.succeeded && response.data) {
+        setCompanyEvents(response.data);
+      }
+    } catch (err) {
+      console.error("Failed to load company calendar events", err);
+    }
+  };
+
   useEffect(() => {
     if (tabValue === 0) {
       fetchHistory();
+      fetchEvents();
     } else {
       fetchRegularizationRequests();
     }
@@ -305,6 +400,43 @@ export default function MyAttendanceView() {
                   Manual Entry
                 </Button>
               )}
+              <Box sx={{ flexGrow: 1 }} />
+              <Box sx={{ display: "flex", gap: 0.5, border: "1px solid #E5E7EB", p: 0.5, borderRadius: 2.5, backgroundColor: "#F9FAFB" }}>
+                <Button
+                  size="small"
+                  onClick={() => setViewMode("list")}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    px: 2,
+                    py: 0.5,
+                    backgroundColor: viewMode === "list" ? "#FFF" : "transparent",
+                    color: viewMode === "list" ? "#111827" : "#6B7280",
+                    boxShadow: viewMode === "list" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                    "&:hover": { backgroundColor: viewMode === "list" ? "#FFF" : "rgba(0,0,0,0.04)" },
+                  }}
+                >
+                  List
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => setViewMode("calendar")}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    px: 2,
+                    py: 0.5,
+                    backgroundColor: viewMode === "calendar" ? "#FFF" : "transparent",
+                    color: viewMode === "calendar" ? "#111827" : "#6B7280",
+                    boxShadow: viewMode === "calendar" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                    "&:hover": { backgroundColor: viewMode === "calendar" ? "#FFF" : "rgba(0,0,0,0.04)" },
+                  }}
+                >
+                  Calendar
+                </Button>
+              </Box>
             </Box>
           </Card>
         )}
@@ -329,6 +461,91 @@ export default function MyAttendanceView() {
             loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
                 <CircularProgress sx={{ color: "#6D5DF6" }} />
+              </Box>
+            ) : viewMode === "calendar" ? (
+              <Box
+                sx={{
+                  p: 3.5,
+                  "& .fc": {
+                    fontFamily: "'Outfit', 'Inter', sans-serif",
+                  },
+                  "& .fc-header-toolbar": {
+                    mb: 3,
+                  },
+                  "& .fc-toolbar-title": {
+                    fontSize: "1.25rem !important",
+                    fontWeight: 700,
+                    color: "#111827",
+                  },
+                  "& .fc-button-primary": {
+                    backgroundColor: "#FFF !important",
+                    borderColor: "#E5E7EB !important",
+                    color: "#374151 !important",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    borderRadius: "8px !important",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                    "&:hover": {
+                      backgroundColor: "#F9FAFB !important",
+                    },
+                    "&:disabled": {
+                      opacity: 0.5,
+                    },
+                  },
+                  "& .fc-button-group .fc-button": {
+                    margin: "0 2px !important",
+                  },
+                  "& .fc-col-header-cell": {
+                    backgroundColor: "#F9FAFB",
+                    py: 1.5,
+                    border: "1px solid #F3F4F6",
+                  },
+                  "& .fc-col-header-cell-cushion": {
+                    color: "#4B5563 !important",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    textDecoration: "none !important",
+                  },
+                  "& .fc-daygrid-day-number": {
+                    color: "#374151",
+                    fontWeight: 500,
+                    fontSize: "0.875rem",
+                    p: 1.5,
+                    textDecoration: "none !important",
+                  },
+                  "& .fc-day": {
+                    borderColor: "#F3F4F6 !important",
+                  },
+                  "& .fc-event": {
+                    cursor: "pointer",
+                    borderRadius: "6px",
+                    px: 1,
+                    py: 0.5,
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                    boxShadow: "none",
+                    border: "none",
+                    margin: "2px 4px !important",
+                  },
+                  "& .fc-daygrid-day-frame": {
+                    minHeight: "100px",
+                  },
+                }}
+              >
+                <FullCalendar
+                  plugins={[dayGridPlugin, interactionPlugin] as any}
+                  initialView="dayGridMonth"
+                  events={calendarEvents}
+                  eventClick={handleEventClick}
+                  dateClick={handleDateClick}
+                  headerToolbar={{
+                    left: "title",
+                    center: "",
+                    right: "prev,next today",
+                  }}
+                  height="auto"
+                />
               </Box>
             ) : records.length === 0 ? (
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 8, gap: 1.5 }}>
@@ -637,6 +854,111 @@ export default function MyAttendanceView() {
           onSuccess={handleRegSuccess}
           record={regTarget}
         />
+
+        {/* Date Click Action Choice Dialog (Admin Only) */}
+        <Dialog open={choiceOpen} onClose={() => setChoiceOpen(false)} maxWidth="xs" fullWidth>
+          <DialogTitle sx={{ fontWeight: 700 }}>Choose Action</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary">
+              Select what you want to schedule for {choiceDate}:
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1 }}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => {
+                setChoiceOpen(false);
+                setManualOpen(true);
+              }}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                backgroundColor: "#6D5DF6",
+                "&:hover": { backgroundColor: "#5B4BE5" },
+                m: "0 !important"
+              }}
+            >
+              Manual Attendance Log
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => {
+                setChoiceOpen(false);
+                setCreateEventOpen(true);
+              }}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                color: "#6D5DF6",
+                borderColor: "#6D5DF6",
+                "&:hover": { borderColor: "#5B4BE5", backgroundColor: "rgba(109,93,246,0.04)" },
+                m: "0 !important"
+              }}
+            >
+              Create Company Event
+            </Button>
+            <Button
+              fullWidth
+              onClick={() => setChoiceOpen(false)}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                color: "#6B7280",
+                m: "0 !important"
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Create Event Dialog */}
+        <CreateEventDialog
+          open={createEventOpen}
+          onClose={() => setCreateEventOpen(false)}
+          onSuccess={fetchEvents}
+          defaultDate={choiceDate}
+        />
+
+        {/* Company Event Details Dialog */}
+        <Dialog open={eventDetailsOpen} onClose={() => { setEventDetailsOpen(false); setSelectedEventDetails(null); }} maxWidth="xs" fullWidth>
+          <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+            📢 {selectedEventDetails?.title}
+          </DialogTitle>
+          <DialogContent dividers sx={{ py: 2 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+              Date & Time
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827", mb: 2 }}>
+              {selectedEventDetails?.date
+                ? new Date(selectedEventDetails.date).toLocaleString(navigator.language, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "—"}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+              Description
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {selectedEventDetails?.description || "No description provided."}
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              onClick={() => { setEventDetailsOpen(false); setSelectedEventDetails(null); }}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                color: "#4B5563",
+              }}
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </DashboardLayout>
   );
