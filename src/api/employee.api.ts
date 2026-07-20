@@ -389,3 +389,73 @@ export const getHrDownloadUrl = async (
   );
   return response.data;
 };
+
+/* ─── Complete Employee Profile ─── */
+
+export interface CompleteProfileCompletion {
+  personalDetails: boolean;
+  address: boolean;
+  emergencyContact: boolean;
+  bankDetails: boolean;
+  mandatoryDocs: boolean;
+}
+
+export interface CompleteProfileEmployee {
+  _id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  currentAddress?: Record<string, unknown>;
+  emergencyContacts?: Record<string, unknown>[];
+  departmentId?: { _id: string; name: string; code: string };
+  designationId?: { _id: string; name: string };
+  managerId?: { _id: string; firstName: string; lastName: string };
+  profileCompletion: CompleteProfileCompletion;
+  isProfileComplete: boolean;
+}
+
+export interface CompleteProfileDocument {
+  _id: string;
+  documentType: string;
+  fileName: string;
+  s3Key: string;
+  isVerified: boolean;
+  sizeBytes: number;
+}
+
+export interface CompleteProfileBankAccount {
+  _id: string;
+  employeeId?: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountType: string;
+  isPrimary: boolean;
+}
+
+export interface CompleteEmployeeProfileResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: {
+    employee: CompleteProfileEmployee;
+    documents: CompleteProfileDocument[];
+    bankAccounts: CompleteProfileBankAccount[];
+    mandatoryDocumentTypes: string[];
+    missingDocuments: string[];
+  };
+}
+
+export const getEmployeeCompleteProfile = async (
+  employeeId: string
+): Promise<CompleteEmployeeProfileResponse> => {
+  const response = await axiosInstance.get<CompleteEmployeeProfileResponse>(
+    `/employees/${employeeId}/complete-profile`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};

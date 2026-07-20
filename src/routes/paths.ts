@@ -22,6 +22,7 @@ export const paths = {
     directory: "/employees/directory",
     create: "/employees/create",
     list: "/employees/list",
+    detail: "/employees/:id",
   },
 
   attendance: "/attendance",

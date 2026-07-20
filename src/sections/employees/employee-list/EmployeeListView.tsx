@@ -559,7 +559,10 @@ function EmployeeListView() {
                               }}
                             />
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 600, fontSize: 14 }}>
+                          <TableCell
+                            sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
+                            onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
+                          >
                             {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
                           </TableCell>
                           <TableCell sx={{ fontSize: 13 }}>{emp.email || "—"}</TableCell>

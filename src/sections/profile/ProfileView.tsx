@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -35,8 +36,10 @@ import AddIcon from "@mui/icons-material/Add";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
 import type { RootState } from "../../store/rootReducer";
+import { paths } from "../../routes/paths";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import {
   addBankAccount,
@@ -45,13 +48,25 @@ import {
   uploadDocument,
   getEmployeeDocuments,
   getDownloadUrl,
+  getEmployeeCompleteProfile,
   type AddBankAccountRequest,
   type BankAccount,
   type EmployeeDocument,
+  type CompleteProfileEmployee,
+  type CompleteProfileCompletion,
 } from "../../api/employee.api";
 
-function ProfileView() {
+interface ProfileViewProps {
+  targetEmployeeId?: string;
+}
+
+function ProfileView({ targetEmployeeId }: ProfileViewProps) {
+  const navigate = useNavigate();
+  const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
+  const resolvedTargetId = targetEmployeeId || routeParams.id;
+  const employeeId = resolvedTargetId || user?.employeeId;
+  const isViewingOther = !!resolvedTargetId;
 
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
   const [bankSubmitting, setBankSubmitting] = useState(false);
@@ -67,22 +82,37 @@ function ProfileView() {
   const [bankDeleteTarget, setBankDeleteTarget] = useState<BankAccount | null>(null);
   const [bankDeleting, setBankDeleting] = useState(false);
   const [bankDeleteSuccess, setBankDeleteSuccess] = useState(false);
+  const [empProfile, setEmpProfile] = useState<CompleteProfileEmployee | null>(null);
+  const [missingDocTypes, setMissingDocTypes] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!employeeId) {
+      setBankAccountsLoading(false);
+      setDocumentsLoading(false);
+      return;
+    }
     let cancelled = false;
     const fetch = async () => {
       try {
-        const res = await getBankAccounts();
-        if (!cancelled && res.succeeded) setBankAccounts(res.data);
+        const res = await getEmployeeCompleteProfile(employeeId);
+        if (!cancelled && res.succeeded) {
+          setEmpProfile(res.data.employee || null);
+          setBankAccounts((res.data.bankAccounts || []) as BankAccount[]);
+          setDocuments((res.data.documents || []) as EmployeeDocument[]);
+          setMissingDocTypes(res.data.missingDocuments || []);
+        }
       } catch {
         // silently ignore
       } finally {
-        if (!cancelled) setBankAccountsLoading(false);
+        if (!cancelled) {
+          setBankAccountsLoading(false);
+          setDocumentsLoading(false);
+        }
       }
     };
     fetch();
     return () => { cancelled = true; };
-  }, []);
+  }, [employeeId]);
 
   const resetBankForm = () => {
     setBankName("");
@@ -151,22 +181,6 @@ function ProfileView() {
   const [selectedDocType, setSelectedDocType] = useState("PAN");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const fetch = async () => {
-      try {
-        const res = await getEmployeeDocuments();
-        if (!cancelled && res.succeeded) setDocuments(res.data);
-      } catch {
-        // silently ignore
-      } finally {
-        if (!cancelled) setDocumentsLoading(false);
-      }
-    };
-    fetch();
-    return () => { cancelled = true; };
-  }, []);
-
   const resetDocUploadForm = () => {
     setSelectedFile(null);
     setSelectedDocType("PAN");
@@ -234,7 +248,7 @@ function ProfileView() {
     setBankDeleting(true);
     setBankError(null);
     try {
-      const res = await deleteBankAccount(bankDeleteTarget.employeeId, bankDeleteTarget._id);
+      const res = await deleteBankAccount(bankDeleteTarget.employeeId || user?.employeeId || "", bankDeleteTarget._id);
       if (res.succeeded) {
         setBankAccounts((prev) => prev.filter((a) => a._id !== bankDeleteTarget._id));
         setBankDeleteTarget(null);
@@ -274,9 +288,25 @@ function ProfileView() {
         });
   };
 
+  const displayFirstName = isViewingOther ? empProfile?.firstName : (user?.firstName || empProfile?.firstName);
+  const displayLastName = isViewingOther ? empProfile?.lastName : (user?.lastName || empProfile?.lastName);
+  const displayEmail = isViewingOther ? empProfile?.email : (user?.email || empProfile?.email);
+  const displayName = `${displayFirstName || ""} ${displayLastName || ""}`.trim() || "User Profile";
+  const displayId = isViewingOther ? empProfile?._id : (user?.id || empProfile?._id);
+  const displayRole = isViewingOther ? (empProfile?.designationId?.name || "Employee") : getRoleLabel(user?.role || "");
+
   return (
     <DashboardLayout>
       <Box sx={{ p: 4, maxWidth: "1200px", margin: "0 auto" }}>
+        {isViewingOther && (
+          <Button
+            startIcon={<ArrowBackOutlinedIcon />}
+            onClick={() => navigate(paths.employees.list)}
+            sx={{ mb: 2, textTransform: "none", fontWeight: 600, color: "#6D5DF6" }}
+          >
+            Back to Employees
+          </Button>
+        )}
         {/* Banner Section */}
         <Card
           sx={{
@@ -305,15 +335,15 @@ function ProfileView() {
               boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            {user?.firstName?.[0]?.toUpperCase() ?? "U"}
-            {user?.lastName?.[0]?.toUpperCase() ?? ""}
+            {displayFirstName?.[0]?.toUpperCase() ?? "U"}
+            {displayLastName?.[0]?.toUpperCase() ?? ""}
           </Avatar>
           <Box sx={{ textAlign: { xs: "center", sm: "left" }, flexGrow: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", sm: "flex-start" }, gap: 1.5, mb: 1 }}>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                {user?.fullName || `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User Profile"}
+                {displayName}
               </Typography>
-              {user?.isActive && (
+              {(isViewingOther || user?.isActive) && (
                 <Chip
                   label="Active Account"
                   size="small"
@@ -327,11 +357,11 @@ function ProfileView() {
               )}
             </Box>
             <Typography variant="body1" sx={{ color: "rgba(255, 255, 255, 0.8)", mb: 0.5 }}>
-              {user?.email}
+              {displayEmail}
             </Typography>
             <Chip
               icon={<AdminPanelSettingsOutlinedIcon sx={{ color: "#fff !important" }} />}
-              label={getRoleLabel(user?.role || "")}
+              label={displayRole}
               sx={{
                 mt: 0.5,
                 backgroundColor: "rgba(255, 255, 255, 0.15)",
@@ -342,6 +372,59 @@ function ProfileView() {
             />
           </Box>
         </Card>
+
+        {/* Profile Completion */}
+        {empProfile && (
+          <Card
+            sx={{
+              p: 3,
+              mb: 4,
+              borderRadius: 4,
+              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
+              backgroundColor: "#fff",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
+                <CheckCircleOutlinedIcon sx={{ color: empProfile.isProfileComplete ? "#10B981" : "#F59E0B" }} />
+                Profile {empProfile.isProfileComplete ? "Complete" : "Incomplete"}
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: empProfile.isProfileComplete ? "#10B981" : "#F59E0B" }}>
+                {Object.values(empProfile.profileCompletion || {}).filter(Boolean).length}/5 completed
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+              {[
+                { key: "personalDetails", label: "Personal Details" },
+                { key: "address", label: "Address" },
+                { key: "emergencyContact", label: "Emergency Contact" },
+                { key: "bankDetails", label: "Bank Details" },
+                { key: "mandatoryDocs", label: "Mandatory Documents" },
+              ].map((item) => {
+                const done = empProfile.profileCompletion?.[item.key as keyof CompleteProfileCompletion] ?? false;
+                return (
+                  <Chip
+                    key={item.key}
+                    icon={done ? <CheckCircleOutlinedIcon sx={{ fontSize: "14px !important" }} /> : <HourglassEmptyOutlinedIcon sx={{ fontSize: "14px !important" }} />}
+                    label={item.label}
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
+                      backgroundColor: done ? "#D1FAE5" : "#FEF3C7",
+                      color: done ? "#065F46" : "#92400E",
+                      borderRadius: 2,
+                    }}
+                  />
+                );
+              })}
+            </Box>
+            {(missingDocTypes || []).length > 0 && (
+              <Alert severity="warning" sx={{ mt: 2, borderRadius: 2 }}>
+                Missing documents: <strong>{(missingDocTypes || []).join(", ")}</strong>
+              </Alert>
+            )}
+          </Card>
+        )}
 
         {/* Content Cards */}
         <Grid container spacing={3}>
@@ -363,17 +446,17 @@ function ProfileView() {
                 <Grid container spacing={2.5}>
                   <Grid size={6}>
                     <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>First Name</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{user?.firstName || "—"}</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{displayFirstName || "—"}</Typography>
                   </Grid>
                   <Grid size={6}>
                     <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Last Name</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{user?.lastName || "—"}</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{displayLastName || "—"}</Typography>
                   </Grid>
                   <Grid size={12}>
                     <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Email Address</Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937" }}>{user?.email || "—"}</Typography>
-                      {user?.isEmailVerified && (
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937" }}>{displayEmail || "—"}</Typography>
+                      {(isViewingOther || user?.isEmailVerified) && (
                         <Chip
                           icon={<CheckCircleOutlinedIcon sx={{ fontSize: "14px !important", color: "#047857 !important" }} />}
                           label="Verified"
@@ -390,17 +473,45 @@ function ProfileView() {
                       )}
                     </Box>
                   </Grid>
-                  <Grid size={12}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Account ID</Typography>
-                    <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", backgroundColor: "#F9FAFB", p: 1, borderRadius: 2, border: "1px solid #E5E7EB", mt: 0.5 }}>
-                      {user?.id || "—"}
-                    </Typography>
-                  </Grid>
-                  {user?.employeeId && (
+                  {!isViewingOther && user?.id && (
+                    <Grid size={12}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Account ID</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", backgroundColor: "#F9FAFB", p: 1, borderRadius: 2, border: "1px solid #E5E7EB", mt: 0.5 }}>
+                        {user.id}
+                      </Typography>
+                    </Grid>
+                  )}
+                  {displayId && (
                     <Grid size={12}>
                       <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Employee profile ID</Typography>
                       <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", backgroundColor: "#F9FAFB", p: 1, borderRadius: 2, border: "1px solid #E5E7EB", mt: 0.5 }}>
-                        {user.employeeId}
+                        {displayId}
+                      </Typography>
+                    </Grid>
+                  )}
+                  {empProfile?.employeeCode && (
+                    <Grid size={6}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Employee Code</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile.employeeCode}</Typography>
+                    </Grid>
+                  )}
+                  {empProfile?.departmentId && (
+                    <Grid size={6}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Department</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile.departmentId.name}</Typography>
+                    </Grid>
+                  )}
+                  {empProfile?.designationId && (
+                    <Grid size={6}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Designation</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile.designationId.name}</Typography>
+                    </Grid>
+                  )}
+                  {empProfile?.managerId && (
+                    <Grid size={6}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Manager</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>
+                        {empProfile.managerId.firstName} {empProfile.managerId.lastName}
                       </Typography>
                     </Grid>
                   )}
@@ -420,6 +531,11 @@ function ProfileView() {
                   <DescriptionOutlinedIcon sx={{ color: "#6D5DF6" }} />
                   Documents
                 </Typography>
+                {(missingDocTypes || []).length > 0 && (
+                  <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+                    Missing: <strong>{(missingDocTypes || []).join(", ")}</strong>
+                  </Alert>
+                )}
                 {documentsLoading ? (
                   <Box sx={{ textAlign: "center", py: 3 }}>
                     <CircularProgress size={24} sx={{ color: "#9CA3AF" }} />
@@ -429,26 +545,28 @@ function ProfileView() {
                     <Typography variant="body2" sx={{ color: "#6B7280", mb: 2 }}>
                       No documents uploaded yet
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CloudUploadOutlinedIcon />}
-                      onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderColor: "#D1D5DB",
-                        color: "#374151",
-                      }}
-                    >
-                      Upload Document
-                    </Button>
+                    {!isViewingOther && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<CloudUploadOutlinedIcon />}
+                        onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: 600,
+                          borderColor: "#D1D5DB",
+                          color: "#374151",
+                        }}
+                      >
+                        Upload Document
+                      </Button>
+                    )}
                   </Box>
                 ) : (
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                    {documents.map((doc) => (
+                    {documents.map((doc, index) => (
                       <Box
-                        key={doc._id}
+                        key={doc._id || index}
                         sx={{
                           p: 1.5,
                           borderRadius: 2,
@@ -480,21 +598,23 @@ function ProfileView() {
                         </Box>
                       </Box>
                     ))}
-                    <Button
-                      variant="outlined"
-                      startIcon={<CloudUploadOutlinedIcon />}
-                      onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderColor: "#D1D5DB",
-                        color: "#374151",
-                        mt: 0.5,
-                      }}
-                    >
-                      Upload Document
-                    </Button>
+                    {!isViewingOther && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<CloudUploadOutlinedIcon />}
+                        onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: 600,
+                          borderColor: "#D1D5DB",
+                          color: "#374151",
+                          mt: 0.5,
+                        }}
+                      >
+                        Upload Document
+                      </Button>
+                    )}
                   </Box>
                 )}
               </Card>
@@ -505,51 +625,53 @@ function ProfileView() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3, height: "100%" }}>
               {/* System Credentials & Organization */}
-              <Card
-                sx={{
-                  p: 3.5,
-                  borderRadius: 4,
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                  <VpnKeyOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                  Access & Security
-                </Typography>
-                <Grid container spacing={2.5}>
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>System Role</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{getRoleLabel(user?.role || "")}</Typography>
-                  </Grid>
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Org Admin</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: user?.isOrgAdmin ? "#D97706" : "#4B5563", mt: 0.5 }}>
-                      {user?.isOrgAdmin ? "Yes" : "No"}
-                    </Typography>
-                  </Grid>
-                  <Grid size={12}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Tenant Identifier (Tenant ID)</Typography>
-                    <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", mt: 0.5 }}>{user?.tenantId || "—"}</Typography>
-                  </Grid>
-                  {user?.branchIds && user.branchIds.length > 0 && (
-                    <Grid size={12}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500, mb: 1, display: "block" }}>Branch Authorizations</Typography>
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                        {user.branchIds.map((bid) => (
-                          <Chip
-                            key={bid}
-                            label={bid}
-                            size="small"
-                            variant="outlined"
-                            sx={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#4B5563" }}
-                          />
-                        ))}
-                      </Box>
+              {!isViewingOther && (
+                <Card
+                  sx={{
+                    p: 3.5,
+                    borderRadius: 4,
+                    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
+                    <VpnKeyOutlinedIcon sx={{ color: "#6D5DF6" }} />
+                    Access & Security
+                  </Typography>
+                  <Grid container spacing={2.5}>
+                    <Grid size={6}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>System Role</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{getRoleLabel(user?.role || "")}</Typography>
                     </Grid>
-                  )}
-                </Grid>
-              </Card>
+                    <Grid size={6}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Org Admin</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: user?.isOrgAdmin ? "#D97706" : "#4B5563", mt: 0.5 }}>
+                        {user?.isOrgAdmin ? "Yes" : "No"}
+                      </Typography>
+                    </Grid>
+                    <Grid size={12}>
+                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Tenant Identifier (Tenant ID)</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", mt: 0.5 }}>{user?.tenantId || "—"}</Typography>
+                    </Grid>
+                    {user?.branchIds && user.branchIds.length > 0 && (
+                      <Grid size={12}>
+                        <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500, mb: 1, display: "block" }}>Branch Authorizations</Typography>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                          {user.branchIds.map((bid) => (
+                            <Chip
+                              key={bid}
+                              label={bid}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#4B5563" }}
+                            />
+                          ))}
+                        </Box>
+                      </Grid>
+                    )}
+                  </Grid>
+                </Card>
+              )}
 
               {/* Bank Account */}
               <Card
@@ -573,26 +695,28 @@ function ProfileView() {
                     <Typography variant="body2" sx={{ color: "#6B7280", mb: 2 }}>
                       No bank account added yet
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      startIcon={<AddIcon />}
-                      onClick={() => { resetBankForm(); setBankDialogOpen(true); }}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderColor: "#D1D5DB",
-                        color: "#374151",
-                      }}
-                    >
-                      Add Bank Account
-                    </Button>
+                    {!isViewingOther && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        onClick={() => { resetBankForm(); setBankDialogOpen(true); }}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: 600,
+                          borderColor: "#D1D5DB",
+                          color: "#374151",
+                        }}
+                      >
+                        Add Bank Account
+                      </Button>
+                    )}
                   </Box>
                 ) : (
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {bankAccounts.map((acc) => (
+                    {bankAccounts.map((acc, index) => (
                       <Box
-                        key={acc._id}
+                        key={acc._id || index}
                         sx={{
                           p: 2,
                           borderRadius: 2,
@@ -612,13 +736,15 @@ function ProfileView() {
                                 sx={{ height: 18, fontSize: "0.65rem", backgroundColor: "#D1FAE5", color: "#065F46", fontWeight: 600 }}
                               />
                             )}
-                            <IconButton
-                              size="small"
-                              onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}
-                              sx={{ color: "#9CA3AF", p: 0.3 }}
-                            >
-                              <DeleteOutlinedIcon fontSize="small" />
-                            </IconButton>
+                            {!isViewingOther && (
+                              <IconButton
+                                size="small"
+                                onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}
+                                sx={{ color: "#9CA3AF", p: 0.3 }}
+                              >
+                                <DeleteOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            )}
                           </Box>
                         </Box>
                         <Typography variant="caption" sx={{ color: "#6B7280", fontFamily: "monospace" }}>
@@ -630,61 +756,65 @@ function ProfileView() {
                         </Box>
                       </Box>
                     ))}
-                    <Button
-                      variant="outlined"
-                      startIcon={<AddIcon />}
-                      onClick={() => { resetBankForm(); setBankDialogOpen(true); }}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderColor: "#D1D5DB",
-                        color: "#374151",
-                        mt: 1,
-                      }}
-                    >
-                      Add Bank Account
-                    </Button>
+                    {!isViewingOther && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        onClick={() => { resetBankForm(); setBankDialogOpen(true); }}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: 600,
+                          borderColor: "#D1D5DB",
+                          color: "#374151",
+                          mt: 1,
+                        }}
+                      >
+                        Add Bank Account
+                      </Button>
+                    )}
                   </Box>
                 )}
               </Card>
 
               {/* Account Activity Logs */}
-              <Card
-                sx={{
-                  p: 3.5,
-                  borderRadius: 4,
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                  backgroundColor: "#fff",
-                  flexGrow: 1,
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                  <AccessTimeOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                  Session Activity
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                    <CalendarMonthOutlinedIcon sx={{ color: "#9CA3AF", mt: 0.2 }} />
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Joined On</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mt: 0.5 }}>
-                        {formatDate(user?.createdAt)}
-                      </Typography>
+              {!isViewingOther && (
+                <Card
+                  sx={{
+                    p: 3.5,
+                    borderRadius: 4,
+                    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
+                    backgroundColor: "#fff",
+                    flexGrow: 1,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
+                    <AccessTimeOutlinedIcon sx={{ color: "#6D5DF6" }} />
+                    Session Activity
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                      <CalendarMonthOutlinedIcon sx={{ color: "#9CA3AF", mt: 0.2 }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Joined On</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mt: 0.5 }}>
+                          {formatDate(user?.createdAt)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                      <EmailOutlinedIcon sx={{ color: "#9CA3AF", mt: 0.2 }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Last Login Session</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mt: 0.5 }}>
+                          {formatDate(user?.lastLoginAt)}
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
-                  <Divider />
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                    <EmailOutlinedIcon sx={{ color: "#9CA3AF", mt: 0.2 }} />
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Last Login Session</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mt: 0.5 }}>
-                        {formatDate(user?.lastLoginAt)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </Card>
+                </Card>
+              )}
             </Box>
           </Grid>
         </Grid>
