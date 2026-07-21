@@ -15,6 +15,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
 
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
+import { SaturdayOffMode } from "../../../../store/organization/organization.types";
 
 type Props = {
   open: boolean;
@@ -35,6 +36,19 @@ const WEEKDAYS = [
   "Saturday",
   "Sunday",
 ];
+
+const SATURDAY_POLICY_LABELS: Record<string, string> = {
+  ALL_WORKING: "All Saturdays Working",
+  ALL_OFF: "All Saturdays Off",
+  FIRST_OFF: "1st Saturday Off",
+  SECOND_OFF: "2nd Saturday Off",
+  THIRD_OFF: "3rd Saturday Off",
+  FOURTH_OFF: "4th Saturday Off",
+  FIFTH_OFF_IF_EXISTS: "5th Saturday Off (if exists)",
+  FIRST_AND_THIRD_OFF: "1st & 3rd Saturday Off",
+  SECOND_AND_FOURTH_OFF: "2nd & 4th Saturday Off",
+  CUSTOM: "Custom Off-Weeks (Select below)",
+};
 
 const TIMEZONES = [
   { value: "Asia/Kolkata", label: "Asia/Kolkata (India)" },
@@ -67,6 +81,8 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
   const [shiftStartTime, setShiftStartTime] = useState("09:00");
   const [shiftEndTime, setShiftEndTime] = useState("18:00");
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(9);
+  const [saturdayMode, setSaturdayMode] = useState<SaturdayOffMode>(SaturdayOffMode.ALL_WORKING);
+  const [customOffWeeks, setCustomOffWeeks] = useState<number[]>([]);
 
   // Statutory
   const [pfApplicable, setPfApplicable] = useState(false);
@@ -96,6 +112,10 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         setEsiApplicable(initialValues.statutory?.esiApplicable ?? false);
         setPtApplicable(initialValues.statutory?.ptApplicable ?? false);
         setPtStateCode(initialValues.statutory?.ptStateCode ?? "");
+        
+        const policy = initialValues.workPolicy?.saturdayPolicy;
+        setSaturdayMode(policy?.mode ?? SaturdayOffMode.ALL_WORKING);
+        setCustomOffWeeks(policy?.customOffWeeks ?? []);
       } else {
         // Reset fields
         setName("");
@@ -117,6 +137,8 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         setEsiApplicable(false);
         setPtApplicable(false);
         setPtStateCode("");
+        setSaturdayMode(SaturdayOffMode.ALL_WORKING);
+        setCustomOffWeeks([]);
       }
     }
   }, [open, mode, initialValues]);
@@ -127,6 +149,12 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
     } else {
       setWeeklyOffDays([...weeklyOffDays, day]);
     }
+  };
+
+  const handleToggleCustomWeek = (week: number) => {
+    setCustomOffWeeks((prev) =>
+      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week].sort((a, b) => a - b)
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,6 +182,10 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         shiftStartTime: shiftStartTime || undefined,
         shiftEndTime: shiftEndTime || undefined,
         workingHoursPerDay: Number(workingHoursPerDay) || undefined,
+        saturdayPolicy: {
+          mode: saturdayMode,
+          customOffWeeks: saturdayMode === SaturdayOffMode.CUSTOM ? customOffWeeks : undefined,
+        },
       },
       statutory: {
         pfApplicable,
@@ -386,6 +418,55 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 })}
               </Box>
             </Grid>
+
+            <Grid size={12}>
+              <TextField
+                select
+                fullWidth
+                label="Saturday Policy"
+                value={saturdayMode}
+                onChange={(e) => setSaturdayMode(e.target.value as SaturdayOffMode)}
+                size="small"
+              >
+                {Object.entries(SATURDAY_POLICY_LABELS).map(([value, label]) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            {saturdayMode === SaturdayOffMode.CUSTOM && (
+              <Grid size={12}>
+                <Box sx={{ p: 2, borderRadius: 2.5, border: "1px dashed rgba(109, 93, 246, 0.2)", backgroundColor: "rgba(109, 93, 246, 0.02)" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: "#374151" }}>
+                    Select off-duty Saturdays of the month:
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                    {[1, 2, 3, 4, 5].map((week) => (
+                      <Box
+                        key={week}
+                        onClick={() => handleToggleCustomWeek(week)}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Checkbox
+                          checked={customOffWeeks.includes(week)}
+                          size="small"
+                          sx={{ p: 0.5, color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                        />
+                        <Typography variant="body2" sx={{ ml: 0.5, fontSize: 13.5, userSelect: "none", color: "#4B5563" }}>
+                          {week === 5 ? "5th Saturday (if exists)" : `${["1st", "2nd", "3rd", "4th"][week - 1]} Saturday`}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              </Grid>
+            )}
 
             {/* Section 5: Statutory */}
             <Grid size={12} sx={{ mt: 1 }}>

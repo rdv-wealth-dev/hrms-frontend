@@ -10,7 +10,12 @@ import type {
     RegularizationListResponse,
     RegularizationRequest,
     AttendanceReportResponse,
-    ShiftAssignmentsResponse
+    ShiftAssignmentsResponse,
+    CreateRotationPlanRequest,
+    CreateRotationPlanResponse,
+    RotationPlanListResponse,
+    AssignRotationPlanRequest,
+    AssignRotationPlanResponse
 } from "../store/attendance/attendance.types";
 
 const getAuthHeader = () => {
@@ -160,6 +165,36 @@ export const getAttendanceReport = async (
 export const getShiftAssignments = async (): Promise<ShiftAssignmentsResponse> => {
     const response = await axiosInstance.get<ShiftAssignmentsResponse>(
         "/attendance/shifts/assignments",
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export const createRotationPlan = async (
+    payload: CreateRotationPlanRequest
+): Promise<CreateRotationPlanResponse> => {
+    const response = await axiosInstance.post<CreateRotationPlanResponse>(
+        "/attendance/rotation-plans",
+        payload,
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export const listRotationPlans = async (): Promise<RotationPlanListResponse> => {
+    const response = await axiosInstance.get<RotationPlanListResponse>(
+        "/attendance/rotation-plans",
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export const assignRotationPlan = async (
+    payload: AssignRotationPlanRequest
+): Promise<AssignRotationPlanResponse> => {
+    const response = await axiosInstance.post<AssignRotationPlanResponse>(
+        "/attendance/rotation-plans/assign",
+        payload,
         { headers: getAuthHeader() }
     );
     return response.data;

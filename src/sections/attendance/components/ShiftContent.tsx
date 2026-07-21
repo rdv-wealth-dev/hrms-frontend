@@ -26,9 +26,11 @@ import Chip from "@mui/material/Chip";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
-import { createShift, listShifts, getShiftAssignments } from "../../../api/attendance.api";
-import type { CreateShiftRequest, Shift, ShiftAssignment } from "../../../store/attendance/attendance.types";
+import { createShift, listShifts, getShiftAssignments, listRotationPlans, createRotationPlan, assignRotationPlan } from "../../../api/attendance.api";
+import type { CreateShiftRequest, Shift, ShiftAssignment, ShiftRotationPlan, CreateRotationPlanRequest, RotationSlot, AssignRotationPlanRequest } from "../../../store/attendance/attendance.types";
 import { usePermissions } from "../../../hooks/usePermissions";
+import RotationPlanFormDialog from "./RotationPlanFormDialog";
+import AssignRotationPlanDialog from "./AssignRotationPlanDialog";
 
 type ShiftFormProps = {
   open: boolean;
@@ -288,11 +290,23 @@ export default function ShiftContent() {
   const [loadingShifts, setLoadingShifts] = useState(true);
   const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
   const [loadingAssignments, setLoadingAssignments] = useState(true);
+  const [rotationPlans, setRotationPlans] = useState<ShiftRotationPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+  const [createPlanOpen, setCreatePlanOpen] = useState(false);
+  const [assignPlanOpen, setAssignPlanOpen] = useState(false);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const getSlotShiftName = (slot: RotationSlot): string => {
+    if (!slot.shiftId) return "Shift";
+    if (typeof slot.shiftId === "string") {
+      return shifts.find((s) => s._id === slot.shiftId)?.name ?? "Shift";
+    }
+    return slot.shiftId.name || "Shift";
+  };
 
   const loadShiftsList = async () => {
     if (!canRead) return;
@@ -332,11 +346,36 @@ export default function ShiftContent() {
     }
   };
 
+  const loadRotationPlansList = async () => {
+    if (!canRead) return;
+    setLoadingPlans(true);
+    try {
+      const response = await listRotationPlans();
+      if (response.succeeded && response.data) {
+        setRotationPlans(response.data);
+      } else {
+        setError(response.message || "Failed to load rotation plans");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || err.message || "Failed to load rotation plans"
+      );
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 0) {
       loadShiftsList();
-    } else {
+    } else if (activeTab === 1) {
       loadAssignmentsList();
+      loadRotationPlansList();
+    } else if (activeTab === 2) {
+      loadRotationPlansList();
+      if (shifts.length === 0) {
+        loadShiftsList();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRead, activeTab]);
@@ -353,6 +392,50 @@ export default function ShiftContent() {
         loadShiftsList();
       } else {
         setError(response.message || "Failed to create shift");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || err.message || "Something went wrong"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreatePlanSubmit = async (data: CreateRotationPlanRequest) => {
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const response = await createRotationPlan(data);
+      if (response.succeeded) {
+        setSuccess(`Rotation plan "${data.name}" created successfully!`);
+        setCreatePlanOpen(false);
+        loadRotationPlansList();
+      } else {
+        setError(response.message || "Failed to create rotation plan");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || err.message || "Something went wrong"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAssignPlanSubmit = async (data: AssignRotationPlanRequest) => {
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const response = await assignRotationPlan(data);
+      if (response.succeeded) {
+        setSuccess(response.message || "Rotation plan assigned successfully!");
+        setAssignPlanOpen(false);
+        loadAssignmentsList();
+      } else {
+        setError(response.message || "Failed to assign rotation plan");
       }
     } catch (err: any) {
       setError(
@@ -406,7 +489,13 @@ export default function ShiftContent() {
             onClick={() => {
               setError(null);
               setSuccess(null);
-              setCreateOpen(true);
+              if (activeTab === 2) {
+                setCreatePlanOpen(true);
+              } else if (activeTab === 1) {
+                setAssignPlanOpen(true);
+              } else {
+                setCreateOpen(true);
+              }
             }}
             sx={{
               borderRadius: 2,
@@ -415,7 +504,11 @@ export default function ShiftContent() {
               "&:hover": { backgroundColor: "#5B4BEA" },
             }}
           >
-            Create Shift
+            {activeTab === 2
+              ? "Create Rotation Plan"
+              : activeTab === 1
+              ? "Assign Rotation Plan"
+              : "Create Shift"}
           </Button>
         )}
       </Box>
@@ -433,6 +526,7 @@ export default function ShiftContent() {
         >
           <Tab label="Shifts List" />
           <Tab label="Employee Assignments" />
+          <Tab label="Rotation Plans" />
         </Tabs>
       </Box>
 
@@ -450,7 +544,7 @@ export default function ShiftContent() {
       )}
 
       {/* Loading / List Content */}
-      {activeTab === 0 ? (
+      {activeTab === 0 && (
         loadingShifts ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
@@ -548,7 +642,9 @@ export default function ShiftContent() {
             </Table>
           </TableContainer>
         )
-      ) : (
+      )}
+
+      {activeTab === 1 && (
         loadingAssignments ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
@@ -638,6 +734,194 @@ export default function ShiftContent() {
         )
       )}
 
+      {activeTab === 2 && (
+        loadingPlans ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+          </Box>
+        ) : rotationPlans.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              py: 8,
+              px: 2,
+              backgroundColor: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          >
+            <InfoOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#374151" }}>
+              Rotation Plans Setup
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              align="center"
+              sx={{ maxWidth: 360, mt: 0.5 }}
+            >
+              Click "Create Rotation Plan" to define sequences of shifts (e.g. Morning, Evening, Night) and weekend off patterns for rotational schedules.
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <TableContainer 
+              component={Paper} 
+              sx={{ 
+                borderRadius: 3, 
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)", 
+                overflow: "hidden",
+                display: { xs: "none", md: "block" }
+              }}
+            >
+              <Table>
+                <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Plan Details</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cycle Duration</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Slots Sequence</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rotationPlans.map((plan) => (
+                    <TableRow key={plan._id} hover>
+                      <TableCell sx={{ verticalAlign: "top" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                          {plan.name}
+                        </Typography>
+                        {plan.description && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5, maxWidth: 220 }}>
+                            {plan.description}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ verticalAlign: "top" }}>
+                        <Chip
+                          label={plan.cycleDuration}
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(109, 93, 246, 0.08)",
+                            color: "#6D5DF6",
+                            fontWeight: 600,
+                            fontSize: "0.75rem"
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ verticalAlign: "top" }}>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                          {plan.slots.map((slot) => {
+                            return (
+                              <Box key={slot.order} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                <Chip label={`Slot ${slot.order}`} size="small" variant="outlined" sx={{ height: 20, fontSize: "0.7rem", fontWeight: 600 }} />
+                                <Typography variant="body2" sx={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>
+                                  {getSlotShiftName(slot)}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  ({slot.offDays.length > 0 ? `${slot.offDays.join(", ")} Off` : "No Off Days"})
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ verticalAlign: "top" }}>
+                        <Chip
+                          label={plan.isActive ? "Active" : "Inactive"}
+                          size="small"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.72rem",
+                            backgroundColor: plan.isActive ? "rgba(16, 185, 129, 0.08)" : "rgba(107, 114, 128, 0.08)",
+                            color: plan.isActive ? "#10B981" : "#6B7280",
+                            border: plan.isActive ? "1px solid rgba(16, 185, 129, 0.15)" : "1px solid rgba(107, 114, 128, 0.15)"
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Mobile Cards Stack View */}
+            <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 2 }}>
+              {rotationPlans.map((plan) => (
+                <Box
+                  key={plan._id}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 3,
+                    backgroundColor: "#fff",
+                    border: "1px solid rgba(0, 0, 0, 0.06)",
+                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.02)"
+                  }}
+                >
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+                      {plan.name}
+                    </Typography>
+                    <Chip
+                      label={plan.cycleDuration}
+                      size="small"
+                      sx={{
+                        height: 20,
+                        backgroundColor: "rgba(109, 93, 246, 0.08)",
+                        color: "#6D5DF6",
+                        fontWeight: 600,
+                        fontSize: "0.7rem"
+                      }}
+                    />
+                  </Box>
+
+                  {plan.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13, mb: 2 }}>
+                      {plan.description}
+                    </Typography>
+                  )}
+
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1, backgroundColor: "#F9FAFB", p: 1.5, borderRadius: 2, border: "1px solid rgba(0,0,0,0.03)" }}>
+                    {plan.slots.map((slot) => {
+                      return (
+                        <Box key={slot.order} sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.5 }}>
+                          <Chip label={`Slot ${slot.order}`} size="small" variant="outlined" sx={{ height: 18, fontSize: "0.65rem", fontWeight: 600 }} />
+                          <Typography variant="body2" sx={{ fontSize: 12.5, fontWeight: 600, color: "#374151" }}>
+                            {getSlotShiftName(slot)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11.5 }}>
+                            ({slot.offDays.length > 0 ? `${slot.offDays.join(", ")} Off` : "No Off Days"})
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2, pt: 1.5, borderTop: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Status
+                    </Typography>
+                    <Chip
+                      label={plan.isActive ? "Active" : "Inactive"}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "0.7rem",
+                        backgroundColor: plan.isActive ? "rgba(16, 185, 129, 0.08)" : "rgba(107, 114, 128, 0.08)",
+                        color: plan.isActive ? "#10B981" : "#6B7280",
+                      }}
+                    />
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </>
+        )
+      )}
+
       {/* Form Dialog */}
       <ShiftFormDialog
         open={createOpen}
@@ -645,6 +929,26 @@ export default function ShiftContent() {
         error={error}
         onClose={() => setCreateOpen(false)}
         onSubmit={handleCreateSubmit}
+      />
+
+      {/* Rotation Plan Form Dialog */}
+      <RotationPlanFormDialog
+        open={createPlanOpen}
+        submitting={submitting}
+        error={error}
+        shifts={shifts}
+        onClose={() => setCreatePlanOpen(false)}
+        onSubmit={handleCreatePlanSubmit}
+      />
+
+      {/* Assign Rotation Plan Dialog */}
+      <AssignRotationPlanDialog
+        open={assignPlanOpen}
+        submitting={submitting}
+        error={error}
+        rotationPlans={rotationPlans}
+        onClose={() => setAssignPlanOpen(false)}
+        onSubmit={handleAssignPlanSubmit}
       />
     </Box>
   );

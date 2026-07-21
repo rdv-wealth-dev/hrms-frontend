@@ -171,3 +171,62 @@ export interface ShiftAssignmentsResponse {
   errors: string[];
   data: ShiftAssignment[];
 }
+
+export type CycleDuration = "WEEKLY" | "BIWEEKLY" | "MONTHLY";
+
+export interface RotationSlot {
+  order: number;
+  shiftId: string | { _id: string; name: string; code?: string; startTime?: string; endTime?: string };
+  offDays: string[];
+}
+
+export interface ShiftRotationPlan {
+  _id: string;
+  tenantId: string;
+  name: string;
+  description?: string;
+  cycleDuration: CycleDuration;
+  slots: RotationSlot[];
+  isActive: boolean;
+  isDeleted: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRotationPlanRequest {
+  name: string;
+  description?: string;
+  cycleDuration: CycleDuration;
+  slots: RotationSlot[];
+}
+
+export interface CreateRotationPlanResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: ShiftRotationPlan | null;
+}
+
+export interface RotationPlanListResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: ShiftRotationPlan[];
+}
+
+export interface AssignRotationPlanRequest {
+  rotationPlanId: string;
+  rotationStartDate: string;
+  employeeIds: string[];
+}
+
+export interface AssignRotationPlanResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: {
+    message: string;
+    modifiedCount: number;
+  } | null;
+}

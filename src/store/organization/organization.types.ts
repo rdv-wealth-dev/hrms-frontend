@@ -15,6 +15,36 @@ export interface OrganizationBranding {
   supportPhone?: string;
 }
 
+export type SaturdayOffMode =
+  | "ALL_OFF"
+  | "ALL_WORKING"
+  | "FIRST_OFF"
+  | "SECOND_OFF"
+  | "THIRD_OFF"
+  | "FOURTH_OFF"
+  | "FIFTH_OFF_IF_EXISTS"
+  | "FIRST_AND_THIRD_OFF"
+  | "SECOND_AND_FOURTH_OFF"
+  | "CUSTOM";
+
+export const SaturdayOffMode = {
+  ALL_OFF: "ALL_OFF",
+  ALL_WORKING: "ALL_WORKING",
+  FIRST_OFF: "FIRST_OFF",
+  SECOND_OFF: "SECOND_OFF",
+  THIRD_OFF: "THIRD_OFF",
+  FOURTH_OFF: "FOURTH_OFF",
+  FIFTH_OFF_IF_EXISTS: "FIFTH_OFF_IF_EXISTS",
+  FIRST_AND_THIRD_OFF: "FIRST_AND_THIRD_OFF",
+  SECOND_AND_FOURTH_OFF: "SECOND_AND_FOURTH_OFF",
+  CUSTOM: "CUSTOM",
+} as const;
+
+export interface SaturdayPolicy {
+  mode: SaturdayOffMode;
+  customOffWeeks?: number[];
+}
+
 export interface OrganizationLocale {
   currencyCode: string;
   timezone: string;
@@ -24,6 +54,7 @@ export interface OrganizationLocale {
   fiscalYearStart: string;
   weeklyOffDays: string[];
   workingHoursPerDay: number;
+  saturdayPolicy?: SaturdayPolicy;
 }
 
 export interface OrganizationSubscription {

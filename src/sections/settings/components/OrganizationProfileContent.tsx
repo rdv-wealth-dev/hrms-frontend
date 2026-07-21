@@ -35,6 +35,7 @@ import {
   resetOrganizationStatus,
 } from "../../../store/organization";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { SaturdayOffMode } from "../../../store/organization/organization.types";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -45,6 +46,19 @@ const DAYS_OF_WEEK = [
   "Saturday",
   "Sunday",
 ];
+
+const SATURDAY_POLICY_LABELS: Record<string, string> = {
+  ALL_WORKING: "All Saturdays Working",
+  ALL_OFF: "All Saturdays Off",
+  FIRST_OFF: "1st Saturday Off",
+  SECOND_OFF: "2nd Saturday Off",
+  THIRD_OFF: "3rd Saturday Off",
+  FOURTH_OFF: "4th Saturday Off",
+  FIFTH_OFF_IF_EXISTS: "5th Saturday Off (if exists)",
+  FIRST_AND_THIRD_OFF: "1st & 3rd Saturday Off",
+  SECOND_AND_FOURTH_OFF: "2nd & 4th Saturday Off",
+  CUSTOM: "Custom Off-Weeks (Select below)",
+};
 
 const DATE_FORMATS = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
 const TIME_FORMATS = ["12h", "24h"];
@@ -112,6 +126,8 @@ function OrganizationProfileContent() {
   const [fiscalYearStart, setFiscalYearStart] = useState("");
   const [weeklyOffDays, setWeeklyOffDays] = useState<string[]>([]);
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState(8);
+  const [saturdayMode, setSaturdayMode] = useState<SaturdayOffMode>(SaturdayOffMode.ALL_WORKING);
+  const [customOffWeeks, setCustomOffWeeks] = useState<number[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -146,8 +162,18 @@ function OrganizationProfileContent() {
       setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
       setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
       setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
+      
+      const policy = organization.locale?.saturdayPolicy;
+      setSaturdayMode(policy?.mode || SaturdayOffMode.ALL_WORKING);
+      setCustomOffWeeks(policy?.customOffWeeks || []);
     }
   }, [organization]);
+
+  const handleToggleCustomWeek = (week: number) => {
+    setCustomOffWeeks((prev) =>
+      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week].sort((a, b) => a - b)
+    );
+  };
 
   // Trigger snackbar on success and exit edit mode
   useEffect(() => {
@@ -178,6 +204,10 @@ function OrganizationProfileContent() {
       setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
       setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
       setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
+
+      const policy = organization.locale?.saturdayPolicy;
+      setSaturdayMode(policy?.mode || SaturdayOffMode.ALL_WORKING);
+      setCustomOffWeeks(policy?.customOffWeeks || []);
     }
     setIsEditing(false);
   };
@@ -211,6 +241,10 @@ function OrganizationProfileContent() {
           fiscalYearStart,
           weeklyOffDays,
           workingHoursPerDay,
+          saturdayPolicy: {
+            mode: saturdayMode,
+            customOffWeeks: saturdayMode === SaturdayOffMode.CUSTOM ? customOffWeeks : undefined,
+          },
         },
       })
     );
@@ -660,6 +694,60 @@ function OrganizationProfileContent() {
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid size={6}>
+                <TextField
+                  select
+                  label="Saturday Policy"
+                  value={saturdayMode}
+                  onChange={(e) => setSaturdayMode(e.target.value as SaturdayOffMode)}
+                  fullWidth
+                  disabled={!canUpdate || !isEditing}
+                >
+                  {Object.entries(SATURDAY_POLICY_LABELS).map(([value, label]) => (
+                    <MenuItem key={value} value={value}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {saturdayMode === SaturdayOffMode.CUSTOM && (
+                <Grid size={12}>
+                  <Box sx={{ mt: 0.5, p: 2, borderRadius: 2.5, border: "1px dashed rgba(109, 93, 246, 0.2)", backgroundColor: "rgba(109, 93, 246, 0.02)" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: "#374151" }}>
+                      Select off-duty Saturdays of the month:
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                      {[1, 2, 3, 4, 5].map((week) => (
+                        <Box
+                          key={week}
+                          onClick={() => {
+                            if (canUpdate && isEditing) {
+                              handleToggleCustomWeek(week);
+                            }
+                          }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            cursor: canUpdate && isEditing ? "pointer" : "default",
+                            opacity: !canUpdate || !isEditing ? 0.75 : 1,
+                          }}
+                        >
+                          <Checkbox
+                            checked={customOffWeeks.includes(week)}
+                            disabled={!canUpdate || !isEditing}
+                            size="small"
+                            sx={{ p: 0.5, color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                          />
+                          <Typography variant="body2" sx={{ ml: 0.5, fontSize: 13.5, userSelect: "none", color: "#4B5563" }}>
+                            {week === 5 ? "5th Saturday (if exists)" : `${["1st", "2nd", "3rd", "4th"][week - 1]} Saturday`}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
             </Grid>
           </Paper>
         </Grid>

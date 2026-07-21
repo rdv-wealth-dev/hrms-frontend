@@ -1,3 +1,5 @@
+import type { SaturdayPolicy } from "../organization/organization.types";
+
 export interface BranchAddress {
   addressLine1?: string;
   addressLine2?: string;
@@ -25,6 +27,7 @@ export interface BranchWorkPolicy {
   shiftStartTime?: string;
   shiftEndTime?: string;
   workingHoursPerDay?: number;
+  saturdayPolicy?: SaturdayPolicy;
 }
 
 export interface BranchStatutory {
