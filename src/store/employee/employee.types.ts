@@ -70,6 +70,7 @@ export interface CreateEmployeeRequest {
   permanentAddress?: Address;
   emergencyContacts?: EmergencyContact[];
   salarySetup?: SalarySetup;
+  shiftId?: string;
 }
 
 export interface EmployeeResponseData {
@@ -129,6 +130,7 @@ export interface EmployeeListItem {
   createdAt: string;
   updatedAt: string;
   confirmationDate?: string;
+  shiftId?: string | null;
 }
 
 export interface EmployeeListResponse {

@@ -18,7 +18,7 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
-import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../../components/snackbar";
 
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
@@ -82,6 +82,7 @@ const TIMEZONES = [
 
 function OrganizationProfileContent() {
   const dispatch = useDispatch<AppDispatch>();
+  const { showSnackbar } = useSnackbar();
   const { hasPermission } = usePermissions();
   const canUpdate = hasPermission("settings.update");
 
@@ -112,7 +113,6 @@ function OrganizationProfileContent() {
   const [weeklyOffDays, setWeeklyOffDays] = useState<string[]>([]);
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState(8);
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -152,15 +152,11 @@ function OrganizationProfileContent() {
   // Trigger snackbar on success and exit edit mode
   useEffect(() => {
     if (success) {
-      setSnackbarOpen(true);
+      showSnackbar("Organization updated successfully", "success");
       setIsEditing(false);
       dispatch(resetOrganizationStatus());
     }
-  }, [success, dispatch]);
-
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
+  }, [success, dispatch, showSnackbar]);
 
   const handleCancel = () => {
     if (organization) {
@@ -772,23 +768,6 @@ function OrganizationProfileContent() {
           </Grid>
         )}
       </Grid>
-
-      {/* Success Snacker Alert */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ borderRadius: 2.5 }}
-        >
-          Organization updated successfully
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

@@ -9,7 +9,8 @@ import type {
     CreateRegularizationRequest,
     RegularizationListResponse,
     RegularizationRequest,
-    AttendanceReportResponse
+    AttendanceReportResponse,
+    ShiftAssignmentsResponse
 } from "../store/attendance/attendance.types";
 
 const getAuthHeader = () => {
@@ -154,4 +155,12 @@ export const getAttendanceReport = async (
     }
   );
   return response.data;
+};
+
+export const getShiftAssignments = async (): Promise<ShiftAssignmentsResponse> => {
+    const response = await axiosInstance.get<ShiftAssignmentsResponse>(
+        "/attendance/shifts/assignments",
+        { headers: getAuthHeader() }
+    );
+    return response.data;
 };

@@ -11,7 +11,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../components/snackbar";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -68,6 +68,7 @@ interface ProfileViewProps {
 
 function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
   const resolvedTargetId = targetEmployeeId || routeParams.id;
@@ -77,7 +78,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
   const [bankSubmitting, setBankSubmitting] = useState(false);
   const [bankError, setBankError] = useState<string | null>(null);
-  const [bankSuccess, setBankSuccess] = useState(false);
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [ifscCode, setIfscCode] = useState("");
@@ -87,13 +87,11 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const [bankAccountsLoading, setBankAccountsLoading] = useState(true);
   const [bankDeleteTarget, setBankDeleteTarget] = useState<BankAccount | null>(null);
   const [bankDeleting, setBankDeleting] = useState(false);
-  const [bankDeleteSuccess, setBankDeleteSuccess] = useState(false);
   const [empProfile, setEmpProfile] = useState<CompleteProfileEmployee | null>(null);
   const [missingDocTypes, setMissingDocTypes] = useState<string[]>([]);
 
   // ── Edit Personal Details dialog ──────────────────────────────────────────
   const [editProfileOpen, setEditProfileOpen] = useState(false);
-  const [editProfileSuccess, setEditProfileSuccess] = useState(false);
 
   const [editPhone, setEditPhone] = useState("");
   const [editDob, setEditDob] = useState("");
@@ -108,7 +106,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const ecDialog = useDialog<void>();
   const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
   const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);
-  const [ecSuccessOpen, setEcSuccessOpen] = useState(false);
   const [ecSuccessMessage, setEcSuccessMessage] = useState("");
 
   const loadProfileData = async (cancelled = false) => {
@@ -174,9 +171,9 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   // Shared self-update hook for personal details
   const onProfileUpdated = useCallback(async () => {
     await loadProfileData();
-    setEditProfileSuccess(true);
+    showSnackbar("Personal details and address updated successfully", "success");
     setEditProfileOpen(false);
-  }, []);
+  }, [showSnackbar]);
 
   const personalDetailsUpdater = useProfileSelfUpdate(onProfileUpdated);
 
@@ -186,8 +183,8 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     ecDialog.close();
     setEcDeleteConfirmOpen(false);
     setEcDeleteTarget(null);
-    setEcSuccessOpen(true);
-  }, [ecDialog]);
+    showSnackbar(ecSuccessMessage, "success");
+  }, [ecDialog, ecSuccessMessage, showSnackbar]);
 
   const ecUpdater = useProfileSelfUpdate(onEcUpdated);
 
@@ -221,7 +218,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         return;
       }
 
-      setBankSuccess(true);
+      showSnackbar("Bank account added successfully", "success");
       setBankDialogOpen(false);
       resetBankForm();
       await loadProfileData();
@@ -252,7 +249,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const [docUploading, setDocUploading] = useState(false);
 
   const [docUploadError, setDocUploadError] = useState<string | null>(null);
-  const [docUploadSuccess, setDocUploadSuccess] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedDocType, setSelectedDocType] = useState("PAN");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -307,7 +303,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         return;
       }
 
-      setDocUploadSuccess(true);
+      showSnackbar("Document uploaded — awaiting HR verification", "success");
       setDocUploadDialogOpen(false);
       resetDocUploadForm();
       await loadProfileData();
@@ -328,7 +324,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       if (res.succeeded) {
         setBankAccounts((prev) => prev.filter((a) => (a.id || a._id) !== bankId));
         setBankDeleteTarget(null);
-        setBankDeleteSuccess(true);
+        showSnackbar("Bank account deleted successfully", "success");
         await loadProfileData();
       } else {
         setBankError(res.message || "Failed to delete bank account");
@@ -1182,30 +1178,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         </DialogActions>
       </Dialog>
 
-      {/* Success Snackbar */}
-      <Snackbar
-        open={bankSuccess}
-        autoHideDuration={4000}
-        onClose={() => setBankSuccess(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setBankSuccess(false)}>
-          Bank account added successfully
-        </Alert>
-      </Snackbar>
-
-      {/* Delete Bank Account Success Snackbar */}
-      <Snackbar
-        open={bankDeleteSuccess}
-        autoHideDuration={4000}
-        onClose={() => setBankDeleteSuccess(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setBankDeleteSuccess(false)}>
-          Bank account deleted successfully
-        </Alert>
-      </Snackbar>
-
       {/* Upload Document Dialog */}
       <Dialog
         open={docUploadDialogOpen}
@@ -1290,18 +1262,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Document Upload Success Snackbar */}
-      <Snackbar
-        open={docUploadSuccess}
-        autoHideDuration={4000}
-        onClose={() => setDocUploadSuccess(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setDocUploadSuccess(false)}>
-          Document uploaded — awaiting HR verification
-        </Alert>
-      </Snackbar>
       {/* Edit Personal Details Dialog */}
       <Dialog
         open={editProfileOpen}
@@ -1447,18 +1407,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         </Box>
       </Dialog>
 
-      {/* Edit Profile Success Snackbar */}
-      <Snackbar
-        open={editProfileSuccess}
-        autoHideDuration={4000}
-        onClose={() => setEditProfileSuccess(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setEditProfileSuccess(false)}>
-          Personal details and address updated successfully
-        </Alert>
-      </Snackbar>
-
       {/* Add Emergency Contact Dialog */}
       <EmergencyContactDialog
         open={ecDialog.isOpen}
@@ -1478,18 +1426,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         onClose={() => { setEcDeleteConfirmOpen(false); setEcDeleteTarget(null); }}
         loading={ecUpdater.submitting}
       />
-
-      {/* Emergency Contact Action Snackbar */}
-      <Snackbar
-        open={ecSuccessOpen}
-        autoHideDuration={3000}
-        onClose={() => setEcSuccessOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setEcSuccessOpen(false)}>
-          {ecSuccessMessage}
-        </Alert>
-      </Snackbar>
     </DashboardLayout>
   );
 }

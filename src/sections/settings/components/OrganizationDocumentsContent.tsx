@@ -10,7 +10,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
-import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../../components/snackbar";
 
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
@@ -79,6 +79,7 @@ const DOCUMENT_ITEMS = [
 
 export default function OrganizationDocumentsContent() {
   const dispatch = useDispatch<AppDispatch>();
+  const { showSnackbar } = useSnackbar();
   const { hasPermission } = usePermissions();
   const canUpdate = hasPermission("settings.update");
 
@@ -87,7 +88,6 @@ export default function OrganizationDocumentsContent() {
   );
 
   const [mandatoryDocs, setMandatoryDocs] = useState<string[]>([]);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     dispatch(loadOrganizationRequest());
@@ -105,14 +105,10 @@ export default function OrganizationDocumentsContent() {
 
   useEffect(() => {
     if (success) {
-      setSnackbarOpen(true);
+      showSnackbar("Mandatory document types updated successfully", "success");
       dispatch(resetOrganizationStatus());
     }
-  }, [success, dispatch]);
-
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
+  }, [success, dispatch, showSnackbar]);
 
   const handleToggle = (type: string, checked: boolean) => {
     if (checked) {
@@ -244,23 +240,6 @@ export default function OrganizationDocumentsContent() {
           </Box>
         )}
       </Paper>
-
-      {/* Success Snackbar Alert */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ borderRadius: 2.5 }}
-        >
-          Mandatory document types updated successfully
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

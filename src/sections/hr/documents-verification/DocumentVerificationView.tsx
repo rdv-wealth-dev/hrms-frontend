@@ -14,7 +14,7 @@ import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../../components/snackbar";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -35,11 +35,11 @@ import {
   type EmployeeDocument,
 } from "../../../api/employee.api";
 
-function DocumentVerificationView() {
+export function DocumentVerificationView() {
+  const { showSnackbar } = useSnackbar();
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<EmployeeDocument | null>(null);
@@ -98,7 +98,7 @@ function DocumentVerificationView() {
       const res = await verifyDocument(doc._id, { isVerified: true });
       if (res.succeeded) {
         setDocuments((prev) => prev.filter((d) => d._id !== doc._id));
-        setSuccessMsg("Document approved successfully");
+        showSnackbar("Document approved successfully", "success");
       } else {
         setError(res.message || "Failed to approve document");
       }
@@ -127,7 +127,7 @@ function DocumentVerificationView() {
       });
       if (res.succeeded) {
         setDocuments((prev) => prev.filter((d) => d._id !== rejectTarget._id));
-        setSuccessMsg("Document rejected");
+        showSnackbar("Document rejected", "success");
       } else {
         setError(res.message || "Failed to reject document");
       }
@@ -292,18 +292,6 @@ function DocumentVerificationView() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Success Snackbar */}
-      <Snackbar
-        open={!!successMsg}
-        autoHideDuration={4000}
-        onClose={() => setSuccessMsg(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ borderRadius: 2 }} onClose={() => setSuccessMsg(null)}>
-          {successMsg}
-        </Alert>
-      </Snackbar>
     </DashboardLayout>
   );
 }

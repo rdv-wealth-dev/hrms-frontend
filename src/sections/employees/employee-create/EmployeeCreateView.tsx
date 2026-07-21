@@ -41,6 +41,8 @@ import {
   createEmployeeSchema,
   type CreateEmployeeFormData,
 } from "../../../validations/employee/create-employee.schema";
+import { listShifts } from "../../../api/attendance.api";
+import type { Shift } from "../../../store/attendance";
 
 const selectFieldSx = {
   "& .MuiOutlinedInput-root": {
@@ -96,6 +98,8 @@ function EmployeeCreateView() {
   );
 
   const [manageSalary, setManageSalary] = useState(false);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [shiftsLoading, setShiftsLoading] = useState(true);
 
   useEffect(() => {
     if (departments.length === 0) {
@@ -106,6 +110,22 @@ function EmployeeCreateView() {
     }
     dispatch(clearEmployeeError());
   }, [dispatch, departments.length, designations.length]);
+
+  useEffect(() => {
+    const fetchShifts = async () => {
+      try {
+        const res = await listShifts();
+        if (res.succeeded && res.data) {
+          setShifts(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load shifts:", err);
+      } finally {
+        setShiftsLoading(false);
+      }
+    };
+    fetchShifts();
+  }, []);
 
   const {
     register,
@@ -179,6 +199,7 @@ function EmployeeCreateView() {
     if (!payload.aadhaar) delete payload.aadhaar;
     if (!payload.managerId) delete payload.managerId;
     if (!payload.probationEndDate) delete payload.probationEndDate;
+    if (!payload.shiftId) delete payload.shiftId;
 
     const isCurAddrEmpty = !payload.currentAddress?.addressLine1 && !payload.currentAddress?.city;
     if (isCurAddrEmpty) delete payload.currentAddress;
@@ -774,6 +795,75 @@ function EmployeeCreateView() {
                       registration={register("managerId")}
                       error={errors.managerId?.message}
                     />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box>
+                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
+                        Shift Selection
+                      </Typography>
+                      <TextField
+                        select
+                        fullWidth
+                        slotProps={{
+                          select: {
+                            displayEmpty: true,
+                            renderValue: (value: unknown) => {
+                              const val = value as string;
+                              if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Shift</span>;
+                              const shift = shifts.find((s) => s._id === val);
+                              if (!shift) return val;
+                              return `${shift.name} (${shift.startTime} - ${shift.endTime})${shift.isDefault ? " (Default)" : ""}`;
+                            }
+                          }
+                        }}
+                        {...register("shiftId")}
+                        error={!!errors.shiftId}
+                        helperText={errors.shiftId?.message || (shiftsLoading ? "Loading shifts..." : "")}
+                        sx={selectFieldSx}
+                        disabled={shiftsLoading}
+                      >
+                        <MenuItem value="">
+                          <span style={{ color: "#9CA3AF" }}>Select Shift</span>
+                        </MenuItem>
+                        {shifts.map((shift) => (
+                          <MenuItem 
+                            key={shift._id} 
+                            value={shift._id}
+                            sx={{ 
+                              display: "flex", 
+                              justifyContent: "space-between", 
+                              alignItems: "center",
+                              py: 1
+                            }}
+                          >
+                            <Box sx={{ display: "flex", flexDirection: "column" }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#111827" }}>
+                                {shift.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {shift.startTime} - {shift.endTime}
+                              </Typography>
+                            </Box>
+                            {shift.isDefault && (
+                              <Box
+                                sx={{
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: 1,
+                                  fontSize: "10px",
+                                  fontWeight: 600,
+                                  backgroundColor: "rgba(109, 93, 246, 0.08)",
+                                  color: "#6D5DF6",
+                                  border: "1px solid rgba(109, 93, 246, 0.2)",
+                                }}
+                              >
+                                Default
+                              </Box>
+                            )}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Box>
                   </Grid>
                 </Grid>
               </CardContent>

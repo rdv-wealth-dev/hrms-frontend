@@ -40,7 +40,8 @@ export default function ApplyLeaveDialog({
 
   useEffect(() => {
     if (open) {
-      setLeaveTypeId(balances[0]?.leaveTypeId || "");
+      const initial = balances[0]?.leaveTypeId as any;
+      setLeaveTypeId(initial ? (typeof initial === "string" ? initial : (initial._id || "")) : "");
       setFromDate("");
       setToDate("");
       setFromSession("FULL_DAY");
@@ -87,11 +88,14 @@ export default function ApplyLeaveDialog({
           size="small"
           required
         >
-          {balances.map((b) => (
-            <MenuItem key={b._id} value={b.leaveTypeId}>
-              {getLeaveTypeName(b.leaveTypeId)} — Balance: {b.available}
-            </MenuItem>
-          ))}
+          {balances.map((b) => {
+            const val = typeof b.leaveTypeId === "string" ? b.leaveTypeId : (b.leaveTypeId as any)?._id || "";
+            return (
+              <MenuItem key={b._id} value={val}>
+                {getLeaveTypeName(b.leaveTypeId)} — Balance: {b.available}
+              </MenuItem>
+            );
+          })}
         </TextField>
 
         <Box sx={{ display: "flex", gap: 2 }}>

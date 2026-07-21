@@ -10,7 +10,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
-import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../../components/snackbar";
 
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
@@ -32,6 +32,7 @@ import ModuleToggleCard from "../../../components/card/ModuleToggleCard";
 
 export default function OrganizationStatutoryContent() {
   const dispatch = useDispatch<AppDispatch>();
+  const { showSnackbar } = useSnackbar();
   const { hasPermission } = usePermissions();
   const canUpdate = hasPermission("settings.update");
 
@@ -44,8 +45,6 @@ export default function OrganizationStatutoryContent() {
   const [tdsEnabled, setTdsEnabled] = useState(false);
   const [ptEnabled, setPtEnabled] = useState(false);
   const [lwfEnabled, setLwfEnabled] = useState(false);
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     dispatch(loadOrganizationRequest());
@@ -67,14 +66,10 @@ export default function OrganizationStatutoryContent() {
 
   useEffect(() => {
     if (success) {
-      setSnackbarOpen(true);
+      showSnackbar("Statutory settings updated successfully", "success");
       dispatch(resetOrganizationStatus());
     }
-  }, [success, dispatch]);
-
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
+  }, [success, dispatch, showSnackbar]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,23 +235,6 @@ export default function OrganizationStatutoryContent() {
           </Box>
         )}
       </Paper>
-
-      {/* Success Snackbar Alert */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ borderRadius: 2.5 }}
-        >
-          Statutory settings updated successfully
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

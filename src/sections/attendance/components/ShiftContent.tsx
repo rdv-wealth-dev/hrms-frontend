@@ -23,8 +23,11 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
 
-import { createShift, listShifts } from "../../../api/attendance.api";
-import type { CreateShiftRequest, Shift } from "../../../store/attendance/attendance.types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+
+import { createShift, listShifts, getShiftAssignments } from "../../../api/attendance.api";
+import type { CreateShiftRequest, Shift, ShiftAssignment } from "../../../store/attendance/attendance.types";
 import { usePermissions } from "../../../hooks/usePermissions";
 
 type ShiftFormProps = {
@@ -280,8 +283,11 @@ export default function ShiftContent() {
   const canRead = hasPermission("attendance.read");
   const canCreate = hasPermission("attendance.create");
 
+  const [activeTab, setActiveTab] = useState(0);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(true);
+  const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(true);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -307,10 +313,33 @@ export default function ShiftContent() {
     }
   };
 
+  const loadAssignmentsList = async () => {
+    if (!canRead) return;
+    setLoadingAssignments(true);
+    try {
+      const response = await getShiftAssignments();
+      if (response.succeeded && response.data) {
+        setAssignments(response.data);
+      } else {
+        setError(response.message || "Failed to load shift assignments");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || err.message || "Failed to load shift assignments"
+      );
+    } finally {
+      setLoadingAssignments(false);
+    }
+  };
+
   useEffect(() => {
-    loadShiftsList();
+    if (activeTab === 0) {
+      loadShiftsList();
+    } else {
+      loadAssignmentsList();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canRead]);
+  }, [canRead, activeTab]);
 
   const handleCreateSubmit = async (data: CreateShiftRequest) => {
     setSubmitting(true);
@@ -391,6 +420,22 @@ export default function ShiftContent() {
         )}
       </Box>
 
+      {/* Tabs Navigation */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+        <Tabs 
+          value={activeTab} 
+          onChange={(_, newValue) => setActiveTab(newValue)}
+          sx={{
+            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "14px" },
+            "& .MuiTabs-indicator": { backgroundColor: "#6D5DF6" },
+            "& .MuiTab-root.Mui-selected": { color: "#6D5DF6" }
+          }}
+        >
+          <Tab label="Shifts List" />
+          <Tab label="Employee Assignments" />
+        </Tabs>
+      </Box>
+
       {/* Success/Error Alerts */}
       {success && (
         <Alert severity="success" onClose={() => setSuccess(null)} sx={{ mb: 3 }}>
@@ -404,103 +449,193 @@ export default function ShiftContent() {
         </Alert>
       )}
 
-      {/* Loading / List Table */}
-      {loadingShifts ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
-        </Box>
-      ) : shifts.length === 0 ? (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            py: 8,
-            px: 2,
-            backgroundColor: "#fff",
-            borderRadius: 3,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          <InfoOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#374151" }}>
-            Shifts Setup
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            align="center"
-            sx={{ maxWidth: 360, mt: 0.5 }}
+      {/* Loading / List Content */}
+      {activeTab === 0 ? (
+        loadingShifts ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+          </Box>
+        ) : shifts.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              py: 8,
+              px: 2,
+              backgroundColor: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
           >
-            Click "Create Shift" to define shift timings, grace periods, and set
-            up the default shift rules for attendance calculations.
-          </Typography>
-        </Box>
-      ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>Shift Details</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Timings</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Grace Period</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Grace Limit / Month</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Rules (Half/Full Day)</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {shifts.map((shift) => (
-                <TableRow key={shift._id} hover>
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                        {shift.name}
-                      </Typography>
-                      {shift.isDefault && (
-                        <Chip
-                          label="Default"
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: "0.75rem",
-                            backgroundColor: "#6D5DF6",
-                            color: "#fff",
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={shift.code} size="small" variant="outlined" sx={{ fontWeight: 500 }} />
-                  </TableCell>
-                  <TableCell>{shift.startTime} - {shift.endTime}</TableCell>
-                  <TableCell>{shift.gracePeriodMinutes} mins</TableCell>
-                  <TableCell>
-                    {shift.graceLimitPerMonth && shift.graceLimitPerMonth > 0
-                      ? `${shift.graceLimitPerMonth} times`
-                      : "Unlimited"}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="caption" color="text.secondary">
-                      Half: {shift.halfDayThresholdMinutes}m / Full: {shift.fullDayMinutes}m
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={shift.isActive ? "Active" : "Inactive"}
-                      size="small"
-                      color={shift.isActive ? "success" : "default"}
-                      sx={{ height: 22, fontSize: "0.75rem", fontWeight: 500 }}
-                    />
-                  </TableCell>
+            <InfoOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#374151" }}>
+              Shifts Setup
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              align="center"
+              sx={{ maxWidth: 360, mt: 0.5 }}
+            >
+              Click "Create Shift" to define shift timings, grace periods, and set
+              up the default shift rules for attendance calculations.
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+            <Table>
+              <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Shift Details</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Timings</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Grace Period</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Grace Limit / Month</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Rules (Half/Full Day)</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {shifts.map((shift) => (
+                  <TableRow key={shift._id} hover>
+                    <TableCell>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                          {shift.name}
+                        </Typography>
+                        {shift.isDefault && (
+                          <Chip
+                            label="Default"
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: "0.75rem",
+                              backgroundColor: "#6D5DF6",
+                              color: "#fff",
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={shift.code} size="small" variant="outlined" sx={{ fontWeight: 500 }} />
+                    </TableCell>
+                    <TableCell>{shift.startTime} - {shift.endTime}</TableCell>
+                    <TableCell>{shift.gracePeriodMinutes} mins</TableCell>
+                    <TableCell>
+                      {shift.graceLimitPerMonth && shift.graceLimitPerMonth > 0
+                        ? `${shift.graceLimitPerMonth} times`
+                        : "Unlimited"}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" color="text.secondary">
+                        Half: {shift.halfDayThresholdMinutes}m / Full: {shift.fullDayMinutes}m
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={shift.isActive ? "Active" : "Inactive"}
+                        size="small"
+                        color={shift.isActive ? "success" : "default"}
+                        sx={{ height: 22, fontSize: "0.75rem", fontWeight: 500 }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
+      ) : (
+        loadingAssignments ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+          </Box>
+        ) : assignments.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              py: 8,
+              px: 2,
+              backgroundColor: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          >
+            <InfoOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#374151" }}>
+              No Shift Assignments
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              align="center"
+              sx={{ maxWidth: 360, mt: 0.5 }}
+            >
+              No active shift assignments found for your employees. Update employee profiles or onboarding details to link shifts.
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+            <Table>
+              <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Employee</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Department</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Assigned Shift</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Timings</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Assignment Type</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {assignments.map((row) => (
+                  <TableRow key={row.employeeId} hover>
+                    <TableCell sx={{ fontWeight: 600, color: "#111827" }}>
+                      {row.name}
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={row.employeeCode} size="small" variant="outlined" sx={{ fontWeight: 500 }} />
+                    </TableCell>
+                    <TableCell>{row.department || "-"}</TableCell>
+                    <TableCell sx={{ fontWeight: 500 }}>
+                      {row.shift?.name || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {row.shift?.startTime && row.shift?.endTime 
+                        ? `${row.shift.startTime} - ${row.shift.endTime}`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={row.isOverride ? "Override" : "Default"}
+                        size="small"
+                        sx={{
+                          height: 22,
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          borderRadius: "4px",
+                          backgroundColor: row.isOverride 
+                            ? "rgba(245, 158, 11, 0.08)" 
+                            : "rgba(16, 185, 129, 0.08)",
+                          color: row.isOverride ? "#F59E0B" : "#10B981",
+                          border: row.isOverride 
+                            ? "1px solid rgba(245, 158, 11, 0.2)" 
+                            : "1px solid rgba(16, 185, 129, 0.2)",
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
       )}
 
       {/* Form Dialog */}

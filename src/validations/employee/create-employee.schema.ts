@@ -70,6 +70,7 @@ export const createEmployeeSchema = z.object({
   permanentAddress: addressSchema.optional(),
   emergencyContacts: z.array(emergencyContactSchema).optional(),
   salarySetup: salarySetupSchema.optional(),
+  shiftId: z.string().optional(),
 });
 
 export type CreateEmployeeFormData = z.input<typeof createEmployeeSchema>;

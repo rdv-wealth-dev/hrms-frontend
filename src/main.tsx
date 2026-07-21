@@ -6,12 +6,15 @@ import "./global.css";
 import App from "./App";
 import { AppThemeProvider } from "./theme/theme-provider";
 import { store } from "./store/store";
+import { SnackbarProvider } from "./components/snackbar";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
       <AppThemeProvider>
-        <App />
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
       </AppThemeProvider>
     </Provider>
   </StrictMode>

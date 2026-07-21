@@ -154,3 +154,20 @@ export interface AttendanceReportResponse {
     pageSize: number;
   };
 }
+
+export interface ShiftAssignment {
+  employeeId: string;
+  employeeCode: string;
+  name: string;
+  department: string;
+  branch: string;
+  shift: Shift;
+  isOverride: boolean;
+}
+
+export interface ShiftAssignmentsResponse {
+  succeeded: boolean;
+  message: string | null;
+  errors: string[];
+  data: ShiftAssignment[];
+}

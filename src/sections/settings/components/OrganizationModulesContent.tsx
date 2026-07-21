@@ -9,7 +9,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
-import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../../components/snackbar";
 
 import ViewModuleOutlinedIcon from "@mui/icons-material/ViewModuleOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
@@ -32,6 +32,7 @@ import ModuleToggleCard from "../../../components/card/ModuleToggleCard";
 
 function OrganizationModulesContent() {
   const dispatch = useDispatch<AppDispatch>();
+  const { showSnackbar } = useSnackbar();
   const { hasPermission } = usePermissions();
   const canUpdate = hasPermission("settings.update");
 
@@ -44,8 +45,6 @@ function OrganizationModulesContent() {
   const [performance, setPerformance] = useState(false);
   const [recruitment, setRecruitment] = useState(false);
   const [assets, setAssets] = useState(false);
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     dispatch(loadOrganizationRequest());
@@ -66,14 +65,10 @@ function OrganizationModulesContent() {
 
   useEffect(() => {
     if (success) {
-      setSnackbarOpen(true);
+      showSnackbar("Modules updated successfully", "success");
       dispatch(resetOrganizationStatus());
     }
-  }, [success, dispatch]);
-
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
+  }, [success, dispatch, showSnackbar]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -263,23 +258,6 @@ function OrganizationModulesContent() {
           </Box>
         )}
       </Paper>
-
-      {/* Success Snacker Alert */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ borderRadius: 2.5 }}
-        >
-          Modules updated successfully
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }
