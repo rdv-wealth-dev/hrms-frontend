@@ -174,7 +174,7 @@ function DashboardLayout({ children }: Props) {
                 <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
                 {/* Nav Items */}
-                <List sx={{ px: 1.5, py: 2, flexGrow: 1 }}>
+                <List sx={{ px: 1.5, py: 2, flexGrow: 1, overflowY: "auto", minHeight: 0 }}>
                     {visibleNavItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
@@ -233,7 +233,7 @@ function DashboardLayout({ children }: Props) {
                 <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
                 {/* User Footer */}
-                <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2 }}>
+                <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2, flexShrink: 0 }}>
                     <Box
                         onClick={() => navigate(paths.profile)}
                         sx={{
