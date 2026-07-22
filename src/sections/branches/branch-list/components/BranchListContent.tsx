@@ -1,0 +1,635 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+
+import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+
+import type { AppDispatch } from "../../../../store/store";
+import type { RootState } from "../../../../store/rootReducer";
+import {
+  listBranchesRequest,
+  createBranchRequest,
+  resetBranchStatus,
+  getHeadOfficeRequest,
+  updateBranchRequest,
+  deleteBranchRequest,
+} from "../../../../store/branch";
+import { usePermissions } from "../../../../hooks/usePermissions";
+import { useDialog } from "../../../../hooks/useDialog";
+import { useSubmitSuccess } from "../../../../hooks/useSubmitSuccess";
+import BranchFormDialog from "./BranchFormDialog";
+import BranchCalendarDialog from "./BranchCalendarDialog";
+import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
+
+function BranchListContent() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission("branch.create");
+  const canUpdate = hasPermission("branch.update");
+  const canDelete = hasPermission("branch.delete");
+
+  const { branches, headOffice, loading, submitting, success, error } = useSelector(
+    (state: RootState) => state.branch
+  );
+
+  const formDialog = useDialog<Branch>();
+  const deleteDialog = useDialog<Branch>();
+  const calendarDialog = useDialog<Branch>();
+
+  useEffect(() => {
+    dispatch(listBranchesRequest());
+    dispatch(getHeadOfficeRequest());
+  }, [dispatch]);
+
+  useSubmitSuccess({
+    submitting,
+    success,
+    error,
+    onSuccess: () => {
+      if (formDialog.isOpen) {
+        formDialog.close();
+        dispatch(listBranchesRequest());
+        dispatch(getHeadOfficeRequest());
+      }
+      if (deleteDialog.isOpen) {
+        deleteDialog.close();
+        dispatch(listBranchesRequest());
+        dispatch(getHeadOfficeRequest());
+      }
+    },
+  });
+
+  const handleOpenCreate = () => {
+    dispatch(resetBranchStatus());
+    formDialog.open();
+  };
+
+  const handleOpenEdit = (branch: Branch) => {
+    dispatch(resetBranchStatus());
+    formDialog.open(branch);
+  };
+
+  const handleOpenDelete = (branch: Branch) => {
+    dispatch(resetBranchStatus());
+    deleteDialog.open(branch);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteDialog.target) {
+      dispatch(deleteBranchRequest(deleteDialog.target._id));
+    }
+  };
+
+  const handleCreateSubmit = (data: CreateBranchRequest) => {
+    if (formDialog.target) {
+      dispatch(updateBranchRequest(formDialog.target._id, data));
+    } else {
+      dispatch(createBranchRequest(data));
+    }
+  };
+
+  return (
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 2,
+          mb: 4,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <ApartmentOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              Branches
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              Overview and configuration of all organization branches
+            </Typography>
+          </Box>
+        </Box>
+
+        {canCreate && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreate}
+            sx={{
+              backgroundColor: "#6D5DF6",
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: 2,
+              "&:hover": { backgroundColor: "#5B4EE4" },
+            }}
+          >
+            Add Branch
+          </Button>
+        )}
+      </Box>
+
+      {/* Head Office Highlight Card */}
+      {headOffice && (
+        <Paper
+          sx={{
+            p: 3,
+            mb: 4,
+            borderRadius: 3,
+            background: "linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)",
+            color: "#fff",
+            boxShadow: "0px 8px 30px rgba(49, 46, 129, 0.15)",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          {canUpdate && (
+            <IconButton
+              size="small"
+              onClick={() => handleOpenEdit(headOffice)}
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                color: "rgba(255, 255, 255, 0.6)",
+                "&:hover": { color: "#fff", backgroundColor: "rgba(255,255,255,0.08)" },
+                zIndex: 10,
+              }}
+            >
+              <EditOutlinedIcon fontSize="small" />
+            </IconButton>
+          )}
+          {/* Decorative background circle */}
+          <Box
+            sx={{
+              position: "absolute",
+              right: -50,
+              bottom: -50,
+              width: 200,
+              height: 200,
+              borderRadius: "50%",
+              background: "rgba(255, 255, 255, 0.03)",
+            }}
+          />
+
+          <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ApartmentOutlinedIcon sx={{ fontSize: 40, color: "#A5B4FC" }} />
+              </Box>
+              <Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff" }}>
+                    {headOffice.name}
+                  </Typography>
+                  <Chip
+                    label="Primary Headquarters"
+                    size="small"
+                    sx={{
+                      backgroundColor: "rgba(165, 180, 252, 0.2)",
+                      color: "#E0E7FF",
+                      fontWeight: 700,
+                      fontSize: 10,
+                      height: 20,
+                    }}
+                  />
+                </Box>
+                <Typography variant="body2" sx={{ color: "#C7D2FE", mt: 0.5, fontWeight: 500 }}>
+                  HQ Code: {headOffice.code}
+                </Typography>
+
+                {/* Location address */}
+                {headOffice.address && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 2 }}>
+                    <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
+                    <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
+                      {[
+                        headOffice.address.addressLine1,
+                        headOffice.address.addressLine2,
+                        headOffice.address.city,
+                        headOffice.address.state,
+                        headOffice.address.zip,
+                        headOffice.address.countryCode,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+
+            {/* Right section: Policies */}
+            <Box
+              sx={{
+                display: "flex",
+                gap: { xs: 2, sm: 4 },
+                flexWrap: "wrap",
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                p: 2,
+                borderRadius: 2.5,
+                border: "1px solid rgba(255, 255, 255, 0.06)",
+              }}
+            >
+              {headOffice.workPolicy?.timezone && (
+                <Box>
+                  <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
+                    Timezone
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
+                    {headOffice.workPolicy.timezone}
+                  </Typography>
+                </Box>
+              )}
+
+              {headOffice.workPolicy?.workingHoursPerDay !== undefined && (
+                <Box>
+                  <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
+                    Working Hours
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
+                    {headOffice.workPolicy.workingHoursPerDay} hrs / day
+                  </Typography>
+                </Box>
+              )}
+
+              {headOffice.workPolicy?.weeklyOffDays && headOffice.workPolicy.weeklyOffDays.length > 0 && (
+                <Box>
+                  <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
+                    Weekly Offs
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
+                    {headOffice.workPolicy.weeklyOffDays.join(", ")}
+                  </Typography>
+                </Box>
+              )}
+
+              {(headOffice.contact?.email || headOffice.contact?.phone) && (
+                <Box sx={{ width: "100%", height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)", my: 0.5 }} />
+              )}
+
+              {headOffice.contact?.email && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 2 }}>
+                  <EmailOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
+                  <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
+                    {headOffice.contact.email}
+                  </Typography>
+                </Box>
+              )}
+
+              {headOffice.contact?.phone && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <PhoneOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
+                  <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
+                    {headOffice.contact.phone}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Paper>
+      )}
+
+      {/* Loading & Error States */}
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
+          <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+        </Box>
+      )}
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {!loading && !error && branches.length === 0 && (
+        <Paper
+          sx={{
+            p: 5,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            borderRadius: 2,
+            border: "1px dashed rgba(0,0,0,0.12)",
+            boxShadow: "none",
+          }}
+        >
+          <ApartmentOutlinedIcon sx={{ fontSize: 48, color: "text.disabled" }} />
+          <Typography variant="h6" sx={{ color: "text.secondary" }}>
+            No branches found
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.disabled", maxWidth: 320 }}>
+            There are no branches defined for this tenant yet.
+          </Typography>
+        </Paper>
+      )}
+
+      {!loading && !error && branches.length > 0 && (
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 3,
+            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
+            border: "1px solid rgba(0,0,0,0.06)",
+            overflow: "hidden",
+          }}
+        >
+          <Table>
+            <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 650 }}>Branch Info</TableCell>
+                <TableCell sx={{ fontWeight: 650 }}>Location</TableCell>
+                <TableCell sx={{ fontWeight: 650 }}>Contact Details</TableCell>
+                <TableCell sx={{ fontWeight: 650 }}>Work Policy</TableCell>
+                <TableCell sx={{ fontWeight: 650 }}>Statutory Details</TableCell>
+                <TableCell sx={{ fontWeight: 650 }} align="center">
+                  Status
+                </TableCell>
+                <TableCell sx={{ fontWeight: 650 }} align="right">
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {branches.map((branch) => {
+                const address = branch.address;
+                const contact = branch.contact;
+                const workPolicy = branch.workPolicy;
+                const statutory = branch.statutory;
+
+                const addressString = [
+                  address?.addressLine1,
+                  address?.addressLine2,
+                  address?.city,
+                  address?.state,
+                  address?.zip,
+                  address?.countryCode,
+                ]
+                  .filter(Boolean)
+                  .join(", ");
+
+                return (
+                  <TableRow key={branch._id} hover>
+                    {/* Branch Info */}
+                    <TableCell>
+                      <Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                            {branch.name}
+                          </Typography>
+                          {branch.isHeadOffice && (
+                            <Chip
+                              label="HQ"
+                              size="small"
+                              sx={{
+                                backgroundColor: "rgba(76, 175, 80, 0.12)",
+                                color: "#2e7d32",
+                                fontWeight: 700,
+                                fontSize: 10,
+                                height: 18,
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                          Code: {branch.code}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    {/* Location */}
+                    <TableCell>
+                      {addressString ? (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13 }}>
+                            {addressString}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: 13 }}>
+                          No address specified
+                        </Typography>
+                      )}
+                    </TableCell>
+
+                    {/* Contact Details */}
+                    <TableCell>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        {contact?.email && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                            <EmailOutlinedIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+                            <Typography variant="body2" sx={{ fontSize: 13, color: "text.secondary" }}>
+                              {contact.email}
+                            </Typography>
+                          </Box>
+                        )}
+                        {contact?.phone && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                            <PhoneOutlinedIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+                            <Typography variant="body2" sx={{ fontSize: 13, color: "text.secondary" }}>
+                              {contact.phone}
+                            </Typography>
+                          </Box>
+                        )}
+                        {!contact?.email && !contact?.phone && (
+                          <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: 13 }}>
+                            No contact details
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+
+                    {/* Work Policy */}
+                    <TableCell>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        {workPolicy?.timezone && (
+                          <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
+                            <strong>TZ:</strong> {workPolicy.timezone}
+                          </Typography>
+                        )}
+                        {workPolicy?.workingHoursPerDay !== undefined && (
+                          <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
+                            <strong>Hours/Day:</strong> {workPolicy.workingHoursPerDay} hrs
+                          </Typography>
+                        )}
+                        {workPolicy?.weeklyOffDays && workPolicy.weeklyOffDays.length > 0 && (
+                          <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
+                            <strong>Weekly Offs:</strong> {workPolicy.weeklyOffDays.join(", ")}
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+
+                    {/* Statutory Details */}
+                    <TableCell>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
+                          <strong>PF:</strong> {statutory?.pfApplicable ? "Yes" : "No"}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
+                          <strong>ESI:</strong> {statutory?.esiApplicable ? "Yes" : "No"}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
+                          <strong>PT:</strong> {statutory?.ptApplicable ? "Yes" : "No"}{statutory?.ptStateCode ? ` (${statutory.ptStateCode})` : ""}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell align="center">
+                      <Chip
+                        label={branch.isActive ? "Active" : "Inactive"}
+                        size="small"
+                        color={branch.isActive ? "success" : "default"}
+                        variant="outlined"
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell align="right">
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => calendarDialog.open(branch)}
+                          sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                          title="View Branch Calendar"
+                        >
+                          <CalendarMonthIcon fontSize="small" />
+                        </IconButton>
+
+                        {canUpdate && (
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenEdit(branch)}
+                            sx={{ color: "#6D5DF6" }}
+                            title="Edit Branch"
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                        {canDelete && (
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenDelete(branch)}
+                            sx={{ color: "error.main", "&:hover": { backgroundColor: "rgba(211, 47, 47, 0.04)" } }}
+                            title="Delete Branch"
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {/* Branch Calendar Dialog */}
+      <BranchCalendarDialog
+        open={calendarDialog.isOpen}
+        branchId={calendarDialog.target?._id || calendarDialog.target?.branchId || null}
+        branchName={calendarDialog.target?.name}
+        onClose={calendarDialog.close}
+      />
+
+      {/* Form Dialog */}
+      <BranchFormDialog
+        open={formDialog.isOpen}
+        mode={formDialog.target ? "update" : "create"}
+        initialValues={formDialog.target}
+        submitting={submitting}
+        error={error}
+        onClose={formDialog.close}
+        onSubmit={handleCreateSubmit}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialog.isOpen}
+        onClose={deleteDialog.close}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1, color: "error.main" }}>
+          Delete Branch
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+            Are you sure you want to delete the branch <strong>{deleteDialog.target?.name}</strong> ({deleteDialog.target?.code})?
+          </Typography>
+          <Typography variant="caption" sx={{ color: "error.main", display: "block", fontWeight: 600 }}>
+            ⚠️ Warning: This action cannot be undone and will permanently remove this branch and all its settings.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={deleteDialog.close} disabled={submitting} variant="outlined" color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            disabled={submitting}
+            variant="contained"
+            color="error"
+            sx={{
+              fontWeight: 600,
+              boxShadow: "none",
+              "&:hover": { backgroundColor: "#d32f2f", boxShadow: "none" }
+            }}
+          >
+            {submitting ? (
+              <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+            ) : null}
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}
+
+export default BranchListContent;

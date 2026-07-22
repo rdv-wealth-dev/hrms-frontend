@@ -1,10 +1,21 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 
-createRoot(document.getElementById('root')!).render(
+import "./global.css";
+import App from "./App";
+import { AppThemeProvider } from "./theme/theme-provider";
+import { store } from "./store/store";
+import { SnackbarProvider } from "./components/snackbar";
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <Provider store={store}>
+      <AppThemeProvider>
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
+      </AppThemeProvider>
+    </Provider>
+  </StrictMode>
+);
