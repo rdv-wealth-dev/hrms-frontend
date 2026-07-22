@@ -7,6 +7,7 @@ import type {
   UpdateBranchRequest,
   UpdateBranchResponse,
   DeleteBranchResponse,
+  GetBranchCalendarResponse,
 } from "../store/branch/branch.types";
 
 const getAuthHeader = () => ({
@@ -59,3 +60,42 @@ export const deleteBranch = async (id: string): Promise<DeleteBranchResponse> =>
   );
   return response.data;
 };
+
+export const getBranchCalendar = async (
+  branchId: string,
+  year?: number,
+  month?: number
+): Promise<GetBranchCalendarResponse> => {
+  const params: Record<string, number> = {};
+  if (year) params.year = year;
+  if (month) params.month = month;
+
+  const response = await axiosInstance.get<GetBranchCalendarResponse>(
+    `/branches/${branchId}/calendar`,
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+export const getMyBranchCalendar = async (
+  year?: number,
+  month?: number
+): Promise<GetBranchCalendarResponse> => {
+  const params: Record<string, number> = {};
+  if (year) params.year = year;
+  if (month) params.month = month;
+
+  const response = await axiosInstance.get<GetBranchCalendarResponse>(
+    "/branches/my/calendar",
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+

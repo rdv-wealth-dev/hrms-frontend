@@ -27,6 +27,7 @@ import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 import type { AppDispatch } from "../../../../store/store";
 import type { RootState } from "../../../../store/rootReducer";
@@ -42,6 +43,7 @@ import { usePermissions } from "../../../../hooks/usePermissions";
 import { useDialog } from "../../../../hooks/useDialog";
 import { useSubmitSuccess } from "../../../../hooks/useSubmitSuccess";
 import BranchFormDialog from "./BranchFormDialog";
+import BranchCalendarDialog from "./BranchCalendarDialog";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
 
 function BranchListContent() {
@@ -57,6 +59,7 @@ function BranchListContent() {
 
   const formDialog = useDialog<Branch>();
   const deleteDialog = useDialog<Branch>();
+  const calendarDialog = useDialog<Branch>();
 
   useEffect(() => {
     dispatch(listBranchesRequest());
@@ -381,11 +384,9 @@ function BranchListContent() {
                 <TableCell sx={{ fontWeight: 650 }} align="center">
                   Status
                 </TableCell>
-                {canUpdate && (
-                  <TableCell sx={{ fontWeight: 650 }} align="right">
-                    Actions
-                  </TableCell>
-                )}
+                <TableCell sx={{ fontWeight: 650 }} align="right">
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -526,30 +527,39 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Actions */}
-                    {(canUpdate || canDelete) && (
-                      <TableCell align="right">
-                        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
-                          {canUpdate && (
-                            <IconButton
-                              size="small"
-                              onClick={() => handleOpenEdit(branch)}
-                              sx={{ color: "#6D5DF6" }}
-                            >
-                              <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          )}
-                          {canDelete && (
-                            <IconButton
-                              size="small"
-                              onClick={() => handleOpenDelete(branch)}
-                              sx={{ color: "error.main", "&:hover": { backgroundColor: "rgba(211, 47, 47, 0.04)" } }}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                          )}
-                        </Box>
-                      </TableCell>
-                    )}
+                    <TableCell align="right">
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => calendarDialog.open(branch)}
+                          sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                          title="View Branch Calendar"
+                        >
+                          <CalendarMonthIcon fontSize="small" />
+                        </IconButton>
+
+                        {canUpdate && (
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenEdit(branch)}
+                            sx={{ color: "#6D5DF6" }}
+                            title="Edit Branch"
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                        {canDelete && (
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenDelete(branch)}
+                            sx={{ color: "error.main", "&:hover": { backgroundColor: "rgba(211, 47, 47, 0.04)" } }}
+                            title="Delete Branch"
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -557,6 +567,14 @@ function BranchListContent() {
           </Table>
         </TableContainer>
       )}
+
+      {/* Branch Calendar Dialog */}
+      <BranchCalendarDialog
+        open={calendarDialog.isOpen}
+        branchId={calendarDialog.target?._id || calendarDialog.target?.branchId || null}
+        branchName={calendarDialog.target?.name}
+        onClose={calendarDialog.close}
+      />
 
       {/* Form Dialog */}
       <BranchFormDialog

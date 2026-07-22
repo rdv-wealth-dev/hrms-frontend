@@ -250,3 +250,51 @@ export type BranchAction =
   | GetHeadOfficeRequestAction
   | GetHeadOfficeSuccessAction
   | GetHeadOfficeFailureAction;
+
+// ===========================================
+// Branch Calendar Types
+// ===========================================
+export interface BranchCalendarEvent {
+  type: "ANNIVERSARY" | "BIRTHDAY" | string;
+  title: string;
+  employeeName: string;
+  employeeCode: string;
+  years?: number;
+}
+
+export interface BranchCalendarDay {
+  date: string;
+  dayOfWeek: string;
+  type: "WORKING" | "WEEK_OFF" | "HOLIDAY" | string;
+  weekNumber?: number;
+  offReason?: string | null;
+  holidayName?: string | null;
+  events: BranchCalendarEvent[];
+}
+
+export interface BranchCalendarSummary {
+  totalDays: number;
+  workingDays: number;
+  weekOffs: number;
+  holidays: number;
+  saturdays: number;
+  saturdaysOff: number;
+}
+
+export interface BranchCalendarData {
+  branchId: string;
+  branchName: string;
+  year: number;
+  month: number;
+  saturdayPolicyMode?: string;
+  days: BranchCalendarDay[];
+  summary: BranchCalendarSummary;
+}
+
+export interface GetBranchCalendarResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: BranchCalendarData;
+}
+

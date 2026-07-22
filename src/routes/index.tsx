@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { paths } from "./paths";
@@ -6,35 +7,38 @@ import AuthGuard from "../../src/auth/guards/AuthGuard";
 import GuestGuard from "../../src/auth/guards/GuestGuard";
 import RoleGuard from "../../src/auth/guards/RoleGuard";
 
-import SignUpPage from "../pages/auth/SignUp";
-import LoginPage from "../pages/auth/Login";
-import ForgotPasswordPage from "../pages/auth/ForgotPassword";
-import ResetPasswordPage from "../pages/auth/ResetPassword";
-import CheckEmailPage from "../pages/auth/CheckEmail";
-import VerifyEmailPage from "../pages/auth/VerifyEmail";
-import ActivateAccountPage from "../pages/auth/ActivateAccount";
-import DashboardPage from "../pages/dashboard/DashboardView";
-import DepartmentsPage from "../pages/departments";
-import DesignationsPage from "../pages/designations";
-import BranchesPage from "../pages/branches/index";
-import EmployeeDirectoryPage from "../pages/employees/directory";
-import EmployeeCreatePage from "../pages/employees/create";
-import EmployeeListPage from "../pages/employees/list";
-import EmployeeDetailPage from "../pages/employees/detail";
-import SettingsPage from "../pages/settings";
-import MyAttendancePage from "../pages/attendance";
-import ProfilePage from "../pages/profile";
-import RegularizationListPage from "../pages/attendance/regularizations";
-import HolidaysPage from "../pages/holidays";
-import MyLeavePage from "../pages/leave";
-import LeaveApprovalsPage from "../pages/leave-approvals";
-import ReportsPage from "../pages/reports";
-import DocumentVerificationPage from "../pages/hr/documents-verification";
+import PageLoader from "../components/loader/PageLoader";
+
+const SignUpPage = lazy(() => import("../pages/auth/SignUp"));
+const LoginPage = lazy(() => import("../pages/auth/Login"));
+const ForgotPasswordPage = lazy(() => import("../pages/auth/ForgotPassword"));
+const ResetPasswordPage = lazy(() => import("../pages/auth/ResetPassword"));
+const CheckEmailPage = lazy(() => import("../pages/auth/CheckEmail"));
+const VerifyEmailPage = lazy(() => import("../pages/auth/VerifyEmail"));
+const ActivateAccountPage = lazy(() => import("../pages/auth/ActivateAccount"));
+const DashboardPage = lazy(() => import("../pages/dashboard/DashboardView"));
+const DepartmentsPage = lazy(() => import("../pages/departments"));
+const DesignationsPage = lazy(() => import("../pages/designations"));
+const BranchesPage = lazy(() => import("../pages/branches/index"));
+const EmployeeDirectoryPage = lazy(() => import("../pages/employees/directory"));
+const EmployeeCreatePage = lazy(() => import("../pages/employees/create"));
+const EmployeeListPage = lazy(() => import("../pages/employees/list"));
+const EmployeeDetailPage = lazy(() => import("../pages/employees/detail"));
+const SettingsPage = lazy(() => import("../pages/settings"));
+const MyAttendancePage = lazy(() => import("../pages/attendance"));
+const ProfilePage = lazy(() => import("../pages/profile"));
+const RegularizationListPage = lazy(() => import("../pages/attendance/regularizations"));
+const HolidaysPage = lazy(() => import("../pages/holidays"));
+const MyLeavePage = lazy(() => import("../pages/leave"));
+const LeaveApprovalsPage = lazy(() => import("../pages/leave-approvals"));
+const ReportsPage = lazy(() => import("../pages/reports"));
+const DocumentVerificationPage = lazy(() => import("../pages/hr/documents-verification"));
 
 function AppRoutes() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
         {/* Guest-only — redirect to /dashboard if already logged in */}
         <Route
           path={paths.auth.signup}
@@ -219,7 +223,8 @@ function AppRoutes() {
         />
         <Route path="*" element={<Navigate to={paths.auth.login} replace />} />
       </Routes>
-    </BrowserRouter>
+    </Suspense>
+  </BrowserRouter>
   );
 }
 

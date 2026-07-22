@@ -350,7 +350,7 @@ function DashboardLayout({ children }: Props) {
             {/* Mobile hamburger */}
             <Box
                 sx={{
-                    display: { xs: "flex", md: "none" },
+                    display: { xs: mobileOpen ? "none" : "flex", md: "none" },
                     position: "fixed",
                     top: 12,
                     left: 12,

@@ -260,15 +260,15 @@ export default function DailyPunchCard() {
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         borderRadius: 3,
         backgroundColor: "#fff",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         width: "100%",
-        maxWidth: 500,
+        maxWidth: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: 2.5,
+        gap: { xs: 2, sm: 2.5 },
         border: "1px solid rgba(0,0,0,0.03)",
         position: "relative",
         overflow: "hidden",
@@ -302,51 +302,62 @@ export default function DailyPunchCard() {
               justifyContent: "center",
             }}
           >
-            <LockOutlinedIcon sx={{ fontSize: 36 }} />
+            <LockOutlinedIcon sx={{ fontSize: 32 }} />
           </Box>
-          <Box sx={{ textAlign: "center", px: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1E1B4B", mb: 1, fontFamily: "'Outfit', 'Inter', sans-serif" }}>
-              Profile Completion Required
+
+          <Box sx={{ textAlign: "center", maxWidth: 360 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", mb: 0.5 }}>
+              Profile Incomplete
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360, lineHeight: 1.6, fontSize: "0.9rem", mb: 1.5 }}>
-              Complete the following sections to access attendance features:
+            <Typography variant="body2" color="text.secondary">
+              Please complete your profile to unlock daily attendance clocking in/out.
             </Typography>
-            {pendingSections.length > 0 && (
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, justifyContent: "center" }}>
-                {pendingSections.map((section) => (
+          </Box>
+
+          {pendingSections.length > 0 && (
+            <Box
+              sx={{
+                width: "100%",
+                maxWidth: 360,
+                backgroundColor: "rgba(245, 158, 11, 0.05)",
+                borderRadius: 2,
+                p: 2,
+                border: "1px solid rgba(245, 158, 11, 0.15)",
+              }}
+            >
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#B45309", display: "block", mb: 1 }}>
+                Pending Profile Sections:
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                {pendingSections.map((sec) => (
                   <Chip
-                    key={section}
-                    label={section}
+                    key={sec}
+                    label={sec}
                     size="small"
                     sx={{
-                      backgroundColor: "rgba(245, 158, 11, 0.1)",
-                      color: "#B45309",
+                      backgroundColor: "#FEF3C7",
+                      color: "#92400E",
                       fontWeight: 600,
-                      fontSize: "0.72rem",
-                      border: "1px solid rgba(245, 158, 11, 0.25)",
+                      fontSize: "11px",
                     }}
                   />
                 ))}
               </Box>
-            )}
-          </Box>
+            </Box>
+          )}
+
           <Button
             variant="contained"
+            fullWidth
             onClick={() => navigate("/profile")}
             sx={{
-              mt: 1,
-              px: 4,
+              maxWidth: 360,
               py: 1.2,
               borderRadius: 2.5,
-              textTransform: "none",
               fontWeight: 600,
-              fontSize: "0.95rem",
+              textTransform: "none",
               backgroundColor: "#6D5DF6",
-              boxShadow: "0 4px 14px rgba(109, 93, 246, 0.25)",
-              "&:hover": {
-                backgroundColor: "#5B4BEA",
-                boxShadow: "0 6px 20px rgba(109, 93, 246, 0.35)",
-              },
+              "&:hover": { backgroundColor: "#5B4BEA" },
             }}
           >
             Complete Profile
@@ -355,7 +366,7 @@ export default function DailyPunchCard() {
       ) : (
         <>
           {/* Title & Live Status Chip */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <AccessTimeIcon sx={{ color: isOnBreak ? "#F59E0B" : isActiveShift ? "#10B981" : hasCheckedOut ? "#6366F1" : "#6D5DF6" }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
@@ -389,6 +400,7 @@ export default function DailyPunchCard() {
             fontFamily: "'Outfit', 'Inter', sans-serif",
             letterSpacing: "-0.5px",
             lineHeight: 1.1,
+            fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
           }}
         >
           {formattedTime}

@@ -9,6 +9,7 @@ import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../routes/paths";
 import PermissionGuard from "../../components/auth/PermissionGuard";
 import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard";
+import MyBranchCalendarWidget from "../../sections/dashboard/components/MyBranchCalendarWidget";
 import { usePermissions } from "../../hooks/usePermissions";
 
 function DashboardView() {
@@ -17,33 +18,50 @@ function DashboardView() {
 
   return (
     <DashboardLayout>
-      <Box sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: "#111827" }}>
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            color: "#111827",
+            fontSize: { xs: "1.5rem", sm: "1.875rem", md: "2.25rem" },
+            textAlign: "center",
+          }}
+        >
           Welcome to Dashboard 🎉
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 4 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: { xs: 2.5, sm: 3, md: 4 }, textAlign: "center" }}>
           Use the sidebar to navigate to Departments.
         </Typography>
 
         {/* Daily Punch Card Widget */}
         {role !== "ORG_ADMIN" && (
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 } }}>
             <DailyPunchCard />
           </Box>
         )}
 
-        {/* Quick Action Cards */}
+        {/* Logged-in Employee My Branch Calendar & Celebrations Widget */}
+        <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 } }}>
+          <MyBranchCalendarWidget />
+        </Box>
 
-        <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+        {/* Quick Action Cards */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+            gap: { xs: 2, sm: 3 },
+          }}
+        >
           {/* Card 1: Add Employee */}
           <PermissionGuard permission="employee.create">
             <Box
               sx={{
-                p: 3,
+                p: { xs: 2.5, sm: 3 },
                 borderRadius: 3,
                 backgroundColor: "#fff",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                maxWidth: 320,
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
@@ -79,7 +97,7 @@ function DashboardView() {
                   textTransform: "none",
                   backgroundColor: "#6D5DF6",
                   "&:hover": { backgroundColor: "#5B4BEA" },
-                  mt: 1,
+                  mt: "auto",
                 }}
               >
                 Create Employee
@@ -91,11 +109,10 @@ function DashboardView() {
           <PermissionGuard permission="employee.read">
             <Box
               sx={{
-                p: 3,
+                p: { xs: 2.5, sm: 3 },
                 borderRadius: 3,
                 backgroundColor: "#fff",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                maxWidth: 320,
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
@@ -131,7 +148,7 @@ function DashboardView() {
                   textTransform: "none",
                   backgroundColor: "#6D5DF6",
                   "&:hover": { backgroundColor: "#5B4BEA" },
-                  mt: 1,
+                  mt: "auto",
                 }}
               >
                 View Employees
