@@ -22,15 +22,29 @@ function DashboardView() {
         <Typography
           variant="h4"
           sx={{
-            fontWeight: 700,
+            fontWeight: 800,
             color: "#111827",
-            fontSize: { xs: "1.5rem", sm: "1.875rem", md: "2.25rem" },
+            fontSize: { xs: "1.25rem", sm: "1.65rem", md: "2.125rem" },
+            lineHeight: { xs: 1.3, sm: 1.35, md: 1.4 },
             textAlign: "center",
+            wordBreak: "break-word",
+            px: { xs: 1, sm: 0 },
+            mt: { xs: 3, sm: 0 },
           }}
         >
           Welcome to Dashboard 🎉
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: { xs: 2.5, sm: 3, md: 4 }, textAlign: "center" }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mt: 1,
+            mb: { xs: 2.5, sm: 3, md: 4 },
+            textAlign: "center",
+            fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+            lineHeight: 1.5,
+          }}
+        >
           Use the sidebar to navigate to Departments.
         </Typography>
 
