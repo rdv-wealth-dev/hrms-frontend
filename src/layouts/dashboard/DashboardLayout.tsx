@@ -132,9 +132,10 @@ function DashboardLayout({ children }: Props) {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    backgroundColor: "#1E1B4B",
-                    color: "#fff",
+                    backgroundColor: "#FFFFFF",
+                    color: "#1E293B",
                     overflow: "hidden",
+                    borderRight: "1px solid #E5E7EB",
                 }}
             >
                 {/* Logo */}
@@ -150,52 +151,99 @@ function DashboardLayout({ children }: Props) {
                     }}
                 >
                     {isCollapsed ? (
-                        <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 700, color: "#fff", lineHeight: 1 }}
+                        <Box
+                            sx={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: "10px",
+                                background: "linear-gradient(135deg, #6D5DF6 0%, #4F46E5 100%)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontWeight: 800,
+                                color: "#fff",
+                                boxShadow: "0 2px 10px rgba(109, 93, 246, 0.3)",
+                            }}
                         >
                             N
-                        </Typography>
+                        </Box>
                     ) : (
                         <>
                             <Typography
                                 variant="h6"
-                                sx={{ fontWeight: 700, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2 }}
+                                sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.3px", lineHeight: 1.2 }}
                             >
                                 NexusHR
                             </Typography>
-                            <Typography variant="caption" sx={{ color: "#A5B4FC", fontSize: 11, mt: 0.5 }}>
+                            <Typography variant="caption" sx={{ color: "#64748B", fontSize: 11, mt: 0.5, fontWeight: 500 }}>
                                 AI-Powered HRMS
                             </Typography>
                         </>
                     )}
                 </Box>
 
-                <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+                <Divider sx={{ borderColor: "#E5E7EB" }} />
 
-                {/* Nav Items */}
-                <List sx={{ px: 1.5, py: 2, flexGrow: 1, overflowY: "auto", minHeight: 0 }}>
+                {/* Nav Items with Premium Custom Light Scrollbar */}
+                <List
+                    sx={{
+                        px: 1.5,
+                        py: 2,
+                        flexGrow: 1,
+                        overflowY: "auto",
+                        minHeight: 0,
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(100, 116, 139, 0.25) transparent",
+                        "&::-webkit-scrollbar": {
+                            width: "5px",
+                        },
+                        "&::-webkit-scrollbar-track": {
+                            backgroundColor: "transparent",
+                        },
+                        "&::-webkit-scrollbar-thumb": {
+                            backgroundColor: "rgba(100, 116, 139, 0.25)",
+                            borderRadius: "10px",
+                            transition: "background-color 0.2s ease",
+                            "&:hover": {
+                                backgroundColor: "rgba(100, 116, 139, 0.45)",
+                            },
+                        },
+                        "&::-webkit-scrollbar-button": {
+                            display: "none",
+                        },
+                    }}
+                >
                     {visibleNavItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
-                            <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
+                            <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
                                 <ListItemButton
                                     onClick={() => {
                                         navigate(item.path);
                                         setMobileOpen(false);
                                     }}
                                     sx={{
-                                        borderRadius: 2,
+                                        borderRadius: 2.5,
                                         px: 1.5,
                                         py: 1,
                                         justifyContent: isCollapsed ? "center" : "initial",
+                                        transition: "all 0.2s ease",
                                         backgroundColor: isActive
-                                            ? "rgba(99,102,241,0.25)"
+                                            ? "#EEF2FF"
                                             : "transparent",
+                                        border: isActive
+                                            ? "1px solid #C7D2FE"
+                                            : "1px solid transparent",
+                                        boxShadow: isActive
+                                            ? "0 2px 8px rgba(99, 102, 241, 0.1)"
+                                            : "none",
                                         "&:hover": {
                                             backgroundColor: isActive
-                                                ? "rgba(99,102,241,0.3)"
-                                                : "rgba(255,255,255,0.06)",
+                                                ? "#E0E7FF"
+                                                : "#F1F5F9",
+                                            border: isActive
+                                                ? "1px solid #A5B4FC"
+                                                : "1px solid transparent",
                                         },
                                     }}
                                 >
@@ -204,7 +252,7 @@ function DashboardLayout({ children }: Props) {
                                             minWidth: isCollapsed ? 0 : 34,
                                             mr: isCollapsed ? 0 : 0,
                                             justifyContent: "center",
-                                            color: isActive ? "#818CF8" : "rgba(255,255,255,0.5)",
+                                            color: isActive ? "#6D5DF6" : "#64748B",
                                         }}
                                     >
                                         {item.icon}
@@ -215,8 +263,8 @@ function DashboardLayout({ children }: Props) {
                                                 <Typography
                                                     sx={{
                                                         fontSize: 14,
-                                                        fontWeight: isActive ? 600 : 400,
-                                                        color: isActive ? "#fff" : "rgba(255,255,255,0.65)",
+                                                        fontWeight: isActive ? 700 : 500,
+                                                        color: isActive ? "#4F46E5" : "#334155",
                                                     }}
                                                 >
                                                     {item.label}
@@ -230,116 +278,134 @@ function DashboardLayout({ children }: Props) {
                     })}
                 </List>
 
-                <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+                <Divider sx={{ borderColor: "#E5E7EB" }} />
 
-                {/* User Footer */}
+                {/* User Footer Container */}
                 <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2, flexShrink: 0 }}>
                     <Box
-                        onClick={() => navigate(paths.profile)}
                         sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: isCollapsed ? "center" : "flex-start",
-                            gap: isCollapsed ? 0 : 1.5,
-                            mb: 1.5,
-                            cursor: "pointer",
-                            padding: "6px",
-                            borderRadius: "8px",
-                            "&:hover": {
-                                backgroundColor: "rgba(255, 255, 255, 0.05)"
-                            }
+                            p: isCollapsed ? 1 : 1.2,
+                            borderRadius: 3,
+                            backgroundColor: "#F8FAFC",
+                            border: "1px solid #E2E8F0",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
                         }}
                     >
-                        <Avatar
+                        <Box
+                            onClick={() => navigate(paths.profile)}
                             sx={{
-                                width: 34,
-                                height: 34,
-                                backgroundColor: "#6D5DF6",
-                                fontSize: 13,
-                                fontWeight: 600,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: isCollapsed ? "center" : "flex-start",
+                                gap: isCollapsed ? 0 : 1.5,
+                                mb: 1,
+                                cursor: "pointer",
+                                padding: "6px",
+                                borderRadius: "8px",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    backgroundColor: "#F1F5F9",
+                                },
                             }}
                         >
-                            {user?.firstName?.[0]?.toUpperCase() ?? "U"}
-                            {user?.lastName?.[0]?.toUpperCase() ?? ""}
-                        </Avatar>
-                        {!isCollapsed && (
-                            <Box sx={{ minWidth: 0 }}>
-                                <Typography
-                                    variant="body2"
-                                    sx={{
-                                        color: "#fff",
-                                        fontWeight: 600,
-                                        fontSize: 13,
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}
-                                </Typography>
-                                <Typography
-                                    variant="caption"
-                                    sx={{
-                                        color: "rgba(255,255,255,0.5)",
-                                        fontSize: 11,
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                        display: "block",
-                                    }}
-                                >
-                                    {user?.role
-                                        ? user.role
-                                            .split("_")
-                                            .map(
-                                                (w) =>
-                                                    w.charAt(0).toUpperCase() +
-                                                    w.slice(1).toLowerCase()
-                                            )
-                                            .join(" ")
-                                        : ""}
-                                </Typography>
-                            </Box>
-                        )}
-                    </Box>
-
-                    <ListItemButton
-                        onClick={() => {
-                            dispatch(logout());
-                            navigate(paths.auth.login);
-                        }}
-                        sx={{
-                            borderRadius: 2,
-                            px: 1.5,
-                            py: 0.75,
-                            justifyContent: isCollapsed ? "center" : "initial",
-                            "&:hover": { backgroundColor: "rgba(255,255,255,0.06)" },
-                        }}
-                    >
-                        <ListItemIcon
-                            sx={{
-                                minWidth: isCollapsed ? 0 : 30,
-                                color: "rgba(255,255,255,0.4)",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <LogoutOutlinedIcon fontSize="small" />
-                        </ListItemIcon>
-                        {!isCollapsed && (
-                            <ListItemText
-                                primary={
+                            <Avatar
+                                sx={{
+                                    width: 36,
+                                    height: 36,
+                                    background: "linear-gradient(135deg, #6D5DF6 0%, #4F46E5 100%)",
+                                    color: "#fff",
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    boxShadow: "0 2px 8px rgba(109, 93, 246, 0.3)",
+                                }}
+                            >
+                                {user?.firstName?.[0]?.toUpperCase() ?? "U"}
+                                {user?.lastName?.[0]?.toUpperCase() ?? ""}
+                            </Avatar>
+                            {!isCollapsed && (
+                                <Box sx={{ minWidth: 0 }}>
                                     <Typography
+                                        variant="body2"
                                         sx={{
+                                            color: "#0F172A",
+                                            fontWeight: 600,
                                             fontSize: 13,
-                                            color: "rgba(255,255,255,0.55)",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
                                         }}
                                     >
-                                        Logout
+                                        {`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}
                                     </Typography>
-                                }
-                            />
-                        )}
-                    </ListItemButton>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: "#64748B",
+                                            fontSize: 11,
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            display: "block",
+                                        }}
+                                    >
+                                        {user?.role
+                                            ? user.role
+                                                .split("_")
+                                                .map(
+                                                    (w) =>
+                                                        w.charAt(0).toUpperCase() +
+                                                        w.slice(1).toLowerCase()
+                                                )
+                                                .join(" ")
+                                            : ""}
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
+
+                        <ListItemButton
+                            onClick={() => {
+                                dispatch(logout());
+                                navigate(paths.auth.login);
+                            }}
+                            sx={{
+                                borderRadius: 2,
+                                px: 1.2,
+                                py: 0.75,
+                                justifyContent: isCollapsed ? "center" : "initial",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    backgroundColor: "#FEF2F2",
+                                    color: "#EF4444",
+                                },
+                            }}
+                        >
+                            <ListItemIcon
+                                sx={{
+                                    minWidth: isCollapsed ? 0 : 30,
+                                    color: "#64748B",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <LogoutOutlinedIcon fontSize="small" />
+                            </ListItemIcon>
+                            {!isCollapsed && (
+                                <ListItemText
+                                    primary={
+                                        <Typography
+                                            sx={{
+                                                fontSize: 13,
+                                                fontWeight: 500,
+                                                color: "#475569",
+                                            }}
+                                        >
+                                            Logout
+                                        </Typography>
+                                    }
+                                />
+                            )}
+                        </ListItemButton>
+                    </Box>
                 </Box>
             </Box>
         );
@@ -359,7 +425,7 @@ function DashboardLayout({ children }: Props) {
             >
                 <IconButton
                     onClick={() => setMobileOpen(true)}
-                    sx={{ backgroundColor: "#1E1B4B", color: "#fff", borderRadius: 2 }}
+                    sx={{ backgroundColor: "#FFFFFF", color: "#0F172A", border: "1px solid #E2E8F0", borderRadius: 2, boxShadow: "0px 2px 8px rgba(0,0,0,0.06)" }}
                 >
                     <MenuIcon />
                 </IconButton>
@@ -375,7 +441,8 @@ function DashboardLayout({ children }: Props) {
                     display: { xs: "block", md: "none" },
                     "& .MuiDrawer-paper": {
                         width: 240,
-                        border: "none",
+                        borderRight: "1px solid #E5E7EB",
+                        backgroundColor: "#FFFFFF",
                     },
                 }}
             >
@@ -396,14 +463,14 @@ function DashboardLayout({ children }: Props) {
                 <IconButton
                     onClick={() => setCollapsed(!collapsed)}
                     sx={{
-                        backgroundColor: "#1E1B4B",
-                        color: "#fff",
-                        border: "1px solid rgba(255,255,255,0.12)",
+                        backgroundColor: "#FFFFFF",
+                        color: "#0F172A",
+                        border: "1px solid #E2E8F0",
                         width: 28,
                         height: 28,
-                        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.15)",
+                        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.08)",
                         "&:hover": {
-                            backgroundColor: "#2E2A6B",
+                            backgroundColor: "#F8FAFC",
                         },
                     }}
                 >
@@ -422,7 +489,8 @@ function DashboardLayout({ children }: Props) {
                     display: { xs: "none", md: "block" },
                     "& .MuiDrawer-paper": {
                         width: sidebarWidth,
-                        border: "none",
+                        borderRight: "1px solid #E5E7EB",
+                        backgroundColor: "#FFFFFF",
                         boxSizing: "border-box",
                         transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         overflowX: "hidden",

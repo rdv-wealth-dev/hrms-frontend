@@ -38,6 +38,54 @@ const ROLE_LABELS: Record<string, string> = {
   [ROLES.EMPLOYEE]: "Employee",
 };
 
+const inputFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    height: 44,
+    borderRadius: "12px",
+    backgroundColor: "#F8FAFC",
+    fontSize: "14px",
+    color: "#0F172A",
+    "& fieldset": { borderColor: "#E2E8F0" },
+    "&:hover fieldset": { borderColor: "#CBD5E1" },
+    "&.Mui-focused": {
+      backgroundColor: "#FFFFFF",
+      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+    },
+  },
+  "& .MuiOutlinedInput-input": {
+    height: 44,
+    py: 0,
+    px: "14px",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    display: "flex",
+    alignItems: "center",
+  },
+  "& .MuiInputBase-input::placeholder": {
+    color: "#475569",
+    opacity: 1,
+    fontSize: "13.5px",
+    fontWeight: 500,
+  },
+  "& .MuiSelect-select": {
+    height: "44px !important",
+    minHeight: "44px !important",
+    py: "0 !important",
+    display: "flex",
+    alignItems: "center",
+    boxSizing: "border-box",
+  },
+};
+
+const disabledMenuItemSx = {
+  color: "#334155 !important",
+  fontWeight: 600,
+  "&.Mui-disabled": {
+    opacity: "1 !important",
+    color: "#334155 !important",
+  },
+};
+
 export default function ManageRoleDialog({
   open,
   onClose,
@@ -67,16 +115,21 @@ export default function ManageRoleDialog({
         const users = await listUsers();
         if (!isMounted) return;
 
-        // Find user by employeeId or email
-        const matched = users.find(
-          (u) =>
-            u.employeeId === employee._id ||
-            u.email.toLowerCase() === employee.email.toLowerCase()
-        );
+        const matched = users.find((u) => {
+          const uEmpId = typeof u.employeeId === "object" ? (u.employeeId as any)?._id : u.employeeId;
+          const targetEmpId = typeof employee._id === "object" ? (employee._id as any)?._id : employee._id;
+
+          const empIdMatch = Boolean(uEmpId && targetEmpId && String(uEmpId) === String(targetEmpId));
+          const emailMatch = Boolean(
+            u.email && employee.email && u.email.trim().toLowerCase() === employee.email.trim().toLowerCase()
+          );
+
+          return empIdMatch || emailMatch;
+        });
 
         if (matched) {
           setUserAccount(matched);
-          setSelectedRole(matched.role);
+          setSelectedRole(matched.role || "");
         } else {
           setError("No system user account found for this employee.");
         }
@@ -102,14 +155,15 @@ export default function ManageRoleDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userAccount || !selectedRole) return;
+    const userId = userAccount?._id || (userAccount as any)?.id;
+    if (!userId || !selectedRole) return;
 
     setSubmitting(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const response = await updateUserRole(userAccount._id, selectedRole);
+      const response = await updateUserRole(userId, selectedRole);
       if (response.succeeded) {
         setSuccess(response.message || "Role updated successfully!");
         setTimeout(() => {
@@ -131,7 +185,9 @@ export default function ManageRoleDialog({
     }
   };
 
-  const isSelf = userAccount ? userAccount._id === currentUser?.id : false;
+  const currentUserId = currentUser?.id || (currentUser as any)?._id;
+  const targetUserId = userAccount ? (userAccount._id || (userAccount as any)?.id) : null;
+  const isSelf = Boolean(currentUserId && targetUserId && String(currentUserId) === String(targetUserId));
   const isOrgAdmin = userAccount ? userAccount.role === ROLES.ORG_ADMIN : false;
 
   return (
@@ -140,103 +196,126 @@ export default function ManageRoleDialog({
       onClose={submitting ? undefined : onClose}
       fullWidth
       maxWidth="xs"
-      aria-labelledby="manage-role-title"
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: 3,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+          },
+        },
+      }}
     >
       <DialogTitle
         component="div"
         sx={{
+          p: 0,
+          mb: 2.5,
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          pb: 1,
+          justifyContent: "space-between",
         }}
       >
-        <Typography
-          id="manage-role-title"
-          variant="h6"
-          component="h2"
-          sx={{ fontWeight: 700, color: "#111827" }}
-        >
+        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "#0F172A" }}>
           Manage System Role
         </Typography>
         <IconButton
           onClick={onClose}
           size="small"
           disabled={submitting}
-          aria-label="Close dialog"
-          sx={{ color: "#9CA3AF" }}
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
         >
-          <CloseIcon />
+          <CloseIcon sx={{ fontSize: 18 }} />
         </IconButton>
       </DialogTitle>
 
       <Box component="form" onSubmit={handleSubmit}>
-        <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 3 }}>
-          {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ borderRadius: 2 }}>{success}</Alert>}
+        <DialogContent sx={{ p: 0, pr: 2, mr: -1, display: "flex", flexDirection: "column", gap: 2 }}>
+          {error && <Alert severity="error" sx={{ borderRadius: "10px" }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ borderRadius: "10px" }}>{success}</Alert>}
 
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress size={30} sx={{ color: "#6D5DF6" }} />
+              <CircularProgress size={28} sx={{ color: "#6D5DF6" }} />
             </Box>
           ) : (
             employee && (
               <>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#374151" }}>
+                <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                  <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
                     Employee Profile
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
                     {employee.firstName} {employee.lastName} ({employee.employeeCode})
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Email: {employee.email}
+                  <Typography sx={{ fontSize: "13px", color: "#64748B" }}>
+                    {employee.email}
                   </Typography>
                 </Box>
 
                 {userAccount && (
                   <>
-                    <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#374151" }}>
-                        Current Assigned Role
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
+                        Current Role:
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#6D5DF6" }}>
                         {ROLE_LABELS[userAccount.role] || userAccount.role}
                       </Typography>
                     </Box>
 
                     {isSelf && (
-                      <Alert severity="warning" sx={{ borderRadius: 2 }}>
-                        You cannot change your own role to prevent lockout or self-privilege modification.
+                      <Alert severity="warning" sx={{ borderRadius: "10px", fontSize: "13px" }}>
+                        You cannot change your own role to prevent self-lockout.
                       </Alert>
                     )}
 
                     {isOrgAdmin && (
-                      <Alert severity="warning" sx={{ borderRadius: 2 }}>
-                        The Organization Admin account role cannot be reassigned or demoted.
+                      <Alert severity="warning" sx={{ borderRadius: "10px", fontSize: "13px" }}>
+                        The Organization Admin account role cannot be demoted.
                       </Alert>
                     )}
 
-                    <TextField
-                      select
-                      label="Assign System Role"
-                      value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value)}
-                      fullWidth
-                      size="small"
-                      required
-                      disabled={submitting || isSelf || isOrgAdmin}
-                    >
-                      {Object.entries(ROLE_LABELS).map(([value, label]) => {
-                        // Prevent assigning ORG_ADMIN role via this dialog
-                        if (value === ROLES.ORG_ADMIN) return null;
-                        return (
-                          <MenuItem key={value} value={value}>
-                            {label}
-                          </MenuItem>
-                        );
-                      })}
-                    </TextField>
+                    <Box>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+                        Assign New System Role
+                      </Typography>
+                      <TextField
+                        select
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        fullWidth
+                        size="small"
+                        required
+                        disabled={submitting || isSelf || isOrgAdmin}
+                        sx={inputFieldSx}
+                        slotProps={{ select: { displayEmpty: true } }}
+                      >
+                        <MenuItem value="" disabled sx={disabledMenuItemSx}>
+                          Choose role to assign
+                        </MenuItem>
+                        {Object.entries(ROLE_LABELS).map(([value, label]) => {
+                          if (value === ROLES.ORG_ADMIN) return null;
+                          return (
+                            <MenuItem key={value} value={value}>
+                              {label}
+                            </MenuItem>
+                          );
+                        })}
+                      </TextField>
+                    </Box>
                   </>
                 )}
               </>
@@ -244,8 +323,22 @@ export default function ManageRoleDialog({
           )}
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={onClose} disabled={submitting} color="inherit">
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 44,
+              borderRadius: "12px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -253,14 +346,18 @@ export default function ManageRoleDialog({
             disabled={submitting || loading || !userAccount || isSelf || isOrgAdmin}
             variant="contained"
             sx={{
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BEA" },
-              textTransform: "none",
-              fontWeight: 600,
+              height: 44,
+              borderRadius: "12px",
               px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4EB3" },
             }}
           >
-            {submitting ? <CircularProgress size={20} color="inherit" /> : "Update Role"}
+            {submitting ? <CircularProgress size={18} color="inherit" /> : "Update Role"}
           </Button>
         </DialogActions>
       </Box>

@@ -156,6 +156,7 @@ export type EmployeeState = {
   totalPages: number;
   search?: string;
   status?: string;
+  joiningPeriod?: string;
 }
 
 export interface UpdateEmployeeRequest {
@@ -221,7 +222,7 @@ export type ClearEmployeeErrorAction = {
 
 export type ListEmployeesRequestAction = {
   type: typeof EMPLOYEE_ACTIONS.LIST_REQUEST;
-  payload: { pageNumber: number; pageSize: number; search?: string; status?: string };
+  payload: { pageNumber: number; pageSize: number; search?: string; status?: string; joiningPeriod?: string };
 };
 
 export type ListEmployeesSuccessAction = {

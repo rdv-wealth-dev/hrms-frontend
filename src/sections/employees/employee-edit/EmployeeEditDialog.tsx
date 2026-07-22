@@ -13,6 +13,8 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -28,54 +30,51 @@ type Props = {
   onClose: () => void;
 };
 
-const selectFieldSx = {
+const inputFieldSx = {
   "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    backgroundColor: "#FFFFFF",
-    height: "52px",
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#BFC5D2",
+    height: 44,
+    borderRadius: "12px",
+    backgroundColor: "#F8FAFC",
+    fontSize: "14px",
+    color: "#0F172A",
+    "& fieldset": { borderColor: "#E2E8F0" },
+    "&:hover fieldset": { borderColor: "#CBD5E1" },
+    "&.Mui-focused": {
+      backgroundColor: "#FFFFFF",
+      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
     },
   },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#D1D5DB",
-    borderWidth: "1px",
+  "& .MuiOutlinedInput-input": {
+    height: 44,
+    py: 0,
+    px: "14px",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    display: "flex",
+    alignItems: "center",
   },
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#6D5DF6",
-    borderWidth: "2px",
+  "& .MuiInputBase-input::placeholder": {
+    color: "#475569",
+    opacity: 1,
+    fontSize: "13.5px",
+    fontWeight: 500,
   },
-  "& .MuiInputBase-input": {
-    fontSize: "15px",
-    color: "#111827",
+  "& .MuiSelect-select": {
+    height: "44px !important",
+    minHeight: "44px !important",
+    py: "0 !important",
+    display: "flex",
+    alignItems: "center",
+    boxSizing: "border-box",
   },
 };
 
-const textFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    backgroundColor: "#FFFFFF",
-    height: "52px",
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#BFC5D2",
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#D1D5DB",
-    borderWidth: "1px",
-  },
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#6D5DF6",
-    borderWidth: "2px",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: "15px",
-    color: "#111827",
-    padding: "14px 16px",
-  },
-  "& .MuiInputBase-input::placeholder": {
-    fontSize: "13px",
-    color: "#9CA3AF",
+const disabledMenuItemSx = {
+  color: "#334155 !important",
+  fontWeight: 600,
+  "&.Mui-disabled": {
+    opacity: "1 !important",
+    color: "#334155 !important",
   },
 };
 
@@ -93,19 +92,15 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     (state: RootState) => state.designation?.designations ?? []
   );
 
-  // Form states initialized directly from props (since dialog is mounted conditionally)
-  const [maritalStatus, setMaritalStatus] = useState(employee?.maritalStatus || "SINGLE");
+  const [maritalStatus, setMaritalStatus] = useState(employee?.maritalStatus || "");
   const [departmentId, setDepartmentId] = useState(employee?.departmentId || "");
   const [designationId, setDesignationId] = useState(employee?.designationId || "");
   const [confirmationDate, setConfirmationDate] = useState(() => {
-    if (employee?.confirmationDate) {
-      const d = new Date(employee.confirmationDate);
-      if (!isNaN(d.getTime())) {
-        return d.toISOString().substring(0, 10);
-      }
-    }
-    return "";
+    if (!employee?.confirmationDate) return "";
+    const d = new Date(employee.confirmationDate);
+    return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
   });
+
   const [addressLine1, setAddressLine1] = useState(employee?.currentAddress?.addressLine1 || "");
   const [city, setCity] = useState(employee?.currentAddress?.city || "");
   const [stateName, setStateName] = useState(employee?.currentAddress?.state || "");
@@ -114,12 +109,31 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  // Clear errors on mount
+  useEffect(() => {
+    if (employee) {
+      setMaritalStatus(employee.maritalStatus || "SINGLE");
+      const deptVal = typeof employee.departmentId === "object" ? (employee.departmentId as any)?._id : employee.departmentId;
+      setDepartmentId(deptVal || "");
+      const desigVal = typeof employee.designationId === "object" ? (employee.designationId as any)?._id : employee.designationId;
+      setDesignationId(desigVal || "");
+      setConfirmationDate(
+        employee.confirmationDate
+          ? new Date(employee.confirmationDate).toISOString().split("T")[0]
+          : ""
+      );
+      setAddressLine1(employee.currentAddress?.addressLine1 || "");
+      setCity(employee.currentAddress?.city || "");
+      setStateName(employee.currentAddress?.state || "");
+      setZip(employee.currentAddress?.zip || "");
+      setCountryCode(employee.currentAddress?.countryCode || "IN");
+    }
+  }, [employee]);
+
   useEffect(() => {
     dispatch(clearEmployeeError());
+    setHasSubmitted(false);
   }, [dispatch]);
 
-  // Handle successful submit and close dialog asynchronously to avoid cascading renders
   useEffect(() => {
     if (hasSubmitted && !submitting && !error && open) {
       onClose();
@@ -163,29 +177,82 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     !designationId;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>
-        Update Employee ({employee ? `${employee.firstName} ${employee.lastName}` : ""})
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: 3,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+          },
+        },
+      }}
+    >
+      {/* Modal Header */}
+      <DialogTitle
+        component="div"
+        sx={{
+          p: 0,
+          mb: 2.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "#0F172A" }}>
+          Update Employee Details
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          disabled={submitting}
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: "24px !important" }}>
-        {error && <Alert severity="error">{error}</Alert>}
+      <DialogContent sx={{ p: 0, pr: 2, mr: -1, display: "flex", flexDirection: "column", gap: 2 }}>
+        {error && <Alert severity="error" sx={{ borderRadius: "10px" }}>{error}</Alert>}
+
+        {/* Section 1: Employment Information Header */}
+        <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+          Employment Information
+        </Typography>
 
         {/* Marital Status */}
         <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
+          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
             Marital Status
           </Typography>
           <TextField
             select
             fullWidth
+            size="small"
             value={maritalStatus}
             onChange={(e) => setMaritalStatus(e.target.value)}
-            sx={selectFieldSx}
+            sx={inputFieldSx}
+            slotProps={{ select: { displayEmpty: true } }}
           >
+            <MenuItem value="" disabled sx={disabledMenuItemSx}>
+              Select marital status
+            </MenuItem>
             <MenuItem value="SINGLE">Single</MenuItem>
             <MenuItem value="MARRIED">Married</MenuItem>
             <MenuItem value="DIVORCED">Divorced</MenuItem>
@@ -195,38 +262,35 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
         {/* Confirmation Date */}
         <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
+          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
             Confirmation Date (optional)
           </Typography>
           <TextField
             type="date"
             fullWidth
+            size="small"
             value={confirmationDate}
             onChange={(e) => setConfirmationDate(e.target.value)}
-            sx={textFieldSx}
+            placeholder="Select confirmation date"
+            sx={inputFieldSx}
           />
         </Box>
 
         {/* Department */}
         <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
+          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
             Department
           </Typography>
           <TextField
             select
             fullWidth
+            size="small"
             value={departmentId}
             onChange={(e) => setDepartmentId(e.target.value)}
-            sx={selectFieldSx}
+            sx={inputFieldSx}
             slotProps={{ select: { displayEmpty: true } }}
           >
-            <MenuItem value="" disabled>
+            <MenuItem value="" disabled sx={disabledMenuItemSx}>
               Choose a department
             </MenuItem>
             {departments.map((dept) => (
@@ -239,21 +303,19 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
         {/* Designation */}
         <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
+          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
             Designation
           </Typography>
           <TextField
             select
             fullWidth
+            size="small"
             value={designationId}
             onChange={(e) => setDesignationId(e.target.value)}
-            sx={selectFieldSx}
+            sx={inputFieldSx}
             slotProps={{ select: { displayEmpty: true } }}
           >
-            <MenuItem value="" disabled>
+            <MenuItem value="" disabled sx={disabledMenuItemSx}>
               Choose a designation
             </MenuItem>
             {designations.map((desig) => (
@@ -264,110 +326,118 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           </TextField>
         </Box>
 
-        {/* Current Address Header */}
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#111827", mt: 1 }}>
+        {/* Section 2: Current Address Header */}
+        <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A", mt: 1 }}>
           Current Address
         </Typography>
 
         <Grid container spacing={2}>
           <Grid size={12}>
             <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
                 Address Line 1
               </Typography>
               <TextField
                 fullWidth
-                placeholder="e.g. 456 New Address"
+                size="small"
+                placeholder="e.g. Flat 402, Sunshine Apartments, MG Road"
                 value={addressLine1}
                 onChange={(e) => setAddressLine1(e.target.value)}
-                sx={textFieldSx}
+                sx={inputFieldSx}
                 required
               />
             </Box>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
                 City
               </Typography>
               <TextField
                 fullWidth
+                size="small"
                 placeholder="e.g. Mumbai"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                sx={textFieldSx}
+                sx={inputFieldSx}
                 required
               />
             </Box>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
                 State
               </Typography>
               <TextField
                 fullWidth
+                size="small"
                 placeholder="e.g. Maharashtra"
                 value={stateName}
                 onChange={(e) => setStateName(e.target.value)}
-                sx={textFieldSx}
+                sx={inputFieldSx}
                 required
               />
             </Box>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
                 Zip Code
               </Typography>
               <TextField
                 fullWidth
-                placeholder="e.g. 421001"
+                size="small"
+                placeholder="e.g. 400001"
                 value={zip}
                 onChange={(e) => setZip(e.target.value)}
-                sx={textFieldSx}
+                sx={inputFieldSx}
                 required
               />
             </Box>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
                 Country Code
               </Typography>
               <TextField
                 select
                 fullWidth
+                size="small"
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                sx={selectFieldSx}
+                sx={inputFieldSx}
+                slotProps={{ select: { displayEmpty: true } }}
               >
-                <MenuItem value="IN">IN</MenuItem>
-                <MenuItem value="US">US</MenuItem>
-                <MenuItem value="RU">RU</MenuItem>
+                <MenuItem value="" disabled sx={disabledMenuItemSx}>
+                  Select country code
+                </MenuItem>
+                <MenuItem value="IN">IN (India)</MenuItem>
+                <MenuItem value="US">US (United States)</MenuItem>
+                <MenuItem value="RU">RU (Russia)</MenuItem>
               </TextField>
             </Box>
           </Grid>
         </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} disabled={submitting} color="inherit">
+      <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+        <Button
+          onClick={onClose}
+          disabled={submitting}
+          sx={{
+            height: 44,
+            borderRadius: "12px",
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
+            backgroundColor: "#F1F5F9",
+            color: "#475569",
+            "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -375,13 +445,18 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           disabled={submitting || isFormInvalid}
           variant="contained"
           sx={{
-            backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4BEA" },
-            borderRadius: 2,
+            height: 44,
+            borderRadius: "12px",
             px: 3,
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
+            backgroundColor: "#6D5DF6",
+            boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
+            "&:hover": { backgroundColor: "#5B4EB3" },
           }}
         >
-          {submitting ? <CircularProgress size={18} color="inherit" /> : "Update"}
+          {submitting ? <CircularProgress size={18} color="inherit" /> : "Update Employee"}
         </Button>
       </DialogActions>
     </Dialog>
