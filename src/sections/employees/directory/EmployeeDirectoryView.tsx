@@ -247,10 +247,8 @@ function EmployeeDirectoryView() {
 
         {/* Metric KPI Summary Cards */}
         <PeopleHubKpiCards
+          employees={employees}
           totalEmployees={total || employees.length}
-          newJoinersCount={8}
-          probationCount={14}
-          upcomingBirthdaysCount={5}
         />
 
         {/* Single Line Toolbar & Filter Tabs Directly Above Cards */}

@@ -123,6 +123,7 @@ export function EmployeeDirectoryCardGrid({
           >
             {/* Centered Avatar */}
             <Avatar
+              src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
               sx={{
                 width: 52,
                 height: 52,

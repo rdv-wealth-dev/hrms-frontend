@@ -609,10 +609,8 @@ function EmployeeListView() {
         {/* Top KPI Metric Summary Cards (People Hub View) */}
         {viewMode === "people_hub" && (
           <PeopleHubKpiCards
+            employees={employees}
             totalEmployees={total || employees.length}
-            newJoinersCount={8}
-            probationCount={14}
-            upcomingBirthdaysCount={5}
           />
         )}
 

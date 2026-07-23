@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -12,8 +12,10 @@ import WeekendIcon from "@mui/icons-material/Weekend";
 import WorkIcon from "@mui/icons-material/Work";
 import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import CakeIcon from "@mui/icons-material/Cake";
 import CircularProgress from "@mui/material/CircularProgress";
 import EventChip from "./EventChip";
+import EventDetailPanel from "./EventDetailPanel";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store/rootReducer";
 import type { CustomWeekOffRule } from "../../store/organization/organization.types";
@@ -47,6 +49,7 @@ export function BranchCalendarGrid({
   compact = false,
   isFetching = false,
 }: BranchCalendarGridProps) {
+  const [internalSelectedDay, setInternalSelectedDay] = useState<BranchCalendarDay | null>(null);
   const organization = useSelector((state: RootState) => state.organization?.organization);
 
   // Combine custom rules from API data, Organization store, or localStorage fallback
@@ -307,7 +310,12 @@ export function BranchCalendarGrid({
             <Paper
               key={day.date}
               elevation={0}
-              onClick={() => onDayClick?.(day)}
+              onClick={() => {
+                onDayClick?.(day);
+                if (hasEvents) {
+                  setInternalSelectedDay(day);
+                }
+              }}
               sx={{
                 minHeight: compact ? 65 : { xs: 50, sm: 80, md: 100 },
                 p: compact ? 0.8 : { xs: 0.6, sm: 1 },
@@ -352,26 +360,6 @@ export function BranchCalendarGrid({
                   {dateNum}
                 </Typography>
 
-                {/* Week Off / Custom Off chip — commented out
-                {!compact && isWeekOff && (
-                  <Tooltip title={isCustomOff ? `Custom Week Off (${day.dayOfWeek} - Week ${weekOccurrence})` : "Standard Weekly Off"}>
-                    <Chip
-                      label={isCustomOff ? "Custom Off" : "Week Off"}
-                      size="small"
-                      sx={{
-                        display: { xs: "none", sm: "inline-flex" },
-                        height: 18,
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        backgroundColor: isCustomOff ? "#E0E7FF" : "#FEF3C7",
-                        color: isCustomOff ? "#3730A3" : "#92400E",
-                        border: isCustomOff ? "1px solid #C7D2FE" : "none",
-                      }}
-                    />
-                  </Tooltip>
-                )}
-                */}
-
                 {!compact && isHoliday && (
                   <Chip
                     label={day.holidayName ? day.holidayName : "Holiday"}
@@ -408,7 +396,7 @@ export function BranchCalendarGrid({
                 )}
               </Box>
 
-              {/* Event Content rendering: Responsive Dot Indicators (Mobile) vs Full Chips (Tablet/Desktop) */}
+              {/* Event Content rendering: Responsive Dot Indicators (Mobile) vs Single / Summary Chip (Desktop) */}
               {hasEvents && (
                 <>
                   {/* Mobile View: Compact Dots */}
@@ -446,7 +434,7 @@ export function BranchCalendarGrid({
                     )}
                   </Box>
 
-                  {/* Tablet & Desktop View: Full Event Chips */}
+                  {/* Tablet & Desktop View: Single Chip or Compact Summary Chip */}
                   {!compact && (
                     <Box
                       sx={{
@@ -456,9 +444,44 @@ export function BranchCalendarGrid({
                         mt: 1,
                       }}
                     >
-                      {day.events.map((evt, evtIdx) => (
-                        <EventChip key={`${evt.employeeCode}-${evtIdx}`} event={evt} compact />
-                      ))}
+                      {day.events.length === 1 ? (
+                        <EventChip event={day.events[0]} compact />
+                      ) : (
+                        <Tooltip title={`Click cell to view all ${day.events.length} celebrations`}>
+                          <Box
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 0.6,
+                              px: 0.8,
+                              py: 0.3,
+                              borderRadius: "6px",
+                              backgroundColor: "#FDF2F8",
+                              color: "#DB2777",
+                              border: "1px solid #FBCFE8",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              width: "fit-content",
+                              maxWidth: "100%",
+                              transition: "all 0.15s ease",
+                              "&:hover": {
+                                backgroundColor: "#FCE7F3",
+                                transform: "translateY(-1px)",
+                              },
+                            }}
+                          >
+                            <CakeIcon sx={{ fontSize: 13, flexShrink: 0, color: "#DB2777" }} />
+                            <Typography
+                              variant="caption"
+                              noWrap
+                              sx={{ fontWeight: 700, fontSize: "11px", lineHeight: 1.2 }}
+                            >
+                              {day.events[0].employeeName} +{day.events.length - 1} more
+                            </Typography>
+                          </Box>
+                        </Tooltip>
+                      )}
                     </Box>
                   )}
                 </>
@@ -467,6 +490,13 @@ export function BranchCalendarGrid({
           );
         })}
       </Box>
+
+      {/* Event Details Dialog Modal */}
+      <EventDetailPanel
+        open={Boolean(internalSelectedDay)}
+        day={internalSelectedDay}
+        onClose={() => setInternalSelectedDay(null)}
+      />
     </Box>
   );
 }

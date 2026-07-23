@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
@@ -5,24 +6,69 @@ import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
+import type { EmployeeListItem } from "../../../../store/employee/employee.types";
 
 interface PeopleHubKpiCardsProps {
   totalEmployees?: number;
   newJoinersCount?: number;
   probationCount?: number;
   upcomingBirthdaysCount?: number;
+  employees?: EmployeeListItem[];
 }
 
 export function PeopleHubKpiCards({
-  totalEmployees = 332,
-  newJoinersCount = 8,
-  probationCount = 14,
-  upcomingBirthdaysCount = 5,
+  totalEmployees,
+  newJoinersCount,
+  probationCount,
+  upcomingBirthdaysCount,
+  employees = [],
 }: PeopleHubKpiCardsProps) {
+  const metrics = useMemo(() => {
+    const total = totalEmployees !== undefined ? totalEmployees : employees.length;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // 1. New Joiners (joined in current month or year)
+    const computedNewJoiners = employees.filter((e) => {
+      if (!e.joiningDate) return false;
+      const d = new Date(e.joiningDate);
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    }).length;
+    const newJoiners = newJoinersCount !== undefined ? newJoinersCount : computedNewJoiners;
+
+    // 2. On Probation
+    const computedProbation = employees.filter((e) => {
+      const st = (e.status || "").toUpperCase();
+      const et = (e.employeeType || "").toUpperCase();
+      return st.includes("PROBATION") || et.includes("PROBATION") || st === "PROBATIONARY";
+    }).length;
+    const probation = probationCount !== undefined ? probationCount : computedProbation;
+
+    // 3. Upcoming Birthdays (within next 7 days or current month)
+    const computedBirthdays = employees.filter((e) => {
+      if (!e.dateOfBirth) return false;
+      const dob = new Date(e.dateOfBirth);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const bdayThisYear = new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+      if (bdayThisYear < today) {
+        bdayThisYear.setFullYear(today.getFullYear() + 1);
+      }
+      const diffDays = Math.ceil((bdayThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 7;
+    }).length;
+    const birthdays = upcomingBirthdaysCount !== undefined ? upcomingBirthdaysCount : computedBirthdays;
+
+    return { total, newJoiners, probation, birthdays };
+  }, [employees, totalEmployees, newJoinersCount, probationCount, upcomingBirthdaysCount]);
+
   const cards = [
     {
       title: "TOTAL EMPLOYEES",
-      value: totalEmployees,
+      value: metrics.total,
       subtitle: "As of today",
       icon: <PeopleOutlinedIcon sx={{ fontSize: 20 }} />,
       iconBg: "rgba(109, 93, 246, 0.1)",
@@ -30,16 +76,16 @@ export function PeopleHubKpiCards({
     },
     {
       title: "NEW JOINERS",
-      value: newJoinersCount,
+      value: metrics.newJoiners,
       subtitle: "This month",
-      trend: "↑ +2 vs last month",
+      trend: metrics.newJoiners > 0 ? `↑ +${metrics.newJoiners} new` : undefined,
       icon: <PersonAddOutlinedIcon sx={{ fontSize: 20 }} />,
       iconBg: "rgba(16, 185, 129, 0.1)",
       iconColor: "#10B981",
     },
     {
       title: "ON PROBATION",
-      value: probationCount,
+      value: metrics.probation,
       subtitle: "Confirmation due soon",
       icon: <AccessTimeIcon sx={{ fontSize: 20 }} />,
       iconBg: "rgba(245, 158, 11, 0.1)",
@@ -47,7 +93,7 @@ export function PeopleHubKpiCards({
     },
     {
       title: "UPCOMING BIRTHDAYS",
-      value: upcomingBirthdaysCount,
+      value: metrics.birthdays,
       subtitle: "In next 7 days",
       icon: <CakeOutlinedIcon sx={{ fontSize: 20 }} />,
       iconBg: "rgba(168, 85, 247, 0.1)",

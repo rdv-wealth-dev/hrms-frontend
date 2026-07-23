@@ -64,6 +64,53 @@ function getPeopleHubMeta(index: number) {
   return { location: loc, mode, performance: perf, color };
 }
 
+function getEmployeeStatusStyle(status?: string, employeeType?: string, isActive?: boolean) {
+  const rawStatus = (status || "").toUpperCase();
+  const rawType = (employeeType || "").toUpperCase();
+
+  if (rawStatus.includes("LEAVE") || rawType.includes("LEAVE")) {
+    return {
+      label: "On Leave",
+      bg: "rgba(238, 242, 255, 0.9)",
+      color: "#4F46E5",
+    };
+  }
+
+  if (rawStatus.includes("PROBATION") || rawType.includes("PROBATION") || rawStatus === "PROBATIONARY") {
+    return {
+      label: "Probation",
+      bg: "rgba(254, 243, 199, 0.7)",
+      color: "#B45309",
+    };
+  }
+
+  if (rawStatus.includes("NOTICE")) {
+    return {
+      label: "Notice Period",
+      bg: "rgba(255, 237, 213, 0.9)",
+      color: "#C2410C",
+    };
+  }
+
+  if (rawStatus.includes("INACTIVE") || rawStatus.includes("TERMINATED") || rawStatus.includes("EXITED") || isActive === false) {
+    return {
+      label: "Inactive",
+      bg: "rgba(243, 244, 246, 0.9)",
+      color: "#6B7280",
+    };
+  }
+
+  const formattedLabel = status
+    ? status.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Active";
+
+  return {
+    label: formattedLabel,
+    bg: "rgba(220, 252, 231, 0.7)",
+    color: "#15803D",
+  };
+}
+
 export function PeopleHubTableView({
   employees,
   canUpdate = true,
@@ -166,7 +213,7 @@ export function PeopleHubTableView({
             const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
             const meta = getPeopleHubMeta(index);
 
-            const isProbation = emp.status === "PROBATION" || (index % 4 === 3);
+            const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
 
             return (
               <TableRow
@@ -194,6 +241,7 @@ export function PeopleHubTableView({
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                     <Avatar
+                      src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
                       sx={{
                         width: 36,
                         height: 36,
@@ -242,14 +290,14 @@ export function PeopleHubTableView({
                 {/* Status Badge */}
                 <TableCell>
                   <Chip
-                    label={isProbation ? "Probation" : "Active"}
+                    label={statusStyle.label}
                     size="small"
                     sx={{
                       height: 22,
                       fontSize: "11px",
                       fontWeight: 700,
-                      backgroundColor: isProbation ? "rgba(254, 243, 199, 0.7)" : "rgba(220, 252, 231, 0.7)",
-                      color: isProbation ? "#B45309" : "#15803D",
+                      backgroundColor: statusStyle.bg,
+                      color: statusStyle.color,
                       borderRadius: "12px",
                       px: 0.5,
                     }}

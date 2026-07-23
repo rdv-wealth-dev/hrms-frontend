@@ -38,6 +38,7 @@ export default function OnboardingStep3Bank({
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<OnboardingStep3FormData>({
     resolver: zodResolver(onboardingStep3Schema),
@@ -91,6 +92,7 @@ export default function OnboardingStep3Bank({
             <TextField
               select
               fullWidth
+              value={watch("accountType") || "SALARY"}
               {...register("accountType")}
               error={!!errors.accountType}
               helperText={errors.accountType?.message}
