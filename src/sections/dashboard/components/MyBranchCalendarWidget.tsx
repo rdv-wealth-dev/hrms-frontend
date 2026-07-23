@@ -12,6 +12,7 @@ export function MyBranchCalendarWidget() {
   const {
     calendarData,
     loading,
+    isFetching,
     error,
     nextMonth,
     prevMonth,
@@ -40,22 +41,24 @@ export function MyBranchCalendarWidget() {
         width: "100%",
       }}
     >
-      {loading ? (
+      {!calendarData && loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
           <CircularProgress sx={{ color: "#6D5DF6" }} />
-        </Box>) : error ? (
-          <Alert severity="error" sx={{ borderRadius: 2 }}>
-            {error}
-          </Alert>
-        ) : calendarData ? (
-          <>
-            <BranchCalendarGrid
-              data={calendarData}
-              onPrevMonth={prevMonth}
-              onNextMonth={nextMonth}
-              onResetMonth={resetToCurrent}
-              onDayClick={handleDayClick}
-            />
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          {error}
+        </Alert>
+      ) : calendarData ? (
+        <>
+          <BranchCalendarGrid
+            data={calendarData}
+            isFetching={isFetching}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+            onResetMonth={resetToCurrent}
+            onDayClick={handleDayClick}
+          />
 
             {/* Click-to-open Event Detail Panel */}
             <EventDetailPanel

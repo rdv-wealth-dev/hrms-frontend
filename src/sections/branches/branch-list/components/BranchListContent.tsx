@@ -497,6 +497,14 @@ function BranchListContent() {
                             <strong>Weekly Offs:</strong> {workPolicy.weeklyOffDays.join(", ")}
                           </Typography>
                         )}
+                        {workPolicy?.customWeekOffRules && workPolicy.customWeekOffRules.length > 0 && (
+                          <Typography variant="body2" sx={{ fontSize: 12, color: "#4F46E5", fontWeight: 600 }}>
+                            <strong>Custom Offs:</strong>{" "}
+                            {workPolicy.customWeekOffRules
+                              .map((r) => `${r.dayOfWeek.slice(0, 3)} (${r.weeks.join(", ")})`)
+                              .join("; ")}
+                          </Typography>
+                        )}
                       </Box>
                     </TableCell>
 

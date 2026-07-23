@@ -404,6 +404,19 @@ export interface CompleteProfileCompletion {
   emergencyContact: boolean;
   bankDetails: boolean;
   mandatoryDocs: boolean;
+  overallScore?: number;
+  completedSections?: number;
+  totalSections?: number;
+}
+
+export interface CompleteProfileSummary {
+  totalDocuments?: number;
+  verifiedDocuments?: number;
+  pendingVerification?: number;
+  totalBankAccounts?: number;
+  primaryBankSet?: boolean;
+  profileCompletionDate?: string;
+  lastUpdated?: string;
 }
 
 export interface EmergencyContact {
@@ -413,21 +426,34 @@ export interface EmergencyContact {
 }
 
 export interface CompleteProfileEmployee {
-  _id: string;
+  id?: string;
+  _id?: string;
   employeeCode: string;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
+  avatarUrl?: string;
   dateOfBirth?: string;
   gender?: string;
+  bloodGroup?: string;
+  maritalStatus?: string;
+  nationality?: string;
+  pan?: string;
+  aadhaar?: string;
+  employeeType?: string;
+  status?: string;
+  joiningDate?: string;
+  confirmationDate?: string;
   currentAddress?: Record<string, unknown>;
   emergencyContacts?: EmergencyContact[];
-  departmentId?: { _id: string; name: string; code: string };
-  designationId?: { _id: string; name: string };
-  managerId?: { _id: string; firstName: string; lastName: string };
-  profileCompletion: CompleteProfileCompletion;
-  isProfileComplete: boolean;
+  departmentId?: { _id?: string; id?: string; name: string; code?: string };
+  designationId?: { _id?: string; id?: string; name: string };
+  managerId?: { _id?: string; id?: string; firstName: string; lastName: string } | null;
+  profileCompletion?: CompleteProfileCompletion;
+  isProfileComplete?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CompleteProfileDocument {
@@ -435,9 +461,13 @@ export interface CompleteProfileDocument {
   _id?: string;
   documentType: string;
   fileName: string;
-  s3Key: string;
+  mimeType?: string;
+  s3Key?: string;
   isVerified: boolean;
+  verifiedAt?: string;
+  canDownload?: boolean;
   sizeBytes: number;
+  uploadedAt?: string;
 }
 
 export interface CompleteProfileBankAccount {
@@ -449,22 +479,29 @@ export interface CompleteProfileBankAccount {
   ifscCode: string;
   accountType: string;
   isPrimary: boolean;
+  isActive?: boolean;
+  addedAt?: string;
+}
+
+export interface CompleteEmployeeProfileData {
+  employee: CompleteProfileEmployee;
+  profileCompletion?: CompleteProfileCompletion;
+  isProfileComplete?: boolean;
+  documents: CompleteProfileDocument[];
+  bankAccounts: CompleteProfileBankAccount[];
+  organizationRequirements?: {
+    mandatoryDocumentTypes: string[];
+    missingDocuments: string[];
+    documentLabels: Record<string, string>;
+  };
+  summary?: CompleteProfileSummary;
 }
 
 export interface CompleteEmployeeProfileResponse {
   succeeded: boolean;
   message: string;
   errors: string[];
-  data: {
-    employee: CompleteProfileEmployee;
-    documents: CompleteProfileDocument[];
-    bankAccounts: CompleteProfileBankAccount[];
-    organizationRequirements: {
-      mandatoryDocumentTypes: string[];
-      missingDocuments: string[];
-      documentLabels: Record<string, string>;
-    };
-  };
+  data: CompleteEmployeeProfileData;
 }
 
 export const getEmployeeCompleteProfile = async (
@@ -521,6 +558,81 @@ export const updateLoggedInEmployeeProfile = async (
     "/employees/me",
     payload,
     { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+/* ─── Avatar Upload APIs ─── */
+
+export interface AvatarCropParams {
+  cropX?: number;
+  cropY?: number;
+  cropWidth?: number;
+  cropHeight?: number;
+}
+
+export interface AvatarUploadResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data: {
+    avatarUrl: string;
+  };
+}
+
+export const uploadSelfAvatar = async (
+  file: File,
+  cropParams?: AvatarCropParams
+): Promise<AvatarUploadResponse> => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const query = new URLSearchParams();
+  if (cropParams?.cropX !== undefined) query.append("cropX", String(cropParams.cropX));
+  if (cropParams?.cropY !== undefined) query.append("cropY", String(cropParams.cropY));
+  if (cropParams?.cropWidth !== undefined) query.append("cropWidth", String(cropParams.cropWidth));
+  if (cropParams?.cropHeight !== undefined) query.append("cropHeight", String(cropParams.cropHeight));
+
+  const queryString = query.toString() ? `?${query.toString()}` : "";
+
+  const response = await axiosInstance.patch<AvatarUploadResponse>(
+    `/employees/me/avatar${queryString}`,
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const uploadEmployeeAvatar = async (
+  employeeId: string,
+  file: File,
+  cropParams?: AvatarCropParams
+): Promise<AvatarUploadResponse> => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const query = new URLSearchParams();
+  if (cropParams?.cropX !== undefined) query.append("cropX", String(cropParams.cropX));
+  if (cropParams?.cropY !== undefined) query.append("cropY", String(cropParams.cropY));
+  if (cropParams?.cropWidth !== undefined) query.append("cropWidth", String(cropParams.cropWidth));
+  if (cropParams?.cropHeight !== undefined) query.append("cropHeight", String(cropParams.cropHeight));
+
+  const queryString = query.toString() ? `?${query.toString()}` : "";
+
+  const response = await axiosInstance.patch<AvatarUploadResponse>(
+    `/employees/${employeeId}/avatar${queryString}`,
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
   return response.data;
 };

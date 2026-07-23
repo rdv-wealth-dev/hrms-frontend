@@ -1,4 +1,4 @@
-import type { SaturdayPolicy } from "../organization/organization.types";
+import type { CustomWeekOffRule } from "../organization/organization.types";
 
 export interface BranchAddress {
   addressLine1?: string;
@@ -27,7 +27,7 @@ export interface BranchWorkPolicy {
   shiftStartTime?: string;
   shiftEndTime?: string;
   workingHoursPerDay?: number;
-  saturdayPolicy?: SaturdayPolicy;
+  customWeekOffRules?: CustomWeekOffRule[];
 }
 
 export interface BranchStatutory {
@@ -262,6 +262,13 @@ export interface BranchCalendarEvent {
   years?: number;
 }
 
+export interface CalendarShift {
+  name: string;
+  code: string;
+  startTime: string;
+  endTime: string;
+}
+
 export interface BranchCalendarDay {
   date: string;
   dayOfWeek: string;
@@ -270,6 +277,8 @@ export interface BranchCalendarDay {
   offReason?: string | null;
   holidayName?: string | null;
   events: BranchCalendarEvent[];
+  shift?: CalendarShift | null;
+  slotNumber?: number | null;
 }
 
 export interface BranchCalendarSummary {
@@ -286,7 +295,7 @@ export interface BranchCalendarData {
   branchName: string;
   year: number;
   month: number;
-  saturdayPolicyMode?: string;
+  customWeekOffRules?: CustomWeekOffRule[];
   days: BranchCalendarDay[];
   summary: BranchCalendarSummary;
 }

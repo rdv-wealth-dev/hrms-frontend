@@ -22,6 +22,7 @@ export interface User {
   lastName: string;
   fullName?: string;
   phone?: string;
+  avatarUrl?: string;
   role: string;
   isSuperAdmin: boolean;
   isActive?: boolean;

@@ -63,6 +63,7 @@ import ConfirmDialog from "../../components/modal/ConfirmDialog";
 import { useDialog } from "../../hooks/useDialog";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
 import EmergencyContactDialog from "./components/EmergencyContactDialog";
+import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
   addBankAccount,
   deleteBankAccount,
@@ -72,11 +73,16 @@ import {
   getDownloadUrl,
   getEmployeeCompleteProfile,
   getLoggedInEmployeeProfile,
+  uploadSelfAvatar,
+  uploadEmployeeAvatar,
+  type AvatarCropParams,
   type AddBankAccountRequest,
   type BankAccount,
   type EmployeeDocument,
   type CompleteProfileEmployee,
   type EmergencyContact,
+  type CompleteProfileCompletion,
+  type CompleteProfileSummary,
 } from "../../api/employee.api";
 
 interface ProfileViewProps {
@@ -108,10 +114,43 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const [isPrimary, setIsPrimary] = useState(false);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [bankAccountsLoading, setBankAccountsLoading] = useState(true);
+
+  const [profileCompletion, setProfileCompletion] = useState<CompleteProfileCompletion | null>(null);
+  const [_profileSummary, setProfileSummary] = useState<CompleteProfileSummary | null>(null);
   const [bankDeleteTarget, setBankDeleteTarget] = useState<BankAccount | null>(null);
   const [bankDeleting, setBankDeleting] = useState(false);
   const [empProfile, setEmpProfile] = useState<CompleteProfileEmployee | null>(null);
   const [missingDocTypes, setMissingDocTypes] = useState<string[]>([]);
+
+  // ── Avatar Upload Dialog ──────────────────────────────────────────────────
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [avatarSubmitting, setAvatarSubmitting] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  const handleUploadAvatar = useCallback(async (file: File, cropParams?: AvatarCropParams) => {
+    setAvatarSubmitting(true);
+    setAvatarError(null);
+    try {
+      let res;
+      if (isViewingOther && employeeId) {
+        res = await uploadEmployeeAvatar(employeeId, file, cropParams);
+      } else {
+        res = await uploadSelfAvatar(file, cropParams);
+      }
+
+      if (res.succeeded && res.data?.avatarUrl) {
+        setEmpProfile((prev) => prev ? { ...prev, avatarUrl: res.data.avatarUrl } : prev);
+        showSnackbar("Profile picture updated successfully", "success");
+        setAvatarDialogOpen(false);
+      } else {
+        setAvatarError(res.message || "Failed to upload avatar");
+      }
+    } catch (err: any) {
+      setAvatarError(err?.response?.data?.message || err?.message || "Failed to upload avatar");
+    } finally {
+      setAvatarSubmitting(false);
+    }
+  }, [isViewingOther, employeeId, showSnackbar]);
 
   // ── Edit Personal Details dialog ──────────────────────────────────────────
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -147,6 +186,12 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           setBankAccounts((res.data.bankAccounts || []) as BankAccount[]);
           setDocuments((res.data.documents || []) as EmployeeDocument[]);
           setMissingDocTypes(res.data.organizationRequirements?.missingDocuments || []);
+          if (res.data.profileCompletion) {
+            setProfileCompletion(res.data.profileCompletion);
+          }
+          if (res.data.summary) {
+            setProfileSummary(res.data.summary);
+          }
           loadedSelf = true;
         }
       } catch (err: any) {
@@ -503,6 +548,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             {/* Avatar & Initial Badge */}
             <Box sx={{ position: "relative", flexShrink: 0 }}>
               <Avatar
+                src={empProfile?.avatarUrl || (isViewingOther ? undefined : user?.avatarUrl)}
                 sx={{
                   width: 92,
                   height: 92,
@@ -516,25 +562,24 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 {displayFirstName?.[0]?.toUpperCase() ?? "P"}
                 {displayLastName?.[0]?.toUpperCase() ?? "S"}
               </Avatar>
-              {!isViewingOther && (
-                <IconButton
-                  size="small"
-                  onClick={handleOpenEditProfile}
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    backgroundColor: "#4F46E5",
-                    color: "#FFFFFF",
-                    width: 28,
-                    height: 28,
-                    border: "2px solid #FFFFFF",
-                    "&:hover": { backgroundColor: "#4338CA" },
-                  }}
-                >
-                  <EditOutlinedIcon sx={{ fontSize: "15px" }} />
-                </IconButton>
-              )}
+              <IconButton
+                size="small"
+                onClick={() => setAvatarDialogOpen(true)}
+                title="Upload Profile Picture"
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: "#4F46E5",
+                  color: "#FFFFFF",
+                  width: 28,
+                  height: 28,
+                  border: "2px solid #FFFFFF",
+                  "&:hover": { backgroundColor: "#4338CA" },
+                }}
+              >
+                <EditOutlinedIcon sx={{ fontSize: "15px" }} />
+              </IconButton>
             </Box>
 
             {/* Employee Title, Name & Meta Badges */}
@@ -672,7 +717,12 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             { title: "78%", label: "Training %", sub: "4/5 courses done", icon: <SchoolOutlinedIcon sx={{ fontSize: 18, color: "#F59E0B" }} /> },
             { title: "2", label: "Assets", sub: "Assigned", icon: <Inventory2OutlinedIcon sx={{ fontSize: 18, color: "#06B6D4" }} /> },
             { title: "Low", label: "Attrition Risk", sub: "AI prediction", icon: <PsychologyOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} /> },
-            { title: "91/100", label: "AI Score", sub: "Workforce health", icon: <AutoAwesomeIcon sx={{ fontSize: 18, color: "#6366F1" }} /> },
+            { 
+              title: profileCompletion?.overallScore !== undefined ? `${profileCompletion.overallScore}%` : "100%", 
+              label: "Profile Complete", 
+              sub: profileCompletion ? `${profileCompletion.completedSections}/${profileCompletion.totalSections} sections` : "5/5 sections", 
+              icon: <AutoAwesomeIcon sx={{ fontSize: 18, color: "#6366F1" }} /> 
+            },
           ].map((metric, i) => (
             <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 1.5 }}>
               <Card
@@ -1723,6 +1773,15 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         onConfirm={handleDeleteEmergencyContact}
         onClose={() => { setEcDeleteConfirmOpen(false); setEcDeleteTarget(null); }}
         loading={ecUpdater.submitting}
+      />
+
+      {/* Upload Avatar Dialog */}
+      <UploadAvatarDialog
+        open={avatarDialogOpen}
+        onClose={() => setAvatarDialogOpen(false)}
+        onUpload={handleUploadAvatar}
+        submitting={avatarSubmitting}
+        error={avatarError}
       />
     </DashboardLayout>
   );

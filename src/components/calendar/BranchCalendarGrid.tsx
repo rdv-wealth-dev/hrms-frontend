@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -10,7 +11,12 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import WeekendIcon from "@mui/icons-material/Weekend";
 import WorkIcon from "@mui/icons-material/Work";
 import TodayIcon from "@mui/icons-material/Today";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import CircularProgress from "@mui/material/CircularProgress";
 import EventChip from "./EventChip";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/rootReducer";
+import type { CustomWeekOffRule } from "../../store/organization/organization.types";
 import type { BranchCalendarData, BranchCalendarDay } from "../../store/branch/branch.types";
 
 interface BranchCalendarGridProps {
@@ -20,6 +26,7 @@ interface BranchCalendarGridProps {
   onResetMonth?: () => void;
   onDayClick?: (day: BranchCalendarDay) => void;
   compact?: boolean;
+  isFetching?: boolean;
 }
 
 const MONTH_NAMES = [
@@ -29,6 +36,8 @@ const MONTH_NAMES = [
 
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+const normalizeDay = (d?: string) => (d ? d.trim().toLowerCase().slice(0, 3) : "");
+
 export function BranchCalendarGrid({
   data,
   onPrevMonth,
@@ -36,9 +45,83 @@ export function BranchCalendarGrid({
   onResetMonth,
   onDayClick,
   compact = false,
+  isFetching = false,
 }: BranchCalendarGridProps) {
-  const { year, month, days, summary, branchName } = data;
+  const organization = useSelector((state: RootState) => state.organization?.organization);
+
+  // Combine custom rules from API data, Organization store, or localStorage fallback
+  const savedLocalRules = (() => {
+    try {
+      const raw = localStorage.getItem("hrms_org_custom_week_off_rules");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const activeRules: CustomWeekOffRule[] =
+    data.customWeekOffRules && data.customWeekOffRules.length > 0
+      ? data.customWeekOffRules
+      : (organization?.locale?.customWeekOffRules && organization.locale.customWeekOffRules.length > 0)
+      ? organization.locale.customWeekOffRules
+      : savedLocalRules;
+
+  const { year, month, days, branchName } = data;
   const monthName = MONTH_NAMES[month - 1] || "";
+
+  // Dynamic summary computation directly from rendered days array and active custom rules
+  const dynamicSummary = useMemo(() => {
+    const totalDays = days.length || 31;
+
+    let weekOffs = 0;
+    let holidays = 0;
+    let saturdays = 0;
+    let saturdaysOff = 0;
+
+    days.forEach((day) => {
+      const dateNum = new Date(`${day.date}T00:00:00`).getDate();
+      const weekOccurrence = day.weekNumber || Math.ceil(dateNum / 7);
+      const dayNorm = normalizeDay(day.dayOfWeek);
+
+      const matchesCustomRule = activeRules?.some(
+        (rule: CustomWeekOffRule) =>
+          normalizeDay(rule.dayOfWeek) === dayNorm &&
+          rule.weeks?.includes(weekOccurrence)
+      );
+
+      const isCustomOffReason =
+        day.offReason?.toUpperCase() === "CUSTOM_WEEK_OFF" ||
+        day.offReason?.toLowerCase().includes("custom");
+
+      const isCustomOff = isCustomOffReason || Boolean(matchesCustomRule);
+      const isWeekOff = day.type === "WEEK_OFF" || isCustomOff;
+      const isHoliday = day.type === "HOLIDAY";
+
+      if (isHoliday) {
+        holidays += 1;
+      } else if (isWeekOff) {
+        weekOffs += 1;
+      }
+
+      if (dayNorm === "sat") {
+        saturdays += 1;
+        if (isWeekOff) {
+          saturdaysOff += 1;
+        }
+      }
+    });
+
+    const workingDays = Math.max(0, totalDays - weekOffs - holidays);
+
+    return {
+      totalDays: totalDays,
+      workingDays: workingDays,
+      weekOffs: weekOffs,
+      holidays: holidays,
+      saturdays: saturdays,
+      saturdaysOff: saturdaysOff,
+    };
+  }, [days, activeRules]);
 
   // Helper to determine offset for the 1st day of the month (Monday-aligned)
   const firstDay = days[0];
@@ -83,14 +166,17 @@ export function BranchCalendarGrid({
             />
           )}
 
-          <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5E7EB", borderRadius: 2 }}>
-            <IconButton onClick={onPrevMonth} size="small">
+          <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5E7EB", borderRadius: 2, px: 0.5 }}>
+            <IconButton onClick={onPrevMonth} size="small" disabled={isFetching}>
               <ChevronLeftIcon fontSize="small" />
             </IconButton>
-            <Typography variant="subtitle2" sx={{ px: 1, fontWeight: 700, minWidth: 95, textAlign: "center", fontSize: "13px" }}>
-              {monthName} {year}
-            </Typography>
-            <IconButton onClick={onNextMonth} size="small">
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 110 }}>
+              {isFetching && <CircularProgress size={13} sx={{ color: "#6366F1", mr: 0.7 }} />}
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, textAlign: "center", fontSize: "13px" }}>
+                {monthName} {year}
+              </Typography>
+            </Box>
+            <IconButton onClick={onNextMonth} size="small" disabled={isFetching}>
               <ChevronRightIcon fontSize="small" />
             </IconButton>
           </Box>
@@ -98,7 +184,7 @@ export function BranchCalendarGrid({
       </Box>
 
       {/* Summary Cards Bar (Full view only) */}
-      {!compact && summary && (
+      {!compact && (
         <Box
           sx={{
             display: "grid",
@@ -112,7 +198,7 @@ export function BranchCalendarGrid({
               <EventAvailableIcon sx={{ color: "#6D5DF6", fontSize: 20 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary">Total Days</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1 }}>{summary.totalDays}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1 }}>{dynamicSummary.totalDays}</Typography>
               </Box>
             </Box>
           </Paper>
@@ -122,7 +208,7 @@ export function BranchCalendarGrid({
               <WorkIcon sx={{ color: "#10B981", fontSize: 20 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary">Working Days</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1, color: "#047857" }}>{summary.workingDays}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1, color: "#047857" }}>{dynamicSummary.workingDays}</Typography>
               </Box>
             </Box>
           </Paper>
@@ -132,17 +218,19 @@ export function BranchCalendarGrid({
               <WeekendIcon sx={{ color: "#F59E0B", fontSize: 20 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary">Week Offs</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1, color: "#B45309" }}>{summary.weekOffs}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1, color: "#B45309" }}>{dynamicSummary.weekOffs}</Typography>
               </Box>
             </Box>
           </Paper>
 
           <Paper elevation={0} sx={{ p: 1.5, borderRadius: 2.5, border: "1px solid #E5E7EB", backgroundColor: "#FAFAFA" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <EventChip event={{ type: "ANNIVERSARY", title: "Events", employeeName: "", employeeCode: "" }} compact />
+              <CalendarMonthIcon sx={{ color: "#6366F1", fontSize: 20 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary">Saturdays Off</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1 }}>{summary.saturdaysOff}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1, color: "#4338CA" }}>
+                  {dynamicSummary.saturdaysOff} <Typography component="span" variant="caption" color="text.secondary">/ {dynamicSummary.saturdays}</Typography>
+                </Typography>
               </Box>
             </Box>
           </Paper>
@@ -194,7 +282,21 @@ export function BranchCalendarGrid({
         {/* Calendar Day Cards */}
         {days.map((day: BranchCalendarDay) => {
           const dateNum = new Date(`${day.date}T00:00:00`).getDate();
-          const isWeekOff = day.type === "WEEK_OFF";
+
+          // Client-side fallback check for custom week-off rules (e.g. 2nd & 4th Saturday, 5th Friday)
+          const weekOccurrence = day.weekNumber || Math.ceil(dateNum / 7);
+          const matchesCustomRule = activeRules?.some(
+            (rule: CustomWeekOffRule) =>
+              normalizeDay(rule.dayOfWeek) === normalizeDay(day.dayOfWeek) &&
+              rule.weeks?.includes(weekOccurrence)
+          );
+
+          const isCustomOffReason =
+            day.offReason?.toUpperCase() === "CUSTOM_WEEK_OFF" ||
+            day.offReason?.toLowerCase().includes("custom");
+
+          const isCustomOff = isCustomOffReason || Boolean(matchesCustomRule);
+          const isWeekOff = day.type === "WEEK_OFF" || isCustomOff;
           const isHoliday = day.type === "HOLIDAY";
           const hasEvents = day.events && day.events.length > 0;
 
@@ -211,12 +313,16 @@ export function BranchCalendarGrid({
                 p: compact ? 0.8 : { xs: 0.6, sm: 1 },
                 borderRadius: 2,
                 border: "1px solid",
-                borderColor: isWeekOff
+                borderColor: isCustomOff
+                  ? "#C7D2FE"
+                  : isWeekOff
                   ? "#FDE68A"
                   : isHoliday
                   ? "#BFDBFE"
                   : "#E5E7EB",
-                backgroundColor: isWeekOff
+                backgroundColor: isCustomOff
+                  ? "#EEF2FF"
+                  : isWeekOff
                   ? "#FFFBEB"
                   : isHoliday
                   ? "#EFF6FF"
@@ -240,25 +346,28 @@ export function BranchCalendarGrid({
                   sx={{
                     fontWeight: 700,
                     fontSize: compact ? "12px" : { xs: "11px", sm: "13px", md: "14px" },
-                    color: isWeekOff ? "#B45309" : "#111827",
+                    color: isCustomOff ? "#4338CA" : isWeekOff ? "#B45309" : "#111827",
                   }}
                 >
                   {dateNum}
                 </Typography>
 
                 {!compact && isWeekOff && (
-                  <Chip
-                    label={day.offReason === "SATURDAY_POLICY" ? "Sat Off" : "Week Off"}
-                    size="small"
-                    sx={{
-                      display: { xs: "none", sm: "inline-flex" },
-                      height: 18,
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      backgroundColor: "#FEF3C7",
-                      color: "#92400E",
-                    }}
-                  />
+                  <Tooltip title={isCustomOff ? `Custom Week Off (${day.dayOfWeek} - Week ${weekOccurrence})` : "Standard Weekly Off"}>
+                    <Chip
+                      label={isCustomOff ? "Custom Off" : "Week Off"}
+                      size="small"
+                      sx={{
+                        display: { xs: "none", sm: "inline-flex" },
+                        height: 18,
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        backgroundColor: isCustomOff ? "#E0E7FF" : "#FEF3C7",
+                        color: isCustomOff ? "#3730A3" : "#92400E",
+                        border: isCustomOff ? "1px solid #C7D2FE" : "none",
+                      }}
+                    />
+                  </Tooltip>
                 )}
 
                 {!compact && isHoliday && (
@@ -274,6 +383,24 @@ export function BranchCalendarGrid({
                       backgroundColor: "#DBEAFE",
                       color: "#1E40AF",
                       maxWidth: { sm: 80, md: 120 },
+                    }}
+                  />
+                )}
+
+                {!compact && day.shift && (
+                  <Chip
+                    label={`${day.shift.name} (${day.shift.startTime}-${day.shift.endTime})`}
+                    size="small"
+                    title={`${day.shift.name} (${day.shift.startTime} - ${day.shift.endTime})`}
+                    sx={{
+                      display: { xs: "none", sm: "inline-flex" },
+                      height: 18,
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      backgroundColor: "#F1F5F9",
+                      color: "#334155",
+                      border: "1px solid #E2E8F0",
+                      maxWidth: { sm: 90, md: 140 },
                     }}
                   />
                 )}
