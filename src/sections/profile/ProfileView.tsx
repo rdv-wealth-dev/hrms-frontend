@@ -134,8 +134,11 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       let res;
       if (isViewingOther && employeeId) {
         res = await uploadEmployeeAvatar(employeeId, file, cropParams);
-      } else {
+      } else if (user?.employeeId) {
         res = await uploadSelfAvatar(file, cropParams);
+      } else {
+        setAvatarError("Your account does not have an employee profile linked. Please contact your administrator.");
+        return;
       }
 
       if (res.succeeded && res.data?.avatarUrl) {
@@ -143,14 +146,24 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         showSnackbar("Profile picture updated successfully", "success");
         setAvatarDialogOpen(false);
       } else {
-        setAvatarError(res.message || "Failed to upload avatar");
+        const msg = res.message || "Failed to upload avatar";
+        setAvatarError(
+          msg.toLowerCase().includes("no employee record")
+            ? "Your account does not have an employee profile linked. Please contact your administrator."
+            : msg
+        );
       }
     } catch (err: any) {
-      setAvatarError(err?.response?.data?.message || err?.message || "Failed to upload avatar");
+      const msg = err?.response?.data?.message || err?.message || "Failed to upload avatar";
+      setAvatarError(
+        msg.toLowerCase().includes("no employee record")
+          ? "Your account does not have an employee profile linked. Please contact your administrator."
+          : msg
+      );
     } finally {
       setAvatarSubmitting(false);
     }
-  }, [isViewingOther, employeeId, showSnackbar]);
+  }, [isViewingOther, employeeId, user?.employeeId, showSnackbar]);
 
   // ── Edit Personal Details dialog ──────────────────────────────────────────
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -562,24 +575,27 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 {displayFirstName?.[0]?.toUpperCase() ?? "P"}
                 {displayLastName?.[0]?.toUpperCase() ?? "S"}
               </Avatar>
-              <IconButton
-                size="small"
-                onClick={() => setAvatarDialogOpen(true)}
-                title="Upload Profile Picture"
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  backgroundColor: "#4F46E5",
-                  color: "#FFFFFF",
-                  width: 28,
-                  height: 28,
-                  border: "2px solid #FFFFFF",
-                  "&:hover": { backgroundColor: "#4338CA" },
-                }}
-              >
-                <EditOutlinedIcon sx={{ fontSize: "15px" }} />
-              </IconButton>
+              {/* Only show upload button if user has an employee record or viewing another employee */}
+              {(user?.employeeId || isViewingOther) && (
+                <IconButton
+                  size="small"
+                  onClick={() => setAvatarDialogOpen(true)}
+                  title="Upload Profile Picture"
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: "#4F46E5",
+                    color: "#FFFFFF",
+                    width: 28,
+                    height: 28,
+                    border: "2px solid #FFFFFF",
+                    "&:hover": { backgroundColor: "#4338CA" },
+                  }}
+                >
+                  <EditOutlinedIcon sx={{ fontSize: "15px" }} />
+                </IconButton>
+              )}
             </Box>
 
             {/* Employee Title, Name & Meta Badges */}
