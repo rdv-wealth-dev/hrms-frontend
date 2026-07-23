@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateUserAvatar } from "../../store/auth";
 import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -91,6 +92,7 @@ interface ProfileViewProps {
 
 function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showSnackbar } = useSnackbar();
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
@@ -142,7 +144,14 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       }
 
       if (res.succeeded && res.data?.avatarUrl) {
-        setEmpProfile((prev) => prev ? { ...prev, avatarUrl: res.data.avatarUrl } : prev);
+        const freshAvatarUrl = res.data.avatarUrl.includes("?")
+          ? `${res.data.avatarUrl}&t=${Date.now()}`
+          : `${res.data.avatarUrl}?t=${Date.now()}`;
+
+        setEmpProfile((prev) => prev ? { ...prev, avatarUrl: freshAvatarUrl } : prev);
+        if (!isViewingOther) {
+          dispatch(updateUserAvatar(freshAvatarUrl));
+        }
         showSnackbar("Profile picture updated successfully", "success");
         setAvatarDialogOpen(false);
       } else {
@@ -163,7 +172,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     } finally {
       setAvatarSubmitting(false);
     }
-  }, [isViewingOther, employeeId, user?.employeeId, showSnackbar]);
+  }, [isViewingOther, employeeId, user?.employeeId, dispatch, showSnackbar]);
 
   // ── Edit Personal Details dialog ──────────────────────────────────────────
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -195,7 +204,11 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       try {
         const res = await getEmployeeCompleteProfile(employeeId);
         if (!cancelled && res.succeeded) {
-          setEmpProfile(res.data.employee || null);
+          const empData = res.data.employee ? { ...res.data.employee } : null;
+          if (empData?.avatarUrl && !empData.avatarUrl.includes("?t=")) {
+            empData.avatarUrl = `${empData.avatarUrl}?t=${Date.now()}`;
+          }
+          setEmpProfile(empData);
           setBankAccounts((res.data.bankAccounts || []) as BankAccount[]);
           setDocuments((res.data.documents || []) as EmployeeDocument[]);
           setMissingDocTypes(res.data.organizationRequirements?.missingDocuments || []);
@@ -221,7 +234,11 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         ]);
 
         if (profileRes.succeeded) {
-          setEmpProfile(profileRes.data || null);
+          const empData = profileRes.data ? { ...profileRes.data } : null;
+          if (empData?.avatarUrl && !empData.avatarUrl.includes("?t=")) {
+            empData.avatarUrl = `${empData.avatarUrl}?t=${Date.now()}`;
+          }
+          setEmpProfile(empData);
         }
         if (bankRes.succeeded) {
           setBankAccounts((bankRes.data || []) as BankAccount[]);
@@ -247,7 +264,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [employeeId, isViewingOther, user]);
+  }, [employeeId, isViewingOther, user?.id, user?.employeeId]);
 
   // Shared self-update hook for personal details
   const onProfileUpdated = useCallback(async () => {

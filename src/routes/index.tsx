@@ -27,6 +27,7 @@ const EmployeeDetailPage = lazy(() => import("../pages/employees/detail"));
 const SettingsPage = lazy(() => import("../pages/settings"));
 const MyAttendancePage = lazy(() => import("../pages/attendance"));
 const ProfilePage = lazy(() => import("../pages/profile"));
+const OnboardingPage = lazy(() => import("../pages/onboarding"));
 const RegularizationListPage = lazy(() => import("../pages/attendance/regularizations"));
 const HolidaysPage = lazy(() => import("../pages/holidays"));
 const MyLeavePage = lazy(() => import("../pages/leave"));
@@ -65,6 +66,10 @@ function AppRoutes() {
         <Route
           path={paths.dashboard}
           element={<AuthGuard><DashboardPage /></AuthGuard>}
+        />
+        <Route
+          path={paths.onboarding}
+          element={<AuthGuard><OnboardingPage /></AuthGuard>}
         />
         <Route
           path={paths.departments}

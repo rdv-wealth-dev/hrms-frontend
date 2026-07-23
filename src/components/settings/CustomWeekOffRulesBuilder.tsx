@@ -174,7 +174,7 @@ export function CustomWeekOffRulesBuilder({
                 })}
               </TextField>
 
-              {/* Occurrence Checkboxes */}
+              {/* Occurrence Checkboxes + Delete Button — all on one row */}
               <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <Typography variant="caption" sx={{ fontWeight: 600, color: "#475569", mr: 0.5 }}>
                   Month Occurrences:
@@ -227,21 +227,21 @@ export function CustomWeekOffRulesBuilder({
                           {occ.label}
                         </Typography>
                       }
-                      sx={{ mr: 1 }}
+                      sx={{ mr: 0.5 }}
                     />
                   );
                 })}
-              </Box>
 
-              {/* Remove Button */}
-              <IconButton
-                onClick={() => handleRemoveRule(idx)}
-                disabled={disabled}
-                size="small"
-                sx={{ color: "#94A3B8", "&:hover": { color: "#EF4444", backgroundColor: "#FEF2F2" } }}
-              >
-                <DeleteOutlineOutlinedIcon fontSize="small" />
-              </IconButton>
+                {/* Delete button — inline after 5th checkbox */}
+                <IconButton
+                  onClick={() => handleRemoveRule(idx)}
+                  disabled={disabled}
+                  size="small"
+                  sx={{ ml: 0.5, color: "#94A3B8", "&:hover": { color: "#EF4444", backgroundColor: "#FEF2F2" } }}
+                >
+                  <DeleteOutlineOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </Paper>
           ))}
         </Box>

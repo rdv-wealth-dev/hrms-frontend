@@ -165,3 +165,8 @@ export const activateAccountFailure = (payload: string): AuthAction => ({
   type: AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE,
   payload,
 });
+
+export const updateUserAvatar = (avatarUrl: string): AuthAction => ({
+  type: AUTH_ACTIONS.UPDATE_USER_AVATAR,
+  payload: avatarUrl,
+});

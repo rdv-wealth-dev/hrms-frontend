@@ -82,6 +82,8 @@ export const AUTH_ACTIONS = {
   ACTIVATE_ACCOUNT_SUCCESS: "auth/activateAccountSuccess",
   ACTIVATE_ACCOUNT_FAILURE: "auth/activateAccountFailure",
 
+  UPDATE_USER_AVATAR: "auth/updateUserAvatar",
+
   LOGOUT: "auth/logout",
 } as const;
 
@@ -146,4 +148,5 @@ export type AuthAction =
   | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST; payload: ActivateAccountRequestPayload }
   | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_SUCCESS; payload: ActivateAccountSuccessPayload }
   | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE; payload: string }
+  | { type: typeof AUTH_ACTIONS.UPDATE_USER_AVATAR; payload: string }
   | { type: typeof AUTH_ACTIONS.LOGOUT };

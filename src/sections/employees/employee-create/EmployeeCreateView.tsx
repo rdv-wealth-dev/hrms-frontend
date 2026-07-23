@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import Box from "@mui/material/Box";
@@ -15,13 +15,8 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import Divider from "@mui/material/Divider";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Tooltip from "@mui/material/Tooltip";
-import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
-import RemoveCircleOutlineOutlinedIcon from "@mui/icons-material/RemoveCircleOutlineOutlined";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
@@ -67,9 +62,6 @@ const selectFieldSx = {
   },
 };
 
-const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
-const GENDERS = ["MALE", "FEMALE", "OTHER"];
-const MARITAL_STATUSES = ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"];
 const EMPLOYEE_TYPES = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN", "CONSULTANT", "TEMPORARY", "UNPAID", "FREELANCE"];
 const COUNTRIES = [
   { code: "IN", name: "India" },
@@ -130,7 +122,6 @@ function EmployeeCreateView() {
   const {
     register,
     handleSubmit,
-    control,
     watch,
     setValue,
     formState: { errors },
@@ -140,15 +131,7 @@ function EmployeeCreateView() {
       branchId,
       countryCode: "IN",
       employeeType: "FULL_TIME",
-      currentAddress: { countryCode: "IN" },
-      permanentAddress: { countryCode: "IN" },
-      emergencyContacts: [],
     },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "emergencyContacts",
   });
 
   const employeeType = watch("employeeType");
@@ -190,32 +173,28 @@ function EmployeeCreateView() {
 
     // Clean up: remove empty optionals
     if (!payload.phone) delete payload.phone;
-    if (!payload.dateOfBirth) delete payload.dateOfBirth;
-    if (!payload.gender) delete payload.gender;
-    if (!payload.bloodGroup) delete payload.bloodGroup;
-    if (!payload.maritalStatus) delete payload.maritalStatus;
-    if (!payload.nationality) delete payload.nationality;
-    if (!payload.pan) delete payload.pan;
-    if (!payload.aadhaar) delete payload.aadhaar;
     if (!payload.managerId) delete payload.managerId;
     if (!payload.probationEndDate) delete payload.probationEndDate;
     if (!payload.shiftId) delete payload.shiftId;
 
-    const isCurAddrEmpty = !payload.currentAddress?.addressLine1 && !payload.currentAddress?.city;
-    if (isCurAddrEmpty) delete payload.currentAddress;
-    const isPermAddrEmpty = !payload.permanentAddress?.addressLine1 && !payload.permanentAddress?.city;
-    if (isPermAddrEmpty) delete payload.permanentAddress;
-
-    if (!payload.emergencyContacts || payload.emergencyContacts.length === 0) {
-      delete payload.emergencyContacts;
+    if (!manageSalary || (!payload.salarySetup && !payload.salaryStructure)) {
+      delete payload.salarySetup;
+      delete payload.salaryStructure;
     } else {
-      payload.emergencyContacts = payload.emergencyContacts.map((c: any) => {
-        if (!c.email) delete c.email;
-        return c;
-      });
-    }
+      const ctcAnnual = payload.salaryStructure?.ctcAnnual || payload.salarySetup?.structure?.amount || 0;
+      const components = payload.salarySetup?.structure?.components || payload.salaryStructure?.lineItems || [];
+      const lineItems = components.length > 0
+        ? components.map((c: any) => ({
+            componentCode: c.componentCode || "BASIC",
+            amount: Number(c.amount || 0),
+            isPartOfWages: Boolean(c.isPartOfWages),
+          }))
+        : [{ componentCode: "BASIC", amount: Number(ctcAnnual), isPartOfWages: true }];
 
-    if (!manageSalary || !payload.salarySetup) {
+      payload.salaryStructure = {
+        ctcAnnual: Number(ctcAnnual),
+        lineItems,
+      };
       delete payload.salarySetup;
     }
 
@@ -493,11 +472,11 @@ function EmployeeCreateView() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={3}>
-            {/* Section 1: Personal Details */}
+            {/* Section 1: Basic Identity & Contact */}
             <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827" }}>
-                  Personal Details
+                  Basic Information
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
@@ -548,124 +527,6 @@ function EmployeeCreateView() {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextInput
-                      label="Date of Birth"
-                      type="date"
-                      placeholder="YYYY-MM-DD"
-                      registration={register("dateOfBirth")}
-                      error={errors.dateOfBirth?.message}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Gender
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              if (!value) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Gender</span>;
-                              return value === "MALE" ? "Male" : value === "FEMALE" ? "Female" : "Other";
-                            }
-                          }
-                        }}
-                        {...register("gender")}
-                        error={!!errors.gender}
-                        helperText={errors.gender?.message}
-                        sx={selectFieldSx}
-                      >
-                        {GENDERS.map((g) => (
-                          <MenuItem key={g} value={g}>{g.charAt(0) + g.slice(1).toLowerCase()}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Box>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Blood Group
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              if (!value) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Blood Group</span>;
-                              return value as string;
-                            }
-                          }
-                        }}
-                        {...register("bloodGroup")}
-                        error={!!errors.bloodGroup}
-                        helperText={errors.bloodGroup?.message}
-                        sx={selectFieldSx}
-                      >
-                        {BLOOD_GROUPS.map((bg) => (
-                          <MenuItem key={bg} value={bg}>{bg}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Box>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Marital Status
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              const val = value as string;
-                              if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Status</span>;
-                              return val.charAt(0) + val.slice(1).toLowerCase();
-                            }
-                          }
-                        }}
-                        {...register("maritalStatus")}
-                        error={!!errors.maritalStatus}
-                        helperText={errors.maritalStatus?.message}
-                        sx={selectFieldSx}
-                      >
-                        {MARITAL_STATUSES.map((ms) => (
-                          <MenuItem key={ms} value={ms}>{ms.charAt(0) + ms.slice(1).toLowerCase()}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Box>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextInput
-                      label="Nationality"
-                      placeholder="e.g. Indian"
-                      registration={register("nationality")}
-                      error={errors.nationality?.message}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextInput
-                      label="PAN"
-                      placeholder="e.g. ABCDE1234F"
-                      registration={register("pan")}
-                      error={errors.pan?.message}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextInput
-                      label="Aadhaar"
-                      placeholder="e.g. 123456789012"
-                      registration={register("aadhaar")}
-                      error={errors.aadhaar?.message}
-                    />
-                  </Grid>
                 </Grid>
               </CardContent>
             </Card>
@@ -674,7 +535,7 @@ function EmployeeCreateView() {
             <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827" }}>
-                  Employment & Job Details
+                  Employment &amp; Job Details
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
@@ -866,197 +727,6 @@ function EmployeeCreateView() {
                     </Box>
                   </Grid>
                 </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Section 3: Address */}
-            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827" }}>
-                  Address (optional)
-                </Typography>
-                <Stack spacing={3}>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1.5, color: "#374151" }}>
-                      Current Address
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid size={12}>
-                        <TextInput
-                          label="Address Line 1"
-                          placeholder="e.g. 123 MG Road"
-                          registration={register("currentAddress.addressLine1")}
-                          error={errors.currentAddress?.addressLine1?.message}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <TextInput
-                          label="City"
-                          placeholder="e.g. Mumbai"
-                          registration={register("currentAddress.city")}
-                          error={errors.currentAddress?.city?.message}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <TextInput
-                          label="State"
-                          placeholder="e.g. Maharashtra"
-                          registration={register("currentAddress.state")}
-                          error={errors.currentAddress?.state?.message}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 2 }}>
-                        <TextField
-                          select
-                          label="Country"
-                          fullWidth
-                          defaultValue="IN"
-                          {...register("currentAddress.countryCode")}
-                          sx={selectFieldSx}
-                        >
-                          {COUNTRIES.map((c) => (
-                            <MenuItem key={c.code} value={c.code}>{c.code}</MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 2 }}>
-                        <TextInput
-                          label="Zip"
-                          placeholder="e.g. 400001"
-                          registration={register("currentAddress.zip")}
-                          error={errors.currentAddress?.zip?.message}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-                  <Divider />
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1.5, color: "#374151" }}>
-                      Permanent Address
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid size={12}>
-                        <TextInput
-                          label="Address Line 1"
-                          placeholder="e.g. 456 Main Street"
-                          registration={register("permanentAddress.addressLine1")}
-                          error={errors.permanentAddress?.addressLine1?.message}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <TextInput
-                          label="City"
-                          placeholder="e.g. Pune"
-                          registration={register("permanentAddress.city")}
-                          error={errors.permanentAddress?.city?.message}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <TextInput
-                          label="State"
-                          placeholder="e.g. Maharashtra"
-                          registration={register("permanentAddress.state")}
-                          error={errors.permanentAddress?.state?.message}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 2 }}>
-                        <TextField
-                          select
-                          label="Country"
-                          fullWidth
-                          defaultValue="IN"
-                          {...register("permanentAddress.countryCode")}
-                          sx={selectFieldSx}
-                        >
-                          {COUNTRIES.map((c) => (
-                            <MenuItem key={c.code} value={c.code}>{c.code}</MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 2 }}>
-                        <TextInput
-                          label="Zip"
-                          placeholder="e.g. 411001"
-                          registration={register("permanentAddress.zip")}
-                          error={errors.permanentAddress?.zip?.message}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-
-            {/* Section 4: Emergency Contacts */}
-            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#111827" }}>
-                    Emergency Contacts (optional)
-                  </Typography>
-                  <Button
-                    size="small"
-                    startIcon={<AddCircleOutlineOutlinedIcon />}
-                    onClick={() => append({ name: "", relationship: "", phone: "" })}
-                    sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
-                  >
-                    Add Contact
-                  </Button>
-                </Box>
-                {fields.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
-                    No emergency contacts added. Click "Add Contact" to add one.
-                  </Typography>
-                ) : (
-                  <Stack spacing={2}>
-                    {fields.map((field, index) => (
-                      <Box key={field.id}>
-                        <Grid container spacing={2} sx={{ alignItems: "center" }}>
-                          <Grid size={{ xs: 12, sm: 3 }}>
-                            <TextInput
-                              label="Contact Name"
-                              placeholder="e.g. Priya Verma"
-                              registration={register(`emergencyContacts.${index}.name`)}
-                              error={errors.emergencyContacts?.[index]?.name?.message}
-                            />
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 3 }}>
-                            <TextInput
-                              label="Relationship"
-                              placeholder="e.g. Sister"
-                              registration={register(`emergencyContacts.${index}.relationship`)}
-                              error={errors.emergencyContacts?.[index]?.relationship?.message}
-                            />
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 3 }}>
-                            <TextInput
-                              label="Contact Phone"
-                              placeholder="e.g. 9988776655"
-                              registration={register(`emergencyContacts.${index}.phone`)}
-                              error={errors.emergencyContacts?.[index]?.phone?.message}
-                            />
-                          </Grid>
-                          <Grid size={{ xs: 10, sm: 2 }}>
-                            <TextInput
-                              label="Email (optional)"
-                              placeholder="e.g. priya@example.com"
-                              registration={register(`emergencyContacts.${index}.email`)}
-                              error={errors.emergencyContacts?.[index]?.email?.message}
-                            />
-                          </Grid>
-                          <Grid size={{ xs: 2, sm: 1 }} sx={{ display: "flex", justifyContent: "center" }}>
-                            <Tooltip title="Remove contact">
-                              <IconButton onClick={() => remove(index)} color="error" size="small">
-                                <RemoveCircleOutlineOutlinedIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Grid>
-                        </Grid>
-                        {index < fields.length - 1 && <Divider sx={{ mt: 2 }} />}
-                      </Box>
-                    ))}
-                  </Stack>
-                )}
               </CardContent>
             </Card>
 

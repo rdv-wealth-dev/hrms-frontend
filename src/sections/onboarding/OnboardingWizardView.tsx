@@ -1,0 +1,283 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+
+import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
+import PageWrapper from "../../components/common/PageWrapper";
+import { useSnackbar } from "../../components/snackbar";
+import { paths } from "../../routes/paths";
+
+import {
+  getOnboardingStatus,
+  submitOnboardingStep1,
+  submitOnboardingStep2,
+  submitOnboardingStep3,
+  submitOnboardingStep4,
+  submitOnboardingStep5,
+} from "../../api/onboarding.api";
+import {
+  type OnboardingStep1FormData,
+  type OnboardingStep2FormData,
+  type OnboardingStep3FormData,
+} from "../../validations/onboarding/onboarding.schema";
+
+import OnboardingStep1Personal from "./components/OnboardingStep1Personal";
+import OnboardingStep2Family from "./components/OnboardingStep2Family";
+import OnboardingStep3Bank from "./components/OnboardingStep3Bank";
+import OnboardingStep4Documents from "./components/OnboardingStep4Documents";
+import OnboardingStep5Review from "./components/OnboardingStep5Review";
+
+const STEPS = [
+  "Personal & Address",
+  "Family & Dependents",
+  "Bank Details",
+  "Mandatory Documents",
+  "Review & Submit",
+];
+
+export default function OnboardingWizardView() {
+  const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
+
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [stepError, setStepError] = useState<string | null>(null);
+
+  // Stored step data for prefilling
+  const [step1Data, setStep1Data] = useState<Partial<OnboardingStep1FormData>>({});
+  const [step2Data, setStep2Data] = useState<Partial<OnboardingStep2FormData>>({});
+  const [step3Data, setStep3Data] = useState<Partial<OnboardingStep3FormData>>({});
+
+  useEffect(() => {
+    const init = async () => {
+      setLoadingStatus(true);
+      try {
+        const res = await getOnboardingStatus();
+        if (res.succeeded && res.data) {
+          if (res.data.onboardingComplete || res.data.isProfileComplete) {
+            showSnackbar("Your onboarding is already complete!", "info");
+            navigate(paths.dashboard);
+            return;
+          }
+          const step = res.data.onboardingStep || res.data.currentStep || 1;
+          setActiveStep(Math.min(step - 1, 4));
+          if (res.data.step1Data) setStep1Data(res.data.step1Data as Partial<OnboardingStep1FormData>);
+          if (res.data.step2Data) setStep2Data(res.data.step2Data as Partial<OnboardingStep2FormData>);
+          if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
+        } else if (res.message) {
+          setStepError(res.message);
+        }
+      } catch (err: any) {
+        console.warn("Onboarding status check fallback:", err);
+      } finally {
+        setLoadingStatus(false);
+      }
+    };
+    init();
+  }, [navigate, showSnackbar]);
+
+  const handleStep1Submit = async (data: OnboardingStep1FormData) => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await submitOnboardingStep1(data as any);
+      if (res.succeeded) {
+        setStep1Data(data);
+        setActiveStep(1);
+        showSnackbar("Personal information saved successfully", "success");
+      } else {
+        setStepError(res.message || "Failed to save Step 1");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Failed to save Step 1");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleStep2Submit = async (data: OnboardingStep2FormData) => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await submitOnboardingStep2(data as any);
+      if (res.succeeded) {
+        setStep2Data(data);
+        setActiveStep(2);
+        showSnackbar("Family details saved successfully", "success");
+      } else {
+        setStepError(res.message || "Failed to save Step 2");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Failed to save Step 2");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleStep3Submit = async (data: OnboardingStep3FormData) => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await submitOnboardingStep3(data as any);
+      if (res.succeeded) {
+        setStep3Data(data);
+        setActiveStep(3);
+        showSnackbar("Bank account details saved successfully", "success");
+      } else {
+        setStepError(res.message || "Failed to save Step 3");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Failed to save Step 3");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleStep4Submit = async () => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await submitOnboardingStep4();
+      if (res.succeeded) {
+        setActiveStep(4);
+        showSnackbar("Mandatory documents verified", "success");
+      } else {
+        setStepError(res.message || "Please upload all required documents before proceeding");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Please upload all required documents before proceeding");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleStep5Submit = async (_data: { confirmed: boolean }) => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await submitOnboardingStep5({ confirmed: true });
+      if (res.succeeded) {
+        showSnackbar("Onboarding completed successfully! Welcome to NexusHR.", "success");
+        navigate(paths.dashboard);
+      } else {
+        setStepError(res.message || "Failed to submit final onboarding");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Failed to submit final onboarding");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loadingStatus) {
+    return (
+      <DashboardLayout>
+        <PageWrapper>
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}>
+            <CircularProgress size={40} sx={{ color: "#6366F1" }} />
+          </Box>
+        </PageWrapper>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <PageWrapper>
+        {/* Header */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A" }}>
+            Employee Onboarding Wizard
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
+            Please complete the 5 onboarding steps below to finalize your employee profile setup.
+          </Typography>
+        </Box>
+
+        {/* Stepper Header Card */}
+        <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {STEPS.map((label) => (
+              <Step key={label}>
+                <StepLabel
+                  slotProps={{
+                    label: {
+                      sx: {
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        "&.Mui-active": { color: "#4F46E5", fontWeight: 700 },
+                        "&.Mui-completed": { color: "#059669" },
+                      },
+                    },
+                  }}
+                >
+                  {label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Paper>
+
+        {/* Step Error Alert */}
+        {stepError && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            {stepError}
+          </Alert>
+        )}
+
+        {/* Dynamic Step View */}
+        {activeStep === 0 && (
+          <OnboardingStep1Personal
+            initialValues={step1Data}
+            onSubmitStep={handleStep1Submit}
+            loading={submitting}
+          />
+        )}
+
+        {activeStep === 1 && (
+          <OnboardingStep2Family
+            initialValues={step2Data}
+            onSubmitStep={handleStep2Submit}
+            onBack={() => setActiveStep(0)}
+            loading={submitting}
+          />
+        )}
+
+        {activeStep === 2 && (
+          <OnboardingStep3Bank
+            initialValues={step3Data}
+            onSubmitStep={handleStep3Submit}
+            onBack={() => setActiveStep(1)}
+            loading={submitting}
+          />
+        )}
+
+        {activeStep === 3 && (
+          <OnboardingStep4Documents
+            onSubmitStep={handleStep4Submit}
+            onBack={() => setActiveStep(2)}
+            loading={submitting}
+            errorMsg={stepError}
+          />
+        )}
+
+        {activeStep === 4 && (
+          <OnboardingStep5Review
+            onSubmitStep={handleStep5Submit}
+            onBack={() => setActiveStep(3)}
+            loading={submitting}
+            errorMsg={stepError}
+          />
+        )}
+      </PageWrapper>
+    </DashboardLayout>
+  );
+}

@@ -43,6 +43,7 @@ import { useDialog } from "../../../hooks/useDialog";
 import { useSubmitSuccess } from "../../../hooks/useSubmitSuccess";
 import { usePagination } from "../../../hooks/usePagination";
 import { useProfileBlockDetect } from "../../../hooks/useProfileBlockDetect";
+import { paths } from "../../../routes/paths";
 import {
   getMyLeaveBalancesRequest,
   listLeaveTypesRequest,
@@ -442,7 +443,7 @@ export default function LeaveDashboardView() {
             </Box>
             <Button
               variant="contained"
-              onClick={() => navigate("/profile")}
+              onClick={() => navigate(paths.onboarding)}
               sx={{
                 mt: 1,
                 px: 5,

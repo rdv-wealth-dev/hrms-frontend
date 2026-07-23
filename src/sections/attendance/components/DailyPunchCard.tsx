@@ -21,6 +21,7 @@ import type { AttendanceRecord } from "../../../store/attendance/attendance.type
 import { formatWorkedTime } from "../../../utils/time";
 import { getCurrentPosition } from "../../../utils/geolocation";
 import { useProfileBlockDetect } from "../../../hooks/useProfileBlockDetect";
+import { paths } from "../../../routes/paths";
 
 export default function DailyPunchCard() {
   const navigate = useNavigate();
@@ -349,7 +350,7 @@ export default function DailyPunchCard() {
           <Button
             variant="contained"
             fullWidth
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate(paths.onboarding)}
             sx={{
               maxWidth: 360,
               py: 1.2,

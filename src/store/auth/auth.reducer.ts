@@ -205,6 +205,20 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
     case AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE:
       return { ...state, loading: false, error: action.payload };
 
+    case AUTH_ACTIONS.UPDATE_USER_AVATAR: {
+      if (!state.user) return state;
+      const updatedUser = { ...state.user, avatarUrl: action.payload };
+      try {
+        localStorage.setItem("persistent", JSON.stringify(updatedUser));
+      } catch (err) {
+        // ignore storage quota errors
+      }
+      return {
+        ...state,
+        user: updatedUser,
+      };
+    }
+
     // ==========================
     // Logout
     // ==========================

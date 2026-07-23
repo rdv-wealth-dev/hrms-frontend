@@ -309,6 +309,7 @@ function DashboardLayout({ children }: Props) {
                             }}
                         >
                             <Avatar
+                                src={user?.avatarUrl}
                                 sx={{
                                     width: 36,
                                     height: 36,

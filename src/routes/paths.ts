@@ -30,6 +30,7 @@ export const paths = {
   payroll: "/payroll",
 
   profile: "/profile",
+  onboarding: "/onboarding",
   attendanceRegularizations: "/attendance/regularizations",
   leaveApprovals: "/leave-approvals",
   reports: "/reports",
