@@ -23,21 +23,38 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
-import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
+
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import ChatOutlinedIcon from "@mui/icons-material/ChatOutlined";
+import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
+import StarOutlinedIcon from "@mui/icons-material/StarOutlined";
+import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 
 import type { RootState } from "../../store/rootReducer";
 import { paths } from "../../routes/paths";
@@ -74,6 +91,12 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;
   const isViewingOther = !!resolvedTargetId;
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js", "AWS"]);
+  const [addSkillOpen, setAddSkillOpen] = useState(false);
+  const [newSkillInput, setNewSkillInput] = useState("");
+  const [aiInsightsDismissed, setAiInsightsDismissed] = useState(false);
 
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
   const [bankSubmitting, setBankSubmitting] = useState(false);
@@ -416,647 +439,922 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
   return (
     <DashboardLayout>
-      <Box sx={{ p: 4, maxWidth: "1200px", margin: "0 auto" }}>
-        {isViewingOther && (
-          <Button
-            startIcon={<ArrowBackOutlinedIcon />}
-            onClick={() => navigate(paths.employees.list)}
-            sx={{ mb: 2, textTransform: "none", fontWeight: 600, color: "#6D5DF6" }}
-          >
-            Back to Employees
-          </Button>
-        )}
-        {/* Banner Section */}
-        <Card
-          sx={{
-            position: "relative",
-            p: 4,
-            mb: 4,
-            borderRadius: 4,
-            boxShadow: "0px 10px 30px rgba(109, 93, 246, 0.08)",
-            background: "linear-gradient(135deg, #6D5DF6 0%, #4F46E5 100%)",
-            color: "#fff",
-            overflow: "visible",
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: "center",
-            gap: 3,
-          }}
-        >
-          <Avatar
-            sx={{
-              width: 90,
-              height: 90,
-              fontSize: "2.2rem",
-              fontWeight: 700,
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              border: "3px solid rgba(255, 255, 255, 0.3)",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            {displayFirstName?.[0]?.toUpperCase() ?? "U"}
-            {displayLastName?.[0]?.toUpperCase() ?? ""}
-          </Avatar>
-          <Box sx={{ textAlign: { xs: "center", sm: "left" }, flexGrow: 1 }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", sm: "flex-start" }, gap: 1.5, mb: 1 }}>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+      <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflowX: "hidden", backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+        
+        {/* Top Header & Breadcrumbs Bar */}
+        <Box sx={{ mb: 2.5, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.02em", mb: 0.5 }}>
+              People Hub
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, fontSize: "0.85rem", color: "#64748B", flexWrap: "wrap" }}>
+              <Typography variant="body2" sx={{ color: "#64748B", fontSize: "0.85rem", cursor: "pointer", "&:hover": { color: "#4F46E5" } }} onClick={() => navigate(paths.dashboard)}>
+                Dashboard
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#94A3B8", fontSize: "0.85rem" }}>›</Typography>
+              <Typography variant="body2" sx={{ color: "#64748B", fontSize: "0.85rem" }}>People</Typography>
+              <Typography variant="body2" sx={{ color: "#94A3B8", fontSize: "0.85rem" }}>›</Typography>
+              <Typography variant="body2" sx={{ color: "#64748B", fontSize: "0.85rem", cursor: "pointer", "&:hover": { color: "#4F46E5" } }} onClick={() => navigate(paths.employees.list)}>
+                Employees
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#94A3B8", fontSize: "0.85rem" }}>›</Typography>
+              <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700, fontSize: "0.85rem", wordBreak: "break-word" }}>
                 {displayName}
               </Typography>
-              {(isViewingOther || user?.isActive) && (
-                <Chip
-                  label="Active Account"
+            </Box>
+          </Box>
+
+          <Button
+            startIcon={<ArrowBackOutlinedIcon sx={{ fontSize: "18px !important" }} />}
+            onClick={() => navigate(paths.employees.list)}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              color: "#475569",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              borderRadius: "10px",
+              px: 2,
+              py: 0.8,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+              "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" }
+            }}
+          >
+            Back to Directory
+          </Button>
+        </Box>
+
+        {/* Hero Profile Header Card */}
+        <Card
+          sx={{
+            p: { xs: 2, sm: 2.5, md: 3 },
+            mb: 3,
+            borderRadius: "16px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+            border: "1px solid #E2E8F0",
+            backgroundColor: "#FFFFFF",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, alignItems: { xs: "center", md: "flex-start" }, minWidth: 0, width: "100%" }}>
+            {/* Avatar & Initial Badge */}
+            <Box sx={{ position: "relative", flexShrink: 0 }}>
+              <Avatar
+                sx={{
+                  width: 92,
+                  height: 92,
+                  fontSize: "2.1rem",
+                  fontWeight: 700,
+                  background: "linear-gradient(135deg, #818CF8 0%, #6366F1 100%)",
+                  color: "#FFFFFF",
+                  boxShadow: "0 8px 20px rgba(99, 102, 241, 0.25)",
+                }}
+              >
+                {displayFirstName?.[0]?.toUpperCase() ?? "P"}
+                {displayLastName?.[0]?.toUpperCase() ?? "S"}
+              </Avatar>
+              {!isViewingOther && (
+                <IconButton
                   size="small"
+                  onClick={handleOpenEditProfile}
                   sx={{
-                    backgroundColor: "rgba(16, 185, 129, 0.2)",
-                    color: "#34D399",
-                    fontWeight: 600,
-                    border: "1px solid rgba(52, 211, 153, 0.3)",
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: "#4F46E5",
+                    color: "#FFFFFF",
+                    width: 28,
+                    height: 28,
+                    border: "2px solid #FFFFFF",
+                    "&:hover": { backgroundColor: "#4338CA" },
                   }}
-                />
+                >
+                  <EditOutlinedIcon sx={{ fontSize: "15px" }} />
+                </IconButton>
               )}
             </Box>
-            <Typography variant="body1" sx={{ color: "rgba(255, 255, 255, 0.8)", mb: 0.5 }}>
-              {displayEmail}
-            </Typography>
-            <Chip
-              icon={<AdminPanelSettingsOutlinedIcon sx={{ color: "#fff !important" }} />}
-              label={displayRole}
-              sx={{
-                mt: 0.5,
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "0.85rem",
-              }}
-            />
+
+            {/* Employee Title, Name & Meta Badges */}
+            <Box sx={{ flexGrow: 1, minWidth: 0, textAlign: { xs: "center", md: "left" } }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1.5, mb: 0.5, flexWrap: "wrap" }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
+                  {displayName}
+                </Typography>
+              </Box>
+
+              <Typography variant="subtitle1" sx={{ color: "#64748B", fontWeight: 500, mb: 1.5, fontSize: "0.95rem", wordBreak: "break-word" }}>
+                {empProfile?.designationId?.name || displayRole} · {empProfile?.departmentId?.name || "Engineering"}
+              </Typography>
+
+              {/* Status Badges */}
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1, mb: 2, flexWrap: "wrap" }}>
+                <Chip label="Active" size="small" sx={{ backgroundColor: "#DCFCE7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
+                <Chip label={(empProfile as any)?.workMode || "Hybrid"} size="small" sx={{ backgroundColor: "#E0F2FE", color: "#075985", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
+                <Chip label={(empProfile as any)?.band || "L5"} size="small" sx={{ backgroundColor: "#F1F5F9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
+                <Chip label="High Performer" size="small" sx={{ backgroundColor: "#F3E8FF", color: "#6B21A8", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
+              </Box>
+
+              {/* Key Meta Info */}
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 2, flexWrap: "wrap", color: "#64748B", fontSize: "0.825rem", wordBreak: "break-word" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <BadgeOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                  <span>{empProfile?.employeeCode || "NX-001"}</span>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                  <span style={{ wordBreak: "break-all" }}>{displayEmail || "priya.sharma@nexus.hr"}</span>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <PhoneOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                  <span>{empProfile?.phone || "+91 98765 43210"}</span>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                  <span>{String((empProfile?.currentAddress as any)?.city || "Bangalore")}</span>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <CalendarMonthOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                  <span>Joined 15 Mar 2021</span>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <GroupOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                  <span>Reports to {empProfile?.managerId ? `${empProfile.managerId.firstName} ${empProfile.managerId.lastName}` : "Arjun Mehta"}</span>
+                </Box>
+              </Box>
+
+              {/* Quick Contact Action Icons */}
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1, mt: 2 }}>
+                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
+                  <EmailOutlinedIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
+                  <PhoneOutlinedIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
+                  <ChatOutlinedIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
+                  <LanguageOutlinedIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Top Right Header Action Buttons */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", flexShrink: 0, alignSelf: { xs: "center", md: "flex-start" } }}>
+              {!isViewingOther && (
+                <Button
+                  startIcon={<EditOutlinedIcon />}
+                  onClick={handleOpenEditProfile}
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4F46E5",
+                    color: "#FFFFFF",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: "10px",
+                    px: 2,
+                    boxShadow: "none",
+                    "&:hover": { backgroundColor: "#4338CA" },
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
+              <Button
+                startIcon={<AutoAwesomeIcon sx={{ fontSize: "18px !important" }} />}
+                variant="contained"
+                onClick={() => setActiveTab("ai-insights")}
+                sx={{
+                  background: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
+                  color: "#FFFFFF",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: "10px",
+                  px: 2,
+                  boxShadow: "0 4px 12px rgba(139, 92, 246, 0.25)",
+                  "&:hover": { background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)" },
+                }}
+              >
+                AI Summary
+              </Button>
+              <Button
+                startIcon={<DownloadOutlinedIcon />}
+                variant="outlined"
+                sx={{
+                  borderColor: "#E2E8F0",
+                  color: "#475569",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: "10px",
+                  px: 2,
+                  "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
+                }}
+              >
+                Export
+              </Button>
+              <IconButton sx={{ border: "1px solid #E2E8F0", borderRadius: "10px", p: 1, color: "#64748B" }}>
+                <MoreHorizOutlinedIcon />
+              </IconButton>
+            </Box>
           </Box>
         </Card>
 
-        {/* Profile Completion */}
-        {empProfile && (() => {
-          const computedCompletion = {
-            personalDetails: !!(empProfile.phone && empProfile.dateOfBirth && empProfile.gender) || (empProfile.profileCompletion?.personalDetails ?? false),
-            address: !!(
-              empProfile.currentAddress &&
-              (empProfile.currentAddress as any).addressLine1 &&
-              (empProfile.currentAddress as any).city &&
-              (empProfile.currentAddress as any).state &&
-              (empProfile.currentAddress as any).zip
-            ) || (empProfile.profileCompletion?.address ?? false),
-            emergencyContact: !!(empProfile.emergencyContacts && empProfile.emergencyContacts.length > 0) || (empProfile.profileCompletion?.emergencyContact ?? false),
-            bankDetails: bankAccounts.length > 0 || (empProfile.profileCompletion?.bankDetails ?? false),
-            mandatoryDocs: (documents.length > 0 && missingDocTypes.length === 0) || (empProfile.profileCompletion?.mandatoryDocs ?? false),
-          };
-
-          const isProfileComplete = Object.values(computedCompletion).every(Boolean);
-          const completedCount = Object.values(computedCompletion).filter(Boolean).length;
-
-          return (
-            <Card
-              sx={{
-                p: 3,
-                mb: 4,
-                borderRadius: 4,
-                boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                backgroundColor: "#fff",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                  <CheckCircleOutlinedIcon sx={{ color: isProfileComplete ? "#10B981" : "#F59E0B" }} />
-                  Profile {isProfileComplete ? "Complete" : "Incomplete"}
+        {/* Key KPI Metrics Ribbon (8 Stat Cards - Responsive Grid) */}
+        <Grid container spacing={1.5} sx={{ mb: 3, width: "100%" }}>
+          {[
+            { title: "94%", label: "Performance", sub: "Q2 2025", icon: <TrendingUpOutlinedIcon sx={{ fontSize: 18, color: "#4F46E5" }} /> },
+            { title: "96.4%", label: "Attendance", sub: "This month", icon: <AccessTimeOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} /> },
+            { title: "12d", label: "Leave Balance", sub: "Annual remaining", icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 18, color: "#0284C7" }} /> },
+            { title: "L5", label: "Grade", sub: "Current band", icon: <BadgeOutlinedIcon sx={{ fontSize: 18, color: "#8B5CF6" }} /> },
+            { title: "78%", label: "Training %", sub: "4/5 courses done", icon: <SchoolOutlinedIcon sx={{ fontSize: 18, color: "#F59E0B" }} /> },
+            { title: "2", label: "Assets", sub: "Assigned", icon: <Inventory2OutlinedIcon sx={{ fontSize: 18, color: "#06B6D4" }} /> },
+            { title: "Low", label: "Attrition Risk", sub: "AI prediction", icon: <PsychologyOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} /> },
+            { title: "91/100", label: "AI Score", sub: "Workforce health", icon: <AutoAwesomeIcon sx={{ fontSize: 18, color: "#6366F1" }} /> },
+          ].map((metric, i) => (
+            <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 1.5 }}>
+              <Card
+                sx={{
+                  p: 1.8,
+                  borderRadius: "14px",
+                  border: "1px solid #E2E8F0",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                  backgroundColor: "#FFFFFF",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justify: "space-between",
+                  transition: "all 0.2s ease",
+                  minWidth: 0,
+                  "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)", transform: "translateY(-2px)" }
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.8 }}>
+                  {metric.icon}
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.2rem", lineHeight: 1.2 }}>
+                  {metric.title}
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: isProfileComplete ? "#10B981" : "#F59E0B" }}>
-                  {completedCount}/5 completed
+                <Typography variant="caption" sx={{ fontWeight: 600, color: "#475569", display: "block", mt: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {metric.label}
                 </Typography>
-              </Box>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-                {[
-                  { key: "personalDetails", label: "Personal Details" },
-                  { key: "address", label: "Address" },
-                  { key: "emergencyContact", label: "Emergency Contact" },
-                  { key: "bankDetails", label: "Bank Details" },
-                  { key: "mandatoryDocs", label: "Mandatory Documents" },
-                ].map((item) => {
-                  const done = computedCompletion[item.key as keyof typeof computedCompletion] ?? false;
-                  return (
+                <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.68rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {metric.sub}
+                </Typography>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Horizontal Navigation Tabs Bar */}
+        <Box sx={{ borderBottom: "1px solid #E2E8F0", mb: 3, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+          <Tabs
+            value={activeTab}
+            onChange={(_, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              minHeight: 44,
+              "& .MuiTabs-indicator": { backgroundColor: "#4F46E5", height: 3, borderRadius: "3px 3px 0 0" },
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                color: "#64748B",
+                minHeight: 44,
+                px: 2,
+                "&.Mui-selected": { color: "#4F46E5", fontWeight: 700 },
+              },
+            }}
+          >
+            <Tab label="Overview" value="overview" />
+            <Tab label="Personal" value="personal" />
+            <Tab label="Employment" value="employment" />
+            <Tab label="Attendance" value="attendance" />
+            <Tab label="Leave" value="leave" />
+            <Tab label="Payroll" value="payroll" />
+            <Tab label="Performance" value="performance" />
+            <Tab label="Learning" value="learning" />
+            <Tab label="Documents" value="documents" />
+            <Tab label="Assets" value="assets" />
+            <Tab label="Timeline" value="timeline" />
+            <Tab label="Notes" value="notes" />
+            <Tab label="AI Insights" value="ai-insights" />
+            <Tab label="Activity" value="activity" />
+          </Tabs>
+        </Box>
+
+        {/* Tab 1: OVERVIEW MAIN 2-COLUMN DASHBOARD */}
+        {activeTab === "overview" && (
+          <Grid container spacing={3} sx={{ width: "100%" }}>
+            {/* Left Column (~75% Width on lg screens, 100% on md and below) */}
+            <Grid size={{ xs: 12, lg: 8.5 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                
+                {/* 1. Contact Information & Employment Details Grid */}
+                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
+                  <Grid container spacing={3}>
+                    {/* Sub-card 1: Contact Information */}
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
+                        Contact Information
+                      </Typography>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
+                            <EmailOutlinedIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                              EMAIL
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                              {displayEmail || "priya.sharma@nexus.hr"}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
+                            <PhoneOutlinedIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                              PHONE
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                              {empProfile?.phone || "+91 98765 43210"}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
+                            <LocationOnOutlinedIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                              LOCATION
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                              {String((empProfile?.currentAddress as any)?.city || "Bangalore")}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
+                            <LanguageOutlinedIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                              WORK MODE
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                              {String((empProfile as any)?.workMode || "Hybrid")}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    {/* Sub-card 2: Employment Details */}
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
+                        Employment Details
+                      </Typography>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                        {[
+                          { label: "Employee Code", value: empProfile?.employeeCode || "NX-001" },
+                          { label: "System Profile ID", value: String(displayId || "—") },
+                          { label: "Department", value: empProfile?.departmentId?.name || "Engineering" },
+                          { label: "Grade / Band", value: String((empProfile as any)?.band || "L5") },
+                          { label: "Business Unit", value: "Technology" },
+                          { label: "Cost Center", value: "CC-ENG-01" },
+                          { label: "Employment Type", value: "Full-time Permanent" },
+                          { label: "Account Created", value: formatDate(user?.createdAt) },
+                        ].map((row, idx) => (
+                          <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Typography variant="body2" sx={{ color: "#64748B" }}>{row.label}</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{row.value}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Card>
+
+                {/* 2. Reporting Structure (Org Hierarchy Tree) */}
+                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
+                    Reporting Structure
+                  </Typography>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                    {/* Node 1: CTO */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Avatar sx={{ width: 40, height: 40, backgroundColor: "#EEF2FF", color: "#4F46E5", fontWeight: 700, fontSize: "0.85rem" }}>
+                        CTO
+                      </Avatar>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 600, display: "block" }}>
+                          VP Engineering
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <ChevronRightIcon sx={{ color: "#CBD5E1" }} />
+
+                    {/* Node 2: Manager */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Avatar sx={{ width: 40, height: 40, backgroundColor: "#F3E8FF", color: "#7C3AED", fontWeight: 700, fontSize: "0.85rem" }}>
+                        AM
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                          Arjun Mehta
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                          Manager
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <ChevronRightIcon sx={{ color: "#CBD5E1" }} />
+
+                    {/* Node 3: Employee */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Avatar sx={{ width: 40, height: 40, backgroundColor: "#6366F1", color: "#FFFFFF", fontWeight: 700, fontSize: "0.85rem" }}>
+                        {displayFirstName?.[0]?.toUpperCase() ?? "P"}
+                        {displayLastName?.[0]?.toUpperCase() ?? "S"}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                          {displayFirstName || "Priya"}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#6366F1", fontWeight: 600, display: "block" }}>
+                          You
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Card>
+
+                {/* 3. Assigned Policies (2x3 Grid) */}
+                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
+                    Assigned Policies
+                  </Typography>
+
+                  <Grid container spacing={2}>
+                    {[
+                      { cat: "Leave Policy", title: "Annual Leave Policy v2.1" },
+                      { cat: "Attendance Policy", title: "Attendance & Shift Policy v1.4" },
+                      { cat: "Payroll Policy", title: "Payroll & Compensation v2.3" },
+                      { cat: "WFH Policy", title: "Work From Home Policy v3.0" },
+                      { cat: "Holiday Calendar", title: "India — Karnataka 2025" },
+                      { cat: "Performance Policy", title: "Performance Management v1.2" },
+                    ].map((pol, idx) => (
+                      <Grid key={idx} size={{ xs: 12, sm: 6 }}>
+                        <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                          <ArticleOutlinedIcon sx={{ color: "#6366F1", fontSize: 20, mt: 0.2 }} />
+                          <Box>
+                            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block", fontSize: "0.72rem" }}>
+                              {pol.cat}
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                              {pol.title}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Card>
+
+                {/* 4. Skills & Expertise */}
+                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
+                    Skills & Expertise
+                  </Typography>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, flexWrap: "wrap" }}>
+                    {skills.map((skill, idx) => (
+                      <Chip
+                        key={idx}
+                        label={skill}
+                        sx={{
+                          backgroundColor: "#EEF2FF",
+                          color: "#4F46E5",
+                          fontWeight: 600,
+                          borderRadius: "8px",
+                          px: 0.5,
+                        }}
+                      />
+                    ))}
                     <Chip
-                      key={item.key}
-                      icon={done ? <CheckCircleOutlinedIcon sx={{ fontSize: "14px !important" }} /> : <HourglassEmptyOutlinedIcon sx={{ fontSize: "14px !important" }} />}
-                      label={item.label}
-                      size="small"
+                      icon={<AddIcon sx={{ fontSize: "16px !important" }} />}
+                      label="+ Add Skill"
+                      onClick={() => setAddSkillOpen(true)}
                       sx={{
+                        backgroundColor: "#F1F5F9",
+                        color: "#475569",
                         fontWeight: 600,
-                        backgroundColor: done ? "#D1FAE5" : "#FEF3C7",
-                        color: done ? "#065F46" : "#92400E",
-                        borderRadius: 2,
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        "&:hover": { backgroundColor: "#E2E8F0" },
                       }}
                     />
-                  );
-                })}
-              </Box>
-              {(missingDocTypes || []).length > 0 && (
-                <Alert severity="warning" sx={{ mt: 2, borderRadius: 2 }}>
-                  Missing documents: <strong>{(missingDocTypes || []).join(", ")}</strong>
-                </Alert>
-              )}
-            </Card>
-          );
-        })()}
+                  </Box>
+                </Card>
 
-        {/* Content Cards */}
-        <Grid container spacing={3}>
-          {/* Column 1 */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3, height: "100%" }}>
-              <Card
-                sx={{
-                  p: 3.5,
-                  borderRadius: 4,
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                    <BadgeOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                    Personal Information
+                {/* 5. Recent Activity Feed */}
+                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
+                    Recent Activity
                   </Typography>
-                  {!isViewingOther && (
-                    <Button
-                      size="small"
-                      startIcon={<EditOutlinedIcon />}
-                      onClick={handleOpenEditProfile}
-                      sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
-                    >
-                      Edit
-                    </Button>
-                  )}
-                </Box>
-                <Grid container spacing={2.5}>
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>First Name</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{displayFirstName || "—"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Last Name</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{displayLastName || "—"}</Typography>
-                  </Grid>
-                  <Grid size={12}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Email Address</Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937" }}>{displayEmail || "—"}</Typography>
-                      {(isViewingOther || user?.isEmailVerified) && (
-                        <Chip
-                          icon={<CheckCircleOutlinedIcon sx={{ fontSize: "14px !important", color: "#047857 !important" }} />}
-                          label="Verified"
-                          size="small"
-                          sx={{
-                            height: 18,
-                            fontSize: "0.7rem",
-                            backgroundColor: "#D1FAE5",
-                            color: "#065F46",
-                            fontWeight: 600,
-                            px: 0.5,
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </Grid>
-                  {!isViewingOther && user?.id && (
-                    <Grid size={12}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Account ID</Typography>
-                      <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", backgroundColor: "#F9FAFB", p: 1, borderRadius: 2, border: "1px solid #E5E7EB", mt: 0.5 }}>
-                        {user.id}
-                      </Typography>
-                    </Grid>
-                  )}
-                  {displayId && (
-                    <Grid size={12}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Employee profile ID</Typography>
-                      <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", backgroundColor: "#F9FAFB", p: 1, borderRadius: 2, border: "1px solid #E5E7EB", mt: 0.5 }}>
-                        {displayId}
-                      </Typography>
-                    </Grid>
-                  )}
-                  {empProfile?.employeeCode && (
-                    <Grid size={6}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Employee Code</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile.employeeCode}</Typography>
-                    </Grid>
-                  )}
-                  {empProfile?.departmentId && (
-                    <Grid size={6}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Department</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile.departmentId.name}</Typography>
-                    </Grid>
-                  )}
-                  {empProfile?.designationId && (
-                    <Grid size={6}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Designation</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile.designationId.name}</Typography>
-                    </Grid>
-                  )}
-                  {empProfile?.managerId && (
-                    <Grid size={6}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Manager</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>
-                        {empProfile.managerId.firstName} {empProfile.managerId.lastName}
-                      </Typography>
-                    </Grid>
-                  )}
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Phone Number</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile?.phone || "—"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Gender</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{empProfile?.gender || "—"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Date of Birth</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>
-                      {empProfile?.dateOfBirth ? new Date(empProfile.dateOfBirth).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" }) : "—"}
-                    </Typography>
-                  </Grid>
-                  <Grid size={12}>
-                    <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Current Address</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5, lineHeight: 1.5 }}>
-                      {empProfile?.currentAddress?.addressLine1 ? (
-                        `${empProfile.currentAddress.addressLine1}, ${empProfile.currentAddress.city || ""}, ${empProfile.currentAddress.state || ""}, ${empProfile.currentAddress.countryCode || ""} ${empProfile.currentAddress.zip || ""}`
-                      ) : "—"}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Card>
 
-              {/* Documents */}
-              <Card
-                sx={{
-                  p: 3.5,
-                  borderRadius: 4,
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                  <DescriptionOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                  Documents
-                </Typography>
-                {(missingDocTypes || []).length > 0 && (
-                  <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
-                    Missing: <strong>{(missingDocTypes || []).join(", ")}</strong>
-                  </Alert>
-                )}
-                {documentsLoading ? (
-                  <Box sx={{ textAlign: "center", py: 3 }}>
-                    <CircularProgress size={24} sx={{ color: "#9CA3AF" }} />
-                  </Box>
-                ) : documents.length === 0 ? (
-                  <Box sx={{ textAlign: "center", py: 2 }}>
-                    <Typography variant="body2" sx={{ color: "#6B7280", mb: 2 }}>
-                      No documents uploaded yet
-                    </Typography>
-                    {!isViewingOther && (
-                      <Button
-                        variant="outlined"
-                        startIcon={<CloudUploadOutlinedIcon />}
-                        onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: "none",
-                          fontWeight: 600,
-                          borderColor: "#D1D5DB",
-                          color: "#374151",
-                        }}
-                      >
-                        Upload Document
-                      </Button>
-                    )}
-                  </Box>
-                ) : (
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                    {documents.map((doc, index) => (
-                      <Box
-                        key={doc.id || doc._id || index}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          border: "1px solid #E5E7EB",
-                          backgroundColor: "#F9FAFB",
-                        }}
-                      >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {doc.fileName}
-                            </Typography>
-                            <Box sx={{ display: "flex", gap: 0.5, mt: 0.5, flexWrap: "wrap" }}>
-                              <Chip label={doc.documentType} size="small" variant="outlined" sx={{ fontSize: "0.65rem" }} />
-                              {doc.isVerified ? (
-                                <Chip label="Verified" size="small" sx={{ height: 18, fontSize: "0.65rem", backgroundColor: "#D1FAE5", color: "#065F46", fontWeight: 600 }} />
-                              ) : (
-                                <Chip icon={<HourglassEmptyOutlinedIcon sx={{ fontSize: "12px !important" }} />} label="Pending" size="small" sx={{ height: 18, fontSize: "0.65rem", backgroundColor: "#FEF3C7", color: "#92400E", fontWeight: 600 }} />
-                              )}
-                            </Box>
-                          </Box>
-                          <Button
-                            size="small"
-                            onClick={() => handleDocDownload(doc.id || doc._id)}
-                            sx={{ minWidth: 32, p: 0.5, color: "#6D5DF6" }}
-                          >
-                            <DownloadOutlinedIcon fontSize="small" />
-                          </Button>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {[
+                      { icon: <TrendingUpOutlinedIcon sx={{ color: "#4F46E5", fontSize: 18 }} />, text: "Annual performance review completed — Score: 94%", date: "Jun 1, 2025" },
+                      { icon: <WorkspacePremiumOutlinedIcon sx={{ color: "#10B981", fontSize: 18 }} />, text: "Salary revision approved — +12% increment", date: "Mar 15, 2025" },
+                      { icon: <StarOutlinedIcon sx={{ color: "#8B5CF6", fontSize: 18 }} />, text: "Promoted to Senior Software Engineer", date: "Jan 10, 2025" },
+                      { icon: <CalendarMonthOutlinedIcon sx={{ color: "#0284C7", fontSize: 18 }} />, text: "Annual leave — 5 days (approved by Arjun Mehta)", date: "Nov 5, 2024" },
+                    ].map((act, idx) => (
+                      <Box key={idx} sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                        <IconButton size="small" sx={{ backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", p: 0.8 }}>
+                          {act.icon}
+                        </IconButton>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                            {act.text}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: "#94A3B8" }}>
+                            {act.date}
+                          </Typography>
                         </Box>
                       </Box>
                     ))}
-                    {!isViewingOther && (
-                      <Button
-                        variant="outlined"
-                        startIcon={<CloudUploadOutlinedIcon />}
-                        onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: "none",
-                          fontWeight: 600,
-                          borderColor: "#D1D5DB",
-                          color: "#374151",
-                          mt: 0.5,
-                        }}
-                      >
-                        Upload Document
-                      </Button>
-                    )}
                   </Box>
-                )}
-              </Card>
+                </Card>
 
-              {/* Emergency Contacts */}
-              <Card
-                sx={{
-                  p: 3.5,
-                  borderRadius: 4,
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                    <ContactEmergencyOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                    Emergency Contacts
+                {/* 6. Related Employees / Peers in Engineering */}
+                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
+                  <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", mb: 2 }}>
+                    PEERS IN ENGINEERING
                   </Typography>
-                  {!isViewingOther && (
-                    <Button
-                      size="small"
-                      startIcon={<AddIcon />}
-                      onClick={() => ecDialog.open()}
-                      sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
-                    >
-                      Add
-                    </Button>
-                  )}
-                </Box>
 
-                {(empProfile?.emergencyContacts ?? []).length === 0 ? (
-                  <Typography variant="body2" sx={{ color: "#9CA3AF", textAlign: "center", py: 2 }}>
-                    No emergency contacts added yet
-                  </Typography>
-                ) : (
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                    {(empProfile!.emergencyContacts!).map((ec, idx) => (
-                      <Box
-                        key={idx}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          p: 1.5,
-                          borderRadius: 2,
-                          border: "1px solid #E5E7EB",
-                          backgroundColor: "#F9FAFB",
-                        }}
-                      >
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {[
+                      { initial: "AM", name: "Arjun Mehta", role: "Engineering Director", color: "#818CF8" },
+                      { initial: "RD", name: "Rohan Das", role: "DevOps Engineer", color: "#F97316" },
+                    ].map((peer, idx) => (
+                      <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                        <Avatar sx={{ width: 38, height: 38, backgroundColor: peer.color, color: "#FFFFFF", fontWeight: 700, fontSize: "0.85rem" }}>
+                          {peer.initial}
+                        </Avatar>
                         <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: "#1F2937" }}>{ec.name}</Typography>
-                          <Typography variant="caption" sx={{ color: "#6B7280" }}>
-                            {ec.relationship} · {ec.phone}
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                            {peer.name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                            {peer.role}
                           </Typography>
                         </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                </Card>
+
+              </Box>
+            </Grid>
+
+            {/* Right Column Sidebar (~25% Width - AI Assistant & Actions) */}
+            <Grid size={{ xs: 12, lg: 3.5 }}>
+              {!aiInsightsDismissed && (
+                <Card
+                  sx={{
+                    p: 3,
+                    borderRadius: "16px",
+                    border: "1px solid #E2E8F0",
+                    boxShadow: "0 4px 20px rgba(139, 92, 246, 0.08)",
+                    backgroundColor: "#FFFFFF",
+                    position: "sticky",
+                    top: 24,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 20 }} />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "0.95rem" }}>
+                        AI Insights
+                      </Typography>
+                    </Box>
+                    <IconButton size="small" onClick={() => setAiInsightsDismissed(true)} sx={{ color: "#94A3B8" }}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+
+                  {/* AI Summary Highlight Box */}
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: "12px",
+                      backgroundColor: "#F5F3FF",
+                      border: "1px solid #DDD6FE",
+                      mb: 2.5,
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: "#5B21B6", fontWeight: 500, lineHeight: 1.5, fontSize: "0.85rem" }}>
+                      Top performer — 94% score. Low attrition risk. Promotion-ready based on tenure and trajectory.
+                    </Typography>
+                  </Box>
+
+                  {/* Quick AI Action Trigger Buttons */}
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+                    {[
+                      { icon: <StarOutlinedIcon sx={{ fontSize: 16 }} />, label: "Generate Review" },
+                      { icon: <ArticleOutlinedIcon sx={{ fontSize: 16 }} />, label: "Generate Promotion Summary" },
+                      { icon: <SchoolOutlinedIcon sx={{ fontSize: 16 }} />, label: "Recommend Training" },
+                      { icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />, label: "Schedule 1:1" },
+                      { icon: <FavoriteBorderOutlinedIcon sx={{ fontSize: 16 }} />, label: "Send Recognition" },
+                    ].map((btn, idx) => (
+                      <Button
+                        key={idx}
+                        fullWidth
+                        startIcon={btn.icon}
+                        variant="outlined"
+                        onClick={() => showSnackbar(`AI Action "${btn.label}" initiated`, "info")}
+                        sx={{
+                          justify: "flex-start",
+                          textTransform: "none",
+                          fontWeight: 600,
+                          fontSize: "0.825rem",
+                          color: "#475569",
+                          borderColor: "#E2E8F0",
+                          borderRadius: "10px",
+                          py: 1,
+                          backgroundColor: "#F8FAFC",
+                          "&:hover": { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE", color: "#4F46E5" }
+                        }}
+                      >
+                        {btn.label}
+                      </Button>
+                    ))}
+                  </Box>
+                </Card>
+              )}
+            </Grid>
+          </Grid>
+        )}
+
+        {/* Tab 2: PERSONAL DETAILS TAB */}
+        {activeTab === "personal" && (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+                  <BadgeOutlinedIcon sx={{ color: "#4F46E5" }} />
+                  Personal Information
+                </Typography>
+                {!isViewingOther && (
+                  <Button size="small" startIcon={<EditOutlinedIcon />} onClick={handleOpenEditProfile} sx={{ textTransform: "none", color: "#4F46E5", fontWeight: 600 }}>
+                    Edit Details
+                  </Button>
+                )}
+              </Box>
+              <Grid container spacing={2.5}>
+                <Grid size={6}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>First Name</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayFirstName || "—"}</Typography>
+                </Grid>
+                <Grid size={6}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Last Name</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayLastName || "—"}</Typography>
+                </Grid>
+                <Grid size={6}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Email Address</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayEmail || "—"}</Typography>
+                </Grid>
+                <Grid size={6}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Phone Number</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{empProfile?.phone || "—"}</Typography>
+                </Grid>
+                <Grid size={6}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Gender</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{empProfile?.gender || "—"}</Typography>
+                </Grid>
+                <Grid size={6}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Date of Birth</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
+                    {empProfile?.dateOfBirth ? new Date(empProfile.dateOfBirth).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" }) : "—"}
+                  </Typography>
+                </Grid>
+                <Grid size={12}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Current Address</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
+                    {empProfile?.currentAddress?.addressLine1 ? (
+                      `${empProfile.currentAddress.addressLine1}, ${empProfile.currentAddress.city || ""}, ${empProfile.currentAddress.state || ""}, ${empProfile.currentAddress.countryCode || ""} ${empProfile.currentAddress.zip || ""}`
+                    ) : "—"}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Card>
+
+            {/* Emergency Contacts Card */}
+            <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+                  <ContactEmergencyOutlinedIcon sx={{ color: "#4F46E5" }} />
+                  Emergency Contacts
+                </Typography>
+                {!isViewingOther && (
+                  <Button size="small" startIcon={<AddIcon />} onClick={() => ecDialog.open()} sx={{ textTransform: "none", color: "#4F46E5", fontWeight: 600 }}>
+                    Add Contact
+                  </Button>
+                )}
+              </Box>
+
+              {(empProfile?.emergencyContacts ?? []).length === 0 ? (
+                <Typography variant="body2" sx={{ color: "#94A3B8", textAlign: "center", py: 2 }}>
+                  No emergency contacts added yet
+                </Typography>
+              ) : (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  {(empProfile!.emergencyContacts!).map((ec, idx) => (
+                    <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{ec.name}</Typography>
+                        <Typography variant="caption" sx={{ color: "#64748B" }}>{ec.relationship} · {ec.phone}</Typography>
+                      </Box>
+                      {!isViewingOther && (
+                        <IconButton size="small" onClick={() => { setEcDeleteTarget(idx); setEcDeleteConfirmOpen(true); }} sx={{ color: "#94A3B8" }}>
+                          <DeleteOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Card>
+          </Box>
+        )}
+
+        {/* Tab 3: DOCUMENTS TAB */}
+        {activeTab === "documents" && (
+          <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+                <DescriptionOutlinedIcon sx={{ color: "#4F46E5" }} />
+                Documents Management
+              </Typography>
+              {!isViewingOther && (
+                <Button variant="contained" startIcon={<CloudUploadOutlinedIcon />} onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }} sx={{ textTransform: "none", fontWeight: 600, backgroundColor: "#4F46E5", borderRadius: 2 }}>
+                  Upload Document
+                </Button>
+              )}
+            </Box>
+            {(missingDocTypes || []).length > 0 && (
+              <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
+                Missing required verification documents: <strong>{(missingDocTypes || []).join(", ")}</strong>
+              </Alert>
+            )}
+            {documentsLoading ? (
+              <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
+            ) : documents.length === 0 ? (
+              <Typography variant="body2" sx={{ color: "#64748B", textAlign: "center", py: 3 }}>No documents uploaded yet.</Typography>
+            ) : (
+              <Grid container spacing={2}>
+                {documents.map((doc, index) => (
+                  <Grid key={doc.id || doc._id || index} size={{ xs: 12, sm: 6 }}>
+                    <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{doc.fileName}</Typography>
+                        <Chip label={doc.documentType} size="small" variant="outlined" sx={{ mt: 0.5, fontSize: "0.7rem" }} />
+                      </Box>
+                      <Button size="small" onClick={() => handleDocDownload(doc.id || doc._id)} sx={{ color: "#4F46E5" }}>
+                        <DownloadOutlinedIcon fontSize="small" />
+                      </Button>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Card>
+        )}
+
+        {/* Tab 4: PAYROLL & BANK ACCOUNTS TAB */}
+        {activeTab === "payroll" && (
+          <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+                <AccountBalanceOutlinedIcon sx={{ color: "#4F46E5" }} />
+                Bank Accounts
+              </Typography>
+              {!isViewingOther && (
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetBankForm(); setBankDialogOpen(true); }} sx={{ textTransform: "none", fontWeight: 600, backgroundColor: "#4F46E5", borderRadius: 2 }}>
+                  Add Bank Account
+                </Button>
+              )}
+            </Box>
+            {bankAccountsLoading ? (
+              <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
+            ) : bankAccounts.length === 0 ? (
+              <Typography variant="body2" sx={{ color: "#64748B", textAlign: "center", py: 3 }}>No bank account added yet.</Typography>
+            ) : (
+              <Grid container spacing={2}>
+                {bankAccounts.map((acc, index) => (
+                  <Grid key={acc.id || acc._id || index} size={{ xs: 12, sm: 6 }}>
+                    <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{acc.bankName}</Typography>
                         {!isViewingOther && (
-                          <IconButton
-                            size="small"
-                            onClick={() => { setEcDeleteTarget(idx); setEcDeleteConfirmOpen(true); }}
-                            sx={{ color: "#9CA3AF", p: 0.3 }}
-                          >
+                          <IconButton size="small" onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}>
                             <DeleteOutlinedIcon fontSize="small" />
                           </IconButton>
                         )}
                       </Box>
-                    ))}
-                  </Box>
-                )}
-              </Card>
-            </Box>
-          </Grid>
-
-          {/* Column 2 */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3, height: "100%" }}>
-              {/* System Credentials & Organization */}
-              {!isViewingOther && (
-                <Card
-                  sx={{
-                    p: 3.5,
-                    borderRadius: 4,
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                    <VpnKeyOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                    Access & Security
-                  </Typography>
-                  <Grid container spacing={2.5}>
-                    <Grid size={6}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>System Role</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: "#1F2937", mt: 0.5 }}>{getRoleLabel(user?.role || "")}</Typography>
-                    </Grid>
-                    <Grid size={6}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Org Admin</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: user?.isOrgAdmin ? "#D97706" : "#4B5563", mt: 0.5 }}>
-                        {user?.isOrgAdmin ? "Yes" : "No"}
-                      </Typography>
-                    </Grid>
-                    <Grid size={12}>
-                      <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Tenant Identifier (Tenant ID)</Typography>
-                      <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", mt: 0.5 }}>{user?.tenantId || "—"}</Typography>
-                    </Grid>
-                    {user?.branchIds && user.branchIds.length > 0 && (
-                      <Grid size={12}>
-                        <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500, mb: 1, display: "block" }}>Branch Authorizations</Typography>
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                          {user.branchIds.map((bid) => (
-                            <Chip
-                              key={bid}
-                              label={bid}
-                              size="small"
-                              variant="outlined"
-                              sx={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#4B5563" }}
-                            />
-                          ))}
-                        </Box>
-                      </Grid>
-                    )}
+                      <Typography variant="caption" sx={{ color: "#64748B", fontFamily: "monospace", display: "block", mt: 0.5 }}>{acc.accountNumber}</Typography>
+                      <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                        <Chip label={acc.ifscCode} size="small" variant="outlined" sx={{ fontSize: "0.7rem", fontFamily: "monospace" }} />
+                        <Chip label={acc.accountType} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                      </Box>
+                    </Box>
                   </Grid>
-                </Card>
-              )}
+                ))}
+              </Grid>
+            )}
+          </Card>
+        )}
 
-              {/* Bank Account */}
-              <Card
-                sx={{
-                  p: 3.5,
-                  borderRadius: 4,
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                  <AccountBalanceOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                  Bank Accounts
-                </Typography>
-                {bankAccountsLoading ? (
-                  <Box sx={{ textAlign: "center", py: 3 }}>
-                    <CircularProgress size={24} sx={{ color: "#9CA3AF" }} />
-                  </Box>
-                ) : bankAccounts.length === 0 ? (
-                  <Box sx={{ textAlign: "center", py: 2 }}>
-                    <Typography variant="body2" sx={{ color: "#6B7280", mb: 2 }}>
-                      No bank account added yet
-                    </Typography>
-                    {!isViewingOther && (
-                      <Button
-                        variant="outlined"
-                        startIcon={<AddIcon />}
-                        onClick={() => { resetBankForm(); setBankDialogOpen(true); }}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: "none",
-                          fontWeight: 600,
-                          borderColor: "#D1D5DB",
-                          color: "#374151",
-                        }}
-                      >
-                        Add Bank Account
-                      </Button>
-                    )}
-                  </Box>
-                ) : (
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {bankAccounts.map((acc, index) => (
-                      <Box
-                        key={acc.id || acc._id || index}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          border: "1px solid #E5E7EB",
-                          backgroundColor: "#F9FAFB",
-                        }}
-                      >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: "#1F2937" }}>
-                            {acc.bankName}
-                          </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                            {acc.isPrimary && (
-                              <Chip
-                                label="Primary"
-                                size="small"
-                                sx={{ height: 18, fontSize: "0.65rem", backgroundColor: "#D1FAE5", color: "#065F46", fontWeight: 600 }}
-                              />
-                            )}
-                            {!isViewingOther && (
-                              <IconButton
-                                size="small"
-                                onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}
-                                sx={{ color: "#9CA3AF", p: 0.3 }}
-                              >
-                                <DeleteOutlinedIcon fontSize="small" />
-                              </IconButton>
-                            )}
-                          </Box>
-                        </Box>
-                        <Typography variant="caption" sx={{ color: "#6B7280", fontFamily: "monospace" }}>
-                          {acc.accountNumber}
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
-                          <Chip label={acc.ifscCode} size="small" variant="outlined" sx={{ fontSize: "0.65rem", fontFamily: "monospace" }} />
-                          <Chip label={acc.accountType} size="small" variant="outlined" sx={{ fontSize: "0.65rem" }} />
-                        </Box>
-                      </Box>
-                    ))}
-                    {!isViewingOther && (
-                      <Button
-                        variant="outlined"
-                        startIcon={<AddIcon />}
-                        onClick={() => { resetBankForm(); setBankDialogOpen(true); }}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: "none",
-                          fontWeight: 600,
-                          borderColor: "#D1D5DB",
-                          color: "#374151",
-                          mt: 1,
-                        }}
-                      >
-                        Add Bank Account
-                      </Button>
-                    )}
-                  </Box>
-                )}
+        {/* Generic Content Fallback for remaining tabs */}
+        {!["overview", "personal", "documents", "payroll"].includes(activeTab) && (
+          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", textAlign: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
+              {activeTab} Section
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#64748B" }}>
+              Detailed {activeTab} information for {displayName} is loaded into this section.
+            </Typography>
+          </Card>
+        )}
+
+        {/* 
+          ======================================================================
+          COMMENTED OUT LEGACY LAYOUT BLOCK (PRESERVED FOR BACKWARD COMPATIBILITY)
+          ======================================================================
+          {/*
+          <Grid container spacing={3} sx={{ mt: 2 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ p: 3.5, borderRadius: 4, backgroundColor: "#fff" }}>
+                <Typography variant="h6">Personal Information</Typography>
+                <Grid container spacing={2.5}>
+                  <Grid size={6}><Typography variant="caption">First Name</Typography><Typography>{displayFirstName}</Typography></Grid>
+                  <Grid size={6}><Typography variant="caption">Last Name</Typography><Typography>{displayLastName}</Typography></Grid>
+                  <Grid size={12}><Typography variant="caption">Email</Typography><Typography>{displayEmail}</Typography></Grid>
+                </Grid>
               </Card>
-
-              {/* Account Activity Logs */}
-              {!isViewingOther && (
-                <Card
-                  sx={{
-                    p: 3.5,
-                    borderRadius: 4,
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)",
-                    backgroundColor: "#fff",
-                    flexGrow: 1,
-                  }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-                    <AccessTimeOutlinedIcon sx={{ color: "#6D5DF6" }} />
-                    Session Activity
-                  </Typography>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                      <CalendarMonthOutlinedIcon sx={{ color: "#9CA3AF", mt: 0.2 }} />
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Joined On</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mt: 0.5 }}>
-                          {formatDate(user?.createdAt)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Divider />
-                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                      <EmailOutlinedIcon sx={{ color: "#9CA3AF", mt: 0.2 }} />
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#6B7280", fontWeight: 500 }}>Last Login Session</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mt: 0.5 }}>
-                          {formatDate(user?.lastLoginAt)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Card>
-              )}
-            </Box>
+            </Grid>
           </Grid>
-        </Grid>
+          */}
+
       </Box>
+
+      {/* Add Skill Dialog */}
+      <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Add Skill or Expertise</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            label="Skill Name"
+            placeholder="e.g. Python, Docker, GraphQL"
+            fullWidth
+            value={newSkillInput}
+            onChange={(e) => setNewSkillInput(e.target.value)}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setAddSkillOpen(false)} sx={{ color: "#64748B" }}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (newSkillInput.trim()) {
+                setSkills((prev) => [...prev, newSkillInput.trim()]);
+                setNewSkillInput("");
+                setAddSkillOpen(false);
+                showSnackbar("Skill added to profile", "success");
+              }
+            }}
+            sx={{ backgroundColor: "#4F46E5", fontWeight: 600 }}
+          >
+            Add Skill
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Delete Bank Account Confirmation */}
       <Dialog

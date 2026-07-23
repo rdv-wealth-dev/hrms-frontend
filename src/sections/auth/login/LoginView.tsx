@@ -74,7 +74,8 @@ function LoginView() {
       <Box
         sx={{
           width: "100%",
-          maxWidth: "32rem",
+          maxWidth: { xs: "100%", sm: "28rem", md: "32rem" },
+          mx: "auto",
         }}
       >
         <AuthHeading
@@ -88,7 +89,8 @@ function LoginView() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: 1.5,
+            gap: { xs: 1.8, sm: 2 },
+            width: "100%",
           }}
         >
           <TextInput
@@ -116,7 +118,7 @@ function LoginView() {
               border: "none",
               background: "transparent",
               cursor: "pointer",
-              fontSize: "14px",
+              fontSize: { xs: "13px", sm: "14px" },
               color: "#4F46E5",
               fontWeight: 500,
               p: 0,
@@ -129,20 +131,20 @@ function LoginView() {
           </Typography>
 
           {error && (
-            <Typography color="error" variant="body2">
+            <Typography color="error" variant="body2" sx={{ textAlign: "center", mt: 0.5, fontSize: { xs: "13px", sm: "14px" } }}>
               {error}
             </Typography>
           )}
 
-          <PrimaryButton
-            type="submit"
-            loading={loading}
-            disabled={loading}
-          >
-            Sign In
-          </PrimaryButton>
-
-         
+          <Box sx={{ mt: 1 }}>
+            <PrimaryButton
+              type="submit"
+              loading={loading}
+              disabled={loading}
+            >
+              Sign In
+            </PrimaryButton>
+          </Box>
 
           <AuthFooter
             text="Don't have an account?"

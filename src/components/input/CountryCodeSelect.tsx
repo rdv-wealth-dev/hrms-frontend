@@ -22,8 +22,8 @@ function CountryCodeSelect({
       <Typography
         variant="body2"
         sx={{
-          mb: 1,
-          fontSize: "14px",
+          mb: { xs: 0.4, sm: 0.5 },
+          fontSize: { xs: "13px", sm: "13.5px" },
           fontWeight: 500,
           color: "#374151",
         }}
@@ -42,7 +42,7 @@ function CountryCodeSelect({
           "& .MuiOutlinedInput-root": {
             borderRadius: "10px",
             backgroundColor: "#FFFFFF",
-            height: "52px",
+            height: { xs: "42px", sm: "46px" },
 
             "&:hover .MuiOutlinedInput-notchedOutline": {
               borderColor: "#BFC5D2",
@@ -61,7 +61,7 @@ function CountryCodeSelect({
             },
 
           "& .MuiInputBase-input": {
-            fontSize: "15px",
+            fontSize: { xs: "13.5px", sm: "14px" },
             color: "#111827",
           },
 

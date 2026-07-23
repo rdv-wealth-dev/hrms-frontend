@@ -16,7 +16,7 @@ function AuthFooter({
   return (
     <Typography
       sx={{
-        mt: 3,
+        mt: 2,
         textAlign: "center",
         fontSize: "14px",
         color: "#4B5563",

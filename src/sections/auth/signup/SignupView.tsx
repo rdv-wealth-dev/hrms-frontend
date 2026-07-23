@@ -89,20 +89,20 @@ function SignupView() {
           sx={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: 1.5,
+            gap: { xs: 1, sm: 1.2 },
           }}
         >
           {/* Row 1: Company Name | Industry */}
           <TextInput
             label="Company Name"
-            placeholder="Enter Company Name"
+            placeholder="Company Name"
             registration={register("companyName")}
             error={errors.companyName?.message}
           />
 
           <TextInput
             label="Industry"
-            placeholder="Enter Industry"
+            placeholder="Industry"
             registration={register("industry")}
             error={errors.industry?.message}
           />
@@ -110,14 +110,14 @@ function SignupView() {
           {/* Row 2: First Name | Last Name */}
           <TextInput
             label="First Name"
-            placeholder="Enter First Name"
+            placeholder="First Name"
             registration={register("firstName")}
             error={errors.firstName?.message}
           />
 
           <TextInput
             label="Last Name"
-            placeholder="Enter Last Name"
+            placeholder="Last Name"
             registration={register("lastName")}
             error={errors.lastName?.message}
           />
@@ -141,18 +141,16 @@ function SignupView() {
 
           <TextInput
             label="Phone Number"
-            placeholder="e.g. 9876543210"
+            placeholder="Phone Number"
             type="tel"
             registration={register("phone")}
             error={errors.phone?.message}
           />
 
-          {/* ✅ Time Zone field removed entirely — auto-detected on submit */}
-
           {/* Row 5: Password | Confirm Password */}
           <TextInput
             label="Password"
-            placeholder="Enter Password"
+            placeholder="Password"
             type="password"
             registration={register("password")}
             error={errors.password?.message}
@@ -160,7 +158,7 @@ function SignupView() {
 
           <TextInput
             label="Confirm Password"
-            placeholder="Enter Confirm Password"
+            placeholder="Confirm Password"
             type="password"
             registration={register("confirmPassword")}
             error={errors.confirmPassword?.message}
@@ -169,14 +167,14 @@ function SignupView() {
           {/* API Error — full width */}
           {error && (
             <Box sx={{ gridColumn: "1 / 3" }}>
-              <Typography color="error" variant="body2">
+              <Typography color="error" variant="body2" sx={{ textAlign: "center", fontSize: { xs: "11px", sm: "13px" } }}>
                 {error}
               </Typography>
             </Box>
           )}
 
           {/* Submit — full width */}
-          <Box sx={{ gridColumn: "1 / 3", mt: 2 }}>
+          <Box sx={{ gridColumn: "1 / 3", mt: { xs: 0.5, sm: 1 } }}>
             <PrimaryButton type="submit" loading={loading} disabled={loading}>
               Create Account
             </PrimaryButton>

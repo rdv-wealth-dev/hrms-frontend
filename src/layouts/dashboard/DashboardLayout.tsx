@@ -412,7 +412,7 @@ function DashboardLayout({ children }: Props) {
     };
 
     return (
-        <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#F5F6FA" }}>
+        <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#F5F6FA", width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
             {/* Mobile hamburger */}
             <Box
                 sx={{
@@ -508,8 +508,12 @@ function DashboardLayout({ children }: Props) {
                     flexGrow: 1,
                     ml: { md: `${sidebarWidth}px` },
                     minHeight: "100vh",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    width: { md: `calc(100% - ${sidebarWidth}px)` },
                     backgroundColor: "#F5F6FA",
                     transition: "margin-left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    overflowX: "hidden",
                 }}
             >
                 {children}

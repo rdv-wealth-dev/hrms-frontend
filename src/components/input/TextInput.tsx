@@ -35,8 +35,8 @@ function TextInput({
       <Typography
         variant="body2"
         sx={{
-          mb: 1,
-          fontSize: "14px",
+          mb: { xs: 0.4, sm: 0.5 },
+          fontSize: { xs: "13px", sm: "13.5px" },
           fontWeight: 500,
           color: "#374151",
         }}
@@ -70,9 +70,9 @@ function TextInput({
                       }}
                     >
                       {showPassword ? (
-                        <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+                        <VisibilityOutlinedIcon sx={{ fontSize: 19 }} />
                       ) : (
-                        <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
+                        <VisibilityOffOutlinedIcon sx={{ fontSize: 19 }} />
                       )}
                     </IconButton>
                   </InputAdornment>
@@ -84,7 +84,7 @@ function TextInput({
           "& .MuiOutlinedInput-root": {
             borderRadius: "10px",
             backgroundColor: "#FFFFFF",
-            height: "52px",
+            height: { xs: "42px", sm: "46px" },
 
             "&:hover .MuiOutlinedInput-notchedOutline": {
               borderColor: "#BFC5D2",
@@ -103,7 +103,7 @@ function TextInput({
             },
 
           "& .MuiInputBase-input": {
-            fontSize: "15px",
+            fontSize: { xs: "13.5px", sm: "14px" },
             color: "#111827",
             padding:
               variant === "underlined"
