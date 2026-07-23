@@ -134,10 +134,10 @@ export const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: "10px",
+          borderRadius: "12px",
           backgroundColor: "#FFFFFF",
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#BFC5D2",
+            borderColor: "#94A3B8",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: "#6D5DF6",
@@ -145,11 +145,14 @@ export const theme = createTheme({
           },
         },
         notchedOutline: {
-          borderColor: "#D1D5DB",
+          borderColor: "#CBD5E1",
           borderWidth: "1px",
+          transition: "border-color 0.2s ease",
         },
         input: {
           padding: "12px 14px",
+          fontSize: "14px",
+          color: "#1E293B",
         },
       },
     },
@@ -159,10 +162,16 @@ export const theme = createTheme({
         root: {
           fontSize: "14px",
           fontWeight: 500,
-          color: "#374151",
+          color: "#64748B",
           "&.Mui-focused": {
             color: "#6D5DF6",
+            fontWeight: 600,
           },
+        },
+        outlined: {
+          backgroundColor: "#FFFFFF",
+          padding: "0 6px",
+          borderRadius: "4px",
         },
       },
     },

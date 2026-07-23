@@ -39,7 +39,7 @@ import {
 import { listShifts } from "../../../api/attendance.api";
 import type { Shift } from "../../../store/attendance";
 
-const selectFieldSx = undefined;
+
 
 const EMPLOYEE_TYPES = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN", "CONSULTANT", "TEMPORARY", "UNPAID", "FREELANCE"];
 const COUNTRIES = [
@@ -249,7 +249,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 {...register("salarySetup.structure.amount", { valueAsNumber: true })}
                 error={!!(errors.salarySetup?.structure as any)?.amount}
                 helperText={(errors.salarySetup?.structure as any)?.amount?.message}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -259,7 +259,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue="INR"
                 {...register("salarySetup.structure.currency")}
-                sx={selectFieldSx}
+
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
@@ -278,7 +278,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 type="number"
                 fullWidth
                 {...register("salarySetup.structure.components.0.amount", { valueAsNumber: true })}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -287,7 +287,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 type="number"
                 fullWidth
                 {...register("salarySetup.structure.components.1.amount", { valueAsNumber: true })}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -296,7 +296,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 type="number"
                 fullWidth
                 {...register("salarySetup.structure.components.2.amount", { valueAsNumber: true })}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={12}>
@@ -313,7 +313,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                   type="number"
                   fullWidth
                   {...register("salarySetup.benefits.leaveEncashmentRate", { valueAsNumber: true })}
-                  sx={selectFieldSx}
+  
                 />
               </Grid>
             )}
@@ -332,7 +332,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 {...register("salarySetup.structure.hourlyRate", { valueAsNumber: true })}
                 error={!!(errors.salarySetup?.structure as any)?.hourlyRate}
                 helperText={(errors.salarySetup?.structure as any)?.hourlyRate?.message}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -342,7 +342,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue={40}
                 {...register("salarySetup.structure.workingHoursPerWeek", { valueAsNumber: true })}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -352,7 +352,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue={22}
                 {...register("salarySetup.structure.workingDaysPerMonth", { valueAsNumber: true })}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -362,7 +362,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue="INR"
                 {...register("salarySetup.structure.currency")}
-                sx={selectFieldSx}
+
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
@@ -387,7 +387,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 {...register("salarySetup.structure.amount", { valueAsNumber: true })}
                 error={!!(errors.salarySetup?.structure as any)?.amount}
                 helperText={(errors.salarySetup?.structure as any)?.amount?.message}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -397,7 +397,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue="INR"
                 {...register("salarySetup.structure.currency")}
-                sx={selectFieldSx}
+
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
@@ -421,7 +421,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 {...register("salarySetup.structure.amount", { valueAsNumber: true })}
                 error={!!(errors.salarySetup?.structure as any)?.amount}
                 helperText={(errors.salarySetup?.structure as any)?.amount?.message}
-                sx={selectFieldSx}
+
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -431,7 +431,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue="MONTHLY"
                 {...register("salarySetup.structure.frequency")}
-                sx={selectFieldSx}
+
               >
                 <MenuItem value="MONTHLY">Monthly</MenuItem>
                 <MenuItem value="WEEKLY">Weekly</MenuItem>
@@ -445,7 +445,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 fullWidth
                 defaultValue="INR"
                 {...register("salarySetup.structure.currency")}
-                sx={selectFieldSx}
+
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
@@ -553,7 +553,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                       {...register("countryCode")}
                       error={!!errors.countryCode}
                       helperText={errors.countryCode?.message}
-                      sx={selectFieldSx}
+      
                     >
                       {COUNTRIES.map((c) => (
                         <MenuItem key={c.code} value={c.code}>{c.code}</MenuItem>
@@ -572,100 +572,85 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Department
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        value={watch("departmentId") || ""}
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              const val = value as string;
-                              if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Department</span>;
-                              const dept = departments.find((d) => d._id === val);
-                              return dept ? `${dept.name} (${dept.code})` : val;
-                            }
+                    <TextField
+                      select
+                      fullWidth
+                      label="Department"
+                      value={watch("departmentId") || ""}
+                      slotProps={{
+                        select: {
+                          displayEmpty: true,
+                          renderValue: (value: unknown) => {
+                            const val = value as string;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Department</span>;
+                            const dept = departments.find((d) => d._id === val);
+                            return dept ? `${dept.name} (${dept.code})` : val;
                           }
-                        }}
-                        {...register("departmentId")}
-                        error={!!errors.departmentId}
-                        helperText={errors.departmentId?.message}
-
-                      >
-                        {departments.map((dept) => (
-                          <MenuItem key={dept._id} value={dept._id}>
-                            {dept.name} ({dept.code})
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Box>
+                        }
+                      }}
+                      {...register("departmentId")}
+                      error={!!errors.departmentId}
+                      helperText={errors.departmentId?.message}
+                    >
+                      {departments.map((dept) => (
+                        <MenuItem key={dept._id} value={dept._id}>
+                          {dept.name} ({dept.code})
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Designation
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        value={watch("designationId") || ""}
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              const val = value as string;
-                              if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Designation</span>;
-                              const desig = designations.find((d) => d._id === val);
-                              return desig ? `${desig.name} (${desig.code})` : val;
-                            }
+                    <TextField
+                      select
+                      fullWidth
+                      label="Designation"
+                      value={watch("designationId") || ""}
+                      slotProps={{
+                        select: {
+                          displayEmpty: true,
+                          renderValue: (value: unknown) => {
+                            const val = value as string;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Designation</span>;
+                            const desig = designations.find((d) => d._id === val);
+                            return desig ? `${desig.name} (${desig.code})` : val;
                           }
-                        }}
-                        {...register("designationId")}
-                        error={!!errors.designationId}
-                        helperText={errors.designationId?.message}
-
-                      >
-                        {designations.map((desig) => (
-                          <MenuItem key={desig._id} value={desig._id}>
-                            {desig.name} ({desig.code})
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Box>
+                        }
+                      }}
+                      {...register("designationId")}
+                      error={!!errors.designationId}
+                      helperText={errors.designationId?.message}
+                    >
+                      {designations.map((desig) => (
+                        <MenuItem key={desig._id} value={desig._id}>
+                          {desig.name} ({desig.code})
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 4 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Employee Type
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        value={watch("employeeType") || "FULL_TIME"}
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              const val = value as string;
-                              if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Type</span>;
-                              return val.replace(/_/g, " ");
-                            }
+                    <TextField
+                      select
+                      fullWidth
+                      label="Employee Type"
+                      value={watch("employeeType") || "FULL_TIME"}
+                      slotProps={{
+                        select: {
+                          displayEmpty: true,
+                          renderValue: (value: unknown) => {
+                            const val = value as string;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Type</span>;
+                            return val.replace(/_/g, " ");
                           }
-                        }}
-                        {...register("employeeType")}
-                        error={!!errors.employeeType}
-                        helperText={errors.employeeType?.message}
-
-                      >
-                        {EMPLOYEE_TYPES.map((et) => (
-                          <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Box>
+                        }
+                      }}
+                      {...register("employeeType")}
+                      error={!!errors.employeeType}
+                      helperText={errors.employeeType?.message}
+                    >
+                      {EMPLOYEE_TYPES.map((et) => (
+                        <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <TextInput
@@ -694,32 +679,28 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                        Shift Selection
-                      </Typography>
-                      <TextField
-                        select
-                        fullWidth
-                        value={watch("shiftId") || ""}
-                        slotProps={{
-                          select: {
-                            displayEmpty: true,
-                            renderValue: (value: unknown) => {
-                              const val = value as string;
-                              if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Shift</span>;
-                              const shift = shifts.find((s) => s._id === val);
-                              if (!shift) return val;
-                              return `${shift.name} (${shift.startTime} - ${shift.endTime})${shift.isDefault ? " (Default)" : ""}`;
-                            }
+                    <TextField
+                      select
+                      fullWidth
+                      label="Shift Selection"
+                      value={watch("shiftId") || ""}
+                      slotProps={{
+                        select: {
+                          displayEmpty: true,
+                          renderValue: (value: unknown) => {
+                            const val = value as string;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Shift</span>;
+                            const shift = shifts.find((s) => s._id === val);
+                            if (!shift) return val;
+                            return `${shift.name} (${shift.startTime} - ${shift.endTime})${shift.isDefault ? " (Default)" : ""}`;
                           }
-                        }}
-                        {...register("shiftId")}
-                        error={!!errors.shiftId}
-                        helperText={errors.shiftId?.message || (shiftsLoading ? "Loading shifts..." : "")}
-
-                        disabled={shiftsLoading}
-                      >
+                        }
+                      }}
+                      {...register("shiftId")}
+                      error={!!errors.shiftId}
+                      helperText={errors.shiftId?.message || (shiftsLoading ? "Loading shifts..." : "")}
+                      disabled={shiftsLoading}
+                    >
                         <MenuItem value="">
                           <span style={{ color: "#9CA3AF" }}>Select Shift</span>
                         </MenuItem>
@@ -761,7 +742,6 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                           </MenuItem>
                         ))}
                       </TextField>
-                    </Box>
                   </Grid>
                 </Grid>
               </CardContent>
@@ -812,7 +792,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                               };
                               setValue("salarySetup.structure.type", typeMap[val] || "");
                             }}
-                            sx={selectFieldSx}
+            
                           >
                             {EMPLOYEE_TYPES.map((et) => (
                               <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
