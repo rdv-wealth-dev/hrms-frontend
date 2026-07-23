@@ -80,49 +80,15 @@ function TextInput({
               }
             : {},
         }}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "10px",
-            backgroundColor: "#FFFFFF",
-            height: { xs: "42px", sm: "46px" },
-
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#BFC5D2",
-            },
-          },
-
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#D1D5DB",
-            borderWidth: "1px",
-          },
-
-          "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-            {
-              borderColor: "#6D5DF6",
-              borderWidth: "2px",
-            },
-
-          "& .MuiInputBase-input": {
-            fontSize: { xs: "13.5px", sm: "14px" },
-            color: "#111827",
-            padding:
-              variant === "underlined"
-                ? "8px 0"
-                : "14px 16px",
-          },
-
-          "& .MuiInputBase-input::placeholder": {
-            fontSize: "13px",
-            color: "#9CA3AF",
-            opacity: 1,
-          },
-
-          "& .MuiFormHelperText-root": {
-            marginLeft: 0,
-            marginTop: "4px",
-            fontSize: "12px",
-          },
-        }}
+        sx={
+          variant === "underlined"
+            ? {
+                "& .MuiInputBase-input": {
+                  padding: "8px 0",
+                },
+              }
+            : undefined
+        }
       />
     </Box>
   );

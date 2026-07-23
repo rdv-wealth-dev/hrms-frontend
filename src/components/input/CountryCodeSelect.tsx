@@ -38,39 +38,7 @@ function CountryCodeSelect({
         helperText={error}
         fullWidth
         defaultValue=""
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "10px",
-            backgroundColor: "#FFFFFF",
-            height: { xs: "42px", sm: "46px" },
 
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#BFC5D2",
-            },
-          },
-
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#D1D5DB",
-            borderWidth: "1px",
-          },
-
-          "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-            {
-              borderColor: "#6D5DF6",
-              borderWidth: "2px",
-            },
-
-          "& .MuiInputBase-input": {
-            fontSize: { xs: "13.5px", sm: "14px" },
-            color: "#111827",
-          },
-
-          "& .MuiFormHelperText-root": {
-            marginLeft: 0,
-            marginTop: "4px",
-            fontSize: "12px",
-          },
-        }}
       >
         <MenuItem value="" disabled>
           Select country

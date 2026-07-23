@@ -57,8 +57,7 @@ export const theme = createTheme({
     // ─── Dialog: fullscreen on mobile ─────────────────────────
     MuiDialog: {
       defaultProps: {
-        // MUI's built-in prop — makes dialogs full-screen below "sm"
-        fullScreen: false, // overridable per-dialog
+        fullScreen: false,
       },
       styleOverrides: {
         paper: ({ theme }) => ({
@@ -117,11 +116,72 @@ export const theme = createTheme({
       },
     },
 
-    // ─── TextField: consistent font size ──────────────────────
+    // ─── Global Input Base & Text Fields ───────────────────────
     MuiInputBase: {
       styleOverrides: {
         input: {
           fontSize: 14,
+          color: "#111827",
+          "&::placeholder": {
+            fontSize: "13px",
+            color: "#9CA3AF",
+            opacity: 1,
+          },
+        },
+      },
+    },
+
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: "10px",
+          backgroundColor: "#FFFFFF",
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#BFC5D2",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#6D5DF6",
+            borderWidth: "2px",
+          },
+        },
+        notchedOutline: {
+          borderColor: "#D1D5DB",
+          borderWidth: "1px",
+        },
+        input: {
+          padding: "12px 14px",
+        },
+      },
+    },
+
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          fontSize: "14px",
+          fontWeight: 500,
+          color: "#374151",
+          "&.Mui-focused": {
+            color: "#6D5DF6",
+          },
+        },
+      },
+    },
+
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          marginLeft: 0,
+          marginTop: "4px",
+          fontSize: "12px",
+        },
+      },
+    },
+
+    MuiSelect: {
+      styleOverrides: {
+        select: {
+          display: "flex",
+          alignItems: "center",
         },
       },
     },

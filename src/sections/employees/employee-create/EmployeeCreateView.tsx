@@ -39,28 +39,7 @@ import {
 import { listShifts } from "../../../api/attendance.api";
 import type { Shift } from "../../../store/attendance";
 
-const selectFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    backgroundColor: "#FFFFFF",
-    height: "52px",
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#BFC5D2",
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#D1D5DB",
-    borderWidth: "1px",
-  },
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#6D5DF6",
-    borderWidth: "2px",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: "15px",
-    color: "#111827",
-  },
-};
+const selectFieldSx = undefined;
 
 const EMPLOYEE_TYPES = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN", "CONSULTANT", "TEMPORARY", "UNPAID", "FREELANCE"];
 const COUNTRIES = [
@@ -171,8 +150,59 @@ function EmployeeCreateView() {
     }
   }, [success, navigate, dispatch]);
 
+function formatToYYYYMMDD(dateStr?: string): string | undefined {
+  if (!dateStr) return undefined;
+  const str = dateStr.trim();
+  if (!str) return undefined;
+
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return str;
+  }
+
+  if (str.includes("/") || str.includes("-")) {
+    const parts = str.split(/[/|-]/);
+    if (parts.length === 3) {
+      let year: string, month: string, day: string;
+      if (parts[0].length === 4) {
+        [year, month, day] = parts;
+      } else if (parts[2].length === 4) {
+        year = parts[2];
+        if (parseInt(parts[0], 10) > 12) {
+          day = parts[0];
+          month = parts[1];
+        } else if (parseInt(parts[1], 10) > 12) {
+          month = parts[0];
+          day = parts[1];
+        } else {
+          month = parts[0];
+          day = parts[1];
+        }
+      } else {
+        return str;
+      }
+      const pad = (num: string) => num.padStart(2, "0");
+      return `${year}-${pad(month)}-${pad(day)}`;
+    }
+  }
+
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    return d.toISOString().split("T")[0];
+  }
+
+  return str;
+}
+
   const onSubmit = (data: CreateEmployeeFormData) => {
     const payload: any = { ...data };
+
+    if (payload.joiningDate) {
+      payload.joiningDate = formatToYYYYMMDD(payload.joiningDate);
+    }
+    if (payload.probationEndDate) {
+      payload.probationEndDate = formatToYYYYMMDD(payload.probationEndDate);
+    }
 
     // Clean up: remove empty optionals
     if (!payload.phone) delete payload.phone;
@@ -564,7 +594,7 @@ function EmployeeCreateView() {
                         {...register("departmentId")}
                         error={!!errors.departmentId}
                         helperText={errors.departmentId?.message}
-                        sx={selectFieldSx}
+
                       >
                         {departments.map((dept) => (
                           <MenuItem key={dept._id} value={dept._id}>
@@ -597,7 +627,7 @@ function EmployeeCreateView() {
                         {...register("designationId")}
                         error={!!errors.designationId}
                         helperText={errors.designationId?.message}
-                        sx={selectFieldSx}
+
                       >
                         {designations.map((desig) => (
                           <MenuItem key={desig._id} value={desig._id}>
@@ -629,7 +659,7 @@ function EmployeeCreateView() {
                         {...register("employeeType")}
                         error={!!errors.employeeType}
                         helperText={errors.employeeType?.message}
-                        sx={selectFieldSx}
+
                       >
                         {EMPLOYEE_TYPES.map((et) => (
                           <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
@@ -687,7 +717,7 @@ function EmployeeCreateView() {
                         {...register("shiftId")}
                         error={!!errors.shiftId}
                         helperText={errors.shiftId?.message || (shiftsLoading ? "Loading shifts..." : "")}
-                        sx={selectFieldSx}
+
                         disabled={shiftsLoading}
                       >
                         <MenuItem value="">
