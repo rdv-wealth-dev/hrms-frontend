@@ -352,6 +352,7 @@ export function BranchCalendarGrid({
                   {dateNum}
                 </Typography>
 
+                {/* Week Off / Custom Off chip — commented out
                 {!compact && isWeekOff && (
                   <Tooltip title={isCustomOff ? `Custom Week Off (${day.dayOfWeek} - Week ${weekOccurrence})` : "Standard Weekly Off"}>
                     <Chip
@@ -369,6 +370,7 @@ export function BranchCalendarGrid({
                     />
                   </Tooltip>
                 )}
+                */}
 
                 {!compact && isHoliday && (
                   <Chip
