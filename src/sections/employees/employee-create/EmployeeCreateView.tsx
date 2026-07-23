@@ -128,9 +128,12 @@ function EmployeeCreateView() {
   } = useForm<CreateEmployeeFormData>({
     resolver: zodResolver(createEmployeeSchema),
     defaultValues: {
-      branchId,
+      branchId: branchId || "",
+      departmentId: "",
+      designationId: "",
       countryCode: "IN",
       employeeType: "FULL_TIME",
+      shiftId: "",
     },
   });
 
@@ -546,6 +549,7 @@ function EmployeeCreateView() {
                       <TextField
                         select
                         fullWidth
+                        value={watch("departmentId") || ""}
                         slotProps={{
                           select: {
                             displayEmpty: true,
@@ -578,6 +582,7 @@ function EmployeeCreateView() {
                       <TextField
                         select
                         fullWidth
+                        value={watch("designationId") || ""}
                         slotProps={{
                           select: {
                             displayEmpty: true,
@@ -610,6 +615,7 @@ function EmployeeCreateView() {
                       <TextField
                         select
                         fullWidth
+                        value={watch("employeeType") || "FULL_TIME"}
                         slotProps={{
                           select: {
                             displayEmpty: true,
@@ -665,6 +671,7 @@ function EmployeeCreateView() {
                       <TextField
                         select
                         fullWidth
+                        value={watch("shiftId") || ""}
                         slotProps={{
                           select: {
                             displayEmpty: true,
