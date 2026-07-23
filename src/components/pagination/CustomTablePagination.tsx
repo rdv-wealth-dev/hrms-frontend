@@ -19,9 +19,11 @@ export default function CustomTablePagination({
 }: CustomTablePaginationProps) {
   if (count <= 0) return null;
 
+  const validOptions = Array.from(new Set([...rowsPerPageOptions, rowsPerPage, 50])).sort((a, b) => a - b);
+
   return (
     <TablePagination
-      rowsPerPageOptions={rowsPerPageOptions}
+      rowsPerPageOptions={validOptions}
       component="div"
       count={count}
       rowsPerPage={rowsPerPage}

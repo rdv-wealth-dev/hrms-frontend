@@ -248,7 +248,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         }
         setMissingDocTypes([]);
       } catch (fallbackErr) {
-        console.error("Fallback load failed:", fallbackErr);
+        // HR Admin or user without employee record — 404 expected
       }
     }
 

@@ -28,9 +28,9 @@ export const salaryStructureV1Schema = z.object({
 });
 
 const salaryComponentSchema = z.object({
-  componentCode: z.string().min(1, "Component code is required"),
-  amount: z.number().min(0, "Amount must be >= 0"),
-  isPartOfWages: z.boolean(),
+  componentCode: z.string().optional(),
+  amount: z.number().optional(),
+  isPartOfWages: z.boolean().optional(),
 });
 
 const salaryStructureSchema = z.object({
@@ -68,13 +68,13 @@ export const createEmployeeSchema = z.object({
   bloodGroup: z.string().trim().optional(),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]).optional().or(z.literal("")),
   nationality: z.string().trim().optional(),
-  pan: z.string().trim().length(10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
-  aadhaar: z.string().trim().length(12, "Aadhaar must be exactly 12 digits").regex(/^\d{12}$/, "Aadhaar must be 12 digits").optional().or(z.literal("")),
+  pan: z.string().trim().refine((val) => !val || val.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
+  aadhaar: z.string().trim().refine((val) => !val || /^\d{12}$/.test(val), "Aadhaar must be exactly 12 numeric digits").optional().or(z.literal("")),
   
-  // Organization Mapping — 24-character Mongoose ObjectId validation
-  branchId: z.string().min(1, "Branch is required").regex(/^[0-9a-fA-F]{24}$/, "Must be a valid 24-character Branch ID"),
-  departmentId: z.string().min(1, "Department is required").regex(/^[0-9a-fA-F]{24}$/, "Must be a valid 24-character Department ID"),
-  designationId: z.string().min(1, "Designation is required").regex(/^[0-9a-fA-F]{24}$/, "Must be a valid 24-character Designation ID"),
+  // Organization Mapping
+  branchId: z.string().min(1, "Branch is required").optional().or(z.literal("")),
+  departmentId: z.string().min(1, "Department is required"),
+  designationId: z.string().min(1, "Designation is required"),
   
   managerId: z.string().optional(),
   employeeType: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN", "CONSULTANT", "TEMPORARY", "UNPAID", "FREELANCE"], { message: "Employee type is required" }),

@@ -32,6 +32,7 @@ import {
 } from "../../../store/employee";
 import { listDepartmentsRequest } from "../../../store/department";
 import { listDesignationsRequest } from "../../../store/designation";
+import { listBranchesRequest } from "../../../store/branch";
 import {
   createEmployeeSchema,
   type CreateEmployeeFormData,
@@ -68,11 +69,39 @@ function EmployeeCreateView() {
     (state: RootState) => state.designation?.designations ?? []
   );
 
+  const branches = useSelector(
+    (state: RootState) => state.branch?.branches ?? []
+  );
+
+  const effectiveBranchId = branchId || branches[0]?._id || "";
+
   const [manageSalary, setManageSalary] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
+  const [formValidationError, setFormValidationError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<CreateEmployeeFormData>({
+    resolver: zodResolver(createEmployeeSchema),
+    defaultValues: {
+      branchId: effectiveBranchId || "",
+      departmentId: "",
+      designationId: "",
+      countryCode: "IN",
+      employeeType: "FULL_TIME",
+      shiftId: "",
+    },
+  });
 
   useEffect(() => {
+    if (branches.length === 0) {
+      dispatch(listBranchesRequest());
+    }
     if (departments.length === 0) {
       dispatch(listDepartmentsRequest());
     }
@@ -80,7 +109,13 @@ function EmployeeCreateView() {
       dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 50 }));
     }
     dispatch(clearEmployeeError());
-  }, [dispatch, departments.length, designations.length]);
+  }, [dispatch, branches.length, departments.length, designations.length]);
+
+  useEffect(() => {
+    if (effectiveBranchId) {
+      setValue("branchId", effectiveBranchId);
+    }
+  }, [effectiveBranchId, setValue]);
 
   useEffect(() => {
     const fetchShifts = async () => {
@@ -98,23 +133,7 @@ function EmployeeCreateView() {
     fetchShifts();
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<CreateEmployeeFormData>({
-    resolver: zodResolver(createEmployeeSchema),
-    defaultValues: {
-      branchId: branchId || "",
-      departmentId: "",
-      designationId: "",
-      countryCode: "IN",
-      employeeType: "FULL_TIME",
-      shiftId: "",
-    },
-  });
+
 
   const employeeType = watch("employeeType");
 
@@ -136,12 +155,6 @@ function EmployeeCreateView() {
       setValue("salarySetup.structure.type", typeMap[payType] || "");
     }
   }, [employeeType, manageSalary, watch, setValue]);
-
-  useEffect(() => {
-    if (branchId) {
-      setValue("branchId", branchId);
-    }
-  }, [branchId, setValue]);
 
   useEffect(() => {
     if (success) {
@@ -194,8 +207,21 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
   return str;
 }
 
+  const onInvalidForm = (validationErrors: any) => {
+    console.error("Form Validation Errors:", validationErrors);
+    const firstKey = Object.keys(validationErrors)[0];
+    if (firstKey) {
+      const errObj = validationErrors[firstKey];
+      const msg = errObj?.message || `Please check the ${firstKey} field.`;
+      setFormValidationError(`Validation Error: Please check "${firstKey}" (${msg})`);
+    }
+  };
+
   const onSubmit = (data: CreateEmployeeFormData) => {
+    setFormValidationError(null);
     const payload: any = { ...data };
+
+    payload.branchId = payload.branchId || effectiveBranchId;
 
     if (payload.joiningDate) {
       payload.joiningDate = formatToYYYYMMDD(payload.joiningDate);
@@ -214,18 +240,23 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
       delete payload.salarySetup;
       delete payload.salaryStructure;
     } else {
-      const ctcAnnual = payload.salaryStructure?.ctcAnnual || payload.salarySetup?.structure?.amount || 0;
-      const components = payload.salarySetup?.structure?.components || payload.salaryStructure?.lineItems || [];
-      const lineItems = components.length > 0
-        ? components.map((c: any) => ({
-            componentCode: c.componentCode || "BASIC",
-            amount: Number(c.amount || 0),
-            isPartOfWages: Boolean(c.isPartOfWages),
-          }))
-        : [{ componentCode: "BASIC", amount: Number(ctcAnnual), isPartOfWages: true }];
+      const ctcAnnual = Number(payload.salaryStructure?.ctcAnnual || payload.salarySetup?.structure?.amount || 0);
+      const rawComponents = payload.salarySetup?.structure?.components || payload.salaryStructure?.lineItems || [];
+      const defaultCodes = ["BASIC", "HRA", "ALLOWANCE"];
+
+      let lineItems = rawComponents
+        .map((c: any, index: number) => ({
+          componentCode: ((c && c.componentCode) || defaultCodes[index] || "BASIC").toUpperCase(),
+          amount: Number((c && c.amount) || 0),
+        }))
+        .filter((c: any) => c.amount > 0);
+
+      if (lineItems.length === 0) {
+        lineItems = [{ componentCode: "BASIC", amount: ctcAnnual > 0 ? ctcAnnual : 25000 }];
+      }
 
       payload.salaryStructure = {
-        ctcAnnual: Number(ctcAnnual),
+        ctcAnnual,
         lineItems,
       };
       delete payload.salarySetup;
@@ -503,7 +534,17 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        {formValidationError && (
+          <Alert
+            severity="error"
+            onClose={() => setFormValidationError(null)}
+            sx={{ mb: 3 }}
+          >
+            {formValidationError}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit, onInvalidForm)}>
           <Stack spacing={3}>
             {/* Section 1: Basic Identity & Contact */}
             <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
