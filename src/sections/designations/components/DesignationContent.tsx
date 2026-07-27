@@ -251,12 +251,32 @@ function DesignationContent() {
                 {(designations ?? []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={canUpdate ? 6 : 5} align="center">
-                      <Box sx={{ py: 6 }}>
-                        <BadgeOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1 }} />
-                        <Typography variant="body2" color="text.secondary">
-                          No designations yet.
-                          {canCreate ? " Click \"Create Designation\" to add one." : ""}
+                      <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
+                        <BadgeOutlinedIcon sx={{ fontSize: 54, color: "#9CA3AF" }} />
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
+                          No Designations Configured Yet
                         </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
+                          Click "Create Designation" to set up your organization's first designation.
+                        </Typography>
+                        {canCreate && (
+                          <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
+                            <Button
+                              variant="contained"
+                              onClick={() => setCreateOpen(true)}
+                              startIcon={<AddIcon />}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                backgroundColor: "#6D5DF6",
+                                "&:hover": { backgroundColor: "#5B4BEA" },
+                              }}
+                            >
+                              Create Designation
+                            </Button>
+                          </Box>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>

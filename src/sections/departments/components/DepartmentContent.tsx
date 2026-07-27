@@ -427,14 +427,34 @@ function DepartmentContent() {
                                 {(departments ?? []).length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={canUpdate ? 5 : 4} align="center">
-                                            <Box sx={{ py: 6 }}>
+                                            <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
                                                 <ApartmentOutlinedIcon
-                                                    sx={{ fontSize: 48, color: "#D1D5DB", mb: 1 }}
+                                                    sx={{ fontSize: 54, color: "#9CA3AF" }}
                                                 />
-                                                <Typography variant="body2" color="text.secondary">
-                                                    No departments yet.
-                                                    {canCreate ? " Click \"Create Department\" to add one." : ""}
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
+                                                    No Departments Configured Yet
                                                 </Typography>
+                                                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
+                                                    Click "Create Department" to set up your organization's first department.
+                                                </Typography>
+                                                {canCreate && (
+                                                    <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => setCreateOpen(true)}
+                                                            startIcon={<AddIcon />}
+                                                            sx={{
+                                                                borderRadius: 2,
+                                                                textTransform: "none",
+                                                                fontWeight: 600,
+                                                                backgroundColor: "#6D5DF6",
+                                                                "&:hover": { backgroundColor: "#5B4BEA" },
+                                                            }}
+                                                        >
+                                                            Create Department
+                                                        </Button>
+                                                    </Box>
+                                                )}
                                             </Box>
                                         </TableCell>
                                     </TableRow>

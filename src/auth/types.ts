@@ -173,7 +173,7 @@ export interface CreateDepartmentRequest {
   name: string;
   code: string;
   description?: string;
-  branchId: string;
+  branchId?: string;
   parentId?: string;
 }
 
@@ -228,9 +228,9 @@ export interface CreateDesignationRequest {
   name: string;
   code: string;
   description?: string;
-  departmentId: string;
-  branchId: string;
-  level: number;
+  departmentId?: string;
+  branchId?: string;
+  level?: number;
 }
 
 export interface UpdateDesignationRequest {

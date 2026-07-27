@@ -10,6 +10,7 @@ import { paths } from "../../routes/paths";
 import PermissionGuard from "../../components/auth/PermissionGuard";
 import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard";
 import MyBranchCalendarWidget from "../../sections/dashboard/components/MyBranchCalendarWidget";
+import OrgSetupGuidanceWidget from "../../sections/dashboard/components/OrgSetupGuidanceWidget";
 import { usePermissions } from "../../hooks/usePermissions";
 
 function DashboardView() {
@@ -47,6 +48,9 @@ function DashboardView() {
         >
           Use the sidebar to navigate to Departments.
         </Typography>
+
+        {/* Organization Setup Guidance Widget for Org Admin / HR Admin */}
+        <OrgSetupGuidanceWidget />
 
         {/* Daily Punch Card Widget */}
         {role !== "ORG_ADMIN" && (

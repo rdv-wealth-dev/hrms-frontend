@@ -34,6 +34,7 @@ export function ShiftFormDialog({
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [gracePeriodMinutes, setGracePeriodMinutes] = useState<number | "">(15);
+  const [graceLimitPerMonth, setGraceLimitPerMonth] = useState<number | "">(0);
   const [breakDurationMinutes, setBreakDurationMinutes] = useState<number | "">(60);
   const [halfDayThresholdMinutes, setHalfDayThresholdMinutes] = useState<number | "">(240);
   const [fullDayMinutes, setFullDayMinutes] = useState<number | "">(480);
@@ -51,6 +52,7 @@ export function ShiftFormDialog({
         setStartTime(initialValues.startTime || "09:00");
         setEndTime(initialValues.endTime || "18:00");
         setGracePeriodMinutes(initialValues.gracePeriodMinutes ?? 15);
+        setGraceLimitPerMonth(initialValues.graceLimitPerMonth ?? 0);
         setBreakDurationMinutes(initialValues.breakDurationMinutes ?? 60);
         setHalfDayThresholdMinutes(initialValues.halfDayThresholdMinutes ?? 240);
         setFullDayMinutes(initialValues.fullDayMinutes ?? 480);
@@ -61,6 +63,7 @@ export function ShiftFormDialog({
         setStartTime("09:00");
         setEndTime("18:00");
         setGracePeriodMinutes(15);
+        setGraceLimitPerMonth(0);
         setBreakDurationMinutes(60);
         setHalfDayThresholdMinutes(240);
         setFullDayMinutes(480);
@@ -123,6 +126,7 @@ export function ShiftFormDialog({
           startTime,
           endTime,
           gracePeriodMinutes: grace,
+          graceLimitPerMonth: Number(graceLimitPerMonth) || 0,
           breakDurationMinutes: Number(breakDurationMinutes) || 0,
           halfDayThresholdMinutes: halfDay,
           fullDayMinutes: fullDay,
@@ -136,6 +140,7 @@ export function ShiftFormDialog({
           startTime,
           endTime,
           gracePeriodMinutes: grace,
+          graceLimitPerMonth: Number(graceLimitPerMonth) || 0,
           breakDurationMinutes: Number(breakDurationMinutes) || 0,
           halfDayThresholdMinutes: halfDay,
           fullDayMinutes: fullDay,
@@ -235,6 +240,16 @@ export function ShiftFormDialog({
               value={gracePeriodMinutes}
               onChange={(e) => setGracePeriodMinutes(e.target.value === "" ? "" : Number(e.target.value))}
               placeholder="15"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Grace Limit / Month (0 = Unlimited)"
+              type="number"
+              value={graceLimitPerMonth}
+              onChange={(e) => setGraceLimitPerMonth(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="0 for unlimited"
             />
           </Grid>
 

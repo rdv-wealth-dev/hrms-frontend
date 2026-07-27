@@ -54,3 +54,22 @@ export const updateDepartment = async (
   );
   return response.data;
 };
+
+export const DEFAULT_STARTER_DEPARTMENTS = [
+  { name: "Human Resources", code: "HR", description: "People management, payroll, and talent acquisition" },
+  { name: "Information Technology", code: "IT", description: "IT infrastructure, software, and tech support" },
+  { name: "Engineering", code: "ENG", description: "Product design and software development" },
+  { name: "Sales & Marketing", code: "SALES", description: "Business growth, marketing, and client relations" },
+  { name: "Operations", code: "OPS", description: "Day-to-day business operations and logistics" },
+];
+
+export const seedDefaultDepartments = async (): Promise<boolean> => {
+  for (const dept of DEFAULT_STARTER_DEPARTMENTS) {
+    try {
+      await createDepartment(dept);
+    } catch {
+      // Ignore if individual department code already exists
+    }
+  }
+  return true;
+};

@@ -51,7 +51,6 @@ export const getDesignationById = async (
     return response.data;
 };
 
-// ✅ New
 export const updateDesignation = async (
     id: string,
     payload: UpdateDesignationRequest
@@ -62,4 +61,23 @@ export const updateDesignation = async (
         { headers: getAuthHeader() }
     );
     return response.data;
+};
+
+export const DEFAULT_STARTER_DESIGNATIONS = [
+    { name: "HR Manager", code: "HR_MGR", description: "Manages human resource operations and policies" },
+    { name: "Software Engineer", code: "SE", description: "Builds and maintains software applications" },
+    { name: "Sales Executive", code: "SALES_EXEC", description: "Drives business growth and client acquisition" },
+    { name: "Accountant", code: "ACCT", description: "Manages financial accounts, ledger, and auditing" },
+    { name: "Operations Executive", code: "OPS_EXEC", description: "Coordinates daily operational workflows" },
+];
+
+export const seedDefaultDesignations = async (): Promise<boolean> => {
+    for (const desig of DEFAULT_STARTER_DESIGNATIONS) {
+        try {
+            await createDesignation(desig);
+        } catch {
+            // Ignore if individual designation code already exists
+        }
+    }
+    return true;
 };
