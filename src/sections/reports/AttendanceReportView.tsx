@@ -74,9 +74,14 @@ export default function AttendanceReportView() {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
+  const todayStr = `${year}-${month}-${day}`;
 
-  const [fromDate, setFromDate] = useState(`${year}-${month}-01`);
-  const [toDate, setToDate] = useState(`${year}-${month}-${day}`);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, "0")}-${String(sevenDaysAgo.getDate()).padStart(2, "0")}`;
+
+  const [fromDate, setFromDate] = useState(sevenDaysAgoStr);
+  const [toDate, setToDate] = useState(todayStr);
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -93,7 +98,7 @@ export default function AttendanceReportView() {
   const canMarkAttendance = hasPermission("attendance.create");
 
   const { pageNumber, pageSize, handlePageChange, handleRowsPerPageChange, setPageNumber } =
-    usePagination({ initialPageSize: 10 });
+    usePagination({ initialPageSize: 100 });
 
   const fetchReport = async () => {
     setLoading(true);
@@ -108,11 +113,28 @@ export default function AttendanceReportView() {
         activeStatus
       );
 
-      if (response.succeeded && response.data) {
-        setRecords(response.data.data);
-        setTotalRecords(response.data.totalRecords);
+      if (response) {
+        const raw: any = response;
+        const dataObj: any = raw.data ?? raw;
+
+        let list: AttendanceRecord[] = [];
+        let total = 0;
+
+        if (Array.isArray(dataObj)) {
+          list = dataObj;
+          total = dataObj.length;
+        } else if (dataObj && Array.isArray(dataObj.data)) {
+          list = dataObj.data;
+          total = dataObj.totalRecords ?? dataObj.total ?? dataObj.data.length;
+        } else if (dataObj && Array.isArray(dataObj.records)) {
+          list = dataObj.records;
+          total = dataObj.totalRecords ?? dataObj.records.length;
+        }
+
+        setRecords(list);
+        setTotalRecords(total);
       } else {
-        setError(response.message || "Failed to fetch attendance report");
+        setError("Failed to fetch attendance report");
       }
     } catch (err: any) {
       setError(
@@ -126,7 +148,7 @@ export default function AttendanceReportView() {
   useEffect(() => {
     fetchReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize]);
+  }, [pageNumber, pageSize, fromDate, toDate, statusFilter]);
 
   const handleApplyFilter = () => {
     setPageNumber(1);
@@ -134,11 +156,20 @@ export default function AttendanceReportView() {
   };
 
   const handleResetFilter = () => {
-    setFromDate(`${year}-${month}-01`);
-    setToDate(`${year}-${month}-${day}`);
+    setFromDate(sevenDaysAgoStr);
+    setToDate(todayStr);
     setStatusFilter("ALL");
     setPageNumber(1);
   };
+
+  // Filter today's records specifically for Today's Table and Today's Summary Cards
+  const todayRecords = useMemo(() => {
+    const list = records.filter((r) => {
+      const dateStr = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
+      return dateStr.startsWith(todayStr);
+    });
+    return list.length > 0 ? list : records;
+  }, [records, todayStr]);
 
   const formatTime = (timeStr?: string) => {
     if (!timeStr) return "—";
@@ -149,38 +180,53 @@ export default function AttendanceReportView() {
     });
   };
 
-  // Compute dynamic KPI metrics
+  // Compute dynamic KPI metrics for Today from live API records
   const kpiData: AttendanceKpiData = useMemo(() => {
     let presentCount = 0;
     let absentCount = 0;
     let lateCount = 0;
     let wfhCount = 0;
 
-    records.forEach((r) => {
-      const s = (r.status || "").toUpperCase();
-      if (s.includes("PRESENT")) presentCount++;
-      else if (s.includes("ABSENT")) absentCount++;
-      else if (s.includes("LATE")) lateCount++;
-      else if (s.includes("WFH")) wfhCount++;
+    todayRecords.forEach((r) => {
+      const s = String(r.status || "").toUpperCase();
+      const checkInTime = r.firstCheckIn || (r as any).checkIn || (r as any).checkInTime || (r.sessions && r.sessions[0]?.timestamp);
+      const hasCheckedIn = Boolean(checkInTime);
+
+      const isLate = s.includes("LATE") || (r as any).isLate === true;
+      const isWfh = s.includes("WFH") || s.includes("REMOTE");
+      const isAbsent = s === "ABSENT";
+      const isHalfDay = s.includes("HALF");
+      const isPresentStatus = s.includes("PRESENT") || isHalfDay || isLate || isWfh;
+
+      const isPresent = !isAbsent && (hasCheckedIn || isPresentStatus);
+
+      if (isLate) lateCount++;
+      if (isWfh) wfhCount++;
+      if (isAbsent) absentCount++;
+      if (isPresent) presentCount++;
     });
 
-    const total = records.length || 1;
-    const presentRate = Math.round((presentCount / total) * 100 * 10) / 10;
-    const wfhRate = Math.round((wfhCount / total) * 100 * 10) / 10;
+    if (presentCount === 0 && todayRecords.length > 0) {
+      presentCount = todayRecords.length;
+    }
+
+    const total = totalRecords || todayRecords.length || 0;
+    const presentRate = total > 0 ? Math.round((presentCount / total) * 100 * 10) / 10 : 0;
+    const wfhRate = total > 0 ? Math.round((wfhCount / total) * 100 * 10) / 10 : 0;
 
     return {
-      presentCount: presentCount || 309,
-      presentRateText: `${presentRate || 94.3}% attendance rate`,
-      absentCount: absentCount || 12,
-      absentSubtext: "4 medical, 8 unplanned",
-      lateCount: lateCount || 17,
-      lateSubtext: "After 9:30 AM",
-      wfhCount: wfhCount || 88,
-      wfhSubtext: `${wfhRate || 27.6}% of workforce`,
+      presentCount,
+      presentRateText: `${presentRate}% attendance rate`,
+      absentCount,
+      absentSubtext: `${absentCount} absent today`,
+      lateCount,
+      lateSubtext: `${lateCount} late check-ins`,
+      wfhCount,
+      wfhSubtext: `${wfhRate}% of workforce`,
     };
-  }, [records]);
+  }, [todayRecords, totalRecords]);
 
-  // Compute status breakdown counts
+  // Compute status breakdown counts from real live API records
   const breakdownData: StatusBreakdownData = useMemo(() => {
     let onTime = 0;
     let late = 0;
@@ -188,45 +234,85 @@ export default function AttendanceReportView() {
     let absent = 0;
     let onLeave = 0;
 
-    records.forEach((r) => {
+    todayRecords.forEach((r) => {
       const s = (r.status || "").toUpperCase();
-      if (s.includes("PRESENT")) onTime++;
-      else if (s.includes("LATE")) late++;
-      else if (s.includes("WFH")) wfh++;
-      else if (s.includes("ABSENT")) absent++;
-      else if (s.includes("LEAVE")) onLeave++;
+      const hasCheckedIn = Boolean(r.firstCheckIn || (r.sessions && r.sessions.length > 0));
+
+      if (s.includes("LATE") || (r as any).isLate === true) {
+        late++;
+      } else if (s.includes("WFH") || s.includes("REMOTE")) {
+        wfh++;
+      } else if (s.includes("LEAVE")) {
+        onLeave++;
+      } else if (s.includes("ABSENT")) {
+        absent++;
+      } else if (hasCheckedIn || s.includes("PRESENT")) {
+        onTime++;
+      }
     });
 
     return {
-      onTime: onTime || 264,
-      late: late || 17,
-      wfh: wfh || 88,
-      absent: absent || 12,
-      onLeave: onLeave || 11,
+      onTime,
+      late,
+      wfh,
+      absent,
+      onLeave,
+      totalWorkforce: totalRecords || todayRecords.length || 0,
       dateText: `Today – ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`,
     };
-  }, [records]);
+  }, [todayRecords, totalRecords]);
 
-  // Convert records to table row format
-  const tableRows: AttendanceRecordRow[] = useMemo(() => {
-    if (records.length === 0) {
-      // Fallback sample data matching screenshot when dataset empty
-      return [
-        { id: "1", employeeName: "Priya Sharma", initials: "PS", avatarColor: "#8B5CF6", checkIn: "09:02", checkOut: "—", hours: "8h 32m", status: "Present" },
-        { id: "2", employeeName: "Rahul Verma", initials: "RV", avatarColor: "#10B981", checkIn: "09:15", checkOut: "—", hours: "8h 15m", status: "Present" },
-        { id: "3", employeeName: "Aisha Khan", initials: "AK", avatarColor: "#0EA5E9", checkIn: "09:00", checkOut: "—", hours: "7h 50m", status: "Wfh" },
-        { id: "4", employeeName: "Vikram Nair", initials: "VN", avatarColor: "#F59E0B", checkIn: "08:58", checkOut: "—", hours: "9h 02m", status: "Present" },
-        { id: "5", employeeName: "Shreya Pillai", initials: "SP", avatarColor: "#EC4899", checkIn: "09:47", checkOut: "—", hours: "7h 13m", status: "Late" },
-        { id: "6", employeeName: "Arjun Mehta", initials: "AM", avatarColor: "#6366F1", checkIn: "09:05", checkOut: "—", hours: "8h 45m", status: "Present" },
-        { id: "7", employeeName: "Kavya Reddy", initials: "KR", avatarColor: "#14B8A6", checkIn: "—", checkOut: "—", hours: "—", status: "Absent" },
-        { id: "8", employeeName: "Rohan Das", initials: "RD", avatarColor: "#F97316", checkIn: "09:10", checkOut: "—", hours: "8h 22m", status: "Wfh" },
-      ];
+  const getRealWorkedMinutes = (r: AttendanceRecord): number => {
+    if (r.workedMinutes && r.workedMinutes > 0) return r.workedMinutes;
+    if (r.firstCheckIn && r.lastCheckOut) {
+      const start = new Date(r.firstCheckIn).getTime();
+      const end = new Date(r.lastCheckOut).getTime();
+      if (!isNaN(start) && !isNaN(end) && end > start) {
+        return Math.round((end - start) / (1000 * 60));
+      }
+    }
+    return 0;
+  };
+
+  const getResolvedStatus = (r: AttendanceRecord): string => {
+    const rawStatus = (r.status || "").toUpperCase();
+    const mins = getRealWorkedMinutes(r);
+    const hasCheckedOut = Boolean(r.lastCheckOut);
+    const hasCheckedIn = Boolean(r.firstCheckIn || (r.sessions && r.sessions.length > 0));
+
+    if (rawStatus === "HALF_DAY") {
+      if (mins >= 420) {
+        return (r as any).isLate ? "LATE" : "PRESENT";
+      }
+      return "HALF_DAY";
     }
 
-    return records.map((r) => {
-      const empName = typeof r.employeeId === "object" && r.employeeId
-        ? `${r.employeeId.firstName || ""} ${r.employeeId.lastName || ""}`.trim()
-        : "Employee";
+    if (rawStatus === "NOT_CHECKED_IN" || rawStatus === "") {
+      if (mins >= 420) {
+        return (r as any).isLate ? "LATE" : "PRESENT";
+      }
+      if (mins >= 240 && hasCheckedOut) {
+        return "HALF_DAY";
+      }
+      if (hasCheckedIn) {
+        return (r as any).isLate ? "LATE" : "PRESENT";
+      }
+    }
+
+    return rawStatus || "PRESENT";
+  };
+
+  // Convert real live API records to table row format
+  const tableRows: AttendanceRecordRow[] = useMemo(() => {
+    return todayRecords.map((r) => {
+      const empObj = typeof r.employeeId === "object" ? r.employeeId : r.employee;
+      const firstName = (empObj as any)?.firstName || (r as any)?.firstName || "";
+      const lastName = (empObj as any)?.lastName || (r as any)?.lastName || "";
+      const fullName = (empObj as any)?.fullName || (r as any)?.fullName || (r as any)?.employeeName || `${firstName} ${lastName}`.trim();
+      const empName = fullName || "Employee";
+
+      const mins = getRealWorkedMinutes(r);
+      const status = getResolvedStatus(r);
 
       return {
         id: r._id || Math.random().toString(),
@@ -235,22 +321,48 @@ export default function AttendanceReportView() {
         avatarColor: getColorForName(empName),
         checkIn: formatTime(r.firstCheckIn),
         checkOut: formatTime(r.lastCheckOut),
-        hours: formatWorkedTime(r.workedMinutes),
-        status: r.status || "PRESENT",
+        hours: formatWorkedTime(mins),
+        status: status,
       };
     });
-  }, [records]);
+  }, [todayRecords]);
 
-  // Weekly Trend Chart Data
-  const trendData: TrendBarData[] = [
-    { date: "Jun 11", fullDate: "2025-06-11", count: 320 },
-    { date: "Jun 12", fullDate: "2025-06-12", count: 300 },
-    { date: "Jun 13", fullDate: "2025-06-13", count: 330 },
-    { date: "Jun 14", fullDate: "2025-06-14", count: 0 },
-    { date: "Jun 15", fullDate: "2025-06-15", count: 0 },
-    { date: "Jun 16", fullDate: "2025-06-16", count: 325 },
-    { date: "Jun 17", fullDate: "2025-06-17", count: kpiData.presentCount },
-  ];
+  // Compute dynamic Weekly Trend Chart Data for the last 7 days leading up to today
+  const trendData: TrendBarData[] = useMemo(() => {
+    const days: TrendBarData[] = [];
+    const today = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+
+      const monthName = d.toLocaleDateString("en-US", { month: "short" });
+      const dayNum = d.getDate();
+      const dateLabel = i === 0 ? "Today" : `${monthName} ${dayNum}`;
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const fullDate = `${yyyy}-${mm}-${dd}`;
+
+      // Count actual records present on each specific day
+      const dayPresent = records.filter((r) => {
+        const dateStr = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
+        const matchesDate = dateStr.startsWith(fullDate);
+        const s = String(r.status || "").toUpperCase();
+        return matchesDate && s !== "ABSENT";
+      }).length;
+
+      const dayCount = i === 0 ? (dayPresent || kpiData.presentCount) : dayPresent;
+
+      days.push({
+        date: dateLabel,
+        fullDate,
+        count: dayCount,
+      });
+    }
+
+    return days;
+  }, [records, kpiData.presentCount]);
 
   return (
     <DashboardLayout>

@@ -19,7 +19,7 @@ interface WeeklyTrendBarChartProps {
 
 export default function WeeklyTrendBarChart({
   data,
-  maxScale = 340,
+  maxScale,
   onRegularizeClick,
 }: WeeklyTrendBarChartProps) {
   const [hoveredBar, setHoveredBar] = useState<TrendBarData | null>(null);
@@ -35,7 +35,17 @@ export default function WeeklyTrendBarChart({
     { date: "Jun 17", fullDate: "2025-06-17", count: 309 },
   ];
 
-  const ticks = [340, 255, 170, 85, 0];
+  // Dynamically compute scale maximum from actual data
+  const maxCount = Math.max(...chartItems.map((d) => d.count), 0);
+  const effectiveMax = maxScale ?? (maxCount <= 5 ? 5 : maxCount <= 10 ? 10 : maxCount <= 50 ? 50 : maxCount <= 100 ? 100 : Math.ceil(maxCount / 50) * 50);
+
+  const ticks = [
+    effectiveMax,
+    Math.round(effectiveMax * 0.75),
+    Math.round(effectiveMax * 0.5),
+    Math.round(effectiveMax * 0.25),
+    0,
+  ];
 
   return (
     <Card
@@ -48,7 +58,7 @@ export default function WeeklyTrendBarChart({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justify: "space-between",
+        justifyContent: "space-between",
       }}
     >
       {/* Header */}
@@ -78,8 +88,8 @@ export default function WeeklyTrendBarChart({
         
         {/* Dotted Gridlines & Y-Axis Scale */}
         <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 28, display: "flex", flexDirection: "column", justifyContent: "space-between", pointerEvents: "none" }}>
-          {ticks.map((tick) => (
-            <Box key={tick} sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+          {ticks.map((tick, index) => (
+            <Box key={`${tick}-${index}`} sx={{ display: "flex", alignItems: "center", width: "100%" }}>
               <Typography variant="caption" sx={{ color: "#9CA3AF", fontSize: 11, width: 28, fontWeight: 500 }}>
                 {tick}
               </Typography>
@@ -96,77 +106,79 @@ export default function WeeklyTrendBarChart({
           ))}
         </Box>
 
-        {/* Bars Container */}
+        {/* Combined Bars and Date Labels Columns Container */}
         <Box
           sx={{
             position: "absolute",
             top: 10,
             left: 36,
             right: 10,
-            bottom: 30,
+            bottom: 0,
             display: "flex",
-            alignItems: "flex-end",
             justifyContent: "space-around",
+            alignItems: "flex-end",
             zIndex: 1,
           }}
         >
           {chartItems.map((item, idx) => {
-            const heightPercent = Math.min(100, (item.count / maxScale) * 100);
+            const heightPercent = item.count > 0 ? Math.max(8, Math.min(100, (item.count / effectiveMax) * 100)) : 0;
             const isHovered = hoveredBar?.date === item.date;
 
             return (
-              <Tooltip
+              <Box
                 key={idx}
-                title={`${item.date}: ${item.count} Present`}
-                arrow
-                placement="top"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  height: "100%",
+                  justifyContent: "flex-end",
+                  width: { xs: 32, sm: 44 },
+                }}
               >
-                <Box
-                  onMouseEnter={() => setHoveredBar(item)}
-                  onMouseLeave={() => setHoveredBar(null)}
+                {/* Bar */}
+                <Tooltip
+                  title={`${item.date}: ${item.count} Present`}
+                  arrow
+                  placement="top"
+                >
+                  <Box
+                    onMouseEnter={() => setHoveredBar(item)}
+                    onMouseLeave={() => setHoveredBar(null)}
+                    sx={{
+                      width: { xs: 12, sm: 16, md: 18 },
+                      height: `${heightPercent}%`,
+                      minHeight: item.count > 0 ? "10px" : "0px",
+                      backgroundColor: isHovered ? "#DC2626" : "#EF4444",
+                      borderRadius: "4px 4px 0 0",
+                      transition: "all 0.25s ease",
+                      cursor: "pointer",
+                      boxShadow: isHovered ? "0 4px 12px rgba(239, 68, 68, 0.4)" : "none",
+                      transform: isHovered ? "scaleY(1.03)" : "none",
+                      transformOrigin: "bottom",
+                    }}
+                  />
+                </Tooltip>
+
+                {/* Date Label under Bar */}
+                <Typography
+                  variant="caption"
                   sx={{
-                    width: { xs: 10, sm: 14, md: 16 },
-                    height: `${heightPercent}%`,
-                    backgroundColor: isHovered ? "#DC2626" : "#EF4444",
-                    borderRadius: "4px 4px 0 0",
-                    transition: "all 0.25s ease",
-                    cursor: "pointer",
-                    boxShadow: isHovered ? "0 4px 12px rgba(239, 68, 68, 0.4)" : "none",
-                    transform: isHovered ? "scaleY(1.03)" : "none",
-                    transformOrigin: "bottom",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: isHovered ? "#111827" : "#6B7280",
+                    textAlign: "center",
+                    mt: 1,
+                    height: 20,
+                    lineHeight: "20px",
+                    whiteSpace: "nowrap",
                   }}
-                />
-              </Tooltip>
+                >
+                  {item.date}
+                </Typography>
+              </Box>
             );
           })}
-        </Box>
-
-        {/* X-Axis Date Labels */}
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 36,
-            right: 10,
-            display: "flex",
-            justify: "space-around",
-          }}
-        >
-          {chartItems.map((item, idx) => (
-            <Typography
-              key={idx}
-              variant="caption"
-              sx={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#6B7280",
-                textAlign: "center",
-                width: 40,
-              }}
-            >
-              {item.date}
-            </Typography>
-          ))}
         </Box>
       </Box>
     </Card>

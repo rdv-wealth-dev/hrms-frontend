@@ -43,7 +43,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "holiday.create",
     "branch.read",
     "department.read", "designation.read",
-    "report.read",
+    "report.read", "settings.read",
     "document.read", "document.verify",
   ],
   LEADERSHIP: [

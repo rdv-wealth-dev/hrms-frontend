@@ -39,16 +39,22 @@ export default function EmployeeAttendanceTable({
     if (s.includes("present")) {
       return { label: "Present", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0" };
     }
-    if (s.includes("wfh")) {
-      return { label: "Wfh", color: "#0D9488", bg: "#F0FDFA", border: "#99F6E4" };
+    if (s.includes("wfh") || s.includes("remote")) {
+      return { label: "WFH", color: "#0D9488", bg: "#F0FDFA", border: "#99F6E4" };
     }
     if (s.includes("late")) {
       return { label: "Late", color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE" };
     }
+    if (s.includes("half")) {
+      return { label: "Half Day", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A" };
+    }
+    if (s.includes("leave")) {
+      return { label: "On Leave", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" };
+    }
     if (s.includes("absent")) {
       return { label: "Absent", color: "#DC2626", bg: "#FEF2F2", border: "#FCA5A5" };
     }
-    return { label: status, color: "#4B5563", bg: "#F3F4F6", border: "#E5E7EB" };
+    return { label: status.replace(/_/g, " "), color: "#4B5563", bg: "#F3F4F6", border: "#E5E7EB" };
   };
 
   const handleCsvExport = () => {
@@ -89,7 +95,7 @@ export default function EmployeeAttendanceTable({
           px: { xs: 2.5, sm: 3 },
           py: 2.5,
           display: "flex",
-          justify: "space-between",
+          justifyContent: "space-between",
           alignItems: "center",
           borderBottom: "1px solid #F3F4F6",
         }}
@@ -101,6 +107,7 @@ export default function EmployeeAttendanceTable({
           onClick={handleCsvExport}
           startIcon={<FileDownloadOutlinedIcon fontSize="small" />}
           sx={{
+            ml: "auto",
             textTransform: "none",
             fontWeight: 600,
             fontSize: "0.825rem",
