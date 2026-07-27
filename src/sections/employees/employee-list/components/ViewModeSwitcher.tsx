@@ -2,10 +2,10 @@ import Box from "@mui/material/Box";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
+import TableRowsOutlinedIcon from "@mui/icons-material/TableRowsOutlined";
+import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 
-export type ViewMode = "classic" | "people_hub";
+export type ViewMode = "classic" | "people_hub" | "directory";
 
 interface ViewModeSwitcherProps {
   viewMode: ViewMode;
@@ -25,26 +25,33 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
   return (
     <Box sx={{ display: "inline-flex", alignItems: "center" }}>
       <ToggleButtonGroup
-        value={viewMode}
+        value={viewMode === "classic" ? "people_hub" : viewMode}
         exclusive
         onChange={handleViewChange}
         size="small"
         sx={{
-          backgroundColor: "#F1F5F9",
-          p: 0.5,
-          borderRadius: 2.5,
-          border: "1px solid #E2E8F0",
+          backgroundColor: "#F3F4F6",
+          p: "4px",
+          borderRadius: "20px",
+          border: "1px solid #E5E7EB",
+          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+          "& .MuiToggleButtonGroup-grouped": {
+            border: "none",
+            borderRadius: "12px !important",
+          },
           "& .MuiToggleButton-root": {
             border: "none",
-            borderRadius: 2,
-            px: 1.5,
+            borderRadius: "12px",
+            px: 1.6,
             py: 0.6,
+            minWidth: 42,
+            height: 34,
             color: "#64748B",
-            transition: "all 0.2s ease",
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             "&.Mui-selected": {
               backgroundColor: "#6D5DF6",
               color: "#FFFFFF",
-              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.3)",
+              boxShadow: "0 2px 6px rgba(109, 93, 246, 0.35)",
               "&:hover": {
                 backgroundColor: "#5B4BEA",
               },
@@ -55,15 +62,15 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
           },
         }}
       >
-        <Tooltip title="Design 2: People Hub View" placement="top">
-          <ToggleButton value="people_hub" aria-label="People Hub View">
-            <LeaderboardOutlinedIcon sx={{ fontSize: 18 }} />
+        <Tooltip title="Table View" placement="top">
+          <ToggleButton value="people_hub" aria-label="Table View">
+            <TableRowsOutlinedIcon sx={{ fontSize: 20 }} />
           </ToggleButton>
         </Tooltip>
 
-        <Tooltip title="Design 1: Classic Table View" placement="top">
-          <ToggleButton value="classic" aria-label="Classic View">
-            <FormatListBulletedIcon sx={{ fontSize: 18 }} />
+        <Tooltip title="Employee Directory View" placement="top">
+          <ToggleButton value="directory" aria-label="Employee Directory View">
+            <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
           </ToggleButton>
         </Tooltip>
       </ToggleButtonGroup>

@@ -40,9 +40,11 @@ function* handleCreateEmployee(action: CreateEmployeeRequestAction): SagaIterato
     yield put(createEmployeeSuccess(response));
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      const serverData = error.response?.data;
+      const serverMsg = serverData?.message || (Array.isArray(serverData?.errors) && serverData.errors.length > 0 ? serverData.errors.join(", ") : undefined);
       yield put(
         createEmployeeFailure(
-          error.response?.data?.message ?? "Failed to create employee"
+          serverMsg ?? error.message ?? "Failed to create employee"
         )
       );
     } else if (error instanceof Error) {

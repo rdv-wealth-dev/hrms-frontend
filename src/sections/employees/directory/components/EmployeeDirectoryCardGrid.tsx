@@ -25,25 +25,8 @@ const AVATAR_COLORS = [
   "#0284C7", // Sky Blue (SK)
 ];
 
-// Helper to get card properties matching screenshot
-function getCardMeta(index: number) {
-  const tagsList = [
-    ["High Performer"],
-    ["Remote"],
-    [],
-    ["Probation"],
-    ["High Performer", "Remote"],
-    ["Leadership"],
-    [],
-    ["Remote"],
-    ["Notice Period"],
-    [],
-  ];
-
-  const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
-  const tags = tagsList[index % tagsList.length];
-
-  return { color, tags };
+function getCardColor(index: number) {
+  return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
 
 export function EmployeeDirectoryCardGrid({
@@ -67,33 +50,41 @@ export function EmployeeDirectoryCardGrid({
       {employees.map((emp, index) => {
         const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
         const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
-        const meta = getCardMeta(index);
+        const color = getCardColor(index);
 
         const desigName =
           typeof emp.designationId === "object"
-            ? (emp.designationId as any)?.name
-            : "Software Engineer";
+            ? (emp.designationId as any)?.name || "Software Developer"
+            : emp.designationId || "Software Developer";
 
         const deptName =
           typeof emp.departmentId === "object"
-            ? (emp.departmentId as any)?.name
-            : "Engineering";
+            ? (emp.departmentId as any)?.name || "Engineering"
+            : emp.departmentId || "Engineering";
 
-        const isProbation = emp.status === "PROBATION" || (index % 5 === 3);
-        const isNotice = index % 5 === 8;
+        const rawStatus = (emp.status || "").toUpperCase();
+        const rawType = (emp.employeeType || "").toUpperCase();
 
         let statusLabel = "Active";
         let statusBg = "rgba(220, 252, 231, 0.9)";
         let statusColor = "#15803D";
 
-        if (isNotice) {
-          statusLabel = "Notice";
-          statusBg = "rgba(254, 226, 226, 0.9)";
-          statusColor = "#B91C1C";
-        } else if (isProbation) {
+        if (rawStatus.includes("LEAVE") || rawType.includes("LEAVE")) {
+          statusLabel = "On Leave";
+          statusBg = "rgba(238, 242, 255, 0.9)";
+          statusColor = "#4F46E5";
+        } else if (rawStatus.includes("PROBATION") || rawType.includes("PROBATION") || (index % 5 === 3)) {
           statusLabel = "Probation";
           statusBg = "rgba(254, 243, 199, 0.9)";
           statusColor = "#B45309";
+        } else if (rawStatus.includes("NOTICE")) {
+          statusLabel = "Notice Period";
+          statusBg = "rgba(255, 237, 213, 0.9)";
+          statusColor = "#C2410C";
+        } else if (rawStatus.includes("INACTIVE") || emp.isActive === false) {
+          statusLabel = "Inactive";
+          statusBg = "rgba(243, 244, 246, 0.9)";
+          statusColor = "#6B7280";
         }
 
         return (
@@ -127,18 +118,18 @@ export function EmployeeDirectoryCardGrid({
               sx={{
                 width: 52,
                 height: 52,
-                backgroundColor: meta.color,
+                backgroundColor: color,
                 fontSize: "16px",
                 fontWeight: 800,
                 color: "#FFFFFF",
-                mb: 2,
-                boxShadow: `0 4px 14px ${meta.color}40`,
+                mb: 1.5,
+                boxShadow: `0 4px 14px ${color}40`,
               }}
             >
               {initials}
             </Avatar>
 
-            {/* Name */}
+            {/* Employee Name */}
             <Typography
               variant="subtitle1"
               sx={{
@@ -174,13 +165,13 @@ export function EmployeeDirectoryCardGrid({
                 fontWeight: 500,
                 fontSize: "12px",
                 display: "block",
-                mb: 1.8,
+                mb: 1.5,
               }}
             >
               {deptName}
             </Typography>
 
-            {/* Status Pill Badge */}
+            {/* Status Badge */}
             <Chip
               label={statusLabel}
               size="small"
@@ -192,40 +183,8 @@ export function EmployeeDirectoryCardGrid({
                 color: statusColor,
                 borderRadius: "12px",
                 px: 1,
-                mb: meta.tags.length > 0 ? 1 : 0,
               }}
             />
-
-            {/* Bottom Tags */}
-            {meta.tags.length > 0 && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexWrap: "wrap",
-                  gap: 0.8,
-                  mt: 0.5,
-                }}
-              >
-                {meta.tags.map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    sx={{
-                      height: 22,
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      backgroundColor: "#EEF2FF",
-                      color: "#4F46E5",
-                      borderRadius: "10px",
-                      px: 0.5,
-                    }}
-                  />
-                ))}
-              </Box>
-            )}
           </Paper>
         );
       })}

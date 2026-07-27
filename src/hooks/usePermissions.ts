@@ -7,7 +7,7 @@ export function usePermissions() {
   const { role, permissions: userPermissions, hasRole } = useRole();
   const user = useSelector((state: RootState) => state.auth?.user);
 
-  const isSuperAdmin = role === "ORG_ADMIN" || user?.isSuperAdmin === true;
+  const isSuperAdmin = role === "ORG_ADMIN" || role === "HR_ADMIN" || role === "HR" || user?.isSuperAdmin === true;
 
   // Resolve permissions from either user payload or fallback role mapping
   const permissions = userPermissions.length > 0
@@ -16,6 +16,7 @@ export function usePermissions() {
 
   const hasPermission = (perm: string): boolean => {
     if (isSuperAdmin) return true;
+    if ((role === "MANAGER" || role === "PRODUCT_MANAGER") && (perm === "attendance.approve" || perm === "leave.approve" || perm === "attendance.read")) return true;
     return permissions.includes(perm);
   };
 

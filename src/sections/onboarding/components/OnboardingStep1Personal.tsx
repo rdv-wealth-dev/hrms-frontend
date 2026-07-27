@@ -54,6 +54,9 @@ export default function OnboardingStep1Personal({
       bloodGroup: initialValues?.bloodGroup || "",
       maritalStatus: initialValues?.maritalStatus || "SINGLE",
       phone: initialValues?.phone || "",
+      pan: initialValues?.pan || "",
+      aadhaar: initialValues?.aadhaar || "",
+      passportNo: initialValues?.passportNo || "",
       currentAddress: {
         addressLine1: initialValues?.currentAddress?.addressLine1 || "",
         addressLine2: initialValues?.currentAddress?.addressLine2 || "",
@@ -92,66 +95,81 @@ export default function OnboardingStep1Personal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: "#374151", fontSize: "13.5px" }}>
-              Gender
-            </Typography>
-            <TextField
+            <TextInput
               select
-              fullWidth
-              {...register("gender")}
-              error={!!errors.gender}
-              helperText={errors.gender?.message}
-              slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
+              label="Gender"
+              registration={register("gender")}
+              error={errors.gender?.message}
             >
               {GENDERS.map((g) => (
                 <MenuItem key={g} value={g}>{g}</MenuItem>
               ))}
-            </TextField>
+            </TextInput>
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: "#374151", fontSize: "13.5px" }}>
-              Marital Status
-            </Typography>
-            <TextField
+            <TextInput
               select
-              fullWidth
-              {...register("maritalStatus")}
-              error={!!errors.maritalStatus}
-              helperText={errors.maritalStatus?.message}
-              slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
+              label="Marital Status"
+              registration={register("maritalStatus")}
+              error={errors.maritalStatus?.message}
             >
               {MARITAL_STATUSES.map((m) => (
                 <MenuItem key={m} value={m}>{m}</MenuItem>
               ))}
-            </TextField>
+            </TextInput>
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: "#374151", fontSize: "13.5px" }}>
-              Blood Group (Optional)
-            </Typography>
-            <TextField
+            <TextInput
               select
-              fullWidth
-              {...register("bloodGroup")}
-              error={!!errors.bloodGroup}
-              helperText={errors.bloodGroup?.message}
-              slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
+              label="Blood Group (Optional)"
+              registration={register("bloodGroup")}
+              error={errors.bloodGroup?.message}
             >
               <MenuItem value="">Select Blood Group</MenuItem>
               {BLOOD_GROUPS.map((bg) => (
                 <MenuItem key={bg} value={bg}>{bg}</MenuItem>
               ))}
-            </TextField>
+            </TextInput>
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label="Phone Number (with Country Code)"
-              placeholder="+91 9876543210"
+              label="Phone Number"
+              placeholder="9876543210"
+              maxLength={10}
               registration={register("phone")}
               error={errors.phone?.message}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="PAN Card Number"
+              placeholder="ABCDE1234F"
+              maxLength={10}
+              registration={register("pan")}
+              error={errors.pan?.message}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Aadhaar Card Number"
+              placeholder="123456789012"
+              maxLength={12}
+              registration={register("aadhaar")}
+              error={errors.aadhaar?.message}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Passport Number (Optional)"
+              placeholder="Z1234567"
+              registration={register("passportNo")}
+              error={errors.passportNo?.message}
             />
           </Grid>
         </Grid>
@@ -197,20 +215,16 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: "#374151", fontSize: "13.5px" }}>
-              Country
-            </Typography>
-            <TextField
+            <TextInput
               select
-              fullWidth
-              {...register("currentAddress.countryCode")}
-              error={!!errors.currentAddress?.countryCode}
-              helperText={errors.currentAddress?.countryCode?.message}
+              label="Country"
+              registration={register("currentAddress.countryCode")}
+              error={errors.currentAddress?.countryCode?.message}
             >
               {COUNTRIES.map((c) => (
                 <MenuItem key={c.code} value={c.code}>{c.name} ({c.code})</MenuItem>
               ))}
-            </TextField>
+            </TextInput>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
@@ -267,7 +281,8 @@ export default function OnboardingStep1Personal({
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextInput
                   label="Phone Number"
-                  placeholder="+91 9876543210"
+                  placeholder="9876543210"
+                  maxLength={10}
                   registration={register(`emergencyContact.${idx}.phone` as const)}
                   error={errors.emergencyContact?.[idx]?.phone?.message}
                 />

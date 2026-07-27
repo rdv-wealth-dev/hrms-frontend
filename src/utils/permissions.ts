@@ -43,13 +43,13 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "designation.read", "report.read",
   ],
   MANAGER: [
-    "employee.read", "attendance.read",
+    "employee.read", "attendance.read", "attendance.approve",
     "leave.read", "leave.approve",
     "department.read", "designation.read",
     "report.read",
   ],
   PRODUCT_MANAGER: [
-    "employee.read", "attendance.read",
+    "employee.read", "attendance.read", "attendance.approve",
     "leave.read", "leave.approve",
     "department.read", "designation.read",
   ],

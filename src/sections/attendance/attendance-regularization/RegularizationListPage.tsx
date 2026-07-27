@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -14,6 +14,7 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { getPendingRegularizationRequests } from "../../../api/attendance.api";
@@ -33,8 +34,8 @@ function RegularizationListPage() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RegularizationRequest | null>(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = useCallback(async (isInitial = true) => {
+    if (isInitial) setLoading(true);
     setError(null);
     try {
       // Load both pending regularizations and employees in parallel
@@ -49,11 +50,14 @@ function RegularizationListPage() {
         fetchedRequests = regRes;
       } else if (regRes && Array.isArray((regRes as any).data)) {
         fetchedRequests = (regRes as any).data;
-      } else if ((regRes as any)?.succeeded && Array.isArray((regRes as any).data)) {
-        fetchedRequests = (regRes as any).data;
-      } else {
-        setError((regRes as any)?.message || "Failed to load regularization requests");
-        return;
+      } else if (regRes && Array.isArray((regRes as any).items)) {
+        fetchedRequests = (regRes as any).items;
+      } else if (regRes && Array.isArray((regRes as any).data?.items)) {
+        fetchedRequests = (regRes as any).data.items;
+      } else if (regRes && Array.isArray((regRes as any).regularizations)) {
+        fetchedRequests = (regRes as any).regularizations;
+      } else if (regRes && Array.isArray((regRes as any).requests)) {
+        fetchedRequests = (regRes as any).requests;
       }
 
       setRequests(fetchedRequests);
@@ -62,17 +66,33 @@ function RegularizationListPage() {
         setEmployeesList(empRes.data);
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "Something went wrong while fetching data"
-      );
+      if (isInitial) {
+        setError(
+          err.response?.data?.message || err.message || "Something went wrong while fetching data"
+        );
+      }
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(true);
+
+    // Auto-poll every 15s to automatically show incoming requests
+    const interval = setInterval(() => {
+      loadData(false);
+    }, 15000);
+
+    // Auto-refetch when window regains focus
+    const handleFocus = () => loadData(false);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [loadData]);
 
   const getEmployeeName = (empId: string) => {
     const emp = employeesList.find((e) => e._id === empId);
@@ -119,6 +139,22 @@ function RegularizationListPage() {
               Review and approve daily punch corrections submitted by employees.
             </Typography>
           </Box>
+
+          <Button
+            variant="outlined"
+            onClick={() => loadData(true)}
+            startIcon={<RefreshIcon />}
+            sx={{
+              borderRadius: "10px",
+              borderColor: "#CBD5E1",
+              color: "#374151",
+              textTransform: "none",
+              fontWeight: 600,
+              "&:hover": { borderColor: "#6D5DF6", color: "#6D5DF6", backgroundColor: "#F5F3FF" },
+            }}
+          >
+            Refresh
+          </Button>
         </Box>
 
         {error && (

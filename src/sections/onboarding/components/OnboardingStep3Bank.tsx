@@ -86,32 +86,28 @@ export default function OnboardingStep3Bank({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: "#374151", fontSize: "13.5px" }}>
-              Account Type
-            </Typography>
-            <TextField
+            <TextInput
               select
-              fullWidth
+              label="Account Type"
               value={watch("accountType") || "SALARY"}
-              {...register("accountType")}
-              error={!!errors.accountType}
-              helperText={errors.accountType?.message}
+              registration={register("accountType")}
+              error={errors.accountType?.message}
             >
               {ACCOUNT_TYPES.map((t) => (
                 <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
               ))}
-            </TextField>
+            </TextInput>
           </Grid>
         </Grid>
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
           startIcon={<ArrowBackIcon />}
-          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1" }}
+          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1", width: { xs: "100%", sm: "auto" } }}
         >
           Back
         </Button>
@@ -120,7 +116,7 @@ export default function OnboardingStep3Bank({
           variant="contained"
           disabled={loading}
           endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" } }}
+          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
         >
           {loading ? "Saving..." : "Save & Continue"}
         </Button>

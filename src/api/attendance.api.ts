@@ -125,12 +125,25 @@ export interface ReviewRegularizationResponse {
   data: any;
 }
 
-export const getPendingRegularizationRequests = async (): Promise<RegularizationListResponse | RegularizationRequest[]> => {
-  const response = await axiosInstance.get<RegularizationListResponse | RegularizationRequest[]>(
-    "/attendance/regularizations/pending",
-    { headers: getAuthHeader() }
-  );
-  return response.data;
+export const getPendingRegularizationRequests = async (): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(
+      "/attendance/regularizations/pending",
+      { headers: getAuthHeader() }
+    );
+    if (response.data) {
+      const d = response.data;
+      if (Array.isArray(d) && d.length > 0) return d;
+      if (d.succeeded && Array.isArray(d.data) && d.data.length > 0) return d;
+    }
+    return response.data;
+  } catch {
+    const fallbackResponse = await axiosInstance.get(
+      "/attendance/regularizations",
+      { params: { status: "PENDING" }, headers: getAuthHeader() }
+    );
+    return fallbackResponse.data;
+  }
 };
 
 export const reviewRegularizationRequest = async (

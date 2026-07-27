@@ -308,21 +308,6 @@ function DashboardLayout({ children }: Props) {
                                 },
                             }}
                         >
-                            <Avatar
-                                src={user?.avatarUrl || (user as any)?.avatar || (user as any)?.profilePicture}
-                                sx={{
-                                    width: 36,
-                                    height: 36,
-                                    background: "linear-gradient(135deg, #6D5DF6 0%, #4F46E5 100%)",
-                                    color: "#fff",
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    boxShadow: "0 2px 8px rgba(109, 93, 246, 0.3)",
-                                }}
-                            >
-                                {user?.firstName?.[0]?.toUpperCase() ?? "U"}
-                                {user?.lastName?.[0]?.toUpperCase() ?? ""}
-                            </Avatar>
                             {!isCollapsed && (
                                 <Box sx={{ minWidth: 0 }}>
                                     <Typography

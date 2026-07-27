@@ -3,7 +3,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import TextInput from "../input/TextInput";
 import Chip from "@mui/material/Chip";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -149,98 +149,122 @@ export function CustomWeekOffRulesBuilder({
                 borderColor: "#E2E8F0",
                 backgroundColor: "#FFFFFF",
                 display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: { xs: "stretch", sm: "center" },
+                flexDirection: { xs: "column", md: "row" },
+                alignItems: { xs: "stretch", md: "flex-start" },
                 gap: 2,
               }}
             >
               {/* Day Selector */}
-              <TextField
-                select
-                label="Day of Week"
-                size="small"
-                value={rule.dayOfWeek}
-                onChange={(e) => handleDayChange(idx, e.target.value as DayOfWeek)}
-                disabled={disabled}
-                sx={{ minWidth: 160 }}
-              >
-                {ALL_DAYS.map((day) => {
-                  const isAlreadyUsed = rules.some((r, i) => i !== idx && r.dayOfWeek === day);
-                  return (
-                    <MenuItem key={day} value={day} disabled={isAlreadyUsed}>
-                      {day} {isAlreadyUsed ? "(Configured)" : ""}
-                    </MenuItem>
-                  );
-                })}
-              </TextField>
+              <Box sx={{ minWidth: 160, width: { xs: "100%", md: 170 } }}>
+                <TextInput
+                  select
+                  label="Day of Week"
+                  value={rule.dayOfWeek}
+                  onChange={(e) => handleDayChange(idx, e.target.value as DayOfWeek)}
+                  disabled={disabled}
+                >
+                  {ALL_DAYS.map((day) => {
+                    const isAlreadyUsed = rules.some((r, i) => i !== idx && r.dayOfWeek === day);
+                    return (
+                      <MenuItem key={day} value={day} disabled={isAlreadyUsed}>
+                        {day} {isAlreadyUsed ? "(Configured)" : ""}
+                      </MenuItem>
+                    );
+                  })}
+                </TextInput>
+              </Box>
 
-              {/* Occurrence Checkboxes + Delete Button — all on one row */}
-              <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: "#475569", mr: 0.5 }}>
-                  Month Occurrences:
-                </Typography>
-                {(() => {
-                  const allSelected = (rule.weeks?.length || 0) === 5;
-                  return (
-                    <Chip
-                      label={allSelected ? "Deselect All" : "Select All"}
-                      size="small"
-                      onClick={() => handleToggleAllWeeks(idx)}
-                      disabled={disabled}
-                      variant={allSelected ? "filled" : "outlined"}
-                      sx={{
-                        height: 22,
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        cursor: disabled ? "default" : "pointer",
-                        backgroundColor: allSelected ? "#EEF2FF" : "transparent",
-                        color: allSelected ? "#4F46E5" : "#64748B",
-                        borderColor: allSelected ? "#C7D2FE" : "#CBD5E1",
-                        mr: 1,
-                        "&:hover": {
-                          backgroundColor: allSelected ? "#E0E7FF" : "#F8FAFC",
-                          borderColor: "#6366F1",
-                        },
-                      }}
-                    />
-                  );
-                })()}
-                {WEEK_OCCURRENCES.map((occ) => {
-                  const isChecked = rule.weeks?.includes(occ.value);
-                  return (
-                    <FormControlLabel
-                      key={occ.value}
-                      control={
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => handleWeekToggle(idx, occ.value)}
-                          disabled={disabled}
+              {/* Occurrence Section */}
+              <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+                {/* Header Row: Month Occurrences label + Select All Chip + Delete Icon */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justify: "space-between",
+                    flexWrap: "wrap",
+                    gap: 1,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: "#475569" }}>
+                      Month Occurrences:
+                    </Typography>
+                    {(() => {
+                      const allSelected = (rule.weeks?.length || 0) === 5;
+                      return (
+                        <Chip
+                          label={allSelected ? "Deselect All" : "Select All"}
                           size="small"
+                          onClick={() => handleToggleAllWeeks(idx)}
+                          disabled={disabled}
+                          variant={allSelected ? "filled" : "outlined"}
                           sx={{
-                            color: "#94A3B8",
-                            "&.Mui-checked": { color: "#4F46E5" },
+                            height: 22,
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            cursor: disabled ? "default" : "pointer",
+                            backgroundColor: allSelected ? "#EEF2FF" : "transparent",
+                            color: allSelected ? "#4F46E5" : "#64748B",
+                            borderColor: allSelected ? "#C7D2FE" : "#CBD5E1",
+                            "&:hover": {
+                              backgroundColor: allSelected ? "#E0E7FF" : "#F8FAFC",
+                              borderColor: "#6366F1",
+                            },
                           }}
                         />
-                      }
-                      label={
-                        <Typography variant="body2" sx={{ fontSize: "0.85rem", fontWeight: isChecked ? 600 : 400, color: isChecked ? "#0F172A" : "#64748B" }}>
-                          {occ.label}
-                        </Typography>
-                      }
-                      sx={{ mr: 0.5 }}
-                    />
-                  );
-                })}
+                      );
+                    })()}
+                  </Box>
 
-                {/* Delete button — inline after 5th checkbox */}
-                <IconButton
-                  onClick={() => handleRemoveRule(idx)}
-                  disabled={disabled}
-                  size="small"
-                  sx={{ ml: 0.5, color: "#94A3B8", "&:hover": { color: "#EF4444", backgroundColor: "#FEF2F2" } }}
-                >
-                  <DeleteOutlineOutlinedIcon fontSize="small" />
-                </IconButton>
+                  <IconButton
+                    onClick={() => handleRemoveRule(idx)}
+                    disabled={disabled}
+                    size="small"
+                    sx={{ color: "#94A3B8", "&:hover": { color: "#EF4444", backgroundColor: "#FEF2F2" } }}
+                  >
+                    <DeleteOutlineOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+
+                {/* Checkboxes Row */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                  {WEEK_OCCURRENCES.map((occ) => {
+                    const isChecked = rule.weeks?.includes(occ.value);
+                    return (
+                      <FormControlLabel
+                        key={occ.value}
+                        control={
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={() => handleWeekToggle(idx, occ.value)}
+                            disabled={disabled}
+                            size="small"
+                            sx={{
+                              p: 0.5,
+                              color: "#94A3B8",
+                              "&.Mui-checked": { color: "#4F46E5" },
+                            }}
+                          />
+                        }
+                        label={
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontSize: "0.825rem",
+                              fontWeight: isChecked ? 600 : 400,
+                              color: isChecked ? "#0F172A" : "#64748B",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {occ.label}
+                          </Typography>
+                        }
+                        sx={{ mr: 1, ml: 0 }}
+                      />
+                    );
+                  })}
+                </Box>
               </Box>
             </Paper>
           ))}

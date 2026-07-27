@@ -14,7 +14,7 @@ export const currentAddressSchema = z.object({
 export const emergencyContactSchema = z.object({
   name: z.string().trim().min(2, "Name must be 2-100 characters").max(100, "Max 100 characters"),
   relationship: z.string().trim().min(2, "Relationship must be 2-50 characters").max(50, "Max 50 characters"),
-  phone: z.string().trim().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
   email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
 });
 
@@ -23,7 +23,10 @@ export const onboardingStep1Schema = z.object({
   gender: z.enum(["MALE", "FEMALE", "OTHER"], { message: "Gender is required" }),
   bloodGroup: z.enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).optional().or(z.literal("")),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"], { message: "Marital status is required" }),
-  phone: z.string().trim().min(10, "Valid phone number with country code is required"),
+  phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
+  pan: z.string().trim().refine((v) => !v || v.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
+  aadhaar: z.string().trim().refine((v) => !v || /^\d{12}$/.test(v), "Aadhaar must be exactly 12 numeric digits").optional().or(z.literal("")),
+  passportNo: z.string().trim().optional().or(z.literal("")),
   currentAddress: currentAddressSchema,
   emergencyContact: z.array(emergencyContactSchema).min(1, "At least 1 emergency contact is required"),
 });
@@ -39,7 +42,7 @@ export const familyMemberSchema = z.object({
   gender: z.string().optional().or(z.literal("")),
   isDependent: z.boolean(),
   occupation: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
-  phone: z.string().trim().optional().or(z.literal("")),
+  phone: z.string().trim().regex(/^\d{1,10}$/, "Phone number cannot exceed 10 digits").optional().or(z.literal("")),
   isNominee: z.boolean(),
 });
 

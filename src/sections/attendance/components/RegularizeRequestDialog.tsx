@@ -5,7 +5,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
@@ -16,6 +15,7 @@ import Divider from "@mui/material/Divider";
 import CloseIcon from "@mui/icons-material/Close";
 import HistoryIcon from "@mui/icons-material/History";
 
+import TextInput from "../../../components/input/TextInput";
 import { createRegularizationRequest } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
 
@@ -32,116 +32,126 @@ export default function RegularizeRequestDialog({
   onSuccess,
   record,
 }: RegularizeRequestDialogProps) {
-  const [reqCheckInChecked, setReqCheckInChecked] = useState(true);
+  const [reqCheckInChecked, setReqCheckInChecked] = useState(false);
   const [reqCheckOutChecked, setReqCheckOutChecked] = useState(false);
 
-  const [requestedCheckInTime, setRequestedCheckInTime] = useState("09:00");
-  const [requestedCheckOutTime, setRequestedCheckOutTime] = useState("18:00");
+  const [requestedCheckInTime, setRequestedCheckInTime] = useState("");
+  const [requestedCheckOutTime, setRequestedCheckOutTime] = useState("");
   const [reason, setReason] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Parse and prefill timestamps when record loads
+  // Sync state when record or dialog opens
   useEffect(() => {
-    if (record) {
-      if (record.firstCheckIn) {
-        const checkInDate = new Date(record.firstCheckIn);
-        const hh = String(checkInDate.getHours()).padStart(2, "0");
-        const mm = String(checkInDate.getMinutes()).padStart(2, "0");
-        setRequestedCheckInTime(`${hh}:${mm}`);
-      } else {
-        setRequestedCheckInTime("09:00");
-      }
-
-      if (record.lastCheckOut) {
-        const checkOutDate = new Date(record.lastCheckOut);
-        const hh = String(checkOutDate.getHours()).padStart(2, "0");
-        const mm = String(checkOutDate.getMinutes()).padStart(2, "0");
-        setRequestedCheckOutTime(`${hh}:${mm}`);
-        setReqCheckOutChecked(true);
-      } else {
-        setRequestedCheckOutTime("18:00");
-        setReqCheckOutChecked(false);
-      }
-      setReason("");
+    if (open && record) {
       setError(null);
       setSuccess(null);
+      setReqCheckInChecked(false);
+      setReqCheckOutChecked(false);
+      setRequestedCheckInTime(record.firstCheckIn ? formatTimeForInput(record.firstCheckIn) : "");
+      setRequestedCheckOutTime(record.lastCheckOut ? formatTimeForInput(record.lastCheckOut) : "");
+      setReason("");
     }
-  }, [record]);
+  }, [open, record]);
 
   if (!record) return null;
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString(navigator.language, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
   };
 
-  const formatTime = (timeStr?: string) => {
+  const formatTime = (timeStr?: string | null) => {
     if (!timeStr) return "None";
-    return new Date(timeStr).toLocaleTimeString(navigator.language, {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+    try {
+      if (timeStr.includes("T")) {
+        const d = new Date(timeStr);
+        return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+      }
+      return timeStr;
+    } catch {
+      return timeStr;
+    }
+  };
+
+  const formatTimeForInput = (timeStr: string) => {
+    try {
+      if (timeStr.includes("T")) {
+        const d = new Date(timeStr);
+        const hours = String(d.getHours()).padStart(2, "0");
+        const minutes = String(d.getMinutes()).padStart(2, "0");
+        return `${hours}:${minutes}`;
+      }
+      return timeStr;
+    } catch {
+      return "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!reqCheckInChecked && !reqCheckOutChecked) {
-      setError("Please check at least one checkbox to request check-in or check-out time adjustment.");
-      return;
-    }
-    if (reason.trim().length < 10) {
-      setError("Please provide a reason of at least 10 characters.");
-      return;
-    }
-
-    setSubmitting(true);
     setError(null);
     setSuccess(null);
 
+    const attendanceId = record._id || (record as any).id || (record as any).attendanceId;
+    if (!attendanceId) {
+      setError("Invalid attendance record ID.");
+      return;
+    }
+
+    if (!reqCheckInChecked && !reqCheckOutChecked) {
+      setError("Please select at least one check-in or check-out time to adjust.");
+      return;
+    }
+
+    if (reason.trim().length < 10) {
+      setError("Please provide a detailed reason (minimum 10 characters).");
+      return;
+    }
+
     try {
+      setSubmitting(true);
       const datePart = record.attendanceDate
-        ? new Date(record.attendanceDate).toLocaleDateString("en-CA")
-        : new Date().toLocaleDateString("en-CA");
+        ? record.attendanceDate.split("T")[0]
+        : new Date().toISOString().split("T")[0];
+
+      const parseIsoTime = (timeStr: string) => {
+        const parts = timeStr.trim().split(":");
+        const cleanTime = parts.length === 2 ? `${timeStr}:00` : timeStr;
+        const d = new Date(`${datePart}T${cleanTime}`);
+        return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+      };
 
       let requestedCheckIn: string | undefined = undefined;
-      let checkInDate: Date | null = null;
-      if (reqCheckInChecked) {
-        checkInDate = new Date(`${datePart}T${requestedCheckInTime}:00`);
-        if (isNaN(checkInDate.getTime())) {
-          throw new Error("Invalid requested check-in time format");
-        }
-        requestedCheckIn = checkInDate.toISOString();
+      if (reqCheckInChecked && requestedCheckInTime) {
+        requestedCheckIn = parseIsoTime(requestedCheckInTime);
       }
 
       let requestedCheckOut: string | undefined = undefined;
-      if (reqCheckOutChecked) {
-        const checkOutDate = new Date(`${datePart}T${requestedCheckOutTime}:00`);
-        if (isNaN(checkOutDate.getTime())) {
-          throw new Error("Invalid requested check-out time format");
-        }
-        if (checkInDate && checkOutDate.getTime() < checkInDate.getTime()) {
-          throw new Error("Requested check-out time cannot be earlier than check-in time.");
-        }
-        requestedCheckOut = checkOutDate.toISOString();
+      if (reqCheckOutChecked && requestedCheckOutTime) {
+        requestedCheckOut = parseIsoTime(requestedCheckOutTime);
       }
 
-      const response = await createRegularizationRequest({
-        attendanceId: record._id || "",
+      const payload = {
+        attendanceId,
+        attendanceRecordId: attendanceId,
         requestedCheckIn,
         requestedCheckOut,
-        reason,
-      });
+        reason: reason.trim(),
+      };
 
+      const response = await createRegularizationRequest(payload);
       if (response.succeeded) {
         setSuccess("Regularization request submitted successfully!");
         setTimeout(() => {
@@ -163,7 +173,21 @@ export default function RegularizeRequestDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.4)",
+          },
+        },
+        paper: { sx: { borderRadius: "16px", p: 0.5 } },
+      }}
+    >
       <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <HistoryIcon sx={{ color: "#6D5DF6", fontSize: 24 }} />
@@ -181,7 +205,6 @@ export default function RegularizeRequestDialog({
           {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
           {success && <Alert severity="success" sx={{ borderRadius: 2 }}>{success}</Alert>}
 
-          {/* 1. Date & Original Timings Details */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1, backgroundColor: "#F9FAFB", p: 2, borderRadius: 2.5, border: "1px solid rgba(0,0,0,0.04)" }}>
             <Box>
               <Typography variant="caption" color="text.secondary">
@@ -212,7 +235,6 @@ export default function RegularizeRequestDialog({
             </Box>
           </Box>
 
-          {/* 2. Requested Check-In */}
           <Box>
             <FormControlLabel
               control={
@@ -225,22 +247,19 @@ export default function RegularizeRequestDialog({
               label="Request Check-In Adjustment"
             />
             {reqCheckInChecked && (
-              <TextField
-                label="Requested Check-In Time"
-                type="time"
-                value={requestedCheckInTime}
-                onChange={(e) => setRequestedCheckInTime(e.target.value)}
-                fullWidth
-                size="small"
-                required
-                disabled={submitting}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ mt: 1 }}
-              />
+              <Box sx={{ mt: 1 }}>
+                <TextInput
+                  type="time"
+                  label="Requested Check-In Time"
+                  value={requestedCheckInTime}
+                  onChange={(e) => setRequestedCheckInTime(e.target.value)}
+                  required
+                  disabled={submitting}
+                />
+              </Box>
             )}
           </Box>
 
-          {/* 3. Requested Check-Out */}
           <Box>
             <FormControlLabel
               control={
@@ -253,35 +272,34 @@ export default function RegularizeRequestDialog({
               label="Request Check-Out Adjustment"
             />
             {reqCheckOutChecked && (
-              <TextField
-                label="Requested Check-Out Time"
-                type="time"
-                value={requestedCheckOutTime}
-                onChange={(e) => setRequestedCheckOutTime(e.target.value)}
-                fullWidth
-                size="small"
-                required
-                disabled={submitting}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ mt: 1 }}
-              />
+              <Box sx={{ mt: 1 }}>
+                <TextInput
+                  type="time"
+                  label="Requested Check-Out Time"
+                  value={requestedCheckOutTime}
+                  onChange={(e) => setRequestedCheckOutTime(e.target.value)}
+                  required
+                  disabled={submitting}
+                />
+              </Box>
             )}
           </Box>
 
-          {/* 4. Reason */}
-          <TextField
-            label="Reason for Regularization"
-            multiline
-            rows={3}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            fullWidth
-            size="small"
-            required
-            disabled={submitting}
-            placeholder="Please enter a detailed reason (minimum 10 characters)"
-            helperText="e.g. Forgot to clock in, biometric punch error, etc."
-          />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <TextInput
+              multiline
+              rows={3}
+              label="Reason for Regularization"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              required
+              disabled={submitting}
+              placeholder="Please enter a detailed reason (minimum 10 characters)"
+            />
+            <Typography variant="caption" sx={{ color: "#64748B", ml: 0.5 }}>
+              e.g. Forgot to clock in, biometric punch error, etc.
+            </Typography>
+          </Box>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, py: 2 }}>

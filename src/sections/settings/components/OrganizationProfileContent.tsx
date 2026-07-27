@@ -27,6 +27,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 
+import TextInput from "../../../components/input/TextInput";
+
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import {
@@ -316,44 +318,37 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Company Name"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                   required
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Legal Name"
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Industry"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Phone Number"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  fullWidth
+                  maxLength={10}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
             </Grid>
@@ -444,42 +439,35 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={12}>
-                <TextField
+                <TextInput
                   label="Address Line 1"
                   value={addressLine1}
                   onChange={(e) => setAddressLine1(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="City"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="State"
                   value={stateName}
                   onChange={(e) => setStateName(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Country"
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {COUNTRIES.map((c) => (
@@ -487,16 +475,14 @@ function OrganizationProfileContent() {
                       {c.name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="Zip Code"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
             </Grid>
@@ -524,34 +510,28 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={12}>
-                <TextField
+                <TextInput
                   label="Website URL"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="Primary Branding Color"
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="Support Email"
                   type="email"
                   value={supportEmail}
                   onChange={(e) => setSupportEmail(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
             </Grid>
@@ -581,12 +561,11 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Timezone"
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {TIMEZONES.map((tz) => (
@@ -594,15 +573,14 @@ function OrganizationProfileContent() {
                       {tz.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Date Format"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {DATE_FORMATS.map((df) => (
@@ -610,15 +588,14 @@ function OrganizationProfileContent() {
                       {df}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Time Format"
                   value={timeFormat}
                   onChange={(e) => setTimeFormat(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {TIME_FORMATS.map((tf) => (
@@ -626,15 +603,14 @@ function OrganizationProfileContent() {
                       {tf}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Fiscal Year Start"
                   value={fiscalYearStart}
                   onChange={(e) => setFiscalYearStart(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {FISCAL_STARTS.map((m) => (
@@ -642,44 +618,45 @@ function OrganizationProfileContent() {
                       {m}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
-                  label="Working Hours Per Day"
+                <TextInput
                   type="number"
-                  value={workingHoursPerDay}
-                  onChange={(e) => setWorkingHoursPerDay(Number(e.target.value))}
-                  fullWidth
+                  label="Working Hours / Day"
+                  value={workingHoursPerDay || ""}
+                  placeholder="8"
+                  onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? "" : Number(e.target.value))}
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { min: 1, max: 24, style: { fontSize: 14 } } }}
+                  slotProps={{ htmlInput: { min: 1, max: 24 } }}
                 />
               </Grid>
               <Grid size={6}>
-                <FormControl fullWidth disabled={!canUpdate || !isEditing}>
-                  <InputLabel id="weekly-off-label">Weekly Off Days</InputLabel>
-                  <Select
-                    labelId="weekly-off-label"
-                    multiple
-                    value={weeklyOffDays}
-                    onChange={(e) =>
-                      setWeeklyOffDays(
-                        typeof e.target.value === "string"
-                          ? e.target.value.split(",")
-                          : e.target.value
-                      )
-                    }
-                    input={<OutlinedInput label="Weekly Off Days" />}
-                    renderValue={(selected) => selected.join(", ")}
-                  >
-                    {DAYS_OF_WEEK.map((day) => (
-                      <MenuItem key={day} value={day}>
-                        <Checkbox checked={weeklyOffDays.indexOf(day) > -1} />
-                        <ListItemText primary={day} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextInput
+                  select
+                  label="Weekly Off Days"
+                  disabled={!canUpdate || !isEditing}
+                  slotProps={{
+                    select: {
+                      multiple: true,
+                      value: weeklyOffDays,
+                      onChange: (e: any) =>
+                        setWeeklyOffDays(
+                          typeof e.target.value === "string"
+                            ? e.target.value.split(",")
+                            : e.target.value
+                        ),
+                      renderValue: (selected: any) => (selected as string[]).join(", "),
+                    },
+                  }}
+                >
+                  {DAYS_OF_WEEK.map((day) => (
+                    <MenuItem key={day} value={day}>
+                      <Checkbox checked={weeklyOffDays.indexOf(day) > -1} />
+                      <ListItemText primary={day} />
+                    </MenuItem>
+                  ))}
+                </TextInput>
               </Grid>
 
               <Grid size={12} sx={{ mt: 1 }}>

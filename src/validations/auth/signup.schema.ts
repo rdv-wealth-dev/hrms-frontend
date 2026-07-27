@@ -19,11 +19,12 @@ export const signupSchema = z
     // ISO alpha-2 country code, e.g. "IN" — sent to backend and used for phone validation
     countryCode: z.string().min(1, "Country code is required"),
 
-    // Digits only — no +, spaces, or dashes. Validated per-country below.
+    // Digits only — max 10 digits. Validated per-country below.
     phone: z
       .string()
       .min(1, "Phone number is required")
-      .regex(/^\d+$/, "Phone number must contain digits only"),
+      .regex(/^\d+$/, "Phone number must contain digits only")
+      .max(10, "Phone number cannot exceed 10 digits"),
 
     // ✅ timezone removed from the form schema — it's auto-detected on submit
 

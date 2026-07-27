@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -7,7 +8,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
@@ -17,7 +17,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -38,6 +39,7 @@ interface PeopleHubTableViewProps {
   onRoleManage?: (employee: EmployeeListItem) => void;
   onCompOffCredit?: (employee: EmployeeListItem) => void;
   onManualAttendance?: (employee: EmployeeListItem) => void;
+  onSelectEmployee?: (employee: EmployeeListItem) => void;
 }
 
 // Helper color palette for initial avatars matching screenshot
@@ -50,18 +52,30 @@ const AVATAR_COLORS = [
   "#3B82F6", // Blue (Arjun Mehta AM)
 ];
 
-// Helper mock properties generator for location, mode, performance if not present in API record
-function getPeopleHubMeta(index: number) {
-  const locations = ["Bangalore", "Mumbai", "Hyderabad", "Delhi", "Pune"];
-  const modes = ["Hybrid", "Office", "Remote"];
+// Helper mock properties generator for email, phone, performance if not present in API record
+function getPeopleHubMeta(index: number, emp?: Partial<EmployeeListItem>) {
+  const defaultEmails = [
+    "palmer.hayden@company.com",
+    "shivam.sharma@company.com",
+    "sam.smith@company.com",
+    "shally.cooper@company.com",
+    "sameer.mehta@company.com",
+  ];
+  const defaultPhones = [
+    "+91 98765 43210",
+    "+91 98765 43211",
+    "+91 98765 43212",
+    "+91 98765 43213",
+    "+91 98765 43214",
+  ];
   const performances = [94, 88, 91, 76, 97, 92, 85, 90, 95];
 
-  const loc = locations[index % locations.length];
-  const mode = modes[index % modes.length];
+  const email = emp?.email || defaultEmails[index % defaultEmails.length];
+  const phone = emp?.phone || defaultPhones[index % defaultPhones.length];
   const perf = performances[index % performances.length];
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
 
-  return { location: loc, mode, performance: perf, color };
+  return { email, phone, performance: perf, color };
 }
 
 function getEmployeeStatusStyle(status?: string, employeeType?: string, isActive?: boolean) {
@@ -121,24 +135,11 @@ export function PeopleHubTableView({
   onRoleManage,
   onCompOffCredit,
   onManualAttendance,
+  onSelectEmployee,
 }: PeopleHubTableViewProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedEmp, setSelectedEmp] = useState<EmployeeListItem | null>(null);
-
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      setSelectedIds(employees.map((e) => e._id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
-
-  const handleSelectOne = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, emp: EmployeeListItem) => {
     event.stopPropagation();
@@ -151,7 +152,7 @@ export function PeopleHubTableView({
     setSelectedEmp(null);
   };
 
-  const isAllSelected = employees.length > 0 && selectedIds.length === employees.length;
+
 
   return (
     <TableContainer
@@ -165,37 +166,35 @@ export function PeopleHubTableView({
         overflowX: "auto",
       }}
     >
-      <Table sx={{ minWidth: 900 }}>
+      <Table sx={{ minWidth: 1100 }}>
         <TableHead sx={{ backgroundColor: "#FAFAFA" }}>
           <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8 } }}>
-            <TableCell width={48} padding="checkbox">
-              <Checkbox
-                checked={isAllSelected}
-                indeterminate={selectedIds.length > 0 && selectedIds.length < employees.length}
-                onChange={handleSelectAll}
-                size="small"
-                sx={{ color: "#94A3B8" }}
-              />
+            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              EMPLOYEE
             </TableCell>
 
             <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              EMPLOYEE
+              DESIGNATION
             </TableCell>
 
             <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
               DEPARTMENT
             </TableCell>
 
+            <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              EMAIL
+            </TableCell>
+
             <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              LOCATION
+              PHONE NUMBER
+            </TableCell>
+
+            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              JOINING DATE
             </TableCell>
 
             <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
               STATUS
-            </TableCell>
-
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              MODE
             </TableCell>
 
             <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }} width={180}>
@@ -208,10 +207,9 @@ export function PeopleHubTableView({
 
         <TableBody>
           {employees.map((emp, index) => {
-            const isSelected = selectedIds.includes(emp._id);
             const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
             const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
-            const meta = getPeopleHubMeta(index);
+            const meta = getPeopleHubMeta(index, emp);
 
             const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
 
@@ -219,7 +217,13 @@ export function PeopleHubTableView({
               <TableRow
                 key={emp._id}
                 hover
-                selected={isSelected}
+                onClick={() => {
+                  if (onSelectEmployee) {
+                    onSelectEmployee(emp);
+                  } else {
+                    navigate(`/employees/${emp._id}`);
+                  }
+                }}
                 sx={{
                   cursor: "pointer",
                   transition: "background-color 0.15s ease",
@@ -227,16 +231,6 @@ export function PeopleHubTableView({
                   "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
                 }}
               >
-                {/* Checkbox */}
-                <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    checked={isSelected}
-                    onChange={() => handleSelectOne(emp._id)}
-                    size="small"
-                    sx={{ color: "#94A3B8" }}
-                  />
-                </TableCell>
-
                 {/* Employee Info */}
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -253,36 +247,88 @@ export function PeopleHubTableView({
                     >
                       {initials}
                     </Avatar>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }}
-                      >
-                        {fullName}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "#64748B", fontSize: "12px", display: "block" }}
-                      >
-                        {typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Team Member" : "Team Member"}
-                      </Typography>
-                    </Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#0F172A",
+                        lineHeight: 1.2,
+                        whiteSpace: "nowrap",
+                        transition: "color 0.15s ease",
+                        "&:hover": { color: "#6D5DF6" },
+                      }}
+                    >
+                      {fullName}
+                    </Typography>
                   </Box>
                 </TableCell>
 
+                {/* Designation */}
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
+                  <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap" }}>
+                    {typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Software Developer" : emp.designationId || "Software Developer"}
+                  </Typography>
+                </TableCell>
+
                 {/* Department */}
-                <TableCell>
-                  <Typography variant="body2" sx={{ color: "#334155", fontWeight: 500 }}>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
+                  <Typography variant="body2" sx={{ color: "#334155", fontWeight: 500, fontSize: "13px", whiteSpace: "nowrap" }}>
                     {typeof emp.departmentId === "object" ? (emp.departmentId as any)?.name || "Engineering" : "Engineering"}
                   </Typography>
                 </TableCell>
 
-                {/* Location */}
+                {/* Email */}
+                <TableCell align="center">
+                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0.75, color: "#64748B" }}>
+                    <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#475569",
+                        fontSize: "13px",
+                        maxWidth: { xs: 140, sm: 180, md: 220 },
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {meta.email}
+                    </Typography>
+                  </Box>
+                </TableCell>
+
+                {/* Phone Number */}
                 <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#64748B" }}>
-                    <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
-                    <Typography variant="body2" sx={{ color: "#475569", fontSize: "13px" }}>
-                      {meta.location}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
+                    <PhoneOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#475569",
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {meta.phone}
+                    </Typography>
+                  </Box>
+                </TableCell>
+
+                {/* Joining Date */}
+                <TableCell>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
+                    <CalendarMonthOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#475569",
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {emp.joiningDate
+                        ? new Date(emp.joiningDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+                        : ["15 Jan 2023", "01 Jun 2022", "10 Mar 2024", "20 Aug 2021", "05 Nov 2023"][index % 5]}
                     </Typography>
                   </Box>
                 </TableCell>
@@ -302,13 +348,6 @@ export function PeopleHubTableView({
                       px: 0.5,
                     }}
                   />
-                </TableCell>
-
-                {/* Mode */}
-                <TableCell>
-                  <Typography variant="body2" sx={{ color: "#475569", fontSize: "13px" }}>
-                    {meta.mode}
-                  </Typography>
                 </TableCell>
 
                 {/* Performance Progress Bar */}

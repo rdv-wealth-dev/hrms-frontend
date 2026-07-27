@@ -10,13 +10,14 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
+
+import TextInput from "../../../components/input/TextInput";
 
 import { createManualAttendance } from "../../../api/attendance.api";
 import { listEmployees } from "../../../api/employee.api";
@@ -59,114 +60,43 @@ type ManualAttendanceDialogProps = {
   employee?: PresetEmployee | null;
 };
 
-const inputFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    height: 44,
-    borderRadius: "12px",
-    backgroundColor: "#F8FAFC",
-    fontSize: "14px",
-    color: "#0F172A",
-    "& fieldset": { borderColor: "#E2E8F0" },
-    "&:hover fieldset": { borderColor: "#CBD5E1" },
-    "&.Mui-focused": {
-      backgroundColor: "#FFFFFF",
-      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
-    },
-  },
-  "& .MuiOutlinedInput-input": {
-    height: 44,
-    py: 0,
-    px: "14px",
-    fontSize: "14px",
-    boxSizing: "border-box",
-    display: "flex",
-    alignItems: "center",
-  },
-  "& .MuiInputBase-input::placeholder": {
-    color: "#475569",
-    opacity: 1,
-    fontSize: "13.5px",
-    fontWeight: 500,
-  },
-  "& .MuiSelect-select": {
-    height: "44px !important",
-    minHeight: "44px !important",
-    py: "0 !important",
-    display: "flex",
-    alignItems: "center",
-    boxSizing: "border-box",
-  },
-};
-
-const multilineSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "12px",
-    backgroundColor: "#F8FAFC",
-    fontSize: "14px",
-    color: "#0F172A",
-    "& fieldset": { borderColor: "#E2E8F0" },
-    "&:hover fieldset": { borderColor: "#CBD5E1" },
-    "&.Mui-focused": {
-      backgroundColor: "#FFFFFF",
-      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
-    },
-  },
-  "& .MuiOutlinedInput-input": {
-    py: "10px",
-    px: "14px",
-    fontSize: "14px",
-  },
-  "& .MuiInputBase-input::placeholder": {
-    color: "#475569",
-    opacity: 1,
-    fontSize: "13.5px",
-    fontWeight: 500,
-  },
-};
-
 const disabledMenuItemSx = {
-  color: "#334155 !important",
-  fontWeight: 600,
+  color: "#94A3B8 !important",
+  fontWeight: 500,
   "&.Mui-disabled": {
     opacity: "1 !important",
-    color: "#334155 !important",
+    color: "#94A3B8 !important",
   },
 };
 
-const combineDateAndTime = (datePart: string, timePart: string, fieldLabel: string): Date => {
-  const combined = new Date(`${datePart}T${timePart}:00`);
-  if (Number.isNaN(combined.getTime())) {
-    throw new Error(`Invalid ${fieldLabel} time format`);
-  }
-  return combined;
-};
-
-export default function ManualAttendanceDialog({
+export function ManualAttendanceDialog({
   open,
   onClose,
   onSuccess,
-  employee,
+  employee = null,
 }: ManualAttendanceDialogProps) {
   const [employeesList, setEmployeesList] = useState<EmployeeListItem[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [employeesError, setEmployeesError] = useState<string | null>(null);
-
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const todayIsoDate = new Date().toISOString().split("T")[0];
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ManualAttendanceFormData>({
     resolver: zodResolver(manualAttendanceSchema),
     defaultValues: {
-      selectedEmployeeId: employee?._id ?? "",
-      attendanceDate: new Date().toISOString().substring(0, 10),
+      selectedEmployeeId: employee?._id || "",
+      attendanceDate: todayIsoDate,
       checkInTime: DEFAULT_CHECK_IN_TIME,
       checkOutTime: DEFAULT_CHECK_OUT_TIME,
       notes: "",
@@ -175,53 +105,58 @@ export default function ManualAttendanceDialog({
 
   useEffect(() => {
     if (!open) {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-        closeTimeoutRef.current = null;
-      }
       setApiError(null);
       setSuccessMessage(null);
+      setSubmitting(false);
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
       return;
     }
 
-    const todayStr = new Date().toISOString().substring(0, 10);
+    setApiError(null);
+    setSuccessMessage(null);
+
+    const initialEmployeeId = employee?._id || "";
     reset({
-      selectedEmployeeId: employee?._id ?? "",
-      attendanceDate: todayStr,
+      selectedEmployeeId: initialEmployeeId,
+      attendanceDate: todayIsoDate,
       checkInTime: DEFAULT_CHECK_IN_TIME,
       checkOutTime: DEFAULT_CHECK_OUT_TIME,
       notes: "",
     });
 
-    if (employee?._id) return;
-
-    let isMounted = true;
-    const fetchEmployees = async () => {
+    if (!employee) {
+      let isMounted = true;
       setLoadingEmployees(true);
       setEmployeesError(null);
-      try {
-        const response = await listEmployees(1, EMPLOYEE_PAGE_SIZE, "", "ACTIVE");
-        if (!isMounted) return;
-        setEmployeesList(response.data ?? []);
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        const message = isAxiosError<{ message?: string }>(err)
-          ? err.response?.data?.message ?? err.message
-          : err instanceof Error
-            ? err.message
-            : "Failed to load employees";
-        setEmployeesError(message);
-      } finally {
-        if (isMounted) setLoadingEmployees(false);
-      }
-    };
 
-    fetchEmployees();
+      listEmployees({ page: 1, limit: EMPLOYEE_PAGE_SIZE })
+        .then((res) => {
+          if (!isMounted) return;
+          const items = res?.employees || [];
+          setEmployeesList(items);
+        })
+        .catch((err) => {
+          if (!isMounted) return;
+          const msg = err?.response?.data?.message || "Failed to load employees list";
+          setEmployeesError(msg);
+        })
+        .finally(() => {
+          if (isMounted) setLoadingEmployees(false);
+        });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [open, employee, reset]);
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [open, employee, reset, todayIsoDate]);
+
+  useEffect(() => {
+    if (employee?._id) {
+      setValue("selectedEmployeeId", employee._id, { shouldValidate: true });
+    }
+  }, [employee, setValue]);
 
   const onSubmit = async (data: ManualAttendanceFormData) => {
     setSubmitting(true);
@@ -229,42 +164,27 @@ export default function ManualAttendanceDialog({
     setSuccessMessage(null);
 
     try {
-      const checkInDateObj = combineDateAndTime(
-        data.attendanceDate,
-        data.checkInTime,
-        "Check-In"
-      );
-
-      let checkOutDateObj: Date | undefined;
-      if (data.checkOutTime) {
-        checkOutDateObj = combineDateAndTime(
-          data.attendanceDate,
-          data.checkOutTime,
-          "Check-Out"
-        );
-      }
-
       await createManualAttendance({
         employeeId: data.selectedEmployeeId,
-        attendanceDate: data.attendanceDate,
-        checkIn: checkInDateObj.toISOString(),
-        checkOut: checkOutDateObj ? checkOutDateObj.toISOString() : undefined,
+        date: data.attendanceDate,
+        checkInTime: data.checkInTime,
+        checkOutTime: data.checkOutTime || undefined,
         notes: data.notes,
       });
 
-      setSuccessMessage("Manual attendance recorded successfully!");
+      setSuccessMessage("Manual attendance recorded successfully.");
+      onSuccess?.();
 
-      closeTimeoutRef.current = setTimeout(() => {
-        onSuccess?.();
+      closeTimerRef.current = setTimeout(() => {
         onClose();
       }, SUCCESS_CLOSE_DELAY_MS);
     } catch (err: unknown) {
-      const message = isAxiosError<{ message?: string }>(err)
-        ? err.response?.data?.message ?? err.message
-        : err instanceof Error
-          ? err.message
-          : "Failed to record manual attendance";
-      setApiError(message);
+      if (isAxiosError(err)) {
+        const msg = err.response?.data?.message || "Failed to record manual attendance.";
+        setApiError(msg);
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -273,9 +193,9 @@ export default function ManualAttendanceDialog({
   return (
     <Dialog
       open={open}
-      onClose={submitting ? undefined : onClose}
-      fullWidth
+      onClose={onClose}
       maxWidth="sm"
+      fullWidth
       slotProps={{
         backdrop: {
           sx: {
@@ -322,7 +242,7 @@ export default function ManualAttendanceDialog({
       </DialogTitle>
 
       <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-        <DialogContent sx={{ p: 0, pr: 2, mr: -1, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
           {apiError && <Alert severity="error" sx={{ borderRadius: "10px" }}>{apiError}</Alert>}
           {employeesError && <Alert severity="warning" sx={{ borderRadius: "10px" }}>{employeesError}</Alert>}
           {successMessage && <Alert severity="success" sx={{ borderRadius: "10px" }}>{successMessage}</Alert>}
@@ -342,34 +262,23 @@ export default function ManualAttendanceDialog({
               name="selectedEmployeeId"
               control={control}
               render={({ field }) => (
-                <Box>
-                  <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
-                    Select Employee
-                  </Typography>
-                  <TextField
-                    {...field}
-                    select
-                    fullWidth
-                    size="small"
-                    required
-                    disabled={loadingEmployees || submitting}
-                    error={!!errors.selectedEmployeeId}
-                    helperText={errors.selectedEmployeeId?.message}
-                    sx={inputFieldSx}
-                    slotProps={{
-                      select: { displayEmpty: true },
-                    }}
-                  >
-                    <MenuItem value="" disabled sx={disabledMenuItemSx}>
-                      {loadingEmployees ? "Loading employees list..." : "Choose an employee"}
+                <TextInput
+                  {...field}
+                  select
+                  label="Select Employee"
+                  disabled={loadingEmployees || submitting}
+                  error={errors.selectedEmployeeId?.message}
+                  slotProps={{ select: { displayEmpty: true } }}
+                >
+                  <MenuItem value="" disabled sx={disabledMenuItemSx}>
+                    {loadingEmployees ? "Loading employees list..." : "Choose an employee"}
+                  </MenuItem>
+                  {employeesList.map((emp) => (
+                    <MenuItem key={emp._id} value={emp._id}>
+                      {`${emp.firstName} ${emp.lastName} (${emp.employeeCode})`}
                     </MenuItem>
-                    {employeesList.map((emp) => (
-                      <MenuItem key={emp._id} value={emp._id}>
-                        {`${emp.firstName} ${emp.lastName} (${emp.employeeCode})`}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Box>
+                  ))}
+                </TextInput>
               )}
             />
           )}
@@ -379,66 +288,44 @@ export default function ManualAttendanceDialog({
             name="attendanceDate"
             control={control}
             render={({ field }) => (
-              <Box>
-                <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
-                  Attendance Date
-                </Typography>
-                <TextField
-                  {...field}
-                  type="date"
-                  fullWidth
-                  size="small"
-                  required
-                  disabled={submitting}
-                  error={!!errors.attendanceDate}
-                  helperText={errors.attendanceDate?.message}
-                  sx={inputFieldSx}
-                />
-              </Box>
+              <TextInput
+                {...field}
+                type="date"
+                label="Attendance Date"
+                disabled={submitting}
+                error={errors.attendanceDate?.message}
+              />
             )}
           />
 
           {/* 3. Timings Row */}
           <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
-                Check-In Time
-              </Typography>
               <Controller
                 name="checkInTime"
                 control={control}
                 render={({ field }) => (
-                  <TextField
+                  <TextInput
                     {...field}
                     type="time"
-                    fullWidth
-                    size="small"
-                    required
+                    label="Check-In Time"
                     disabled={submitting}
-                    error={!!errors.checkInTime}
-                    helperText={errors.checkInTime?.message}
-                    sx={inputFieldSx}
+                    error={errors.checkInTime?.message}
                   />
                 )}
               />
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
-                Check-Out Time (optional)
-              </Typography>
               <Controller
                 name="checkOutTime"
                 control={control}
                 render={({ field }) => (
-                  <TextField
+                  <TextInput
                     {...field}
                     type="time"
-                    fullWidth
-                    size="small"
+                    label="Check-Out Time (optional)"
                     disabled={submitting}
-                    error={!!errors.checkOutTime}
-                    helperText={errors.checkOutTime?.message}
-                    sx={inputFieldSx}
+                    error={errors.checkOutTime?.message}
                   />
                 )}
               />
@@ -446,30 +333,21 @@ export default function ManualAttendanceDialog({
           </Box>
 
           {/* 4. Notes */}
-          <Box>
-            <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
-              Reason / Notes
-            </Typography>
-            <Controller
-              name="notes"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  multiline
-                  rows={3}
-                  fullWidth
-                  size="small"
-                  required
-                  disabled={submitting}
-                  placeholder="e.g. Biometric machine error, manually logged by HR"
-                  error={!!errors.notes}
-                  helperText={errors.notes?.message}
-                  sx={multilineSx}
-                />
-              )}
-            />
-          </Box>
+          <Controller
+            name="notes"
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                {...field}
+                multiline
+                rows={3}
+                label="Reason / Notes"
+                placeholder="e.g. Biometric machine error, manually logged by HR"
+                disabled={submitting}
+                error={errors.notes?.message}
+              />
+            )}
+          />
         </DialogContent>
 
         <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
@@ -477,8 +355,8 @@ export default function ManualAttendanceDialog({
             onClick={onClose}
             disabled={submitting}
             sx={{
-              height: 44,
-              borderRadius: "12px",
+              height: 42,
+              borderRadius: "10px",
               px: 2.5,
               fontSize: "14px",
               fontWeight: 600,
@@ -495,15 +373,15 @@ export default function ManualAttendanceDialog({
             disabled={submitting || (loadingEmployees && !employee)}
             variant="contained"
             sx={{
-              height: 44,
-              borderRadius: "12px",
+              height: 42,
+              borderRadius: "10px",
               px: 3,
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
               backgroundColor: "#6D5DF6",
-              boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4EB3" },
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4BEA" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Record Attendance"}
@@ -513,3 +391,5 @@ export default function ManualAttendanceDialog({
     </Dialog>
   );
 }
+
+export default ManualAttendanceDialog;

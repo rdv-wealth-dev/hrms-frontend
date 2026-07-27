@@ -76,12 +76,12 @@ export default function OnboardingStep5Review({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
           startIcon={<ArrowBackIcon />}
-          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1" }}
+          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1", width: { xs: "100%", sm: "auto" } }}
         >
           Back
         </Button>
@@ -97,6 +97,7 @@ export default function OnboardingStep5Review({
             fontSize: "0.95rem",
             backgroundColor: "#059669",
             "&:hover": { backgroundColor: "#047857" },
+            width: { xs: "100%", sm: "auto" },
           }}
         >
           {loading ? "Submitting..." : "Complete & Finish Onboarding"}

@@ -7,6 +7,7 @@ import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import CircularProgress from "@mui/material/CircularProgress";
+import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
@@ -204,26 +205,46 @@ export default function OnboardingWizardView() {
 
         {/* Stepper Header Card */}
         <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {STEPS.map((label) => (
-              <Step key={label}>
-                <StepLabel
-                  slotProps={{
-                    label: {
-                      sx: {
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        "&.Mui-active": { color: "#4F46E5", fontWeight: 700 },
-                        "&.Mui-completed": { color: "#059669" },
+          {/* Mobile Step Indicator */}
+          <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 1 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4F46E5" }}>
+                Step {activeStep + 1} of {STEPS.length}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                {STEPS[activeStep]}
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={((activeStep + 1) / STEPS.length) * 100}
+              sx={{ height: 8, borderRadius: 4, backgroundColor: "#EEF2FF", "& .MuiLinearProgress-bar": { backgroundColor: "#4F46E5" } }}
+            />
+          </Box>
+
+          {/* Desktop Stepper */}
+          <Box sx={{ display: { xs: "none", md: "block" } }}>
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {STEPS.map((label) => (
+                <Step key={label}>
+                  <StepLabel
+                    slotProps={{
+                      label: {
+                        sx: {
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          "&.Mui-active": { color: "#4F46E5", fontWeight: 700 },
+                          "&.Mui-completed": { color: "#059669" },
+                        },
                       },
-                    },
-                  }}
-                >
-                  {label}
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+                    }}
+                  >
+                    {label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
         </Paper>
 
         {/* Step Error Alert */}

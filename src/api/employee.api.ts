@@ -276,11 +276,15 @@ export interface UploadDocumentResponse {
 
 export const uploadDocument = async (
   file: File,
-  documentType: string
+  documentType: string,
+  documentNumber?: string
 ): Promise<UploadDocumentResponse> => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("documentType", documentType);
+  if (documentNumber) {
+    formData.append("documentNumber", documentNumber);
+  }
 
   const token = localStorage.getItem("accessToken");
   const baseUrl = import.meta.env.VITE_API_BASE_URL;

@@ -73,6 +73,10 @@ function EmployeeListView() {
   const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>("");
 
   const handleViewModeChange = (mode: ViewMode) => {
+    if (mode === "directory") {
+      navigate(paths.employees.directory);
+      return;
+    }
     setViewMode(mode);
     localStorage.setItem("employee_view_mode", mode);
   };
@@ -577,32 +581,6 @@ function EmployeeListView() {
                 Add Employee
               </Button>
             )}
-
-            {/* Employee Directory Button */}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<BadgeOutlinedIcon />}
-              onClick={() => navigate(paths.employees.directory)}
-              sx={{
-                borderRadius: 2.5,
-                textTransform: "none",
-                borderColor: "#CBD5E1",
-                color: "#334155",
-                backgroundColor: "#FFFFFF",
-                height: 40,
-                px: 2,
-                fontWeight: 600,
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-                "&:hover": {
-                  borderColor: "#6D5DF6",
-                  color: "#6D5DF6",
-                  backgroundColor: "#EEF2FF",
-                },
-              }}
-            >
-              Employee Directory
-            </Button>
           </Box>
         </Box>
 
@@ -750,6 +728,9 @@ function EmployeeListView() {
               onManualAttendance={(emp) => {
                 setManualTarget(emp);
                 setManualOpen(true);
+              }}
+              onSelectEmployee={(emp) => {
+                navigate(paths.employees.detail.replace(":id", emp._id));
               }}
             />
           )

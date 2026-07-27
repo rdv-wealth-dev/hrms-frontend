@@ -36,8 +36,10 @@ export default function EmergencyContactDialog({
   const isValid = form.name.trim() && form.relationship.trim() && form.phone.trim();
 
   const handleChange = (field: keyof EmergencyContact) =>
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = field === "phone" ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value;
+      setForm((prev) => ({ ...prev, [field]: val }));
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +91,7 @@ export default function EmergencyContactDialog({
             required
             disabled={submitting}
             placeholder="e.g. 9876500001"
+            slotProps={{ htmlInput: { maxLength: 10 } }}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

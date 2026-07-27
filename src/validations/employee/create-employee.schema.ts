@@ -12,7 +12,7 @@ const addressSchema = z.object({
 const emergencyContactSchema = z.object({
   name: z.string().trim().min(1, "Contact name is required"),
   relationship: z.string().trim().min(1, "Relationship is required"),
-  phone: z.string().trim().min(10, "Emergency phone must be at least 10 digits"),
+  phone: z.string().trim().regex(/^\d{10}$/, "Emergency phone must be exactly 10 digits"),
   email: z.string().email("Enter valid email").optional().or(z.literal("")),
 });
 
@@ -61,7 +61,7 @@ export const createEmployeeSchema = z.object({
   firstName: z.string().trim().min(2, "First name must be 2-100 characters").max(100, "Max 100 characters"),
   lastName: z.string().trim().min(2, "Last name must be 2-100 characters").max(100, "Max 100 characters"),
   email: z.string().trim().min(1, "Email is required").email("Please enter a valid email"),
-  phone: z.string().trim().optional(),
+  phone: z.string().trim().regex(/^\d{1,10}$/, "Phone number cannot exceed 10 digits").optional().or(z.literal("")),
   countryCode: z.string().min(1, "Country code is required"),
   dateOfBirth: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional().or(z.literal("")),

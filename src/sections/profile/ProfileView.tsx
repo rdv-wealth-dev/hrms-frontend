@@ -13,6 +13,7 @@ import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Alert from "@mui/material/Alert";
 import { useSnackbar } from "../../components/snackbar";
+import TextInput from "../../components/input/TextInput";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -630,9 +631,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               {/* Status Badges */}
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1, mb: 2, flexWrap: "wrap" }}>
                 <Chip label="Active" size="small" sx={{ backgroundColor: "#DCFCE7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
-                <Chip label={(empProfile as any)?.workMode || "Hybrid"} size="small" sx={{ backgroundColor: "#E0F2FE", color: "#075985", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
                 <Chip label={(empProfile as any)?.band || "L5"} size="small" sx={{ backgroundColor: "#F1F5F9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
-                <Chip label="High Performer" size="small" sx={{ backgroundColor: "#F3E8FF", color: "#6B21A8", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
               </Box>
 
               {/* Key Meta Info */}
@@ -663,44 +662,29 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 </Box>
               </Box>
 
-              {/* Quick Contact Action Icons */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1, mt: 2 }}>
-                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
-                  <EmailOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
-                  <PhoneOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
-                  <ChatOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-                <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "50%", p: 0.8, color: "#64748B" }}>
-                  <LanguageOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Box>
+
             </Box>
 
             {/* Top Right Header Action Buttons */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", flexShrink: 0, alignSelf: { xs: "center", md: "flex-start" } }}>
-              {!isViewingOther && (
-                <Button
-                  startIcon={<EditOutlinedIcon />}
-                  onClick={handleOpenEditProfile}
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#4F46E5",
-                    color: "#FFFFFF",
-                    textTransform: "none",
-                    fontWeight: 600,
-                    borderRadius: "10px",
-                    px: 2,
-                    boxShadow: "none",
-                    "&:hover": { backgroundColor: "#4338CA" },
-                  }}
-                >
-                  Edit
-                </Button>
-              )}
+              <Button
+                startIcon={<EditOutlinedIcon />}
+                onClick={handleOpenEditProfile}
+                variant="outlined"
+                sx={{
+                  borderColor: "#CBD5E1",
+                  color: "#334155",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: "10px",
+                  px: 2,
+                  backgroundColor: "#FFFFFF",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                  "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#6D5DF6", color: "#6D5DF6" },
+                }}
+              >
+                Edit
+              </Button>
               <Button
                 startIcon={<AutoAwesomeIcon sx={{ fontSize: "18px !important" }} />}
                 variant="contained"
@@ -1647,114 +1631,113 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       <Dialog
         open={editProfileOpen}
         onClose={() => { if (!personalDetailsUpdater.submitting) setEditProfileOpen(false); }}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.4)",
+            },
+          },
+          paper: { sx: { borderRadius: 3, p: 0.5 } },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem", px: 3, pt: 2.5, pb: 1 }}>
           Edit Personal Details & Address
         </DialogTitle>
         <Box component="form" onSubmit={handleSaveProfile}>
-          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, px: 3 }}>
             {personalDetailsUpdater.error && <Alert severity="error" sx={{ borderRadius: 2 }}>{personalDetailsUpdater.error}</Alert>}
-            
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4B5563" }}>
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#374151" }}>
               Personal Information
             </Typography>
-            <Grid container spacing={2}>
-              <Grid size={6}>
-                <TextField
+            <Grid container spacing={1.5}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextInput
                   label="Phone Number"
+                  type="tel"
                   value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  fullWidth
+                  maxLength={10}
+                  onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                   required
                   placeholder="e.g. 9876543210"
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
-              <Grid size={6}>
-                <TextField
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextInput
                   select
                   label="Gender"
                   value={editGender}
                   onChange={(e) => setEditGender(e.target.value)}
-                  fullWidth
                   required
                   disabled={personalDetailsUpdater.submitting}
                 >
                   <MenuItem value="MALE">Male</MenuItem>
                   <MenuItem value="FEMALE">Female</MenuItem>
                   <MenuItem value="OTHER">Other</MenuItem>
-                </TextField>
+                </TextInput>
               </Grid>
-              <Grid size={12}>
-                <TextField
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextInput
                   type="date"
                   label="Date of Birth"
                   value={editDob}
                   onChange={(e) => setEditDob(e.target.value)}
-                  fullWidth
                   required
-                  slotProps={{ inputLabel: { shrink: true } }}
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
             </Grid>
 
-            <Divider sx={{ my: 1 }} />
-
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4B5563" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#374151", mt: 0.5 }}>
               Current Address
             </Typography>
-            <Grid container spacing={2}>
-              <Grid size={12}>
-                <TextField
+            <Grid container spacing={1.5}>
+              <Grid size={{ xs: 12, sm: 12 }}>
+                <TextInput
                   label="Address Line 1"
                   value={editAddressLine1}
                   onChange={(e) => setEditAddressLine1(e.target.value)}
-                  fullWidth
                   required
                   placeholder="Street name, floor, apartment number"
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
-              <Grid size={6}>
-                <TextField
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextInput
                   label="City"
                   value={editCity}
                   onChange={(e) => setEditCity(e.target.value)}
-                  fullWidth
                   required
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
-              <Grid size={6}>
-                <TextField
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextInput
                   label="State"
                   value={editState}
                   onChange={(e) => setEditState(e.target.value)}
-                  fullWidth
                   required
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
-              <Grid size={6}>
-                <TextField
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextInput
                   label="ZIP / Postal Code"
                   value={editZip}
                   onChange={(e) => setEditZip(e.target.value)}
-                  fullWidth
                   required
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
-              <Grid size={6}>
-                <TextField
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextInput
                   label="Country Code"
                   value={editCountryCode}
                   onChange={(e) => setEditCountryCode(e.target.value)}
-                  fullWidth
                   required
                   placeholder="e.g. IN"
                   disabled={personalDetailsUpdater.submitting}
@@ -1762,7 +1745,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
+          <DialogActions sx={{ px: 3, pb: 2.5, pt: 1 }}>
             <Button
               onClick={() => setEditProfileOpen(false)}
               disabled={personalDetailsUpdater.submitting}

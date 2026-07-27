@@ -20,8 +20,10 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
+import TextInput from "../../../components/input/TextInput";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -51,10 +53,10 @@ function ShiftFormDialog({
   const [code, setCode] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
-  const [gracePeriod, setGracePeriod] = useState(15);
-  const [graceLimit, setGraceLimit] = useState(0);
-  const [halfDayThreshold, setHalfDayThreshold] = useState(240);
-  const [fullDayMinutes, setFullDayMinutes] = useState(480);
+  const [gracePeriod, setGracePeriod] = useState<number | string>("");
+  const [graceLimit, setGraceLimit] = useState<number | string>("");
+  const [halfDayThreshold, setHalfDayThreshold] = useState<number | string>("");
+  const [fullDayMinutes, setFullDayMinutes] = useState<number | string>("");
   const [isDefault, setIsDefault] = useState(false);
 
   const [formValidationErrors, setFormValidationErrors] = useState<Record<string, string>>({});
@@ -130,119 +132,131 @@ function ShiftFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>Create New Shift</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: { xs: 2.5, sm: 3.5 },
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+            mx: { xs: 2, sm: "auto" },
+            width: { xs: "calc(100% - 32px)", sm: "100%" },
+          },
+        },
+      }}
+    >
+      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+        Create New Shift
+      </DialogTitle>
 
-      <DialogContent
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2.5,
-          pt: "24px !important",
-        }}
-      >
+      <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 1 }}>
+          <Alert severity="error" sx={{ borderRadius: 2 }}>
             {error}
           </Alert>
         )}
 
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="Shift Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            fullWidth
-            size="small"
-            placeholder="e.g. Morning Shift"
-            required
-            error={!!formValidationErrors.name}
-            helperText={formValidationErrors.name}
-          />
-          <TextField
-            label="Shift Code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            fullWidth
-            size="small"
-            placeholder="e.g. MS"
-            required
-            error={!!formValidationErrors.code}
-            helperText={formValidationErrors.code}
-          />
-        </Box>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Shift Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Morning Shift"
+              required
+              error={formValidationErrors.name}
+            />
+          </Grid>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="Start Time (24h)"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            fullWidth
-            size="small"
-            placeholder="HH:MM (e.g. 09:00)"
-            required
-            error={!!formValidationErrors.startTime}
-            helperText={formValidationErrors.startTime}
-          />
-          <TextField
-            label="End Time (24h)"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            fullWidth
-            size="small"
-            placeholder="HH:MM (e.g. 18:00)"
-            required
-            error={!!formValidationErrors.endTime}
-            helperText={formValidationErrors.endTime}
-          />
-        </Box>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Shift Code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="e.g. MS"
+              required
+              error={formValidationErrors.code}
+            />
+          </Grid>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="Grace Period (Mins)"
-            type="number"
-            value={gracePeriod}
-            onChange={(e) => setGracePeriod(Number(e.target.value))}
-            fullWidth
-            size="small"
-            error={!!formValidationErrors.gracePeriod}
-            helperText={formValidationErrors.gracePeriod}
-          />
-          <TextField
-            label="Grace Limit Per Month"
-            type="number"
-            value={graceLimit}
-            onChange={(e) => setGraceLimit(Number(e.target.value))}
-            fullWidth
-            size="small"
-            placeholder="0 = Unlimited"
-            error={!!formValidationErrors.graceLimit}
-            helperText={formValidationErrors.graceLimit || "Enter 0 for unlimited"}
-          />
-        </Box>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Start Time (24h)"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              placeholder="HH:MM (e.g. 09:00)"
+              required
+              error={formValidationErrors.startTime}
+            />
+          </Grid>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="Half Day Min (Mins)"
-            type="number"
-            value={halfDayThreshold}
-            onChange={(e) => setHalfDayThreshold(Number(e.target.value))}
-            fullWidth
-            size="small"
-            error={!!formValidationErrors.halfDayThreshold}
-            helperText={formValidationErrors.halfDayThreshold}
-          />
-          <TextField
-            label="Full Day Duration (Mins)"
-            type="number"
-            value={fullDayMinutes}
-            onChange={(e) => setFullDayMinutes(Number(e.target.value))}
-            fullWidth
-            size="small"
-            error={!!formValidationErrors.fullDayMinutes}
-            helperText={formValidationErrors.fullDayMinutes}
-          />
-        </Box>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="End Time (24h)"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              placeholder="HH:MM (e.g. 18:00)"
+              required
+              error={formValidationErrors.endTime}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              type="number"
+              label="Grace Period (Mins)"
+              value={gracePeriod}
+              placeholder="15"
+              onChange={(e) => setGracePeriod(e.target.value === "" ? "" : Number(e.target.value))}
+              error={formValidationErrors.gracePeriod}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              type="number"
+              label="Grace Limit Per Month"
+              value={graceLimit}
+              placeholder="0 = Unlimited"
+              onChange={(e) => setGraceLimit(e.target.value === "" ? "" : Number(e.target.value))}
+              error={formValidationErrors.graceLimit || (graceLimit === 0 ? "Enter 0 for unlimited" : undefined)}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              type="number"
+              label="Half Day Min (Mins)"
+              value={halfDayThreshold}
+              placeholder="240"
+              onChange={(e) => setHalfDayThreshold(e.target.value === "" ? "" : Number(e.target.value))}
+              error={formValidationErrors.halfDayThreshold}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              type="number"
+              label="Full Day Duration (Mins)"
+              value={fullDayMinutes}
+              placeholder="480"
+              onChange={(e) => setFullDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              error={formValidationErrors.fullDayMinutes}
+            />
+          </Grid>
+        </Grid>
 
         <FormControlLabel
           control={
@@ -252,12 +266,26 @@ function ShiftFormDialog({
               sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
             />
           }
-          label="Set as default shift for organization"
+          label={<Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>Set as default shift for organization</Typography>}
         />
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={submitting} color="inherit">
+      <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+        <Button
+          onClick={handleClose}
+          disabled={submitting}
+          sx={{
+            height: 42,
+            borderRadius: "10px",
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
+            backgroundColor: "#F1F5F9",
+            color: "#475569",
+            "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -265,7 +293,14 @@ function ShiftFormDialog({
           disabled={submitting}
           variant="contained"
           sx={{
+            height: 42,
+            borderRadius: "10px",
+            px: 3,
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
             backgroundColor: "#6D5DF6",
+            boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
             "&:hover": { backgroundColor: "#5B4BEA" },
           }}
         >

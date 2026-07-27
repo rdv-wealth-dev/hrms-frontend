@@ -308,9 +308,10 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 fullWidth
                 label="Phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+918765432109"
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                placeholder="9876543210"
                 size="small"
+                slotProps={{ htmlInput: { maxLength: 10 } }}
               />
             </Grid>
 
@@ -363,8 +364,9 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 fullWidth
                 label="Working Hours Per Day"
                 type="number"
-                value={workingHoursPerDay}
-                onChange={(e) => setWorkingHoursPerDay(Number(e.target.value))}
+                value={workingHoursPerDay || ""}
+                placeholder="8"
+                onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? "" : Number(e.target.value))}
                 size="small"
               />
             </Grid>

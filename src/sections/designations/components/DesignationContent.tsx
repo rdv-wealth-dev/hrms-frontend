@@ -25,6 +25,7 @@ import MenuItem from "@mui/material/MenuItem";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import TextInput from "../../../components/input/TextInput";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -324,40 +325,55 @@ function DesignationContent() {
         }}
         maxWidth="sm"
         fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.45)",
+            },
+          },
+          paper: {
+            sx: {
+              borderRadius: "20px",
+              p: { xs: 2.5, sm: 3.5 },
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+              border: "1px solid #E2E8F0",
+              mx: { xs: 2, sm: "auto" },
+              width: { xs: "calc(100% - 32px)", sm: "100%" },
+            },
+          },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Create Designation</DialogTitle>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+          Create Designation
+        </DialogTitle>
 
-        <DialogContent sx={{ pt: "24px !important", display: "flex", flexDirection: "column", gap: 2 }}>
-          {error && createOpen && <Alert severity="error">{error}</Alert>}
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {error && createOpen && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
 
-          <TextField
+          <TextInput
             label="Designation Name"
             value={name}
             onChange={(e) => setName(e.target.value ?? "")}
-            fullWidth
-            size="small"
             placeholder="e.g. Software Engineer"
             required
           />
 
-          <TextField
+          <TextInput
             label="Code"
             value={code}
             onChange={(e) => setCode((e.target.value ?? "").toUpperCase())}
-            fullWidth
-            size="small"
             placeholder="e.g. SDE1"
             required
             slotProps={{ htmlInput: { maxLength: 20 } }}
           />
 
-          <TextField
+          <TextInput
             select
             label="Department"
             value={departmentId}
             onChange={(e) => setDepartmentId(e.target.value ?? "")}
-            fullWidth
-            size="small"
             required
           >
             <MenuItem value="" disabled>
@@ -368,31 +384,27 @@ function DesignationContent() {
                 {dept.name} ({dept.code})
               </MenuItem>
             ))}
-          </TextField>
+          </TextInput>
 
-          <TextField
-            label="Level"
+          <TextInput
             type="number"
+            label="Level"
             value={level}
             onChange={(e) => setLevel(e.target.value ?? "1")}
-            fullWidth
-            size="small"
             placeholder="e.g. 2"
           />
 
-          <TextField
+          <TextInput
+            multiline
+            rows={3}
             label="Description (optional)"
             value={description}
             onChange={(e) => setDescription(e.target.value ?? "")}
-            fullWidth
-            size="small"
-            multiline
-            rows={2}
             placeholder="Brief description of this role"
           />
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
           <Button
             onClick={() => {
               setCreateOpen(false);
@@ -400,7 +412,17 @@ function DesignationContent() {
               dispatch(clearDesignationError());
             }}
             disabled={submitting}
-            color="inherit"
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            }}
           >
             Cancel
           </Button>
@@ -408,7 +430,17 @@ function DesignationContent() {
             onClick={handleCreate}
             disabled={submitting || !name?.trim() || !code?.trim() || !departmentId?.trim()}
             variant="contained"
-            sx={{ backgroundColor: "#6D5DF6", "&:hover": { backgroundColor: "#5B4BEA" } }}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4BEA" },
+            }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Create"}
           </Button>
@@ -426,53 +458,66 @@ function DesignationContent() {
         }}
         maxWidth="sm"
         fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.45)",
+            },
+          },
+          paper: {
+            sx: {
+              borderRadius: "20px",
+              p: { xs: 2.5, sm: 3.5 },
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+              border: "1px solid #E2E8F0",
+              mx: { xs: 2, sm: "auto" },
+              width: { xs: "calc(100% - 32px)", sm: "100%" },
+            },
+          },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Update Designation</DialogTitle>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+          Update Designation
+        </DialogTitle>
 
-        <DialogContent sx={{ pt: "24px !important", display: "flex", flexDirection: "column", gap: 2 }}>
-          {error && updateOpen && <Alert severity="error">{error}</Alert>}
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {error && updateOpen && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
 
-          <TextField
+          <TextInput
             label="Designation Name"
             value={editName}
             onChange={(e) => setEditName(e.target.value ?? "")}
-            fullWidth
-            size="small"
             required
           />
 
-          <TextField
+          <TextInput
             label="Code"
             value={editCode}
             onChange={(e) => setEditCode((e.target.value ?? "").toUpperCase())}
-            fullWidth
-            size="small"
             placeholder="e.g. SDE1"
             required
             slotProps={{ htmlInput: { maxLength: 20 } }}
           />
 
-          <TextField
-            label="Level"
+          <TextInput
             type="number"
+            label="Level"
             value={editLevel}
             onChange={(e) => setEditLevel(e.target.value ?? "1")}
-            fullWidth
-            size="small"
           />
 
-          <TextField
+          <TextInput
+            multiline
+            rows={3}
             label="Description (optional)"
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value ?? "")}
-            fullWidth
-            size="small"
-            multiline
-            rows={2}
           />
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
           <Button
             onClick={() => {
               setUpdateOpen(false);
@@ -481,7 +526,17 @@ function DesignationContent() {
               dispatch(clearDesignationError());
             }}
             disabled={submitting}
-            color="inherit"
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            }}
           >
             Cancel
           </Button>
@@ -489,7 +544,17 @@ function DesignationContent() {
             onClick={handleUpdate}
             disabled={submitting || !editName?.trim() || !editCode?.trim()}
             variant="contained"
-            sx={{ backgroundColor: "#6D5DF6", "&:hover": { backgroundColor: "#5B4BEA" } }}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4BEA" },
+            }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Update"}
           </Button>

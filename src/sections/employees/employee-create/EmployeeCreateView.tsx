@@ -273,30 +273,25 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
         return (
           <>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <TextInput
                 label="Annual CTC"
                 type="number"
-                fullWidth
-                {...register("salarySetup.structure.amount", { valueAsNumber: true })}
-                error={!!(errors.salarySetup?.structure as any)?.amount}
-                helperText={(errors.salarySetup?.structure as any)?.amount?.message}
-
+                placeholder="Enter annual CTC"
+                registration={register("salarySetup.structure.amount", { valueAsNumber: true })}
+                error={(errors.salarySetup?.structure as any)?.amount?.message}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <TextInput
                 select
                 label="Currency"
-                fullWidth
-                defaultValue="INR"
-                {...register("salarySetup.structure.currency")}
-
+                registration={register("salarySetup.structure.currency")}
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
                 <MenuItem value="EUR">EUR</MenuItem>
                 <MenuItem value="GBP">GBP</MenuItem>
-              </TextField>
+              </TextInput>
             </Grid>
             <Grid size={12}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 1 }}>
@@ -304,30 +299,27 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label="Basic"
                 type="number"
-                fullWidth
-                {...register("salarySetup.structure.components.0.amount", { valueAsNumber: true })}
-
+                placeholder="Enter basic salary"
+                registration={register("salarySetup.structure.components.0.amount", { valueAsNumber: true })}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label="HRA"
                 type="number"
-                fullWidth
-                {...register("salarySetup.structure.components.1.amount", { valueAsNumber: true })}
-
+                placeholder="Enter HRA"
+                registration={register("salarySetup.structure.components.1.amount", { valueAsNumber: true })}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label="Conveyance"
                 type="number"
-                fullWidth
-                {...register("salarySetup.structure.components.2.amount", { valueAsNumber: true })}
-
+                placeholder="Enter conveyance"
+                registration={register("salarySetup.structure.components.2.amount", { valueAsNumber: true })}
               />
             </Grid>
             <Grid size={12}>
@@ -339,12 +331,11 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
             </Grid>
             {watch("salarySetup.benefits.hasLeaveEncashment") && (
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
+                <TextInput
                   label="Leave Encashment Rate (₹/day)"
                   type="number"
-                  fullWidth
-                  {...register("salarySetup.benefits.leaveEncashmentRate", { valueAsNumber: true })}
-  
+                  placeholder="Enter rate per day"
+                  registration={register("salarySetup.benefits.leaveEncashmentRate", { valueAsNumber: true })}
                 />
               </Grid>
             )}
@@ -355,51 +346,39 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
         return (
           <>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label="Hourly Rate (₹)"
                 type="number"
-                fullWidth
                 required
-                {...register("salarySetup.structure.hourlyRate", { valueAsNumber: true })}
-                error={!!(errors.salarySetup?.structure as any)?.hourlyRate}
-                helperText={(errors.salarySetup?.structure as any)?.hourlyRate?.message}
-
+                registration={register("salarySetup.structure.hourlyRate", { valueAsNumber: true })}
+                error={(errors.salarySetup?.structure as any)?.hourlyRate?.message}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label="Working Hours/Week"
                 type="number"
-                fullWidth
-                defaultValue={40}
-                {...register("salarySetup.structure.workingHoursPerWeek", { valueAsNumber: true })}
-
+                registration={register("salarySetup.structure.workingHoursPerWeek", { valueAsNumber: true })}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label="Working Days/Month"
                 type="number"
-                fullWidth
-                defaultValue={22}
-                {...register("salarySetup.structure.workingDaysPerMonth", { valueAsNumber: true })}
-
+                registration={register("salarySetup.structure.workingDaysPerMonth", { valueAsNumber: true })}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 select
                 label="Currency"
-                fullWidth
-                defaultValue="INR"
-                {...register("salarySetup.structure.currency")}
-
+                registration={register("salarySetup.structure.currency")}
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
                 <MenuItem value="EUR">EUR</MenuItem>
                 <MenuItem value="GBP">GBP</MenuItem>
-              </TextField>
+              </TextInput>
             </Grid>
           </>
         );
@@ -410,31 +389,25 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
         return (
           <>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <TextInput
                 label="Monthly Amount (₹)"
                 type="number"
-                fullWidth
                 required
-                {...register("salarySetup.structure.amount", { valueAsNumber: true })}
-                error={!!(errors.salarySetup?.structure as any)?.amount}
-                helperText={(errors.salarySetup?.structure as any)?.amount?.message}
-
+                registration={register("salarySetup.structure.amount", { valueAsNumber: true })}
+                error={(errors.salarySetup?.structure as any)?.amount?.message}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <TextInput
                 select
                 label="Currency"
-                fullWidth
-                defaultValue="INR"
-                {...register("salarySetup.structure.currency")}
-
+                registration={register("salarySetup.structure.currency")}
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
                 <MenuItem value="EUR">EUR</MenuItem>
                 <MenuItem value="GBP">GBP</MenuItem>
-              </TextField>
+              </TextInput>
             </Grid>
           </>
         );
@@ -444,45 +417,36 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
         return (
           <>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 label={payType === "INTERN" ? "Stipend Amount (₹)" : "Consultant Fee (₹)"}
                 type="number"
-                fullWidth
                 required
-                {...register("salarySetup.structure.amount", { valueAsNumber: true })}
-                error={!!(errors.salarySetup?.structure as any)?.amount}
-                helperText={(errors.salarySetup?.structure as any)?.amount?.message}
-
+                registration={register("salarySetup.structure.amount", { valueAsNumber: true })}
+                error={(errors.salarySetup?.structure as any)?.amount?.message}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 select
                 label="Frequency"
-                fullWidth
-                defaultValue="MONTHLY"
-                {...register("salarySetup.structure.frequency")}
-
+                registration={register("salarySetup.structure.frequency")}
               >
                 <MenuItem value="MONTHLY">Monthly</MenuItem>
                 <MenuItem value="WEEKLY">Weekly</MenuItem>
                 <MenuItem value="ONE_TIME">One Time</MenuItem>
-              </TextField>
+              </TextInput>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <TextInput
                 select
                 label="Currency"
-                fullWidth
-                defaultValue="INR"
-                {...register("salarySetup.structure.currency")}
-
+                registration={register("salarySetup.structure.currency")}
               >
                 <MenuItem value="INR">INR</MenuItem>
                 <MenuItem value="USD">USD</MenuItem>
                 <MenuItem value="EUR">EUR</MenuItem>
                 <MenuItem value="GBP">GBP</MenuItem>
-              </TextField>
+              </TextInput>
             </Grid>
             <Grid size={12}>
               <TextInput
@@ -581,25 +545,24 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                     <TextInput
                       label="Phone Number"
                       placeholder="e.g. 9876543210"
+                      maxLength={10}
                       registration={register("phone")}
                       error={errors.phone?.message}
                     />
                   </Grid>
                   <Grid size={{ xs: 4, sm: 2 }}>
-                    <TextField
+                    <TextInput
                       select
                       label="Code"
-                      fullWidth
-                      defaultValue="IN"
-                      {...register("countryCode")}
-                      error={!!errors.countryCode}
-                      helperText={errors.countryCode?.message}
-      
+                      registration={register("countryCode")}
+                      error={errors.countryCode?.message}
                     >
                       {COUNTRIES.map((c) => (
-                        <MenuItem key={c.code} value={c.code}>{c.code}</MenuItem>
+                        <MenuItem key={c.code} value={c.code}>
+                          {c.code}
+                        </MenuItem>
                       ))}
-                    </TextField>
+                    </TextInput>
                   </Grid>
                 </Grid>
               </CardContent>
@@ -613,85 +576,85 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
+                    <TextInput
                       select
-                      fullWidth
                       label="Department"
                       value={watch("departmentId") || ""}
+                      onChange={(e) => setValue("departmentId", e.target.value, { shouldValidate: true })}
+                      error={errors.departmentId?.message}
                       slotProps={{
                         select: {
                           displayEmpty: true,
                           renderValue: (value: unknown) => {
                             const val = value as string;
-                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Department</span>;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13.5px" }}>Select Department</span>;
                             const dept = departments.find((d) => d._id === val);
                             return dept ? `${dept.name} (${dept.code})` : val;
                           }
                         }
                       }}
-                      {...register("departmentId")}
-                      error={!!errors.departmentId}
-                      helperText={errors.departmentId?.message}
                     >
+                      <MenuItem value="" disabled sx={{ color: "#9CA3AF" }}>
+                        Select Department
+                      </MenuItem>
                       {departments.map((dept) => (
                         <MenuItem key={dept._id} value={dept._id}>
                           {dept.name} ({dept.code})
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </TextInput>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
+                    <TextInput
                       select
-                      fullWidth
                       label="Designation"
                       value={watch("designationId") || ""}
+                      onChange={(e) => setValue("designationId", e.target.value, { shouldValidate: true })}
+                      error={errors.designationId?.message}
                       slotProps={{
                         select: {
                           displayEmpty: true,
                           renderValue: (value: unknown) => {
                             const val = value as string;
-                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Designation</span>;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13.5px" }}>Select Designation</span>;
                             const desig = designations.find((d) => d._id === val);
                             return desig ? `${desig.name} (${desig.code})` : val;
                           }
                         }
                       }}
-                      {...register("designationId")}
-                      error={!!errors.designationId}
-                      helperText={errors.designationId?.message}
                     >
+                      <MenuItem value="" disabled sx={{ color: "#9CA3AF" }}>
+                        Select Designation
+                      </MenuItem>
                       {designations.map((desig) => (
                         <MenuItem key={desig._id} value={desig._id}>
                           {desig.name} ({desig.code})
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </TextInput>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextField
+                    <TextInput
                       select
-                      fullWidth
                       label="Employee Type"
                       value={watch("employeeType") || "FULL_TIME"}
+                      onChange={(e) => setValue("employeeType", e.target.value as any, { shouldValidate: true })}
+                      error={errors.employeeType?.message}
                       slotProps={{
                         select: {
                           displayEmpty: true,
                           renderValue: (value: unknown) => {
                             const val = value as string;
-                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Type</span>;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13.5px" }}>Select Type</span>;
                             return val.replace(/_/g, " ");
                           }
                         }
                       }}
-                      {...register("employeeType")}
-                      error={!!errors.employeeType}
-                      helperText={errors.employeeType?.message}
                     >
                       {EMPLOYEE_TYPES.map((et) => (
                         <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
                       ))}
-                    </TextField>
+                    </TextInput>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <TextInput
@@ -720,69 +683,67 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
+                    <TextInput
                       select
-                      fullWidth
                       label="Shift Selection"
+                      disabled={shiftsLoading}
                       value={watch("shiftId") || ""}
+                      onChange={(e) => setValue("shiftId", e.target.value, { shouldValidate: true })}
+                      error={errors.shiftId?.message || (shiftsLoading ? "Loading shifts..." : undefined)}
                       slotProps={{
                         select: {
                           displayEmpty: true,
                           renderValue: (value: unknown) => {
                             const val = value as string;
-                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Select Shift</span>;
+                            if (!val) return <span style={{ color: "#9CA3AF", fontSize: "13.5px" }}>Select Shift</span>;
                             const shift = shifts.find((s) => s._id === val);
                             if (!shift) return val;
                             return `${shift.name} (${shift.startTime} - ${shift.endTime})${shift.isDefault ? " (Default)" : ""}`;
                           }
                         }
                       }}
-                      {...register("shiftId")}
-                      error={!!errors.shiftId}
-                      helperText={errors.shiftId?.message || (shiftsLoading ? "Loading shifts..." : "")}
-                      disabled={shiftsLoading}
                     >
-                        <MenuItem value="">
-                          <span style={{ color: "#9CA3AF" }}>Select Shift</span>
-                        </MenuItem>
-                        {shifts.map((shift) => (
-                          <MenuItem 
-                            key={shift._id} 
-                            value={shift._id}
-                            sx={{ 
-                              display: "flex", 
-                              justifyContent: "space-between", 
-                              alignItems: "center",
-                              py: 1
-                            }}
-                          >
-                            <Box sx={{ display: "flex", flexDirection: "column" }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#111827" }}>
-                                {shift.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {shift.startTime} - {shift.endTime}
-                              </Typography>
+                      <MenuItem value="" disabled sx={{ color: "#9CA3AF" }}>
+                        Select Shift
+                      </MenuItem>
+                      {shifts.map((shift) => (
+                        <MenuItem 
+                          key={shift._id} 
+                          value={shift._id}
+                          sx={{ 
+                            display: "flex", 
+                            justifyContent: "space-between", 
+                            alignItems: "center",
+                            py: 1
+                          }}
+                        >
+                          <Box sx={{ display: "flex", flexDirection: "column" }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#111827" }}>
+                              {shift.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {shift.startTime} - {shift.endTime}
+                            </Typography>
+                          </Box>
+                          {shift.isDefault && (
+                            <Box
+                              sx={{
+                                px: 1,
+                                py: 0.25,
+                                borderRadius: 1,
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                backgroundColor: "rgba(109, 93, 246, 0.08)",
+                                color: "#6D5DF6",
+                                border: "1px solid rgba(109, 93, 246, 0.2)",
+                              }}
+                            >
+                              Default
                             </Box>
-                            {shift.isDefault && (
-                              <Box
-                                sx={{
-                                  px: 1,
-                                  py: 0.25,
-                                  borderRadius: 1,
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                  backgroundColor: "rgba(109, 93, 246, 0.08)",
-                                  color: "#6D5DF6",
-                                  border: "1px solid rgba(109, 93, 246, 0.2)",
-                                }}
-                              >
-                                Default
-                              </Box>
-                            )}
-                          </MenuItem>
-                        ))}
-                      </TextField>
+                          )}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
                   </Grid>
                 </Grid>
               </CardContent>
@@ -810,36 +771,30 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
                   <>
                     <Grid container spacing={2}>
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        <Box>
-                          <Typography variant="body2" sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}>
-                            Employee Pay Type
-                          </Typography>
-                          <TextField
-                            select
-                            fullWidth
-                            value={watch("salarySetup.employeePayType") || employeeType}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setValue("salarySetup.employeePayType", val as any);
-                              const typeMap: Record<string, string> = {
-                                FULL_TIME: "CTC",
-                                PART_TIME: "HOURLY_RATE",
-                                CONTRACT: "FIXED_MONTHLY",
-                                TEMPORARY: "FIXED_MONTHLY",
-                                FREELANCE: "FIXED_MONTHLY",
-                                INTERN: "STIPEND",
-                                CONSULTANT: "STIPEND",
-                                UNPAID: "UNPAID",
-                              };
-                              setValue("salarySetup.structure.type", typeMap[val] || "");
-                            }}
-            
-                          >
-                            {EMPLOYEE_TYPES.map((et) => (
-                              <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
-                            ))}
-                          </TextField>
-                        </Box>
+                        <TextInput
+                          select
+                          label="Employee Pay Type"
+                          value={watch("salarySetup.employeePayType") || employeeType}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setValue("salarySetup.employeePayType", val as any);
+                            const typeMap: Record<string, string> = {
+                              FULL_TIME: "CTC",
+                              PART_TIME: "HOURLY_RATE",
+                              CONTRACT: "FIXED_MONTHLY",
+                              TEMPORARY: "FIXED_MONTHLY",
+                              FREELANCE: "FIXED_MONTHLY",
+                              INTERN: "STIPEND",
+                              CONSULTANT: "STIPEND",
+                              UNPAID: "UNPAID",
+                            };
+                            setValue("salarySetup.structure.type", typeMap[val] || "");
+                          }}
+                        >
+                          {EMPLOYEE_TYPES.map((et) => (
+                            <MenuItem key={et} value={et}>{et.replace(/_/g, " ")}</MenuItem>
+                          ))}
+                        </TextInput>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput

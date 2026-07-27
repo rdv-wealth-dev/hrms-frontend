@@ -284,7 +284,13 @@ export function BranchCalendarGrid({
 
         {/* Calendar Day Cards */}
         {days.map((day: BranchCalendarDay) => {
-          const dateNum = new Date(`${day.date}T00:00:00`).getDate();
+          const dayDate = new Date(`${day.date}T00:00:00`);
+          const dateNum = dayDate.getDate();
+          const today = new Date();
+          const isToday =
+            dayDate.getFullYear() === today.getFullYear() &&
+            dayDate.getMonth() === today.getMonth() &&
+            dayDate.getDate() === today.getDate();
 
           // Client-side fallback check for custom week-off rules (e.g. 2nd & 4th Saturday, 5th Friday)
           const weekOccurrence = day.weekNumber || Math.ceil(dateNum / 7);
@@ -320,14 +326,17 @@ export function BranchCalendarGrid({
                 minHeight: compact ? 65 : { xs: 50, sm: 80, md: 100 },
                 p: compact ? 0.8 : { xs: 0.6, sm: 1 },
                 borderRadius: 2,
-                border: "1px solid",
-                borderColor: isCustomOff
+                border: isToday ? "2px solid" : "1px solid",
+                borderColor: isToday
+                  ? "#EF4444"
+                  : isCustomOff
                   ? "#C7D2FE"
                   : isWeekOff
                   ? "#FDE68A"
                   : isHoliday
                   ? "#BFDBFE"
                   : "#E5E7EB",
+                boxShadow: isToday ? "0 0 0 1px #EF4444, 0 2px 8px rgba(239, 68, 68, 0.15)" : undefined,
                 backgroundColor: isCustomOff
                   ? "#EEF2FF"
                   : isWeekOff
@@ -341,7 +350,7 @@ export function BranchCalendarGrid({
                 cursor: onDayClick || hasEvents ? "pointer" : "default",
                 transition: "all 0.15s ease",
                 "&:hover": {
-                  borderColor: "#6D5DF6",
+                  borderColor: isToday ? "#DC2626" : "#6D5DF6",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   transform: "translateY(-1px)",
                 },
@@ -354,11 +363,32 @@ export function BranchCalendarGrid({
                   sx={{
                     fontWeight: 700,
                     fontSize: compact ? "12px" : { xs: "11px", sm: "13px", md: "14px" },
-                    color: isCustomOff ? "#4338CA" : isWeekOff ? "#B45309" : "#111827",
+                    color: isToday
+                      ? "#EF4444"
+                      : isCustomOff
+                      ? "#4338CA"
+                      : isWeekOff
+                      ? "#B45309"
+                      : "#111827",
                   }}
                 >
                   {dateNum}
                 </Typography>
+
+                {isToday && (
+                  <Chip
+                    label="Today"
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      backgroundColor: "#FEF2F2",
+                      color: "#EF4444",
+                      border: "1px solid #FCA5A5",
+                    }}
+                  />
+                )}
 
                 {!compact && isHoliday && (
                   <Chip

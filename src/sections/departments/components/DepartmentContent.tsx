@@ -24,6 +24,7 @@ import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import TextInput from "../../../components/input/TextInput";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -90,30 +91,53 @@ function DeptFormDialog({
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ fontWeight: 700 }}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            slotProps={{
+                backdrop: {
+                    sx: {
+                        backdropFilter: "blur(6px)",
+                        backgroundColor: "rgba(15, 23, 42, 0.45)",
+                    },
+                },
+                paper: {
+                    sx: {
+                        borderRadius: "20px",
+                        p: { xs: 2.5, sm: 3.5 },
+                        backgroundColor: "#FFFFFF",
+                        boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+                        border: "1px solid #E2E8F0",
+                        mx: { xs: 2, sm: "auto" },
+                        width: { xs: "calc(100% - 32px)", sm: "100%" },
+                    },
+                },
+            }}
+        >
+            <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
                 {mode === "create" ? "Create Department" : "Update Department"}
             </DialogTitle>
 
-            <DialogContent sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                pt: "24px !important",
-            }}
+            <DialogContent
+                sx={{
+                    p: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2.5,
+                }}
             >
                 {error && (
-                    <Alert severity="error" sx={{ mb: 1 }}>
+                    <Alert severity="error" sx={{ borderRadius: 2 }}>
                         {error}
                     </Alert>
                 )}
 
-                <TextField
+                <TextInput
                     label="Department Name"
                     value={name}
                     onChange={(e) => setName(e.target.value ?? "")}
-                    fullWidth
-                    size="small"
                     placeholder="e.g. Engineering"
                     required
                     slotProps={{
@@ -123,12 +147,10 @@ function DeptFormDialog({
                     }}
                 />
 
-                <TextField
+                <TextInput
                     label="Code"
                     value={code}
                     onChange={(e) => setCode((e.target.value ?? "").toUpperCase())}
-                    fullWidth
-                    size="small"
                     placeholder="e.g. ENG"
                     required
                     slotProps={{
@@ -138,27 +160,49 @@ function DeptFormDialog({
                     }}
                 />
 
-                <TextField
+                <TextInput
+                    multiline
+                    rows={3}
                     label="Description (optional)"
                     value={description}
                     onChange={(e) => setDescription(e.target.value ?? "")}
-                    fullWidth
-                    size="small"
-                    multiline
-                    rows={2}
                     placeholder="Brief description of this department"
                 />
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} disabled={submitting} color="inherit">
+            <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+                <Button
+                    onClick={onClose}
+                    disabled={submitting}
+                    sx={{
+                        height: 42,
+                        borderRadius: "10px",
+                        px: 2.5,
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        backgroundColor: "#F1F5F9",
+                        color: "#475569",
+                        "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+                    }}
+                >
                     Cancel
                 </Button>
                 <Button
                     onClick={handleSubmit}
                     disabled={submitting || !name?.trim() || !code?.trim()}
                     variant="contained"
-                    sx={{ backgroundColor: "#6D5DF6", "&:hover": { backgroundColor: "#5B4BEA" } }}
+                    sx={{
+                        height: 42,
+                        borderRadius: "10px",
+                        px: 3,
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        backgroundColor: "#6D5DF6",
+                        boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                        "&:hover": { backgroundColor: "#5B4BEA" },
+                    }}
                 >
                     {submitting ? <CircularProgress size={18} color="inherit" /> : mode === "create" ? "Create" : "Update"}
                 </Button>

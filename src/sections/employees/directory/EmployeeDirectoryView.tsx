@@ -11,6 +11,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import AddIcon from "@mui/icons-material/Add";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
@@ -18,14 +19,18 @@ import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import { listEmployeesRequest } from "../../../store/employee";
 import { useDebounce } from "../../../hooks/useDebounce";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 import { PeopleHubKpiCards } from "../employee-list/components/PeopleHubKpiCards";
 import { PeopleHubDepartmentTabs, type FilterState } from "../employee-list/components/PeopleHubDepartmentTabs";
+import { ViewModeSwitcher } from "../employee-list/components/ViewModeSwitcher";
 import { EmployeeDirectoryCardGrid } from "./components/EmployeeDirectoryCardGrid";
 
 function EmployeeDirectoryView() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission("employee.create");
 
   const {
     employees = [],
@@ -219,30 +224,46 @@ function EmployeeDirectoryView() {
             </Box>
           </Box>
 
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<FormatListBulletedIcon />}
-            onClick={() => navigate(paths.employees.list)}
-            sx={{
-              borderRadius: 2.5,
-              textTransform: "none",
-              borderColor: "#CBD5E1",
-              color: "#334155",
-              backgroundColor: "#FFFFFF",
-              height: 40,
-              px: 2,
-              fontWeight: 600,
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-              "&:hover": {
-                borderColor: "#6D5DF6",
-                color: "#6D5DF6",
-                backgroundColor: "#EEF2FF",
-              },
-            }}
-          >
-            Table View
-          </Button>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <ViewModeSwitcher
+              viewMode="directory"
+              onChange={(mode) => {
+                if (mode === "people_hub" || mode === "classic") {
+                  localStorage.setItem("employee_view_mode", mode);
+                  navigate(paths.employees.list);
+                }
+              }}
+            />
+
+            {canCreate && (
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon sx={{ fontSize: 20 }} />}
+                onClick={() => navigate(paths.employees.create)}
+                sx={{
+                  height: 40,
+                  borderRadius: "10px",
+                  textTransform: "none",
+                  backgroundColor: "#6D5DF6",
+                  color: "#FFFFFF",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  px: 2.5,
+                  boxSizing: "border-box",
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  "&:hover": {
+                    backgroundColor: "#5B4BEA",
+                    boxShadow: "0 4px 12px rgba(109, 93, 246, 0.35)",
+                  },
+                }}
+              >
+                Add Employee
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {/* Metric KPI Summary Cards */}

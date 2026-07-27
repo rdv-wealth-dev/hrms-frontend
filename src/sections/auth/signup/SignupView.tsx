@@ -143,6 +143,7 @@ function SignupView() {
             label="Phone Number"
             placeholder="Phone Number"
             type="tel"
+            maxLength={10}
             registration={register("phone")}
             error={errors.phone?.message}
           />

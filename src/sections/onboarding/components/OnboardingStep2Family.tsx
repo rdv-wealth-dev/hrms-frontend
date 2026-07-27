@@ -99,7 +99,7 @@ export default function OnboardingStep2Family({
           fields.map((field, idx) => (
             <Box key={field.id} sx={{ my: 2 }}>
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <TextInput
                     label="Full Name"
                     placeholder="Full Name"
@@ -108,24 +108,20 @@ export default function OnboardingStep2Family({
                   />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 2.5 }}>
-                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: "#374151", fontSize: "13.5px" }}>
-                    Relationship
-                  </Typography>
-                  <TextField
+                <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
+                  <TextInput
                     select
-                    fullWidth
-                    {...register(`familyMembers.${idx}.relationship` as const)}
-                    error={!!errors.familyMembers?.[idx]?.relationship}
-                    helperText={errors.familyMembers?.[idx]?.relationship?.message}
+                    label="Relationship"
+                    registration={register(`familyMembers.${idx}.relationship` as const)}
+                    error={errors.familyMembers?.[idx]?.relationship?.message}
                   >
                     {RELATIONSHIPS.map((rel) => (
                       <MenuItem key={rel} value={rel}>{rel}</MenuItem>
                     ))}
-                  </TextField>
+                  </TextInput>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 2.5 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 2.3 }}>
                   <TextInput
                     label="Date of Birth"
                     type="date"
@@ -135,7 +131,7 @@ export default function OnboardingStep2Family({
                   />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 2 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
                   <TextInput
                     label="Occupation (Optional)"
                     placeholder="e.g. Engineer"
@@ -144,7 +140,7 @@ export default function OnboardingStep2Family({
                   />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 2 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 2.3 }}>
                   <TextInput
                     label="Phone (Optional)"
                     placeholder="+91..."
@@ -153,22 +149,18 @@ export default function OnboardingStep2Family({
                   />
                 </Grid>
 
-                <Grid size={{ xs: 6, sm: 2 }}>
-                  <FormControlLabel
-                    control={<Checkbox {...register(`familyMembers.${idx}.isDependent` as const)} defaultChecked />}
-                    label={<Typography variant="body2" sx={{ fontSize: "13px" }}>Is Dependent?</Typography>}
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 5, sm: 2 }}>
-                  <FormControlLabel
-                    control={<Checkbox {...register(`familyMembers.${idx}.isNominee` as const)} />}
-                    label={<Typography variant="body2" sx={{ fontSize: "13px" }}>Is Nominee?</Typography>}
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 1, sm: 1 }} sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-                  <IconButton onClick={() => remove(idx)} size="small" sx={{ color: "#EF4444" }}>
+                <Grid size={12} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: 0.5 }}>
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                    <FormControlLabel
+                      control={<Checkbox {...register(`familyMembers.${idx}.isDependent` as const)} defaultChecked />}
+                      label={<Typography variant="body2" sx={{ fontSize: "13px" }}>Is Dependent?</Typography>}
+                    />
+                    <FormControlLabel
+                      control={<Checkbox {...register(`familyMembers.${idx}.isNominee` as const)} />}
+                      label={<Typography variant="body2" sx={{ fontSize: "13px" }}>Is Nominee?</Typography>}
+                    />
+                  </Box>
+                  <IconButton onClick={() => remove(idx)} size="small" sx={{ color: "#EF4444", "&:hover": { backgroundColor: "#FEE2E2" } }}>
                     <DeleteOutlineOutlinedIcon fontSize="small" />
                   </IconButton>
                 </Grid>
@@ -180,12 +172,12 @@ export default function OnboardingStep2Family({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
           startIcon={<ArrowBackIcon />}
-          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1" }}
+          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1", width: { xs: "100%", sm: "auto" } }}
         >
           Back
         </Button>
@@ -194,7 +186,7 @@ export default function OnboardingStep2Family({
           variant="contained"
           disabled={loading}
           endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" } }}
+          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
         >
           {loading ? "Saving..." : "Save & Continue"}
         </Button>

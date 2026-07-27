@@ -29,11 +29,15 @@ export interface Step1Payload {
   phone: string;
   currentAddress: CurrentAddress;
   emergencyContact: EmergencyContact[];
+  pan?: string;
+  aadhaar?: string;
+  passportNo?: string;
 }
 
 export interface FamilyMember {
-  fullName: string;
-  relationship: "SPOUSE" | "CHILD" | "FATHER" | "MOTHER" | "SIBLING" | "OTHER";
+  name?: string;
+  fullName?: string;
+  relationship: string;
   dateOfBirth?: string;
   gender?: string;
   isDependent?: boolean;

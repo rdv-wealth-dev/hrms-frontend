@@ -26,6 +26,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
+import TextInput from "../../components/input/TextInput";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import type { AppDispatch } from "../../store/store";
 import type { RootState } from "../../store/rootReducer";
@@ -97,39 +98,32 @@ function HolidayFormDialog({
           </Alert>
         )}
 
-        <TextField
+        <TextInput
           label="Holiday Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          fullWidth
-          size="small"
           placeholder="e.g. Independence Day"
           required
         />
 
-        <TextField
-          label="Date"
+        <TextInput
           type="date"
+          label="Date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          fullWidth
-          size="small"
           required
-          slotProps={{ inputLabel: { shrink: true } }}
         />
 
-        <TextField
+        <TextInput
           select
           label="Holiday Type"
           value={type}
           onChange={(e) => setType(e.target.value as any)}
-          fullWidth
-          size="small"
         >
           <MenuItem value="NATIONAL">National Holiday</MenuItem>
           <MenuItem value="RESTRICTED">Restricted Holiday</MenuItem>
           <MenuItem value="REGIONAL">Regional Holiday</MenuItem>
-        </TextField>
+        </TextInput>
 
         <FormControlLabel
           control={<Switch checked={isOptional} onChange={(e) => setIsOptional(e.target.checked)} color="primary" />}
@@ -141,14 +135,12 @@ function HolidayFormDialog({
           }
         />
 
-        <TextField
+        <TextInput
+          multiline
+          rows={2}
           label="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          fullWidth
-          size="small"
-          multiline
-          rows={2}
           placeholder="Brief description or context"
         />
       </DialogContent>

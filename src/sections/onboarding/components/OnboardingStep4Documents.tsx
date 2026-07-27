@@ -11,6 +11,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
+import TextInput from "../../../components/input/TextInput";
 import { uploadDocument, getEmployeeDocuments, type EmployeeDocument } from "../../../api/employee.api";
 
 interface OnboardingStep4Props {
@@ -22,8 +23,8 @@ interface OnboardingStep4Props {
 }
 
 const MANDATORY_DOCS = [
-  { code: "PAN", label: "PAN Card", description: "Government issued Permanent Account Number card" },
-  { code: "AADHAAR", label: "Aadhaar Card", description: "Government issued 12-digit UID Aadhaar card" },
+  { code: "PAN", label: "PAN Card", description: "Government issued 10-character PAN card", placeholder: "e.g. ABCDE1234F", maxLength: 10 },
+  { code: "AADHAAR", label: "Aadhaar Card", description: "Government issued 12-digit UID Aadhaar card", placeholder: "e.g. 123456789012", maxLength: 12 },
 ];
 
 export default function OnboardingStep4Documents({
@@ -35,6 +36,10 @@ export default function OnboardingStep4Documents({
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [docNumbers, setDocNumbers] = useState<Record<string, string>>({
+    PAN: "",
+    AADHAAR: "",
+  });
 
   const fetchDocs = async () => {
     try {
@@ -54,8 +59,9 @@ export default function OnboardingStep4Documents({
   const handleFileUpload = async (docType: string, file: File) => {
     setUploadingDocType(docType);
     setUploadError(null);
+    const num = docNumbers[docType]?.trim() || "";
     try {
-      const res = await uploadDocument(file, docType);
+      const res = await uploadDocument(file, docType, num);
       if (res.succeeded) {
         await fetchDocs();
       } else {
@@ -81,7 +87,7 @@ export default function OnboardingStep4Documents({
           4. Mandatory Documents Confirmation
         </Typography>
         <Typography variant="body2" sx={{ color: "#64748B", mb: 3 }}>
-          Please upload your mandatory documents before proceeding to the final review step.
+          Please enter your document numbers and upload the corresponding files before proceeding.
         </Typography>
 
         {(errorMsg || uploadError) && (
@@ -107,7 +113,7 @@ export default function OnboardingStep4Documents({
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    minHeight: 140,
+                    minHeight: 180,
                   }}
                 >
                   <Box>
@@ -127,9 +133,22 @@ export default function OnboardingStep4Documents({
                         <Chip label="Required" size="small" color="error" variant="outlined" sx={{ fontSize: "11px", fontWeight: 700 }} />
                       )}
                     </Box>
-                    <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                    <Typography variant="caption" sx={{ color: "#64748B", display: "block", mb: 1.5 }}>
                       {doc.description}
                     </Typography>
+
+                    <TextInput
+                      label={`${doc.label} Number`}
+                      placeholder={doc.placeholder}
+                      maxLength={doc.maxLength}
+                      value={docNumbers[doc.code] || ""}
+                      onChange={(e) =>
+                        setDocNumbers((prev) => ({
+                          ...prev,
+                          [doc.code]: doc.code === "PAN" ? e.target.value.toUpperCase() : e.target.value,
+                        }))
+                      }
+                    />
                   </Box>
 
                   <Box sx={{ mt: 2 }}>
@@ -168,12 +187,12 @@ export default function OnboardingStep4Documents({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
           startIcon={<ArrowBackIcon />}
-          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1" }}
+          sx={{ px: 3, py: 1.2, borderRadius: "10px", color: "#64748B", borderColor: "#CBD5E1", width: { xs: "100%", sm: "auto" } }}
         >
           Back
         </Button>
@@ -182,7 +201,7 @@ export default function OnboardingStep4Documents({
           variant="contained"
           disabled={loading}
           endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" } }}
+          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
         >
           {loading ? "Verifying..." : "Verify & Continue"}
         </Button>

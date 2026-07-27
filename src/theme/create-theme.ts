@@ -54,6 +54,17 @@ export const theme = createTheme({
       },
     },
 
+    // ─── Backdrop Blur (Dialog & Modal Overlays) ────────────
+    MuiBackdrop: {
+      styleOverrides: {
+        root: {
+          backdropFilter: "blur(6px)",
+          backgroundColor: "rgba(15, 23, 42, 0.4)",
+          transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important",
+        },
+      },
+    },
+
     // ─── Dialog: fullscreen on mobile ─────────────────────────
     MuiDialog: {
       defaultProps: {
@@ -136,23 +147,29 @@ export const theme = createTheme({
         root: {
           borderRadius: "12px",
           backgroundColor: "#FFFFFF",
+          fontSize: "14px",
+          color: "#0F172A",
+          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#94A3B8",
+            borderColor: "#CBD5E1",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: "#6D5DF6",
             borderWidth: "2px",
           },
+          "&.Mui-focused": {
+            boxShadow: "0 0 0 3px rgba(109, 93, 246, 0.12)",
+          },
         },
         notchedOutline: {
-          borderColor: "#CBD5E1",
-          borderWidth: "1px",
-          transition: "border-color 0.2s ease",
+          borderColor: "#E2E8F0",
+          borderWidth: "1.5px",
+          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         },
         input: {
           padding: "12px 14px",
           fontSize: "14px",
-          color: "#1E293B",
+          color: "#0F172A",
         },
       },
     },
@@ -167,11 +184,10 @@ export const theme = createTheme({
             color: "#6D5DF6",
             fontWeight: 600,
           },
-        },
-        outlined: {
-          backgroundColor: "#FFFFFF",
-          padding: "0 6px",
-          borderRadius: "4px",
+          "&.MuiInputLabel-shrink": {
+            fontSize: "12.5px",
+            fontWeight: 600,
+          },
         },
       },
     },
