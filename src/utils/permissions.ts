@@ -36,6 +36,16 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "settings.read", "settings.update",
     "document.read", "document.verify",
   ],
+  BRANCH_ADMIN: [
+    "employee.read", "employee.create", "employee.update",
+    "attendance.read", "attendance.create", "attendance.update", "attendance.approve",
+    "leave.read", "leave.create", "leave.update", "leave.approve",
+    "holiday.create",
+    "branch.read",
+    "department.read", "designation.read",
+    "report.read",
+    "document.read", "document.verify",
+  ],
   LEADERSHIP: [
     "employee.read", "attendance.read",
     "leave.read", "payroll.read",

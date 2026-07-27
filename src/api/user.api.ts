@@ -48,11 +48,16 @@ export const listUsers = async (): Promise<UserAccountData[]> => {
 
 export const updateUserRole = async (
   userId: string,
-  role: string
+  role: string,
+  branchIds: string[] = []
 ): Promise<UserResponse> => {
+  const payload = {
+    role,
+    branchIds: role === "BRANCH_ADMIN" ? branchIds : [],
+  };
   const response = await axiosInstance.patch<UserResponse>(
     `/users/${userId}/role`,
-    { role },
+    payload,
     { headers: getAuthHeader() }
   );
   return response.data;

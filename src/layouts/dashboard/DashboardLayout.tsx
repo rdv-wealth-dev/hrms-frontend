@@ -25,6 +25,8 @@ import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 
+import CollapsibleNavGroup, { type NavSubItem } from "./components/CollapsibleNavGroup";
+
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
 
@@ -32,7 +34,14 @@ import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
 
-const navItems = [
+interface NavItem {
+    label: string;
+    icon: React.ReactNode;
+    path: string;
+    permission?: string;
+}
+
+const topNavItems: NavItem[] = [
     {
         label: "Dashboard",
         icon: <DashboardOutlinedIcon fontSize="small" />,
@@ -50,51 +59,57 @@ const navItems = [
         path: paths.branches,
         permission: "branch.read",
     },
+];
+
+const timeAndLeaveNavItems: NavSubItem[] = [
     {
         label: "My Attendance",
         icon: <CalendarMonthOutlinedIcon fontSize="small" />,
         path: paths.attendance,
     },
     {
-        label: "My Leaves",
+        label: "Attendance Report",
+        icon: <AssessmentOutlinedIcon fontSize="small" />,
+        path: paths.reports,
+        permission: "report.read",
+    },
+    {
+        label: "My Leave",
         icon: <PolicyOutlinedIcon fontSize="small" />,
         path: paths.leave,
     },
     {
-        label: "Regularizations",
+        label: "Regularization",
         icon: <CalendarMonthOutlinedIcon fontSize="small" />,
         path: paths.attendanceRegularizations,
         permission: "attendance.approve",
     },
     {
-        label: "Leave Approvals",
+        label: "Leave Approval",
         icon: <PolicyOutlinedIcon fontSize="small" />,
         path: paths.leaveApprovals,
         permission: "leave.approve",
     },
     {
-        label: "Holidays",
+        label: "Holiday",
         icon: <CalendarMonthOutlinedIcon fontSize="small" />,
         path: paths.holidays,
         permission: "leave.read",
     },
+];
+
+const bottomNavItems: NavItem[] = [
     {
-        label: "Reports",
-        icon: <AssessmentOutlinedIcon fontSize="small" />,
-        path: paths.reports,
-        permission: "report.read",
+        label: "Document Verification",
+        icon: <FactCheckOutlinedIcon fontSize="small" />,
+        path: paths.documentVerification,
+        permission: "document.read",
     },
     {
         label: "Settings",
         icon: <SettingsOutlinedIcon fontSize="small" />,
         path: paths.settings,
         permission: "settings.read",
-    },
-    {
-        label: "Document Verification",
-        icon: <FactCheckOutlinedIcon fontSize="small" />,
-        path: paths.documentVerification,
-        permission: "document.read",
     },
 ];
 
@@ -111,17 +126,72 @@ function DashboardLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
 
     const user = useSelector((state: RootState) => state.auth?.user);
-    const { hasPermission, role } = usePermissions();
+    const { hasPermission } = usePermissions();
 
-    const visibleNavItems = navItems.filter((item) => {
-        if (item.label === "My Attendance" && role === "ORG_ADMIN") {
-            return false;
-        }
-        if (!item.permission) return true;
-        return hasPermission(item.permission);
-    });
+    const filterNavItems = (items: NavItem[]) =>
+        items.filter((item) => {
+            if (!item.permission) return true;
+            return hasPermission(item.permission);
+        });
+
+    const visibleTopItems = filterNavItems(topNavItems);
+    const visibleBottomItems = filterNavItems(bottomNavItems);
 
     const sidebarWidth = collapsed ? 76 : 240;
+
+    const renderNavListItem = (item: NavItem, isCollapsed = false) => {
+        const isActive = location.pathname === item.path;
+        return (
+            <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
+                <ListItemButton
+                    onClick={() => {
+                        navigate(item.path);
+                        setMobileOpen(false);
+                    }}
+                    sx={{
+                        borderRadius: 2.5,
+                        px: 1.5,
+                        py: 1,
+                        justify: isCollapsed ? "center" : "initial",
+                        transition: "all 0.2s ease",
+                        backgroundColor: isActive ? "#EEF2FF" : "transparent",
+                        border: isActive ? "1px solid #C7D2FE" : "1px solid transparent",
+                        boxShadow: isActive ? "0 2px 8px rgba(99, 102, 241, 0.1)" : "none",
+                        "&:hover": {
+                            backgroundColor: isActive ? "#E0E7FF" : "#F1F5F9",
+                            border: isActive ? "1px solid #A5B4FC" : "1px solid transparent",
+                        },
+                    }}
+                >
+                    <ListItemIcon
+                        sx={{
+                            minWidth: isCollapsed ? 0 : 34,
+                            mr: isCollapsed ? 0 : 0,
+                            justifyContent: "center",
+                            color: isActive ? "#6D5DF6" : "#64748B",
+                        }}
+                    >
+                        {item.icon}
+                    </ListItemIcon>
+                    {!isCollapsed && (
+                        <ListItemText
+                            primary={
+                                <Typography
+                                    sx={{
+                                        fontSize: 14,
+                                        fontWeight: isActive ? 700 : 500,
+                                        color: isActive ? "#4F46E5" : "#334155",
+                                    }}
+                                >
+                                    {item.label}
+                                </Typography>
+                            }
+                        />
+                    )}
+                </ListItemButton>
+            </ListItem>
+        );
+    };
 
     const renderSidebarContent = (isMobile = false) => {
         const isCollapsed = !isMobile && collapsed;
@@ -212,69 +282,23 @@ function DashboardLayout({ children }: Props) {
                         },
                     }}
                 >
-                    {visibleNavItems.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
-                                <ListItemButton
-                                    onClick={() => {
-                                        navigate(item.path);
-                                        setMobileOpen(false);
-                                    }}
-                                    sx={{
-                                        borderRadius: 2.5,
-                                        px: 1.5,
-                                        py: 1,
-                                        justifyContent: isCollapsed ? "center" : "initial",
-                                        transition: "all 0.2s ease",
-                                        backgroundColor: isActive
-                                            ? "#EEF2FF"
-                                            : "transparent",
-                                        border: isActive
-                                            ? "1px solid #C7D2FE"
-                                            : "1px solid transparent",
-                                        boxShadow: isActive
-                                            ? "0 2px 8px rgba(99, 102, 241, 0.1)"
-                                            : "none",
-                                        "&:hover": {
-                                            backgroundColor: isActive
-                                                ? "#E0E7FF"
-                                                : "#F1F5F9",
-                                            border: isActive
-                                                ? "1px solid #A5B4FC"
-                                                : "1px solid transparent",
-                                        },
-                                    }}
-                                >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: isCollapsed ? 0 : 34,
-                                            mr: isCollapsed ? 0 : 0,
-                                            justifyContent: "center",
-                                            color: isActive ? "#6D5DF6" : "#64748B",
-                                        }}
-                                    >
-                                        {item.icon}
-                                    </ListItemIcon>
-                                    {!isCollapsed && (
-                                        <ListItemText
-                                            primary={
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: 14,
-                                                        fontWeight: isActive ? 700 : 500,
-                                                        color: isActive ? "#4F46E5" : "#334155",
-                                                    }}
-                                                >
-                                                    {item.label}
-                                                </Typography>
-                                            }
-                                        />
-                                    )}
-                                </ListItemButton>
-                            </ListItem>
-                        );
-                    })}
+                    {/* Top Standalone Nav Items */}
+                    {visibleTopItems.map((item) => renderNavListItem(item, isCollapsed))}
+
+                    {/* TIME & LEAVE Collapsible Accordion Group */}
+                    <CollapsibleNavGroup
+                        title="TIME & LEAVE"
+                        icon={<CalendarMonthOutlinedIcon fontSize="small" />}
+                        items={timeAndLeaveNavItems}
+                        isCollapsed={isCollapsed}
+                        onNavigate={(path) => {
+                            navigate(path);
+                            setMobileOpen(false);
+                        }}
+                    />
+
+                    {/* Bottom Standalone Nav Items */}
+                    {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
                 </List>
 
                 <Divider sx={{ borderColor: "#E5E7EB" }} />

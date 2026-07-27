@@ -15,9 +15,18 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 
+import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
+
 import type { RootState } from "../../../../store/rootReducer";
 import type { EmployeeListItem } from "../../../../store/employee/employee.types";
+import type { Branch } from "../../../../store/branch/branch.types";
 import { listUsers, updateUserRole, type UserAccountData } from "../../../../api/user.api";
+import { listBranches } from "../../../../api/branch.api";
 import { ROLES } from "../../../../utils/roles";
 
 type ManageRoleDialogProps = {
@@ -99,8 +108,31 @@ export default function ManageRoleDialog({
 
   const [userAccount, setUserAccount] = useState<UserAccountData | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
 
   const currentUser = useSelector((state: RootState) => state.auth?.user);
+
+  // Fetch branches list on mount/open
+  useEffect(() => {
+    if (!open) return;
+    let isMounted = true;
+    const fetchBranchesList = async () => {
+      try {
+        const res = await listBranches();
+        if (isMounted && res.succeeded && res.data) {
+          setBranches(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load branches list", err);
+      }
+    };
+    fetchBranchesList();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open || !employee) return;
@@ -111,6 +143,7 @@ export default function ManageRoleDialog({
       setError(null);
       setUserAccount(null);
       setSelectedRole("");
+      setSelectedBranchIds([]);
       try {
         const users = await listUsers();
         if (!isMounted) return;
@@ -130,6 +163,7 @@ export default function ManageRoleDialog({
         if (matched) {
           setUserAccount(matched);
           setSelectedRole(matched.role || "");
+          setSelectedBranchIds(matched.branchIds || []);
         } else {
           setError("No system user account found for this employee.");
         }
@@ -153,17 +187,31 @@ export default function ManageRoleDialog({
     };
   }, [open, employee]);
 
+  const handleRoleChange = (role: string) => {
+    setSelectedRole(role);
+    if (role !== ROLES.BRANCH_ADMIN) {
+      setSelectedBranchIds([]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const userId = userAccount?._id || (userAccount as any)?.id;
     if (!userId || !selectedRole) return;
+
+    // Rule A & B Validation: BRANCH_ADMIN requires at least 1 branch
+    if (selectedRole === ROLES.BRANCH_ADMIN && selectedBranchIds.length === 0) {
+      setError("branchIds is required and cannot be empty for BRANCH_ADMIN. Please select at least one branch.");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const response = await updateUserRole(userId, selectedRole);
+      const branchPayload = selectedRole === ROLES.BRANCH_ADMIN ? selectedBranchIds : [];
+      const response = await updateUserRole(userId, selectedRole, branchPayload);
       if (response.succeeded) {
         setSuccess(response.message || "Role updated successfully!");
         setTimeout(() => {
@@ -174,8 +222,8 @@ export default function ManageRoleDialog({
         setError(response.message || "Failed to update role");
       }
     } catch (err: unknown) {
-      const message = isAxiosError<{ message?: string }>(err)
-        ? err.response?.data?.message ?? err.message
+      const message = isAxiosError<{ message?: string; errors?: { field: string; message: string }[] }>(err)
+        ? err.response?.data?.errors?.[0]?.message ?? err.response?.data?.message ?? err.message
         : err instanceof Error
           ? err.message
           : "Something went wrong while updating the role";
@@ -295,7 +343,7 @@ export default function ManageRoleDialog({
                       <TextField
                         select
                         value={selectedRole}
-                        onChange={(e) => setSelectedRole(e.target.value)}
+                        onChange={(e) => handleRoleChange(e.target.value)}
                         fullWidth
                         size="small"
                         required
@@ -316,6 +364,71 @@ export default function ManageRoleDialog({
                         })}
                       </TextField>
                     </Box>
+
+                    {/* Rule A: Render multi-select branches dropdown ONLY when role is BRANCH_ADMIN */}
+                    {selectedRole === ROLES.BRANCH_ADMIN && (
+                      <Box sx={{ mt: 0.5 }}>
+                        <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+                          Assigned Branches (Required for Branch Admin) *
+                        </Typography>
+                        <FormControl fullWidth size="small" error={selectedBranchIds.length === 0}>
+                          <Select
+                            multiple
+                            value={selectedBranchIds}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setSelectedBranchIds(typeof val === "string" ? val.split(",") : val);
+                            }}
+                            disabled={submitting || isSelf || isOrgAdmin}
+                            input={<OutlinedInput sx={inputFieldSx} />}
+                            renderValue={(selected) => (
+                              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                                {selected.map((bId) => {
+                                  const branchObj = branches.find((b) => b._id === bId || (b as any).id === bId);
+                                  return (
+                                    <Chip
+                                      key={bId}
+                                      label={branchObj ? `${branchObj.name} (${branchObj.code})` : bId}
+                                      size="small"
+                                      sx={{
+                                        height: 24,
+                                        fontSize: "11px",
+                                        fontWeight: 600,
+                                        backgroundColor: "#EEF2FF",
+                                        color: "#4F46E5",
+                                        borderRadius: "6px",
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </Box>
+                            )}
+                          >
+                            {branches.map((b) => {
+                              const bId = b._id || (b as any).id;
+                              const isChecked = selectedBranchIds.includes(bId);
+                              return (
+                                <MenuItem key={bId} value={bId}>
+                                  <Checkbox
+                                    checked={isChecked}
+                                    size="small"
+                                    sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                                  />
+                                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#0F172A" }}>
+                                    {b.name} ({b.code})
+                                  </Typography>
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                          {selectedBranchIds.length === 0 && (
+                            <FormHelperText error sx={{ fontSize: "12px", mt: 0.5, fontWeight: 500 }}>
+                              At least one branch must be assigned for Branch Admin.
+                            </FormHelperText>
+                          )}
+                        </FormControl>
+                      </Box>
+                    )}
                   </>
                 )}
               </>
