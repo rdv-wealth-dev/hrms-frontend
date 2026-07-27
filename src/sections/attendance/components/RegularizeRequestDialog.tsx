@@ -211,7 +211,7 @@ export default function RegularizeRequestDialog({
                 Shift Date
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                {formatDate(record.attendanceDate)}
+                {formatDate(record.attendanceDate || "")}
               </Typography>
             </Box>
             <Divider sx={{ my: 0.5 }} />

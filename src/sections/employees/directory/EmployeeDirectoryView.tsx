@@ -10,7 +10,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 import CircularProgress from "@mui/material/CircularProgress";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";

@@ -5,7 +5,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import Checkbox from "@mui/material/Checkbox";
@@ -142,8 +141,9 @@ export default function OnboardingStep2Family({
 
                 <Grid size={{ xs: 12, sm: 6, md: 2.3 }}>
                   <TextInput
-                    label="Phone (Optional)"
-                    placeholder="+91..."
+                    label="Phone Number"
+                    placeholder="9876543210"
+                    maxLength={10}
                     registration={register(`familyMembers.${idx}.phone` as const)}
                     error={errors.familyMembers?.[idx]?.phone?.message}
                   />

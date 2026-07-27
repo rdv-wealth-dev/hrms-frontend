@@ -10,7 +10,6 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
 import Alert from "@mui/material/Alert";
 import { useSnackbar } from "../../components/snackbar";
 import TextInput from "../../components/input/TextInput";
@@ -42,7 +41,6 @@ import Tab from "@mui/material/Tab";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import ChatOutlinedIcon from "@mui/icons-material/ChatOutlined";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";

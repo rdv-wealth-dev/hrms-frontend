@@ -1,6 +1,7 @@
 import axiosInstance from "./axios";
 import type { 
-    CreateShiftRequest, 
+    CreateShiftRequest,
+    UpdateShiftRequest, 
     ShiftResponse, 
     ShiftListResponse, 
     AttendanceRecordResponse, 
@@ -8,7 +9,6 @@ import type {
     ManualAttendanceRequest,
     CreateRegularizationRequest,
     RegularizationListResponse,
-    RegularizationRequest,
     AttendanceReportResponse,
     ShiftAssignmentsResponse,
     CreateRotationPlanRequest,
@@ -33,6 +33,18 @@ export const createShift = async (
 ): Promise<ShiftResponse> => {
     const response = await axiosInstance.post<ShiftResponse>(
         "/attendance/shifts",
+        payload,
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export const updateShift = async (
+    id: string,
+    payload: UpdateShiftRequest
+): Promise<ShiftResponse> => {
+    const response = await axiosInstance.patch<ShiftResponse>(
+        `/attendance/shifts/${id}`,
         payload,
         { headers: getAuthHeader() }
     );

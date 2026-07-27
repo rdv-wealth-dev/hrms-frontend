@@ -366,7 +366,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 type="number"
                 value={workingHoursPerDay || ""}
                 placeholder="8"
-                onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? "" : Number(e.target.value))}
+                onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? 8 : Number(e.target.value))}
                 size="small"
               />
             </Grid>

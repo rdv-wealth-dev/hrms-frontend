@@ -131,10 +131,10 @@ export function ManualAttendanceDialog({
       setLoadingEmployees(true);
       setEmployeesError(null);
 
-      listEmployees({ page: 1, limit: EMPLOYEE_PAGE_SIZE })
-        .then((res) => {
+      listEmployees(1, EMPLOYEE_PAGE_SIZE)
+        .then((res: any) => {
           if (!isMounted) return;
-          const items = res?.employees || [];
+          const items = res?.data || res?.employees || [];
           setEmployeesList(items);
         })
         .catch((err) => {
@@ -166,9 +166,9 @@ export function ManualAttendanceDialog({
     try {
       await createManualAttendance({
         employeeId: data.selectedEmployeeId,
-        date: data.attendanceDate,
-        checkInTime: data.checkInTime,
-        checkOutTime: data.checkOutTime || undefined,
+        attendanceDate: data.attendanceDate,
+        checkIn: data.checkInTime ? `${data.attendanceDate}T${data.checkInTime}:00.000Z` : new Date().toISOString(),
+        checkOut: data.checkOutTime ? `${data.attendanceDate}T${data.checkOutTime}:00.000Z` : undefined,
         notes: data.notes,
       });
 

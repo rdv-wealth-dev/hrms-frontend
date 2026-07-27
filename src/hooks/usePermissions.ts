@@ -7,7 +7,7 @@ export function usePermissions() {
   const { role, permissions: userPermissions, hasRole } = useRole();
   const user = useSelector((state: RootState) => state.auth?.user);
 
-  const isSuperAdmin = role === "ORG_ADMIN" || role === "HR_ADMIN" || role === "HR" || user?.isSuperAdmin === true;
+  const isSuperAdmin = role === "ORG_ADMIN" || role === "HR_ADMIN" || (role as string) === "HR" || user?.isSuperAdmin === true;
 
   // Resolve permissions from either user payload or fallback role mapping
   const permissions = userPermissions.length > 0

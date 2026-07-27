@@ -5,7 +5,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import Divider from "@mui/material/Divider";
@@ -137,7 +136,7 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Phone Number"
-              placeholder="9876543210"
+              placeholder="Enter 10-digit phone number"
               maxLength={10}
               registration={register("phone")}
               error={errors.phone?.message}
@@ -289,7 +288,7 @@ export default function OnboardingStep1Personal({
               </Grid>
               <Grid size={{ xs: 10, sm: 2.5 }}>
                 <TextInput
-                  label="Email (Optional)"
+                  label="Email Address"
                   placeholder="email@example.com"
                   registration={register(`emergencyContact.${idx}.email` as const)}
                   error={errors.emergencyContact?.[idx]?.email?.message}

@@ -4,321 +4,36 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
-import TextInput from "../../../components/input/TextInput";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
-import { createShift, listShifts, getShiftAssignments, listRotationPlans, createRotationPlan, assignRotationPlan } from "../../../api/attendance.api";
-import type { CreateShiftRequest, Shift, ShiftAssignment, ShiftRotationPlan, CreateRotationPlanRequest, RotationSlot, AssignRotationPlanRequest } from "../../../store/attendance/attendance.types";
+import { listShifts, getShiftAssignments, listRotationPlans, createRotationPlan, assignRotationPlan } from "../../../api/attendance.api";
+import type { Shift, ShiftAssignment, ShiftRotationPlan, CreateRotationPlanRequest, RotationSlot, AssignRotationPlanRequest } from "../../../store/attendance/attendance.types";
 import { usePermissions } from "../../../hooks/usePermissions";
+import ShiftFormDialog from "./ShiftFormDialog";
 import RotationPlanFormDialog from "./RotationPlanFormDialog";
 import AssignRotationPlanDialog from "./AssignRotationPlanDialog";
-
-type ShiftFormProps = {
-  open: boolean;
-  submitting: boolean;
-  error: string | null;
-  onClose: () => void;
-  onSubmit: (data: CreateShiftRequest) => void;
-};
-
-function ShiftFormDialog({
-  open,
-  submitting,
-  error,
-  onClose,
-  onSubmit,
-}: ShiftFormProps) {
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("18:00");
-  const [gracePeriod, setGracePeriod] = useState<number | string>("");
-  const [graceLimit, setGraceLimit] = useState<number | string>("");
-  const [halfDayThreshold, setHalfDayThreshold] = useState<number | string>("");
-  const [fullDayMinutes, setFullDayMinutes] = useState<number | string>("");
-  const [isDefault, setIsDefault] = useState(false);
-
-  const [formValidationErrors, setFormValidationErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const startMatch = startTime.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
-    const endMatch = endTime.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
-    if (startMatch && endMatch) {
-      const startMins = parseInt(startMatch[1]) * 60 + parseInt(startMatch[2]);
-      let endMins = parseInt(endMatch[1]) * 60 + parseInt(endMatch[2]);
-
-      if (endMins < startMins) {
-        endMins += 24 * 60; // Shift crosses midnight
-      }
-
-      const totalMins = endMins - startMins;
-      const breakMins = totalMins >= 300 ? 60 : 0;
-      const fullDay = Math.max(0, totalMins - breakMins);
-      const halfDay = Math.round(fullDay / 2);
-
-      setFullDayMinutes(fullDay);
-      setHalfDayThreshold(halfDay);
-    }
-  }, [startTime, endTime]);
-
-  const validateTime = (timeStr: string): boolean => {
-    return /^([01]\d|2[0-3]):([0-5]\d)$/.test(timeStr);
-  };
-
-  const handleFormSubmit = () => {
-    const errors: Record<string, string> = {};
-
-    if (!name.trim()) errors.name = "Shift name is required";
-    if (!code.trim()) errors.code = "Shift code is required";
-    if (!validateTime(startTime)) errors.startTime = "Use HH:MM 24h format (e.g. 09:00)";
-    if (!validateTime(endTime)) errors.endTime = "Use HH:MM 24h format (e.g. 18:00)";
-    if (gracePeriod < 0) errors.gracePeriod = "Must be at least 0";
-    if (graceLimit < 0) errors.graceLimit = "Must be at least 0";
-    if (halfDayThreshold < 0) errors.halfDayThreshold = "Must be at least 0";
-    if (fullDayMinutes < 0) errors.fullDayMinutes = "Must be at least 0";
-
-    if (Object.keys(errors).length > 0) {
-      setFormValidationErrors(errors);
-      return;
-    }
-
-    setFormValidationErrors({});
-    onSubmit({
-      name: name.trim(),
-      code: code.trim().toUpperCase(),
-      startTime,
-      endTime,
-      gracePeriodMinutes: gracePeriod,
-      graceLimitPerMonth: graceLimit,
-      halfDayThresholdMinutes: halfDayThreshold,
-      fullDayMinutes: fullDayMinutes,
-      isDefault,
-    });
-  };
-
-  const handleClose = () => {
-    setName("");
-    setCode("");
-    setStartTime("09:00");
-    setEndTime("18:00");
-    setGracePeriod(15);
-    setGraceLimit(0);
-    setHalfDayThreshold(240);
-    setFullDayMinutes(480);
-    setIsDefault(false);
-    setFormValidationErrors({});
-    onClose();
-  };
-
-  return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
-      slotProps={{
-        backdrop: {
-          sx: {
-            backdropFilter: "blur(6px)",
-            backgroundColor: "rgba(15, 23, 42, 0.45)",
-          },
-        },
-        paper: {
-          sx: {
-            borderRadius: "20px",
-            p: { xs: 2.5, sm: 3.5 },
-            backgroundColor: "#FFFFFF",
-            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
-            mx: { xs: 2, sm: "auto" },
-            width: { xs: "calc(100% - 32px)", sm: "100%" },
-          },
-        },
-      }}
-    >
-      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
-        Create New Shift
-      </DialogTitle>
-
-      <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
-        {error && (
-          <Alert severity="error" sx={{ borderRadius: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Shift Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Morning Shift"
-              required
-              error={formValidationErrors.name}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Shift Code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="e.g. MS"
-              required
-              error={formValidationErrors.code}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Start Time (24h)"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              placeholder="HH:MM (e.g. 09:00)"
-              required
-              error={formValidationErrors.startTime}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="End Time (24h)"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              placeholder="HH:MM (e.g. 18:00)"
-              required
-              error={formValidationErrors.endTime}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              type="number"
-              label="Grace Period (Mins)"
-              value={gracePeriod}
-              placeholder="15"
-              onChange={(e) => setGracePeriod(e.target.value === "" ? "" : Number(e.target.value))}
-              error={formValidationErrors.gracePeriod}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              type="number"
-              label="Grace Limit Per Month"
-              value={graceLimit}
-              placeholder="0 = Unlimited"
-              onChange={(e) => setGraceLimit(e.target.value === "" ? "" : Number(e.target.value))}
-              error={formValidationErrors.graceLimit || (graceLimit === 0 ? "Enter 0 for unlimited" : undefined)}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              type="number"
-              label="Half Day Min (Mins)"
-              value={halfDayThreshold}
-              placeholder="240"
-              onChange={(e) => setHalfDayThreshold(e.target.value === "" ? "" : Number(e.target.value))}
-              error={formValidationErrors.halfDayThreshold}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              type="number"
-              label="Full Day Duration (Mins)"
-              value={fullDayMinutes}
-              placeholder="480"
-              onChange={(e) => setFullDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
-              error={formValidationErrors.fullDayMinutes}
-            />
-          </Grid>
-        </Grid>
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
-              sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
-            />
-          }
-          label={<Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>Set as default shift for organization</Typography>}
-        />
-      </DialogContent>
-
-      <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-        <Button
-          onClick={handleClose}
-          disabled={submitting}
-          sx={{
-            height: 42,
-            borderRadius: "10px",
-            px: 2.5,
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "none",
-            backgroundColor: "#F1F5F9",
-            color: "#475569",
-            "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleFormSubmit}
-          disabled={submitting}
-          variant="contained"
-          sx={{
-            height: 42,
-            borderRadius: "10px",
-            px: 3,
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "none",
-            backgroundColor: "#6D5DF6",
-            boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-            "&:hover": { backgroundColor: "#5B4BEA" },
-          }}
-        >
-          {submitting ? (
-            <CircularProgress size={18} color="inherit" />
-          ) : (
-            "Create Shift"
-          )}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
 
 export default function ShiftContent() {
   const { hasPermission } = usePermissions();
   const canRead = hasPermission("attendance.read");
   const canCreate = hasPermission("attendance.create");
+  const canUpdate = hasPermission("attendance.update");
 
   const [activeTab, setActiveTab] = useState(0);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -330,7 +45,10 @@ export default function ShiftContent() {
   const [createPlanOpen, setCreatePlanOpen] = useState(false);
   const [assignPlanOpen, setAssignPlanOpen] = useState(false);
 
-  const [createOpen, setCreateOpen] = useState(false);
+  const [shiftModalOpen, setShiftModalOpen] = useState(false);
+  const [shiftModalMode, setShiftModalMode] = useState<"create" | "edit">("create");
+  const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -415,26 +133,20 @@ export default function ShiftContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRead, activeTab]);
 
-  const handleCreateSubmit = async (data: CreateShiftRequest) => {
-    setSubmitting(true);
+  const handleOpenCreateShift = () => {
     setError(null);
     setSuccess(null);
-    try {
-      const response = await createShift(data);
-      if (response.succeeded) {
-        setSuccess(`Shift "${data.name}" created successfully!`);
-        setCreateOpen(false);
-        loadShiftsList();
-      } else {
-        setError(response.message || "Failed to create shift");
-      }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "Something went wrong"
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    setShiftModalMode("create");
+    setSelectedShift(null);
+    setShiftModalOpen(true);
+  };
+
+  const handleOpenEditShift = (shift: Shift) => {
+    setError(null);
+    setSuccess(null);
+    setShiftModalMode("edit");
+    setSelectedShift(shift);
+    setShiftModalOpen(true);
   };
 
   const handleCreatePlanSubmit = async (data: CreateRotationPlanRequest) => {
@@ -529,7 +241,7 @@ export default function ShiftContent() {
               } else if (activeTab === 1) {
                 setAssignPlanOpen(true);
               } else {
-                setCreateOpen(true);
+                handleOpenCreateShift();
               }
             }}
             sx={{
@@ -572,7 +284,7 @@ export default function ShiftContent() {
         </Alert>
       )}
 
-      {error && !createOpen && (
+      {error && !shiftModalOpen && (
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 3 }}>
           {error}
         </Alert>
@@ -624,6 +336,7 @@ export default function ShiftContent() {
                   <TableCell sx={{ fontWeight: 600 }}>Grace Limit / Month</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Rules (Half/Full Day)</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -670,6 +383,19 @@ export default function ShiftContent() {
                         color={shift.isActive ? "success" : "default"}
                         sx={{ height: 22, fontSize: "0.75rem", fontWeight: 500 }}
                       />
+                    </TableCell>
+                    <TableCell align="right">
+                      {canUpdate && (
+                        <Tooltip title="Edit Shift">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenEditShift(shift)}
+                            sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -957,13 +683,16 @@ export default function ShiftContent() {
         )
       )}
 
-      {/* Form Dialog */}
+      {/* Reusable Shift Form Dialog (Create / Edit) */}
       <ShiftFormDialog
-        open={createOpen}
-        submitting={submitting}
-        error={error}
-        onClose={() => setCreateOpen(false)}
-        onSubmit={handleCreateSubmit}
+        open={shiftModalOpen}
+        mode={shiftModalMode}
+        initialValues={selectedShift}
+        onClose={() => setShiftModalOpen(false)}
+        onSuccess={() => {
+          setSuccess(shiftModalMode === "create" ? "Shift created successfully!" : "Shift updated successfully!");
+          loadShiftsList();
+        }}
       />
 
       {/* Rotation Plan Form Dialog */}

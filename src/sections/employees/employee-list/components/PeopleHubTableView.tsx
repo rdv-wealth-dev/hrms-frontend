@@ -217,15 +217,7 @@ export function PeopleHubTableView({
               <TableRow
                 key={emp._id}
                 hover
-                onClick={() => {
-                  if (onSelectEmployee) {
-                    onSelectEmployee(emp);
-                  } else {
-                    navigate(`/employees/${emp._id}`);
-                  }
-                }}
                 sx={{
-                  cursor: "pointer",
                   transition: "background-color 0.15s ease",
                   "&:last-child td": { borderBottom: 0 },
                   "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
@@ -233,7 +225,23 @@ export function PeopleHubTableView({
               >
                 {/* Employee Info */}
                 <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Box
+                    onClick={() => {
+                      if (onSelectEmployee) {
+                        onSelectEmployee(emp);
+                      } else {
+                        navigate(`/employees/${emp._id}`);
+                      }
+                    }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      cursor: "pointer",
+                      width: "fit-content",
+                      "&:hover .emp-name": { color: "#6D5DF6" },
+                    }}
+                  >
                     <Avatar
                       src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
                       sx={{
@@ -249,13 +257,13 @@ export function PeopleHubTableView({
                     </Avatar>
                     <Typography
                       variant="subtitle2"
+                      className="emp-name"
                       sx={{
                         fontWeight: 700,
                         color: "#0F172A",
                         lineHeight: 1.2,
                         whiteSpace: "nowrap",
                         transition: "color 0.15s ease",
-                        "&:hover": { color: "#6D5DF6" },
                       }}
                     >
                       {fullName}

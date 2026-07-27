@@ -22,6 +22,8 @@ export interface CreateShiftRequest {
   isDefault?: boolean;
 }
 
+export type UpdateShiftRequest = Partial<CreateShiftRequest>;
+
 export interface Shift {
   _id: string;
   tenantId: string;

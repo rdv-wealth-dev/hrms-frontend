@@ -9,13 +9,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
-import Select from "@mui/material/Select";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
 import { useSnackbar } from "../../../components/snackbar";
@@ -626,7 +621,7 @@ function OrganizationProfileContent() {
                   label="Working Hours / Day"
                   value={workingHoursPerDay || ""}
                   placeholder="8"
-                  onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? "" : Number(e.target.value))}
+                  onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? 8 : Number(e.target.value))}
                   disabled={!canUpdate || !isEditing}
                   slotProps={{ htmlInput: { min: 1, max: 24 } }}
                 />

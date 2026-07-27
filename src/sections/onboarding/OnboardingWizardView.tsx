@@ -15,6 +15,9 @@ import PageWrapper from "../../components/common/PageWrapper";
 import { useSnackbar } from "../../components/snackbar";
 import { paths } from "../../routes/paths";
 
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/rootReducer";
+
 import {
   getOnboardingStatus,
   submitOnboardingStep1,
@@ -47,6 +50,8 @@ export default function OnboardingWizardView() {
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
 
+  const user = useSelector((state: RootState) => state.auth?.user);
+
   const [activeStep, setActiveStep] = useState<number>(0);
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -70,7 +75,11 @@ export default function OnboardingWizardView() {
           }
           const step = res.data.onboardingStep || res.data.currentStep || 1;
           setActiveStep(Math.min(step - 1, 4));
-          if (res.data.step1Data) setStep1Data(res.data.step1Data as Partial<OnboardingStep1FormData>);
+          const step1 = (res.data.step1Data as Partial<OnboardingStep1FormData>) || {};
+          if (!step1.phone && user?.phone) {
+            step1.phone = user.phone;
+          }
+          setStep1Data(step1);
           if (res.data.step2Data) setStep2Data(res.data.step2Data as Partial<OnboardingStep2FormData>);
           if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
         } else if (res.message) {
@@ -83,7 +92,7 @@ export default function OnboardingWizardView() {
       }
     };
     init();
-  }, [navigate, showSnackbar]);
+  }, [navigate, showSnackbar, user?.phone]);
 
   const handleStep1Submit = async (data: OnboardingStep1FormData) => {
     setSubmitting(true);

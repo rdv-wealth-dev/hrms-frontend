@@ -15,7 +15,7 @@ export const emergencyContactSchema = z.object({
   name: z.string().trim().min(2, "Name must be 2-100 characters").max(100, "Max 100 characters"),
   relationship: z.string().trim().min(2, "Relationship must be 2-50 characters").max(50, "Max 50 characters"),
   phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
+  email: z.string().trim().min(1, "Emergency contact email is required").email("Invalid email address"),
 });
 
 export const onboardingStep1Schema = z.object({
@@ -42,7 +42,7 @@ export const familyMemberSchema = z.object({
   gender: z.string().optional().or(z.literal("")),
   isDependent: z.boolean(),
   occupation: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
-  phone: z.string().trim().regex(/^\d{1,10}$/, "Phone number cannot exceed 10 digits").optional().or(z.literal("")),
+  phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be 10 digits"),
   isNominee: z.boolean(),
 });
 
