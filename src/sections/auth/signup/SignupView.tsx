@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
@@ -34,12 +35,15 @@ function SignupView() {
     (state: RootState) => state.auth
   );
 
+  const [submittedEmail, setSubmittedEmail] = useState<string>("");
+
   useEffect(() => {
     if (isRegisterSuccess) {
       dispatch(resetAuthState());
-      navigate(paths.auth.checkEmail);
+      navigate(paths.auth.checkEmail, { state: { email: submittedEmail } });
     }
-  }, [isRegisterSuccess, dispatch, navigate]);
+  }, [isRegisterSuccess, dispatch, navigate, submittedEmail]);
+
 
   const {
     register,
@@ -62,6 +66,7 @@ function SignupView() {
 
   const onSubmit = (data: SignupFormData) => {
     const { confirmPassword, ...rest } = data;
+    setSubmittedEmail(rest.email);
 
     // ✅ Auto-detect timezone — never shown to the user, never typed by them
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -77,6 +82,7 @@ function SignupView() {
       })
     );
   };
+
 
   return (
     <AuthLayout>

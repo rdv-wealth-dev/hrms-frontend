@@ -7,6 +7,8 @@ import type {
   LoginResponse,
   VerifyEmailRequest,
   VerifyEmailResponse,
+  ResendVerificationRequest,
+  ResendVerificationResponse,
   ForgotPasswordRequest,
   ForgotPasswordResponse,
   ResetPasswordRequest,
@@ -45,6 +47,17 @@ export const verifyEmail = async (
   );
   return response.data;
 };
+
+export const resendVerificationEmail = async (
+  payload: ResendVerificationRequest
+): Promise<ResendVerificationResponse> => {
+  const response = await axiosInstance.post<ResendVerificationResponse>(
+    "/auth/resend-verification",
+    payload
+  );
+  return response.data;
+};
+
 
 // ✅ New
 export const forgotPassword = async (

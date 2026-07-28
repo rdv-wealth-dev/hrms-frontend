@@ -56,8 +56,10 @@ function LoginView() {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<LoginFormData>({
+
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -131,10 +133,36 @@ function LoginView() {
           </Typography>
 
           {error && (
-            <Typography color="error" variant="body2" sx={{ textAlign: "center", mt: 0.5, fontSize: { xs: "13px", sm: "14px" } }}>
-              {error}
-            </Typography>
+            <Box sx={{ textAlign: "center", mt: 0.5 }}>
+              <Typography color="error" variant="body2" sx={{ fontSize: { xs: "13px", sm: "14px" } }}>
+                {error}
+              </Typography>
+              {error.toLowerCase().includes("verif") && (
+                <Typography
+                  component="button"
+                  type="button"
+                  onClick={() =>
+                    navigate(paths.auth.checkEmail, {
+                      state: { email: getValues("email") },
+                    })
+                  }
+                  sx={{
+                    mt: 0.5,
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    fontSize: { xs: "12px", sm: "13px" },
+                    color: "#4F46E5",
+                    fontWeight: 600,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Need a new verification email? Resend Email
+                </Typography>
+              )}
+            </Box>
           )}
+
 
           <Box sx={{ mt: 1 }}>
             <PrimaryButton

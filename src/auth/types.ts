@@ -115,6 +115,28 @@ export interface VerifyEmailResponse {
 }
 
 // ===========================================
+// Resend Verification Email
+// ===========================================
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
+export interface ResendVerificationResponseData {
+  message?: string;
+}
+
+export interface ResendVerificationResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message: string;
+  errorCode?: string | null;
+  errors?: string[];
+  data?: ResendVerificationResponseData | null;
+}
+
+
+// ===========================================
 // Forgot Password
 // ===========================================
 

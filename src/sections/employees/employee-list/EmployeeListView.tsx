@@ -702,38 +702,49 @@ function EmployeeListView() {
               <CircularProgress sx={{ color: "#6D5DF6" }} />
             </Box>
           ) : (
-            <PeopleHubTableView
-              employees={displayedEmployees}
-              loading={loading}
-              canUpdate={canUpdate}
-              canDelete={canDelete}
-              canManageRoles={canManageRoles}
-              onEdit={(emp) => {
-                setEditTarget(emp);
-                setEditOpen(true);
-              }}
-              onDelete={(emp) => {
-                setDeleteTarget(emp);
-                setDeleteOpen(true);
-              }}
-              onRoleManage={(emp) => {
-                setRoleTarget(emp);
-                setRoleOpen(true);
-              }}
-              onCompOffCredit={(emp) => {
-                setCompOffTarget(emp);
-                setCompOffOpen(true);
-              }}
-              onManualAttendance={(emp) => {
-                setManualTarget(emp);
-                setManualOpen(true);
-              }}
-              onSelectEmployee={(emp) => {
-                navigate(paths.employees.detail.replace(":id", emp._id));
-              }}
-            />
+            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+              <PeopleHubTableView
+                employees={displayedEmployees}
+                loading={loading}
+                canUpdate={canUpdate}
+                canDelete={canDelete}
+                canManageRoles={canManageRoles}
+                onEdit={(emp) => {
+                  setEditTarget(emp);
+                  setEditOpen(true);
+                }}
+                onDelete={(emp) => {
+                  setDeleteTarget(emp);
+                  setDeleteOpen(true);
+                }}
+                onRoleManage={(emp) => {
+                  setRoleTarget(emp);
+                  setRoleOpen(true);
+                }}
+                onCompOffCredit={(emp) => {
+                  setCompOffTarget(emp);
+                  setCompOffOpen(true);
+                }}
+                onManualAttendance={(emp) => {
+                  setManualTarget(emp);
+                  setManualOpen(true);
+                }}
+                onSelectEmployee={(emp) => {
+                  navigate(paths.employees.detail.replace(":id", emp._id));
+                }}
+              />
+              <CustomTablePagination
+                count={total}
+                rowsPerPage={pageSize}
+                page={pageNumber}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+              />
+            </Card>
           )
         ) : (
+
           <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
             {loading && displayedEmployees.length === 0 ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
@@ -937,7 +948,9 @@ function EmployeeListView() {
                 page={pageNumber}
                 onPageChange={handlePageChange}
                 onRowsPerPageChange={handleRowsPerPageChange}
+                rowsPerPageOptions={[10, 25, 50, 100]}
               />
+
             </>
           )}
         </Card>

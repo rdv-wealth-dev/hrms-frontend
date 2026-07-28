@@ -138,10 +138,19 @@ export default function WeeklyTrendBarChart({
               >
                 {/* Bar */}
                 <Tooltip
-                  title={`${item.date}: ${item.count} Present`}
+                  title={`${item.date}: ${
+                    item.count === 0
+                      ? new Date(item.fullDate).getDay() === 0
+                        ? "0 Present (Sunday - Week Off)"
+                        : new Date(item.fullDate).getDay() === 6
+                        ? "0 Present (Saturday - Week Off)"
+                        : "0 Present"
+                      : `${item.count} Present`
+                  }`}
                   arrow
                   placement="top"
                 >
+
                   <Box
                     onMouseEnter={() => setHoveredBar(item)}
                     onMouseLeave={() => setHoveredBar(null)}

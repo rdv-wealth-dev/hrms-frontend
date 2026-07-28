@@ -235,8 +235,6 @@ function DepartmentContent() {
 
     const [createOpen, setCreateOpen] = useState(false);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
-    const [createHROpen, setCreateHROpen] = useState(false);
-    const [hasSubmittedCreateHR, setHasSubmittedCreateHR] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
     const [editTarget, setEditTarget] = useState<Department | null>(null);
@@ -256,16 +254,6 @@ function DepartmentContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [submitting, error, hasSubmittedCreate]);
 
-    // Only close "Create Dept (HR)" dialog after an actual submit succeeded
-    useEffect(() => {
-        if (hasSubmittedCreateHR && !submitting && !error && createHROpen) {
-            setCreateHROpen(false);
-            setHasSubmittedCreateHR(false);
-            dispatch(listDepartmentsRequest());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submitting, error, hasSubmittedCreateHR]);
-
     // Only close "Update" dialog after an actual submit succeeded
     useEffect(() => {
         if (hasSubmittedUpdate && !submitting && !error && updateOpen) {
@@ -283,16 +271,6 @@ function DepartmentContent() {
         branchId: string;
     }) => {
         setHasSubmittedCreate(true);
-        dispatch(createDepartmentRequest({ ...data, branchId }));
-    };
-
-    const handleCreateHR = (data: {
-        name: string;
-        code: string;
-        description: string;
-        branchId: string;
-    }) => {
-        setHasSubmittedCreateHR(true);
         dispatch(createDepartmentRequest({ ...data, branchId }));
     };
 
@@ -354,20 +332,6 @@ function DepartmentContent() {
                     {canCreate && (
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setHasSubmittedCreateHR(false);
-                                    dispatch(clearDepartmentError());
-                                    setCreateHROpen(true);
-                                }}
-                                sx={{ borderRadius: 2, textTransform: "none" }}
-                            >
-                                Create Dept (HR)
-                            </Button>
-
-                            <Button
                                 variant="contained"
                                 size="small"
                                 startIcon={<AddIcon />}
@@ -390,7 +354,7 @@ function DepartmentContent() {
                 </Box>
 
                 {/* Error Banner */}
-                {error && !createOpen && !createHROpen && !updateOpen && (
+                {error && !createOpen && !updateOpen && (
                     <Alert
                         severity="error"
                         onClose={() => dispatch(clearDepartmentError())}
@@ -399,6 +363,7 @@ function DepartmentContent() {
                         {error}
                     </Alert>
                 )}
+
 
                 {/* Department Table */}
                 {loading ? (
@@ -526,23 +491,8 @@ function DepartmentContent() {
                 onSubmit={handleCreate}
             />
 
-            {/* Create Department HR Dialog */}
-            <DeptFormDialog
-                open={createHROpen}
-                mode="create"
-                initial={{ name: "Human Resources", code: "HR", description: "HR department" }}
-                branchId={branchId}
-                submitting={submitting}
-                error={createHROpen ? (error ?? null) : null}
-                onClose={() => {
-                    setCreateHROpen(false);
-                    setHasSubmittedCreateHR(false);
-                    dispatch(clearDepartmentError());
-                }}
-                onSubmit={handleCreateHR}
-            />
-
             {/* Update Department Dialog */}
+
             <DeptFormDialog
                 open={updateOpen}
                 mode="update"

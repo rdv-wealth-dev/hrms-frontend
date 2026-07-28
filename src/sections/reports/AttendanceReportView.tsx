@@ -69,7 +69,28 @@ function getColorForName(name?: string): string {
   return COLOR_PALETTE[index];
 }
 
+function getRecordLocalDateStr(r: AttendanceRecord): string {
+  const raw = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
+  if (!raw) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw.split("T")[0];
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  } catch {
+    return raw.split("T")[0];
+  }
+}
+
 export default function AttendanceReportView() {
+
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -165,11 +186,11 @@ export default function AttendanceReportView() {
   // Filter today's records specifically for Today's Table and Today's Summary Cards
   const todayRecords = useMemo(() => {
     const list = records.filter((r) => {
-      const dateStr = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
-      return dateStr.startsWith(todayStr);
+      return getRecordLocalDateStr(r) === todayStr;
     });
     return list.length > 0 ? list : records;
   }, [records, todayStr]);
+
 
   const formatTime = (timeStr?: string) => {
     if (!timeStr) return "—";
@@ -344,13 +365,14 @@ export default function AttendanceReportView() {
       const dd = String(d.getDate()).padStart(2, "0");
       const fullDate = `${yyyy}-${mm}-${dd}`;
 
-      // Count actual records present on each specific day
+      // Count actual records present on each specific day (using local date comparison)
       const dayPresent = records.filter((r) => {
-        const dateStr = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
-        const matchesDate = dateStr.startsWith(fullDate);
+        const recordDateStr = getRecordLocalDateStr(r);
+        const matchesDate = recordDateStr === fullDate;
         const s = String(r.status || "").toUpperCase();
         return matchesDate && s !== "ABSENT";
       }).length;
+
 
       const dayCount = i === 0 ? (dayPresent || kpiData.presentCount) : dayPresent;
 
