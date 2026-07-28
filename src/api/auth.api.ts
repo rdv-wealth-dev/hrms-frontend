@@ -17,6 +17,9 @@ import type {
   ActivateAccountRequest,
   ActivateAccountResponse,
   CheckSlugResponse,
+  CheckEmailRequest,
+  CheckEmailResponse,
+  LogoutResponse,
 } from "../auth/types";
 
 export const registerCompany = async (
@@ -64,6 +67,21 @@ export const checkSlug = async (slug: string): Promise<CheckSlugResponse> => {
   const response = await axiosInstance.get<CheckSlugResponse>(
     `/auth/check-slug?slug=${encodeURIComponent(slug)}`
   );
+  return response.data;
+};
+
+export const checkEmail = async (
+  payload: CheckEmailRequest
+): Promise<CheckEmailResponse> => {
+  const response = await axiosInstance.post<CheckEmailResponse>(
+    "/auth/check-email",
+    payload
+  );
+  return response.data;
+};
+
+export const logoutUser = async (): Promise<LogoutResponse> => {
+  const response = await axiosInstance.post<LogoutResponse>("/auth/logout");
   return response.data;
 };
 

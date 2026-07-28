@@ -125,10 +125,12 @@ function SignupView() {
   return (
     <AuthLayout>
       <Box sx={{ width: "100%", maxWidth: "36rem" }}>
-        <AuthHeading
-          title="Create your workspace"
-          subtitle="Set up your company HRMS in minutes"
-        />
+        <Box sx={{ mt: -2 }}>
+          <AuthHeading
+            title="Create your workspace"
+            subtitle="Set up your company HRMS in minutes"
+          />
+        </Box>
 
         <Box
           component="form"

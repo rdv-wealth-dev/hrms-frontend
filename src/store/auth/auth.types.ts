@@ -1,11 +1,14 @@
 import type {
   User,
   Organization,
+  Branch,
   SignupRequest,
   SignupResponseData,
   LoginRequest,
   ActivateAccountRequest,
   ActivateAccountResponseData,
+  CheckEmailRequest,
+  CheckEmailResponseData,
 } from "../../auth/types";
 
 // ===========================================
@@ -17,6 +20,10 @@ export type AuthState = {
   organization: Organization | null;
 
   accessToken: string | null;
+  refreshToken: string | null;
+  requiresPasswordReset: boolean;
+  onboardingCompleted: boolean;
+  branch: Branch | null;
 
   isRegisterSuccess: boolean;
   registerMessage: string | null;
@@ -38,6 +45,12 @@ export type AuthState = {
   // ✅ New — session rehydration on app load (via /auth/me)
   isRestoringSession: boolean;
   sessionChecked: boolean; // true once the initial restore attempt has finished (success OR failure)
+
+  // Check Email
+  checkEmailLoading: boolean;
+  checkEmailResult: CheckEmailResponseData | null;
+
+  loginCooldownSeconds: number | null;
 
   isAuthenticated: boolean;
   loading: boolean;
@@ -82,6 +95,12 @@ export const AUTH_ACTIONS = {
   ACTIVATE_ACCOUNT_SUCCESS: "auth/activateAccountSuccess",
   ACTIVATE_ACCOUNT_FAILURE: "auth/activateAccountFailure",
 
+  CHECK_EMAIL_REQUEST: "auth/checkEmailRequest",
+  CHECK_EMAIL_SUCCESS: "auth/checkEmailSuccess",
+  CHECK_EMAIL_FAILURE: "auth/checkEmailFailure",
+
+  SET_LOGIN_COOLDOWN: "auth/setLoginCooldown",
+
   UPDATE_USER_AVATAR: "auth/updateUserAvatar",
 
   LOGOUT: "auth/logout",
@@ -99,6 +118,11 @@ export type LoginRequestPayload = LoginRequest;
 export type LoginSuccessPayload = {
   user: User;
   accessToken: string;
+  refreshToken?: string;
+  requiresPasswordReset: boolean;
+  onboardingCompleted: boolean;
+  organization?: Organization;
+  branch?: Branch;
 };
 
 export type VerifyEmailRequestPayload = { token: string };
@@ -111,6 +135,9 @@ export type ForgotPasswordSuccessPayload = { message: string };
 // Reset Password
 export type ResetPasswordRequestPayload = { token: string; password: string };
 export type ResetPasswordSuccessPayload = { message: string };
+
+export type CheckEmailRequestPayload = CheckEmailRequest;
+export type CheckEmailSuccessPayload = CheckEmailResponseData;
 
 // ✅ New — Restore Session
 export type RestoreSessionSuccessPayload = User;
@@ -148,5 +175,9 @@ export type AuthAction =
   | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST; payload: ActivateAccountRequestPayload }
   | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_SUCCESS; payload: ActivateAccountSuccessPayload }
   | { type: typeof AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE; payload: string }
+  | { type: typeof AUTH_ACTIONS.CHECK_EMAIL_REQUEST; payload: CheckEmailRequestPayload }
+  | { type: typeof AUTH_ACTIONS.CHECK_EMAIL_SUCCESS; payload: CheckEmailSuccessPayload }
+  | { type: typeof AUTH_ACTIONS.CHECK_EMAIL_FAILURE; payload: string }
+  | { type: typeof AUTH_ACTIONS.SET_LOGIN_COOLDOWN; payload: number | null }
   | { type: typeof AUTH_ACTIONS.UPDATE_USER_AVATAR; payload: string }
   | { type: typeof AUTH_ACTIONS.LOGOUT };

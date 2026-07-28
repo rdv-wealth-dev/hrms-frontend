@@ -30,9 +30,37 @@ export interface SignupRequest {
   adminJobTitle?: string;      // optional
 }
 
+// ===========================================
+// Check Email (SSO Detection)
+// ===========================================
+
+export interface CheckEmailRequest {
+  email: string;
+}
+
+export interface CheckEmailResponseData {
+  exists: boolean;
+  ssoEnabled: boolean;
+  provider: string | null;
+  companyName: string | null;
+  logoUrl: string | null;
+}
+
+export interface CheckEmailResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: CheckEmailResponseData | null;
+}
+
+// ===========================================
+// Login
+// ===========================================
+
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberDevice?: boolean;  // optional — issues 30-day device trust token when true
 }
 
 export interface User {
@@ -54,12 +82,20 @@ export interface User {
   isOrgAdmin?: boolean;
   createdAt?: string;
   lastLoginAt?: string;
+  lastLoginIp?: string;
+  lastLoginDevice?: string;
+}
+
+export interface OrganizationBranding {
+  logoUrl?: string;
+  primaryColor?: string;
 }
 
 export interface Organization {
   id: string;
   companyName: string;
   slug: string;
+  branding?: OrganizationBranding;
   subscription?: {
     plan: string;
     status: string;
@@ -75,6 +111,12 @@ export interface Organization {
     recruitment: boolean;
     assets: boolean;
   };
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  code: string;
 }
 
 export interface Branch {
@@ -105,7 +147,12 @@ export interface SignupResponse {
 
 export interface LoginResponseData {
   accessToken: string;
+  refreshToken?: string;
+  requiresPasswordReset: boolean;
+  onboardingCompleted: boolean;
   user: User;
+  organization?: Organization;
+  branch?: Branch;
 }
 
 export interface LoginResponse {
@@ -332,6 +379,17 @@ export interface MeResponse {
   message: string;
   errors: string[];
   data: MeResponseData | null;
+}
+
+// ===========================================
+// Logout
+// ===========================================
+
+export interface LogoutResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: null;
 }
 
 // ===========================================

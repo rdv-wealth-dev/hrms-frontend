@@ -19,7 +19,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
+import TextInput from "../../../components/input/TextInput";
 import Tooltip from "@mui/material/Tooltip";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
@@ -270,11 +270,10 @@ export function DocumentVerificationView() {
           <Typography variant="body2" sx={{ color: "#6B7280", mb: 2 }}>
             Are you sure you want to reject this document? You can optionally provide a reason.
           </Typography>
-          <TextField
+          <TextInput
             label="Remarks (optional)"
             value={rejectRemarks}
             onChange={(e) => setRejectRemarks(e.target.value)}
-            fullWidth
             multiline
             rows={3}
           />

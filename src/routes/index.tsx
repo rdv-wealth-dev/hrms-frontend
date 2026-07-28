@@ -16,6 +16,7 @@ const ResetPasswordPage = lazy(() => import("../pages/auth/ResetPassword"));
 const CheckEmailPage = lazy(() => import("../pages/auth/CheckEmail"));
 const VerifyEmailPage = lazy(() => import("../pages/auth/VerifyEmail"));
 const ActivateAccountPage = lazy(() => import("../pages/auth/ActivateAccount"));
+const ChangePasswordPage   = lazy(() => import("../pages/auth/ChangePassword"));
 const DashboardPage = lazy(() => import("../pages/dashboard/DashboardView"));
 const DepartmentsPage = lazy(() => import("../pages/departments"));
 const DesignationsPage = lazy(() => import("../pages/designations"));
@@ -61,6 +62,12 @@ function AppRoutes() {
         <Route path={paths.auth.activateAccount} element={<ActivateAccountPage />} />
         <Route path={paths.auth.resetPassword} element={<ResetPasswordPage />} />
         <Route path={paths.auth.verifyEmail} element={<VerifyEmailPage />} />
+
+        {/* Change password — authenticated but must change before proceeding */}
+        <Route
+          path={paths.auth.changePassword}
+          element={<AuthGuard><ChangePasswordPage /></AuthGuard>}
+        />
 
         {/* Protected — require a valid session */}
         <Route

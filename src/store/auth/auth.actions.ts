@@ -13,6 +13,8 @@ import type {
   RestoreSessionSuccessPayload,
   ActivateAccountRequestPayload,
   ActivateAccountSuccessPayload,
+  CheckEmailRequestPayload,
+  CheckEmailSuccessPayload,
 } from "./auth.types";
 
 import { AUTH_ACTIONS } from "./auth.types";
@@ -133,6 +135,34 @@ export const restoreSessionSuccess = (
 
 export const restoreSessionFailure = (): AuthAction => ({
   type: AUTH_ACTIONS.RESTORE_SESSION_FAILURE,
+});
+
+// ===========================================
+// Check Email
+// ===========================================
+
+export const checkEmailRequest = (payload: CheckEmailRequestPayload): AuthAction => ({
+  type: AUTH_ACTIONS.CHECK_EMAIL_REQUEST,
+  payload,
+});
+
+export const checkEmailSuccess = (payload: CheckEmailSuccessPayload): AuthAction => ({
+  type: AUTH_ACTIONS.CHECK_EMAIL_SUCCESS,
+  payload,
+});
+
+export const checkEmailFailure = (payload: string): AuthAction => ({
+  type: AUTH_ACTIONS.CHECK_EMAIL_FAILURE,
+  payload,
+});
+
+// ===========================================
+// Login Cooldown
+// ===========================================
+
+export const setLoginCooldown = (seconds: number | null): AuthAction => ({
+  type: AUTH_ACTIONS.SET_LOGIN_COOLDOWN,
+  payload: seconds,
 });
 
 // ===========================================

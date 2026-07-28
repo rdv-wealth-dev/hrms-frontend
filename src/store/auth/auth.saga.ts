@@ -10,6 +10,8 @@ import {
   resetPassword,
   getMe,
   activateAccount,
+  checkEmail,
+  logoutUser,
 } from "../../api/auth.api";
 
 import {
@@ -27,6 +29,9 @@ import {
   restoreSessionFailure,
   activateAccountSuccess,
   activateAccountFailure,
+  checkEmailSuccess,
+  checkEmailFailure,
+  setLoginCooldown,
 } from "./auth.actions";
 
 import {
@@ -37,6 +42,7 @@ import {
   type ForgotPasswordRequestPayload,
   type ResetPasswordRequestPayload,
   type ActivateAccountRequestPayload,
+  type CheckEmailRequestPayload,
 } from "./auth.types";
 
 // ===========================================
@@ -111,14 +117,34 @@ function* handleLoginRequest(action: {
       loginSuccess({
         user: response.data.user,
         accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        requiresPasswordReset: response.data.requiresPasswordReset,
+        onboardingCompleted: response.data.onboardingCompleted,
+        organization: response.data.organization,
+        branch: response.data.branch,
       })
     );
 
     localStorage.setItem("accessToken", response.data.accessToken);
+    if (response.data.refreshToken) {
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+    }
     localStorage.setItem("persistent", JSON.stringify(response.data.user));
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      yield put(loginFailure(error.response?.data?.message ?? "Login failed"));
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      // API spec: remainingSecs is inside errors[0] — flat data.remainingSecs as fallback
+      if (status === 429) {
+        const remainingSecs =
+          data?.errors?.[0]?.remainingSecs ?? data?.remainingSecs ?? null;
+        if (remainingSecs != null) {
+          yield put(setLoginCooldown(remainingSecs));
+        }
+      }
+
+      yield put(loginFailure(data?.message ?? "Login failed"));
     } else {
       yield put(loginFailure("Something went wrong"));
     }
@@ -254,9 +280,40 @@ function* handleActivateAccountRequest(action: {
 // ===========================================
 
 function* handleLogout(): SagaIterator {
+  try {
+    yield call(logoutUser);
+  } catch {
+    // Swallow — always clear local session regardless of API result
+  }
   localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
   localStorage.removeItem("persistent");
-  yield call(() => {});
+}
+
+// ===========================================
+// Check Email
+// ===========================================
+
+function* handleCheckEmail(action: {
+  type: typeof AUTH_ACTIONS.CHECK_EMAIL_REQUEST;
+  payload: CheckEmailRequestPayload;
+}): SagaIterator {
+  try {
+    const response = yield call(checkEmail, action.payload);
+
+    if (!response.succeeded || !response.data) {
+      yield put(checkEmailFailure(response.message ?? "Email check failed"));
+      return;
+    }
+
+    yield put(checkEmailSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(checkEmailFailure(error.response?.data?.message ?? "Email check failed"));
+    } else {
+      yield put(checkEmailFailure("Something went wrong"));
+    }
+  }
 }
 
 // ===========================================
@@ -271,5 +328,6 @@ export function* authSaga(): SagaIterator {
   yield takeLatest(AUTH_ACTIONS.RESET_PASSWORD_REQUEST, handleResetPasswordRequest);
   yield takeLatest(AUTH_ACTIONS.RESTORE_SESSION_REQUEST, handleRestoreSession);
   yield takeLatest(AUTH_ACTIONS.ACTIVATE_ACCOUNT_REQUEST, handleActivateAccountRequest);
+  yield takeLatest(AUTH_ACTIONS.CHECK_EMAIL_REQUEST, handleCheckEmail);
   yield takeLatest(AUTH_ACTIONS.LOGOUT, handleLogout);
 }

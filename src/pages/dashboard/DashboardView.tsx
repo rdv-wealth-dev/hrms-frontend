@@ -1,9 +1,12 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import FormatListBulletedOutlinedIcon from "@mui/icons-material/FormatListBulletedOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../routes/paths";
@@ -12,10 +15,62 @@ import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard"
 import MyBranchCalendarWidget from "../../sections/dashboard/components/MyBranchCalendarWidget";
 import OrgSetupGuidanceWidget from "../../sections/dashboard/components/OrgSetupGuidanceWidget";
 import { usePermissions } from "../../hooks/usePermissions";
+import type { RootState } from "../../store/rootReducer";
 
 function DashboardView() {
   const navigate = useNavigate();
   const { role } = usePermissions();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const lastLoginAt = user?.lastLoginAt;
+  const lastLoginIp = user?.lastLoginIp;
+  const lastLoginDevice = user?.lastLoginDevice;
+
+  const lastLoginLabel = useMemo(() => {
+    if (!lastLoginAt) return null;
+    const date = new Date(lastLoginAt);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    let dayStr: string;
+    if (diffDays === 0) dayStr = "Today";
+    else if (diffDays === 1) dayStr = "Yesterday";
+    else dayStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    const device = lastLoginDevice
+      ? lastLoginDevice.includes("Windows")
+        ? "Windows"
+        : lastLoginDevice.includes("Mac")
+          ? "macOS"
+          : lastLoginDevice.includes("Linux")
+            ? "Linux"
+            : "Unknown OS"
+      : "";
+
+    const browser = lastLoginDevice
+      ? lastLoginDevice.includes("Chrome")
+        ? "Chrome"
+        : lastLoginDevice.includes("Firefox")
+          ? "Firefox"
+          : lastLoginDevice.includes("Safari") && !lastLoginDevice.includes("Chrome")
+            ? "Safari"
+            : ""
+      : "";
+
+    const parts = [`Last login: ${dayStr} ${timeStr}`];
+    if (browser || device) {
+      const via = [browser, device].filter(Boolean).join(", ");
+      parts.push(`from ${via}`);
+    }
+    if (lastLoginIp) parts.push(`(${lastLoginIp})`);
+    return parts.join(" ");
+  }, [lastLoginAt, lastLoginIp, lastLoginDevice]);
 
   return (
     <DashboardLayout>
@@ -48,6 +103,23 @@ function DashboardView() {
         >
           Use the sidebar to navigate to Departments.
         </Typography>
+
+        {lastLoginLabel && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              justifyContent: "center",
+              mb: 2.5,
+            }}
+          >
+            <AccessTimeOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
+              {lastLoginLabel}
+            </Typography>
+          </Box>
+        )}
 
         {/* Organization Setup Guidance Widget for Org Admin / HR Admin */}
         <OrgSetupGuidanceWidget />
