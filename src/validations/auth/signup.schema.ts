@@ -19,7 +19,7 @@ export const signupSchema = z
 
     employeeCountRange: z.enum(
       ["1-10", "11-50", "51-200", "201-500", "500+"],
-      { required_error: "Please select your team size" }
+      { message: "Please select your team size" }
     ),
 
     industry: z.string().optional(),

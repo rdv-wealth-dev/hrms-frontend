@@ -66,7 +66,7 @@ export default function SlugInput({
     };
   }, [debouncedSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     // Enforce: lowercase, only a-z 0-9 and hyphens, no spaces
     const sanitized = e.target.value
       .toLowerCase()
