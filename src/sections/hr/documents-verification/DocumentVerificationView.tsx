@@ -193,7 +193,7 @@ export function DocumentVerificationView() {
                           {getEmployeeName(doc)}
                         </Typography>
                         <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
-                          {typeof doc.employeeId === "object" ? doc.employeeId.employeeCode : ""}
+                          {doc.employeeId && typeof doc.employeeId === "object" ? doc.employeeId.employeeCode ?? "" : ""}
                         </Typography>
                       </TableCell>
                       <TableCell>

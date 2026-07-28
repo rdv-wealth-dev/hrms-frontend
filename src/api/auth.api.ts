@@ -13,9 +13,10 @@ import type {
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
-  MeResponse, // ✅ new
+  MeResponse,
   ActivateAccountRequest,
   ActivateAccountResponse,
+  CheckSlugResponse,
 } from "../auth/types";
 
 export const registerCompany = async (
@@ -58,6 +59,13 @@ export const resendVerificationEmail = async (
   return response.data;
 };
 
+// Real-time workspace slug availability check (GET — no auth required)
+export const checkSlug = async (slug: string): Promise<CheckSlugResponse> => {
+  const response = await axiosInstance.get<CheckSlugResponse>(
+    `/auth/check-slug?slug=${encodeURIComponent(slug)}`
+  );
+  return response.data;
+};
 
 // ✅ New
 export const forgotPassword = async (

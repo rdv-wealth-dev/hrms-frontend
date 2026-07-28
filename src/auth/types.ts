@@ -1,13 +1,33 @@
+// ===========================================
+// Check Slug
+// ===========================================
+
+export interface CheckSlugResponseData {
+  available: boolean;
+  slug: string;
+  suggestions?: string[];
+}
+
+export interface CheckSlugResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: CheckSlugResponseData | null;
+}
+
 export interface SignupRequest {
   companyName: string;
-  industry: string;
+  workspaceSlug: string;       // required — unique workspace URL
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-  phone: string;
   countryCode: string;
   timezone: string;
+  employeeCountRange: string;  // required — "1-10" | "11-50" | "51-200" | "201-500" | "500+"
+  industry?: string;
+  phone?: string;
+  adminJobTitle?: string;      // optional
 }
 
 export interface LoginRequest {

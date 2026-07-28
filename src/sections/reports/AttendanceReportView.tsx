@@ -213,7 +213,23 @@ export default function AttendanceReportView() {
       const checkInTime = r.firstCheckIn || (r as any).checkIn || (r as any).checkInTime || (r.sessions && r.sessions[0]?.timestamp);
       const hasCheckedIn = Boolean(checkInTime);
 
-      const isLate = s.includes("LATE") || (r as any).isLate === true;
+      let isLate = s.includes("LATE") || (r as any).isLate === true;
+
+      // Check check-in timestamp against shift start (10:00 AM + 15m grace = 10:15 AM / 615 mins)
+      if (!isLate && checkInTime) {
+        try {
+          const d = new Date(checkInTime);
+          if (!isNaN(d.getTime())) {
+            const totalMins = d.getHours() * 60 + d.getMinutes();
+            if (totalMins > 615) {
+              isLate = true;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       const isWfh = s.includes("WFH") || s.includes("REMOTE");
       const isAbsent = s === "ABSENT";
       const isHalfDay = s.includes("HALF");
@@ -241,11 +257,12 @@ export default function AttendanceReportView() {
       absentCount,
       absentSubtext: `${absentCount} absent today`,
       lateCount,
-      lateSubtext: `${lateCount} late check-ins`,
+      lateSubtext: `After 10:15 AM (10:00 Shift + 15m Grace)`,
       wfhCount,
       wfhSubtext: `${wfhRate}% of workforce`,
     };
   }, [todayRecords, totalRecords]);
+
 
   // Compute status breakdown counts from real live API records
   const breakdownData: StatusBreakdownData = useMemo(() => {
@@ -257,11 +274,25 @@ export default function AttendanceReportView() {
 
     todayRecords.forEach((r) => {
       const s = (r.status || "").toUpperCase();
-      const hasCheckedIn = Boolean(r.firstCheckIn || (r.sessions && r.sessions.length > 0));
+      const checkInTime = r.firstCheckIn || (r as any).checkIn || (r as any).checkInTime || (r.sessions && r.sessions[0]?.timestamp);
+      const hasCheckedIn = Boolean(checkInTime);
 
-      if (s.includes("LATE") || (r as any).isLate === true) {
+      let isLate = s.includes("LATE") || (r as any).isLate === true;
+      if (!isLate && checkInTime) {
+        try {
+          const d = new Date(checkInTime);
+          if (!isNaN(d.getTime()) && d.getHours() * 60 + d.getMinutes() > 615) {
+            isLate = true;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (isLate) {
         late++;
       } else if (s.includes("WFH") || s.includes("REMOTE")) {
+
         wfh++;
       } else if (s.includes("LEAVE")) {
         onLeave++;
@@ -549,7 +580,7 @@ export default function AttendanceReportView() {
                 onPageChange={(_, newPage) => handlePageChange(newPage + 1)}
                 rowsPerPage={pageSize}
                 onRowsPerPageChange={(e) => handleRowsPerPageChange(parseInt(e.target.value, 10))}
-                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPageOptions={Array.from(new Set([10, 25, 50, 100, pageSize])).sort((a, b) => a - b)}
                 sx={{ mt: 2, color: "#64748B" }}
               />
             )}
