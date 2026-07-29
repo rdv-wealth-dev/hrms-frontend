@@ -67,9 +67,10 @@ const timeAndLeaveNavItems: NavSubItem[] = [
         permission: "report.read",
     },
     {
-        label: "My Leave",
+        label: "Leave Management",
         icon: <PolicyOutlinedIcon fontSize="small" />,
         path: paths.leave,
+        permission: "leave.approve",
     },
     {
         label: "Requests",
@@ -373,8 +374,11 @@ function DashboardLayout({ children }: Props) {
 
                         <ListItemButton
                             onClick={() => {
+                                localStorage.removeItem("accessToken");
+                                localStorage.removeItem("refreshToken");
+                                localStorage.removeItem("persistent");
                                 dispatch(logout());
-                                navigate(paths.auth.login);
+                                window.location.href = paths.auth.login;
                             }}
                             sx={{
                                 borderRadius: 2,

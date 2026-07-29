@@ -258,6 +258,11 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
     // ==========================
 
     case AUTH_ACTIONS.LOGOUT:
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("persistent");
+      }
       return {
         ...initialState,
         user: null,

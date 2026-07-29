@@ -239,6 +239,7 @@ export interface LeaveRequest {
     employeeCode: string;
     firstName: string;
     lastName: string;
+    avatarUrl?: string;
   };
   leaveTypeId: {
     _id: string;
