@@ -98,4 +98,22 @@ export const getMyBranchCalendar = async (
   return response.data;
 };
 
+export const getMySchedule = async (
+  year?: number,
+  month?: number
+): Promise<GetBranchCalendarResponse> => {
+  const params: Record<string, number> = {};
+  if (year) params.year = year;
+  if (month) params.month = month;
+
+  const response = await axiosInstance.get<GetBranchCalendarResponse>(
+    "/branches/me/schedule",
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
 

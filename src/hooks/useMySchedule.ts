@@ -1,65 +1,52 @@
 import { useState, useEffect, useCallback } from "react";
-import { getBranchCalendar } from "../api/branch.api";
+import { getMySchedule } from "../api/branch.api";
 import type { BranchCalendarData } from "../store/branch/branch.types";
 
-interface UseBranchCalendarOptions {
-  branchId?: string;
+interface UseMyScheduleOptions {
   initialYear?: number;
   initialMonth?: number;
   autoFetch?: boolean;
 }
 
-export function useBranchCalendar({
-  branchId: initialBranchId = "",
+export function useMySchedule({
   initialYear,
   initialMonth,
   autoFetch = true,
-}: UseBranchCalendarOptions = {}) {
-  const [branchId, setBranchId] = useState<string>(initialBranchId);
+}: UseMyScheduleOptions = {}) {
   const [year, setYear] = useState<number>(initialYear || new Date().getFullYear());
   const [month, setMonth] = useState<number>(initialMonth || new Date().getMonth() + 1);
 
-  const [calendarData, setCalendarData] = useState<BranchCalendarData | null>(null);
+  const [scheduleData, setScheduleData] = useState<BranchCalendarData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Sync external initialBranchId if updated
-  useEffect(() => {
-    if (initialBranchId && initialBranchId !== branchId) {
-      setBranchId(initialBranchId);
-    }
-  }, [initialBranchId]);
-
-  const fetchCalendar = useCallback(async () => {
-    if (!branchId) {
-      setCalendarData(null);
-      setLoading(false);
-      return;
-    }
-
+  const fetchSchedule = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await getBranchCalendar(branchId, year, month);
-      if (response?.succeeded && response?.data) {
-        setCalendarData(response.data);
+      const response = await getMySchedule(year, month);
+      if ((response?.succeeded || (response as any)?.success) && response?.data) {
+        setScheduleData(response.data);
       } else {
-        setError(response?.message || "Failed to load branch monthly calendar.");
+        setError(response?.message || "Failed to load personal rotation schedule.");
       }
     } catch (err: any) {
-      const apiMessage = err?.response?.data?.message || err?.message || "Error fetching branch calendar.";
+      const apiMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Error fetching personal rotation schedule.";
       setError(apiMessage);
     } finally {
       setLoading(false);
     }
-  }, [branchId, year, month]);
+  }, [year, month]);
 
   useEffect(() => {
-    if (autoFetch && branchId) {
-      fetchCalendar();
+    if (autoFetch) {
+      fetchSchedule();
     }
-  }, [branchId, year, month, autoFetch, fetchCalendar]);
+  }, [year, month, autoFetch, fetchSchedule]);
 
   const handlePrevMonth = () => {
     if (month === 1) {
@@ -85,13 +72,11 @@ export function useBranchCalendar({
   };
 
   return {
-    branchId,
-    setBranchId,
     year,
     setYear,
     month,
     setMonth,
-    calendarData,
+    scheduleData,
     loading,
     isFetching: loading,
     error,
@@ -101,8 +86,8 @@ export function useBranchCalendar({
     nextMonth: handleNextMonth,
     handleResetMonth,
     resetToCurrent: handleResetMonth,
-    refetch: fetchCalendar,
+    refetch: fetchSchedule,
   };
 }
 
-export default useBranchCalendar;
+export default useMySchedule;

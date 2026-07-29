@@ -19,8 +19,14 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && error.config?.url !== "/auth/login") {
+    const isAuthRoute =
+      error.config?.url?.includes("/auth/login") ||
+      error.config?.url?.includes("/auth/logout");
+
+    if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("persistent");
       window.location.href = "/login";
     }
     return Promise.reject(error);

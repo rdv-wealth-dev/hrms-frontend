@@ -91,13 +91,18 @@ export const listLeaveTypes = async (): Promise<LeaveTypesPaginatedResponse> => 
   return response.data;
 };
 
+export type HolidayScope = "GLOBAL" | "COUNTRY" | "STATE" | "BRANCH";
+
 export interface CreateHolidayRequest {
   name: string;
   date: string;
   type?: "NATIONAL" | "RESTRICTED" | "REGIONAL";
+  scope?: HolidayScope;
   isOptional?: boolean;
-  description?: string;
   branchId?: string;
+  countryCode?: string;
+  stateCode?: string;
+  description?: string;
 }
 
 export interface Holiday {
@@ -106,9 +111,12 @@ export interface Holiday {
   name: string;
   date: string;
   type: "NATIONAL" | "RESTRICTED" | "REGIONAL";
+  scope?: HolidayScope;
   isOptional: boolean;
   description?: string;
   branchId?: string;
+  countryCode?: string;
+  stateCode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -138,11 +146,95 @@ export const createHoliday = async (
   return response.data;
 };
 
+export interface UpdateHolidayRequest {
+  name?: string;
+  date?: string;
+  type?: "NATIONAL" | "RESTRICTED" | "REGIONAL";
+  scope?: HolidayScope;
+  isOptional?: boolean;
+  branchId?: string;
+  countryCode?: string;
+  stateCode?: string;
+  description?: string;
+}
+
+export const updateHoliday = async (
+  id: string,
+  payload: UpdateHolidayRequest
+): Promise<CreateHolidayResponse> => {
+  const response = await axiosInstance.patch<CreateHolidayResponse>(
+    `/leave/holidays/${id}`,
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface DeleteHolidayResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+}
+
+export const deleteHoliday = async (id: string): Promise<DeleteHolidayResponse> => {
+  const response = await axiosInstance.delete<DeleteHolidayResponse>(
+    `/leave/holidays/${id}`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface SeedDefaultHolidaysResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message: string;
+  data?: Holiday[];
+}
+
+export const seedDefaultHolidays = async (
+  countryCode?: string,
+  stateCode?: string
+): Promise<SeedDefaultHolidaysResponse> => {
+  const params: Record<string, string> = {};
+  if (countryCode) params.countryCode = countryCode;
+  if (stateCode) params.stateCode = stateCode;
+
+  const response = await axiosInstance.post<SeedDefaultHolidaysResponse>(
+    "/leave/holidays/seed-default",
+    {},
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
 export const listHolidays = async (year?: number): Promise<HolidayListResponse> => {
   const response = await axiosInstance.get<HolidayListResponse>(
     "/leave/holidays",
     {
       params: year ? { year } : undefined,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+export interface ResolveHolidaysResponse {
+  success: boolean;
+  message: string;
+  data: Holiday[];
+}
+
+export const resolveBranchHolidays = async (
+  branchId: string,
+  year?: number
+): Promise<ResolveHolidaysResponse> => {
+  const response = await axiosInstance.get<ResolveHolidaysResponse>(
+    "/leave/holidays/resolve",
+    {
+      params: { branchId, year: year || new Date().getFullYear() },
       headers: getAuthHeader(),
     }
   );

@@ -378,7 +378,7 @@ function DashboardLayout({ children }: Props) {
                                 localStorage.removeItem("refreshToken");
                                 localStorage.removeItem("persistent");
                                 dispatch(logout());
-                                window.location.href = paths.auth.login;
+                                navigate(paths.auth.login, { replace: true });
                             }}
                             sx={{
                                 borderRadius: 2,

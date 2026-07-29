@@ -69,8 +69,13 @@ export function BranchCalendarGrid({
       ? organization.locale.customWeekOffRules
       : savedLocalRules;
 
-  const { year, month, days, branchName } = data;
-  const monthName = MONTH_NAMES[month - 1] || "";
+  const {
+    year = new Date().getFullYear(),
+    month = new Date().getMonth() + 1,
+    days = [],
+    branchName = "Branch",
+  } = data || {};
+  const monthName = MONTH_NAMES[(month || 1) - 1] || "";
 
   // Dynamic summary computation directly from rendered days array and active custom rules
   const dynamicSummary = useMemo(() => {

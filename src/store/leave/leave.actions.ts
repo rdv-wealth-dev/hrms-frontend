@@ -1,4 +1,4 @@
-import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest, LeaveRequestsPaginatedResponse, CompOffRecord } from "../../api/leave.api";
+import type { CreateLeaveTypeRequest, LeaveType, CreateHolidayRequest, UpdateHolidayRequest, Holiday, LeaveBalance, CreateLeaveRequest, LeaveRequestsPaginatedResponse, CompOffRecord } from "../../api/leave.api";
 import { LEAVE_ACTIONS } from "./leave.types";
 import type { LeaveAction } from "./leave.types";
 
@@ -67,6 +67,51 @@ export const createHolidaySuccess = (payload: Holiday): LeaveAction => ({
 
 export const createHolidayFailure = (payload: string): LeaveAction => ({
   type: LEAVE_ACTIONS.CREATE_HOLIDAY_FAILURE,
+  payload,
+});
+
+export const updateHolidayRequest = (id: string, data: UpdateHolidayRequest): LeaveAction => ({
+  type: LEAVE_ACTIONS.UPDATE_HOLIDAY_REQUEST,
+  payload: { id, data },
+});
+
+export const updateHolidaySuccess = (payload: Holiday): LeaveAction => ({
+  type: LEAVE_ACTIONS.UPDATE_HOLIDAY_SUCCESS,
+  payload,
+});
+
+export const updateHolidayFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.UPDATE_HOLIDAY_FAILURE,
+  payload,
+});
+
+export const deleteHolidayRequest = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.DELETE_HOLIDAY_REQUEST,
+  payload,
+});
+
+export const deleteHolidaySuccess = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.DELETE_HOLIDAY_SUCCESS,
+  payload,
+});
+
+export const deleteHolidayFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.DELETE_HOLIDAY_FAILURE,
+  payload,
+});
+
+export const seedDefaultHolidaysRequest = (payload?: { countryCode?: string; stateCode?: string }): LeaveAction => ({
+  type: LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_REQUEST,
+  payload,
+});
+
+export const seedDefaultHolidaysSuccess = (data?: Holiday[]): LeaveAction => ({
+  type: LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_SUCCESS,
+  payload: data,
+});
+
+export const seedDefaultHolidaysFailure = (payload: string): LeaveAction => ({
+  type: LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_FAILURE,
   payload,
 });
 
