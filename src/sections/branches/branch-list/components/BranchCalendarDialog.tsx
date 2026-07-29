@@ -9,7 +9,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import Typography from "@mui/material/Typography";
 import { useBranchCalendar } from "../../../../hooks/useBranchCalendar";
-import { BranchCalendarGrid } from "../../../../components/calendar";
+import { LazyBranchCalendarGrid } from "../../../../components/calendar";
 
 interface BranchCalendarDialogProps {
   open: boolean;
@@ -83,7 +83,7 @@ export function BranchCalendarDialog({
             {error}
           </Alert>
         ) : calendarData ? (
-          <BranchCalendarGrid
+          <LazyBranchCalendarGrid
             data={calendarData}
             isFetching={isFetching}
             onPrevMonth={prevMonth}

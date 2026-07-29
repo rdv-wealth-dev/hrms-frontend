@@ -486,8 +486,25 @@ function EmployeeListView() {
       if (targetStatus === "ON_LEAVE" && empStatus !== "ON_LEAVE") return false;
     }
 
-    // 6. Date of Joining Filter
-    if (filters.dateOfJoining) {
+    // 6. Date of Joining Filter (Presets & Custom Date Range)
+    if (filters.fromDate || filters.toDate) {
+      const rawJoinDate = emp.joiningDate || (emp as any).dateOfJoining || emp.createdAt;
+      if (rawJoinDate) {
+        const joinDate = new Date(rawJoinDate);
+        if (!isNaN(joinDate.getTime())) {
+          if (filters.fromDate) {
+            const fromD = new Date(filters.fromDate);
+            fromD.setHours(0, 0, 0, 0);
+            if (joinDate < fromD) return false;
+          }
+          if (filters.toDate) {
+            const toD = new Date(filters.toDate);
+            toD.setHours(23, 59, 59, 999);
+            if (joinDate > toD) return false;
+          }
+        }
+      }
+    } else if (filters.dateOfJoining) {
       const rawJoinDate = emp.joiningDate || (emp as any).dateOfJoining || emp.createdAt;
       if (rawJoinDate) {
         const joinDate = new Date(rawJoinDate);

@@ -21,6 +21,7 @@ import OrganizationProfileContent from "./components/OrganizationProfileContent"
 import OrganizationModulesContent from "./components/OrganizationModulesContent";
 import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
 import OrganizationDocumentsContent from "./components/OrganizationDocumentsContent";
+import BranchListContent from "../branches/branch-list/components/BranchListContent";
 import { usePermissions } from "../../hooks/usePermissions";
 
 import {
@@ -38,6 +39,7 @@ const CONTENT_MAP: Record<string, ReactNode> = {
   "org-modules":   <OrganizationModulesContent />,
   "org-statutory": <OrganizationStatutoryContent />,
   "org-documents": <OrganizationDocumentsContent />,
+  branches:        <BranchListContent />,
   departments:     <DepartmentContent />,
   designations:    <DesignationContent />,
   "leave-types":   <LeaveTypeContent />,

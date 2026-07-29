@@ -19,7 +19,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
@@ -197,11 +197,13 @@ export function PeopleHubTableView({
               STATUS
             </TableCell>
 
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }} width={180}>
+            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }} width={130}>
               PERFORMANCE
             </TableCell>
 
-            <TableCell width={48} align="right" />
+            <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }} width={110}>
+              QUICK ACTION
+            </TableCell>
           </TableRow>
         </TableHead>
 
@@ -385,13 +387,13 @@ export function PeopleHubTableView({
                 </TableCell>
 
                 {/* Action Trigger */}
-                <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                <TableCell align="center" onClick={(e) => e.stopPropagation()}>
                   <IconButton
                     size="small"
                     onClick={(e) => handleOpenMenu(e, emp)}
                     sx={{ color: "#94A3B8", "&:hover": { color: "#6D5DF6", backgroundColor: "#F1F5F9" } }}
                   >
-                    <ChevronRightIcon />
+                    <MoreVertIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>

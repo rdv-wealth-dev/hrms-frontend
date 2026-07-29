@@ -5,7 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import { useMyBranchCalendar } from "../../../hooks/useMyBranchCalendar";
-import { BranchCalendarGrid, EventDetailPanel } from "../../../components/calendar";
+import { LazyBranchCalendarGrid, EventDetailPanel } from "../../../components/calendar";
 import type { BranchCalendarDay } from "../../../store/branch/branch.types";
 
 export function MyBranchCalendarWidget() {
@@ -51,7 +51,7 @@ export function MyBranchCalendarWidget() {
         </Alert>
       ) : calendarData ? (
         <>
-          <BranchCalendarGrid
+          <LazyBranchCalendarGrid
             data={calendarData}
             isFetching={isFetching}
             onPrevMonth={prevMonth}

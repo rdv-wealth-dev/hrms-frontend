@@ -11,7 +11,7 @@ export const loginSchema = z.object({
     .string()
     .min(1, "Password is required"),
 
-  rememberDevice: z.boolean().optional().default(false),
+  rememberDevice: z.boolean().default(false),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

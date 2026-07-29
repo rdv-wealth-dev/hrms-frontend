@@ -93,7 +93,7 @@ function LoginView() {
     watch,
     control,
     formState: { errors },
-  } = useForm<LoginFormData>({
+  } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",

@@ -20,7 +20,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
@@ -53,12 +52,6 @@ const topNavItems: NavItem[] = [
         path: paths.employees.list,
         permission: "employee.read",
     },
-    {
-        label: "Branches",
-        icon: <ApartmentOutlinedIcon fontSize="small" />,
-        path: paths.branches,
-        permission: "branch.read",
-    },
 ];
 
 const timeAndLeaveNavItems: NavSubItem[] = [
@@ -79,16 +72,22 @@ const timeAndLeaveNavItems: NavSubItem[] = [
         path: paths.leave,
     },
     {
-        label: "Regularization",
-        icon: <CalendarMonthOutlinedIcon fontSize="small" />,
-        path: paths.attendanceRegularizations,
-        permission: "attendance.approve",
-    },
-    {
-        label: "Leave Approval",
-        icon: <PolicyOutlinedIcon fontSize="small" />,
-        path: paths.leaveApprovals,
-        permission: "leave.approve",
+        label: "Requests",
+        icon: <FactCheckOutlinedIcon fontSize="small" />,
+        children: [
+            {
+                label: "Regularization",
+                icon: <CalendarMonthOutlinedIcon fontSize="small" />,
+                path: paths.attendanceRegularizations,
+                permission: "attendance.approve",
+            },
+            {
+                label: "Leave Approval",
+                icon: <PolicyOutlinedIcon fontSize="small" />,
+                path: paths.leaveApprovals,
+                permission: "leave.approve",
+            },
+        ],
     },
     {
         label: "Holiday",

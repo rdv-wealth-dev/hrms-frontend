@@ -5,6 +5,7 @@ import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
+import TextField from "@mui/material/TextField";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -15,6 +16,8 @@ export interface FilterState {
   branch?: string;
   team?: string;
   dateOfJoining?: string;
+  fromDate?: string;
+  toDate?: string;
   department?: string;
   status?: string;
 }
@@ -99,6 +102,8 @@ export function PeopleHubDepartmentTabs({
       branch: "",
       team: "",
       dateOfJoining: "",
+      fromDate: "",
+      toDate: "",
       department: "",
       status: "",
     };
@@ -264,7 +269,7 @@ export function PeopleHubDepartmentTabs({
             </IconButton>
           </Box>
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
             {activeOptions.map((option) => {
               const currentVal = localFilters[activeCategoryObj?.id as keyof FilterState];
               const isSelected =
@@ -274,9 +279,23 @@ export function PeopleHubDepartmentTabs({
                 <Chip
                   key={option}
                   label={option}
-                  onClick={() =>
-                    activeCategoryObj && handleSelectOption(activeCategoryObj.id, option)
-                  }
+                  onClick={() => {
+                    if (activeCategoryObj) {
+                      if (activeCategoryObj.id === "dateOfJoining") {
+                        const updated = {
+                          ...localFilters,
+                          dateOfJoining: option.startsWith("All") ? "" : option,
+                          fromDate: "",
+                          toDate: "",
+                        };
+                        setLocalFilters(updated);
+                        onFilterChange?.(updated);
+                        handleCloseMenu();
+                      } else {
+                        handleSelectOption(activeCategoryObj.id, option);
+                      }
+                    }
+                  }}
                   clickable
                   sx={{
                     height: 32,
@@ -298,6 +317,60 @@ export function PeopleHubDepartmentTabs({
                 />
               );
             })}
+
+            {activeCategoryObj?.id === "dateOfJoining" && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: 0, sm: 1 }, flexWrap: "wrap" }}>
+                <TextField
+                  type="date"
+                  size="small"
+                  value={localFilters.fromDate || ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const updated = { ...localFilters, fromDate: val, dateOfJoining: "Custom" };
+                    setLocalFilters(updated);
+                    onFilterChange?.(updated);
+                  }}
+                  sx={{
+                    width: 145,
+                    "& .MuiOutlinedInput-root": {
+                      height: 32,
+                      borderRadius: "8px",
+                      backgroundColor: "#FFFFFF",
+                      fontSize: "12px",
+                      color: "#0F172A",
+                      "& fieldset": { borderColor: localFilters.fromDate ? "#6D5DF6" : "#CBD5E1" },
+                    },
+                    "& .MuiOutlinedInput-input": { py: 0, height: 32, boxSizing: "border-box" },
+                  }}
+                />
+
+                <Typography sx={{ fontSize: "12px", color: "#64748B", fontWeight: 500 }}>to</Typography>
+
+                <TextField
+                  type="date"
+                  size="small"
+                  value={localFilters.toDate || ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const updated = { ...localFilters, toDate: val, dateOfJoining: "Custom" };
+                    setLocalFilters(updated);
+                    onFilterChange?.(updated);
+                  }}
+                  sx={{
+                    width: 145,
+                    "& .MuiOutlinedInput-root": {
+                      height: 32,
+                      borderRadius: "8px",
+                      backgroundColor: "#FFFFFF",
+                      fontSize: "12px",
+                      color: "#0F172A",
+                      "& fieldset": { borderColor: localFilters.toDate ? "#6D5DF6" : "#CBD5E1" },
+                    },
+                    "& .MuiOutlinedInput-input": { py: 0, height: 32, boxSizing: "border-box" },
+                  }}
+                />
+              </Box>
+            )}
           </Box>
         </Box>
       </Collapse>

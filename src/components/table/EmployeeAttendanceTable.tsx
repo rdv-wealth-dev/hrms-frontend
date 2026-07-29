@@ -7,16 +7,17 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import { CustomAvatar } from "../avatar";
 
 export interface AttendanceRecordRow {
   id: string;
   employeeName: string;
   initials: string;
   avatarColor: string;
+  avatarUrl?: string;
   checkIn: string;
   checkOut: string;
   hours: string;
@@ -163,18 +164,11 @@ export default function EmployeeAttendanceTable({
                   {/* EMPLOYEE column */}
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar
-                        sx={{
-                          width: 34,
-                          height: 34,
-                          fontSize: "0.8rem",
-                          fontWeight: 700,
-                          backgroundColor: row.avatarColor || "#6D5DF6",
-                          color: "#FFFFFF",
-                        }}
-                      >
-                        {row.initials}
-                      </Avatar>
+                      <CustomAvatar
+                        name={row.employeeName}
+                        src={row.avatarUrl}
+                        size={34}
+                      />
                       <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
                         {row.employeeName}
                       </Typography>

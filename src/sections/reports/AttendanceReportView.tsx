@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -13,11 +11,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Chip from "@mui/material/Chip";
 import TablePagination from "@mui/material/TablePagination";
-
 import AddIcon from "@mui/icons-material/Add";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import CloseIcon from "@mui/icons-material/Close";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { getAttendanceReport } from "../../api/attendance.api";
@@ -27,10 +22,18 @@ import { usePagination } from "../../hooks/usePagination";
 import { useDialog } from "../../hooks/useDialog";
 import { usePermissions } from "../../hooks/usePermissions";
 
-import WeeklyTrendBarChart, { type TrendBarData } from "../../components/charts/WeeklyTrendBarChart";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../store/rootReducer";
+import type { AppDispatch } from "../../store/store";
+import { listDepartmentsRequest } from "../../store/department";
+import { listDesignationsRequest } from "../../store/designation";
+import { listBranchesRequest } from "../../store/branch";
+
+import { LazyWeeklyTrendBarChart, type TrendBarData } from "../../components/charts";
 import AttendanceKpiCards, { type AttendanceKpiData } from "../../components/card/AttendanceKpiCards";
 import TodayStatusBreakdownCard, { type StatusBreakdownData } from "../../components/card/TodayStatusBreakdownCard";
 import EmployeeAttendanceTable, { type AttendanceRecordRow } from "../../components/table/EmployeeAttendanceTable";
+import { FilterBar } from "../../components/filter";
 
 import ManualAttendanceDialog from "../attendance/components/ManualAttendanceDialog";
 import RegularizeRequestDialog from "../attendance/components/RegularizeRequestDialog";
@@ -104,6 +107,16 @@ export default function AttendanceReportView() {
   const [fromDate, setFromDate] = useState(sevenDaysAgoStr);
   const [toDate, setToDate] = useState(todayStr);
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+    designationId: "ALL",
+    branchId: "ALL",
+    teamId: "ALL",
+    departmentId: "ALL",
+    status: "ALL",
+    fromDate: sevenDaysAgoStr,
+    toDate: todayStr,
+  });
 
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -117,6 +130,17 @@ export default function AttendanceReportView() {
 
   const { hasPermission } = usePermissions();
   const canMarkAttendance = hasPermission("attendance.create");
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { departments } = useSelector((state: RootState) => state.department);
+  const { designations } = useSelector((state: RootState) => state.designation);
+  const { branches } = useSelector((state: RootState) => state.branch);
+
+  useEffect(() => {
+    dispatch(listDepartmentsRequest());
+    dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
+    dispatch(listBranchesRequest());
+  }, [dispatch]);
 
   const { pageNumber, pageSize, handlePageChange, handleRowsPerPageChange, setPageNumber } =
     usePagination({ initialPageSize: 100 });
@@ -170,18 +194,6 @@ export default function AttendanceReportView() {
     fetchReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNumber, pageSize, fromDate, toDate, statusFilter]);
-
-  const handleApplyFilter = () => {
-    setPageNumber(1);
-    fetchReport();
-  };
-
-  const handleResetFilter = () => {
-    setFromDate(sevenDaysAgoStr);
-    setToDate(todayStr);
-    setStatusFilter("ALL");
-    setPageNumber(1);
-  };
 
   // Filter today's records specifically for Today's Table and Today's Summary Cards
   const todayRecords = useMemo(() => {
@@ -363,21 +375,71 @@ export default function AttendanceReportView() {
       const fullName = (empObj as any)?.fullName || (r as any)?.fullName || (r as any)?.employeeName || `${firstName} ${lastName}`.trim();
       const empName = fullName || "Employee";
 
+      const avatarUrl =
+        (empObj as any)?.avatarUrl ||
+        (empObj as any)?.profilePicture ||
+        (r as any)?.avatarUrl ||
+        (r as any)?.profilePicture ||
+        (empObj as any)?.user?.avatarUrl;
+
       const mins = getRealWorkedMinutes(r);
       const status = getResolvedStatus(r);
+
+      const deptName = (empObj as any)?.department?.name || (empObj as any)?.departmentName || (r as any)?.departmentName || "";
+      const desigName = (empObj as any)?.designation?.title || (empObj as any)?.designationName || (r as any)?.designationName || "";
+      const branchName = (empObj as any)?.branch?.name || (empObj as any)?.branchName || (r as any)?.branchName || "";
 
       return {
         id: r._id || Math.random().toString(),
         employeeName: empName,
         initials: getInitials(empName),
         avatarColor: getColorForName(empName),
+        avatarUrl,
+        departmentName: deptName,
+        designationName: desigName,
+        branchName: branchName,
         checkIn: formatTime(r.firstCheckIn),
         checkOut: formatTime(r.lastCheckOut),
         hours: formatWorkedTime(mins),
         status: status,
       };
+    }).filter((row) => {
+      // 1. Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        if (!row.employeeName.toLowerCase().includes(q)) return false;
+      }
+
+      // 2. Department Filter
+      const selDept = filterValues.departmentId;
+      if (selDept && selDept !== "ALL") {
+        const d = String(row.departmentName || "").toLowerCase();
+        if (!d.includes(selDept.toLowerCase())) return false;
+      }
+
+      // 3. Designation Filter
+      const selDesig = filterValues.designationId;
+      if (selDesig && selDesig !== "ALL") {
+        const des = String(row.designationName || "").toLowerCase();
+        if (!des.includes(selDesig.toLowerCase())) return false;
+      }
+
+      // 4. Branch Filter
+      const selBranch = filterValues.branchId;
+      if (selBranch && selBranch !== "ALL") {
+        const b = String(row.branchName || "").toLowerCase();
+        if (!b.includes(selBranch.toLowerCase())) return false;
+      }
+
+      // 5. Status Filter
+      const selStatus = filterValues.status || statusFilter;
+      if (selStatus && selStatus !== "ALL") {
+        if (row.status.toUpperCase() !== selStatus.toUpperCase()) return false;
+      }
+
+      return true;
     });
-  }, [todayRecords]);
+  }, [todayRecords, searchQuery, filterValues, statusFilter]);
 
   // Compute dynamic Weekly Trend Chart Data for the last 7 days leading up to today
   const trendData: TrendBarData[] = useMemo(() => {
@@ -460,7 +522,7 @@ export default function AttendanceReportView() {
         {/* 2. Middle Grid: Weekly Trend & Today Breakdown */}
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 4 }}>
           <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 66.666%" } }}>
-            <WeeklyTrendBarChart
+            <LazyWeeklyTrendBarChart
               data={trendData}
               onRegularizeClick={() => setRegularizeOpen(true)}
             />
@@ -470,81 +532,94 @@ export default function AttendanceReportView() {
           </Box>
         </Box>
 
-        {/* Filter Bar */}
-        <Box
-          sx={{
-            p: 2.5,
-            mb: 3,
-            borderRadius: 3.5,
-            backgroundColor: "#FFFFFF",
-            border: "1px solid rgba(0,0,0,0.04)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            alignItems: "center",
+        {/* Generic Horizontal Filter Bar with Real Backend Data */}
+        <FilterBar
+          searchPlaceholder="Search employees..."
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          fields={[
+            { key: "fromDate", label: "From Date", type: "date", minWidth: 160 },
+            { key: "toDate", label: "To Date", type: "date", minWidth: 160 },
+            {
+              key: "designationId",
+              label: "Designation",
+              type: "select",
+              options: [
+                { value: "ALL", label: "All Designations" },
+                ...(designations?.map((d: any) => ({
+                  value: d._id || d.title || d.name,
+                  label: d.title || d.name,
+                })) || []),
+              ],
+              minWidth: 150,
+            },
+            {
+              key: "branchId",
+              label: "Branch",
+              type: "select",
+              options: [
+                { value: "ALL", label: "All Branches" },
+                ...(branches?.map((b: any) => ({
+                  value: b._id || b.name,
+                  label: b.name,
+                })) || []),
+              ],
+              minWidth: 140,
+            },
+            {
+              key: "teamId",
+              label: "Team",
+              type: "select",
+              options: [{ value: "ALL", label: "All Teams" }],
+              minWidth: 130,
+            },
+            {
+              key: "departmentId",
+              label: "Departments",
+              type: "select",
+              options: [
+                { value: "ALL", label: "All Departments" },
+                ...(departments?.map((dep: any) => ({
+                  value: dep._id || dep.name,
+                  label: dep.name,
+                })) || []),
+              ],
+              minWidth: 150,
+            },
+            {
+              key: "status",
+              label: "Status",
+              type: "select",
+              options: STATUS_OPTIONS,
+              minWidth: 150,
+            },
+          ]}
+          values={{
+            ...filterValues,
+            fromDate,
+            toDate,
+            status: statusFilter,
           }}
-        >
-          <TextField
-            label="From Date"
-            type="date"
-            size="small"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            sx={{ minWidth: 160 }}
-          />
-
-          <TextField
-            label="To Date"
-            type="date"
-            size="small"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            sx={{ minWidth: 160 }}
-          />
-
-          <TextField
-            select
-            label="Status"
-            size="small"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ minWidth: 160 }}
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <Box sx={{ display: "flex", gap: 1, ml: "auto" }}>
-            <Button
-              variant="contained"
-              onClick={handleApplyFilter}
-              startIcon={<FilterListIcon />}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                backgroundColor: "#6D5DF6",
-                "&:hover": { backgroundColor: "#5B4BEA" },
-              }}
-            >
-              Filter
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleResetFilter}
-              startIcon={<RestartAltIcon />}
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600, color: "#64748B", borderColor: "#CBD5E1" }}
-            >
-              Reset
-            </Button>
-          </Box>
-        </Box>
+          onFilterChange={(key, val) => {
+            if (key === "fromDate") setFromDate(val);
+            else if (key === "toDate") setToDate(val);
+            else if (key === "status") setStatusFilter(val);
+            else setFilterValues((prev) => ({ ...prev, [key]: val }));
+          }}
+          onReset={() => {
+            setSearchQuery("");
+            setFromDate(sevenDaysAgoStr);
+            setToDate(todayStr);
+            setStatusFilter("ALL");
+            setFilterValues({
+              designationId: "ALL",
+              branchId: "ALL",
+              teamId: "ALL",
+              departmentId: "ALL",
+            });
+            setPageNumber(1);
+          }}
+        />
 
         {/* Error Alert */}
         {error && (

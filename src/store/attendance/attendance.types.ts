@@ -78,8 +78,8 @@ export interface AttendanceRecord {
   _id?: string;
   tenantId?: string;
   branchId?: string;
-  employeeId?: string | { _id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string };
-  employee?: { id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string };
+  employeeId?: string | { _id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string; avatarUrl?: string; profilePicture?: string };
+  employee?: { id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string; avatarUrl?: string; profilePicture?: string };
   shiftId?: string;
   attendanceDate?: string;
   sessions: PunchSession[];
