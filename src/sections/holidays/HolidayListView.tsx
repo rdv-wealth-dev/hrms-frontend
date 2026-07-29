@@ -850,7 +850,7 @@ export default function HolidayListView() {
                   <TableCell sx={{ fontWeight: 600 }}>Scope</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Is Optional</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, pr: 4 }}>Actions</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, pr: 8 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -901,7 +901,7 @@ export default function HolidayListView() {
                       <TableCell color="text.secondary">
                         {type.description || "—"}
                       </TableCell>
-                      <TableCell align="center" sx={{ pr: 4 }}>
+                      <TableCell align="center" sx={{ pr: 8 }}>
                         <IconButton
                           size="small"
                           onClick={(e) => handleOpenMenu(e, type)}

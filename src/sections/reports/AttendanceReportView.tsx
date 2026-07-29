@@ -142,8 +142,12 @@ export default function AttendanceReportView() {
     dispatch(listBranchesRequest());
   }, [dispatch]);
 
-  const { pageNumber, pageSize, handlePageChange, handleRowsPerPageChange, setPageNumber } =
+  const { pageNumber, pageSize, setPageNumber } =
     usePagination({ initialPageSize: 100 });
+
+  // Client-side pagination state for the filtered table
+  const [clientPage, setClientPage] = useState(0);
+  const [clientRowsPerPage, setClientRowsPerPage] = useState(25);
 
   const fetchReport = async () => {
     setLoading(true);
@@ -194,6 +198,9 @@ export default function AttendanceReportView() {
     fetchReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNumber, pageSize, fromDate, toDate, statusFilter]);
+
+
+
 
   // Filter today's records specifically for Today's Table and Today's Summary Cards
   const todayRecords = useMemo(() => {
@@ -441,6 +448,28 @@ export default function AttendanceReportView() {
     });
   }, [todayRecords, searchQuery, filterValues, statusFilter]);
 
+  // Reset client page when any filter changes
+  useEffect(() => {
+    setClientPage(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromDate, toDate, statusFilter, searchQuery, JSON.stringify(filterValues)]);
+
+  // Reset client page when filters change
+  const handleClientPageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setClientPage(newPage);
+  };
+
+  const handleClientRowsPerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setClientRowsPerPage(parseInt(e.target.value, 10));
+    setClientPage(0);
+  };
+
+  // Paginated slice of client-filtered rows
+  const paginatedRows = useMemo(() => {
+    const start = clientPage * clientRowsPerPage;
+    return tableRows.slice(start, start + clientRowsPerPage);
+  }, [tableRows, clientPage, clientRowsPerPage]);
+
   // Compute dynamic Weekly Trend Chart Data for the last 7 days leading up to today
   const trendData: TrendBarData[] = useMemo(() => {
     const days: TrendBarData[] = [];
@@ -639,7 +668,7 @@ export default function AttendanceReportView() {
         {!loading && (
           <>
             <EmployeeAttendanceTable
-              records={tableRows}
+              records={paginatedRows}
               onRowClick={(row) => {
                 const origRecord = records.find((r) => r._id === row.id);
                 if (origRecord) detailDialog.open(origRecord);
@@ -647,15 +676,15 @@ export default function AttendanceReportView() {
             />
 
             {/* Pagination Controls */}
-            {totalRecords > 0 && (
+            {tableRows.length > 0 && (
               <TablePagination
                 component="div"
-                count={totalRecords}
-                page={pageNumber - 1}
-                onPageChange={(_, newPage) => handlePageChange(newPage + 1)}
-                rowsPerPage={pageSize}
-                onRowsPerPageChange={(e) => handleRowsPerPageChange(parseInt(e.target.value, 10))}
-                rowsPerPageOptions={Array.from(new Set([10, 25, 50, 100, pageSize])).sort((a, b) => a - b)}
+                count={tableRows.length}
+                page={clientPage}
+                onPageChange={handleClientPageChange}
+                rowsPerPage={clientRowsPerPage}
+                onRowsPerPageChange={handleClientRowsPerPageChange}
+                rowsPerPageOptions={[10, 25, 50, 100]}
                 sx={{ mt: 2, color: "#64748B" }}
               />
             )}

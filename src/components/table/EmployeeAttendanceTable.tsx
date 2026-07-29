@@ -102,7 +102,7 @@ export default function EmployeeAttendanceTable({
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1rem" }}>
-          Employee Attendance — Today
+          Employee Attendance
         </Typography>
         <Button
           onClick={handleCsvExport}
