@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserAvatar } from "../../store/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -17,186 +17,81 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import AddIcon from "@mui/icons-material/Add";
-import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
-
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
-import StarOutlinedIcon from "@mui/icons-material/StarOutlined";
 import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
-import CloseIcon from "@mui/icons-material/Close";
-import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 
 import type { RootState } from "../../store/rootReducer";
 import { paths } from "../../routes/paths";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
-import ConfirmDialog from "../../components/modal/ConfirmDialog";
-import { useDialog } from "../../hooks/useDialog";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
-import EmergencyContactDialog from "./components/EmergencyContactDialog";
 import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
-  addBankAccount,
-  deleteBankAccount,
-  getBankAccounts,
-  uploadDocument,
-  getEmployeeDocuments,
-  getDownloadUrl,
   getEmployeeCompleteProfile,
   getLoggedInEmployeeProfile,
+  getBankAccounts,
+  getEmployeeDocuments,
   uploadSelfAvatar,
   uploadEmployeeAvatar,
   type AvatarCropParams,
-  type AddBankAccountRequest,
   type BankAccount,
   type EmployeeDocument,
   type CompleteProfileEmployee,
-  type EmergencyContact,
   type CompleteProfileCompletion,
   type CompleteProfileSummary,
 } from "../../api/employee.api";
 
-import ApplyLeaveDialog from "../leave/leave-apply/ApplyLeaveDialog";
-import { applyLeaveRequest, getMyLeaveRequestsRequest, getMyLeaveBalancesRequest } from "../../store/leave";
+// Lazy load the tab components
+const OverviewTab = lazy(() => import("./components/OverviewTab"));
+const PersonalTab = lazy(() => import("./components/PersonalTab"));
+const DocumentsTab = lazy(() => import("./components/DocumentsTab"));
+const PayrollTab = lazy(() => import("./components/PayrollTab"));
+const LeaveTab = lazy(() => import("./components/LeaveTab"));
 
 interface ProfileViewProps {
   targetEmployeeId?: string;
 }
 
-function ProfileView({ targetEmployeeId }: ProfileViewProps) {
+export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const { showSnackbar } = useSnackbar();
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
+
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;
   const isViewingOther = !!resolvedTargetId;
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [applyLeaveDialogOpen, setApplyLeaveDialogOpen] = useState(false);
-  const [localUserLeaves, setLocalUserLeaves] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem("hrms_local_user_leaves");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
 
-  const { myRequests: myLeaveRequests = [], leaveTypes = [], balances = [] } = useSelector(
-    (state: RootState) => state.leave ?? { myRequests: [], leaveTypes: [], balances: [] }
-  );
-
-  useEffect(() => {
-    dispatch(getMyLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
-    dispatch(getMyLeaveBalancesRequest(new Date().getFullYear()));
-  }, [dispatch]);
-
-  const handleApplyLeaveSubmit = useCallback((data: any) => {
-    dispatch(applyLeaveRequest(data));
-
-    const selectedTypeObj = leaveTypes.find((lt: any) => lt._id === data.leaveTypeId);
-    const typeName = selectedTypeObj?.name || "Emergency Leave";
-
-    let diffDays = 1;
-    if (data.fromDate && data.toDate) {
-      const f = new Date(data.fromDate);
-      const t = new Date(data.toDate);
-      const ms = Math.abs(t.getTime() - f.getTime());
-      diffDays = Math.ceil(ms / (1000 * 60 * 60 * 24)) + 1;
-    }
-
-    const newLocalLeave = {
-      _id: `local-leave-${Date.now()}`,
-      employeeId: {
-        _id: user?.employeeId || "emp-me",
-        firstName: user?.firstName || "My",
-        lastName: user?.lastName || "Profile",
-        avatarUrl: user?.avatarUrl,
-      },
-      leaveTypeId: {
-        _id: data.leaveTypeId,
-        name: typeName,
-        code: selectedTypeObj?.code || "EL",
-      },
-      fromDate: data.fromDate,
-      toDate: data.toDate,
-      totalDays: diffDays,
-      reason: data.reason || "Emergency Leave",
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-    };
-
-    setLocalUserLeaves((prev) => {
-      const updatedLocal = [newLocalLeave, ...prev];
-      try {
-        localStorage.setItem("hrms_local_user_leaves", JSON.stringify(updatedLocal));
-
-        // Also append to global team pending leaves for Leave Management tab
-        const globalPending = JSON.parse(localStorage.getItem("hrms_all_pending_leaves") || "[]");
-        localStorage.setItem("hrms_all_pending_leaves", JSON.stringify([newLocalLeave, ...globalPending]));
-      } catch (e) {
-        console.error("Failed to save local leave request", e);
-      }
-      return updatedLocal;
-    });
-
-    setApplyLeaveDialogOpen(false);
-    showSnackbar(`Successfully applied for ${typeName}`, "success");
-    dispatch(getMyLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
-  }, [dispatch, leaveTypes, user, showSnackbar]);
-  const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js", "AWS"]);
-  const [addSkillOpen, setAddSkillOpen] = useState(false);
-  const [newSkillInput, setNewSkillInput] = useState("");
-  const [aiInsightsDismissed, setAiInsightsDismissed] = useState(false);
-
-  const [bankDialogOpen, setBankDialogOpen] = useState(false);
-  const [bankSubmitting, setBankSubmitting] = useState(false);
-  const [bankError, setBankError] = useState<string | null>(null);
-  const [bankName, setBankName] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [ifscCode, setIfscCode] = useState("");
-  const [accountType, setAccountType] = useState<AddBankAccountRequest["accountType"]>("SALARY");
-  const [isPrimary, setIsPrimary] = useState(false);
+  // Bank & documents shared state
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [bankAccountsLoading, setBankAccountsLoading] = useState(true);
+  const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(true);
+  const [missingDocTypes, setMissingDocTypes] = useState<string[]>([]);
 
   const [profileCompletion, setProfileCompletion] = useState<CompleteProfileCompletion | null>(null);
   const [_profileSummary, setProfileSummary] = useState<CompleteProfileSummary | null>(null);
-  const [bankDeleteTarget, setBankDeleteTarget] = useState<BankAccount | null>(null);
-  const [bankDeleting, setBankDeleting] = useState(false);
   const [empProfile, setEmpProfile] = useState<CompleteProfileEmployee | null>(null);
-  const [missingDocTypes, setMissingDocTypes] = useState<string[]>([]);
 
   // ── Avatar Upload Dialog ──────────────────────────────────────────────────
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -250,7 +145,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
   // ── Edit Personal Details dialog ──────────────────────────────────────────
   const [editProfileOpen, setEditProfileOpen] = useState(false);
-
   const [editPhone, setEditPhone] = useState("");
   const [editDob, setEditDob] = useState("");
   const [editGender, setEditGender] = useState("");
@@ -259,12 +153,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const [editState, setEditState] = useState("");
   const [editZip, setEditZip] = useState("");
   const [editCountryCode, setEditCountryCode] = useState("IN");
-
-  // ── Emergency Contacts ────────────────────────────────────────────────────
-  const ecDialog = useDialog<void>();
-  const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
-  const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);
-  const [ecSuccessMessage, setEcSuccessMessage] = useState("");
 
   const loadProfileData = async (cancelled = false) => {
     if (!employeeId && isViewingOther) {
@@ -340,7 +228,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     };
   }, [employeeId, isViewingOther, user?.id, user?.employeeId]);
 
-  // Shared self-update hook for personal details
   const onProfileUpdated = useCallback(async () => {
     await loadProfileData();
     showSnackbar("Personal details and address updated successfully", "success");
@@ -348,165 +235,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   }, [showSnackbar]);
 
   const personalDetailsUpdater = useProfileSelfUpdate(onProfileUpdated);
-
-  // Shared self-update hook for emergency contacts
-  const onEcUpdated = useCallback(async () => {
-    await loadProfileData();
-    ecDialog.close();
-    setEcDeleteConfirmOpen(false);
-    setEcDeleteTarget(null);
-    showSnackbar(ecSuccessMessage, "success");
-  }, [ecDialog, ecSuccessMessage, showSnackbar]);
-
-  const ecUpdater = useProfileSelfUpdate(onEcUpdated);
-
-  const resetBankForm = () => {
-    setBankName("");
-    setAccountNumber("");
-    setIfscCode("");
-    setAccountType("SALARY");
-    setIsPrimary(false);
-    setBankError(null);
-  };
-
-  const handleAddBankAccount = async () => {
-    if (!bankName.trim() || !accountNumber.trim() || !ifscCode.trim()) return;
-
-    setBankSubmitting(true);
-    setBankError(null);
-
-    try {
-      const response = await addBankAccount({
-        bankName: bankName.trim(),
-        accountNumber: accountNumber.trim(),
-        ifscCode: ifscCode.trim().toUpperCase(),
-        accountType,
-        isPrimary,
-      });
-
-      if (!response.succeeded) {
-        setBankError(response.message || "Failed to add bank account");
-        setBankSubmitting(false);
-        return;
-      }
-
-      showSnackbar("Bank account added successfully", "success");
-      setBankDialogOpen(false);
-      resetBankForm();
-      await loadProfileData();
-    } catch (err: unknown) {
-      setBankError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBankSubmitting(false);
-    }
-  };
-
-  /* ─── Document Upload ─── */
-
-  const DOCUMENT_TYPES = [
-    { value: "PAN", label: "PAN Card" },
-    { value: "AADHAAR", label: "Aadhaar Card" },
-    { value: "PASSPORT", label: "Passport" },
-    { value: "DRIVING_LICENSE", label: "Driving License" },
-    { value: "OFFER_LETTER", label: "Offer Letter" },
-    { value: "RESUME", label: "Resume" },
-    { value: "DEGREE", label: "Degree" },
-    { value: "EXPERIENCE", label: "Experience Letter" },
-    { value: "OTHER", label: "Other" },
-  ];
-
-  const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
-  const [documentsLoading, setDocumentsLoading] = useState(true);
-  const [docUploadDialogOpen, setDocUploadDialogOpen] = useState(false);
-  const [docUploading, setDocUploading] = useState(false);
-
-  const [docUploadError, setDocUploadError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedDocType, setSelectedDocType] = useState("PAN");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const resetDocUploadForm = () => {
-    setSelectedFile(null);
-    setSelectedDocType("PAN");
-    setDocUploadError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const handleDocDownload = async (docId: string) => {
-    try {
-      const res = await getDownloadUrl(docId);
-      if (res.succeeded && res.data.downloadUrl) {
-        window.open(res.data.downloadUrl, "_blank");
-      }
-    } catch {
-      // silently ignore
-    }
-  };
-
-  const ALLOWED_FILE_TYPES = [".jpg", ".jpeg", ".pdf"];
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    if (file) {
-      const ext = "." + file.name.split(".").pop()?.toLowerCase();
-      if (!ALLOWED_FILE_TYPES.includes(ext)) {
-        setDocUploadError("Only JPG, JPEG, and PDF files are allowed.");
-        setSelectedFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        return;
-      }
-    }
-    setSelectedFile(file);
-    setDocUploadError(null);
-  };
-
-  const handleUploadDocument = async () => {
-    if (!selectedFile) return;
-
-    setDocUploading(true);
-    setDocUploadError(null);
-
-    try {
-      const res = await uploadDocument(selectedFile, selectedDocType);
-
-      if (!res.succeeded) {
-        setDocUploadError(res.message || "Failed to upload document");
-        setDocUploading(false);
-        return;
-      }
-
-      showSnackbar("Document uploaded — awaiting HR verification", "success");
-      setDocUploadDialogOpen(false);
-      resetDocUploadForm();
-      await loadProfileData();
-    } catch (err: unknown) {
-      setDocUploadError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setDocUploading(false);
-    }
-  };
-
-  const handleDeleteBankAccount = async () => {
-    if (!bankDeleteTarget) return;
-    setBankDeleting(true);
-    setBankError(null);
-    try {
-      const bankId = bankDeleteTarget.id || bankDeleteTarget._id || "";
-      const res = await deleteBankAccount(bankDeleteTarget.employeeId || user?.employeeId || "", bankId);
-      if (res.succeeded) {
-        setBankAccounts((prev) => prev.filter((a) => (a.id || a._id) !== bankId));
-        setBankDeleteTarget(null);
-        showSnackbar("Bank account deleted successfully", "success");
-        await loadProfileData();
-      } else {
-        setBankError(res.message || "Failed to delete bank account");
-      }
-    } catch (err: unknown) {
-      setBankError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBankDeleting(false);
-    }
-  };
 
   const handleOpenEditProfile = () => {
     setEditPhone(empProfile?.phone || "");
@@ -541,19 +269,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     });
   };
 
-  const handleAddEmergencyContact = async (contact: EmergencyContact) => {
-    const current = empProfile?.emergencyContacts ?? [];
-    setEcSuccessMessage("Emergency contact added successfully");
-    await ecUpdater.submit({ emergencyContacts: [...current, contact] });
-  };
-
-  const handleDeleteEmergencyContact = async () => {
-    if (ecDeleteTarget === null) return;
-    const updated = (empProfile?.emergencyContacts ?? []).filter((_, i) => i !== ecDeleteTarget);
-    setEcSuccessMessage("Emergency contact removed successfully");
-    await ecUpdater.submit({ emergencyContacts: updated });
-  };
-
   const getRoleLabel = (role: string) => {
     const roleLabels: Record<string, string> = {
       ORG_ADMIN: "Org Admin",
@@ -568,17 +283,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     return roleLabels[role] || role;
   };
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "—";
-    const date = new Date(dateStr);
-    return isNaN(date.getTime())
-      ? "—"
-      : date.toLocaleString(undefined, {
-          dateStyle: "medium",
-          timeStyle: "short",
-        });
-  };
-
   const displayFirstName = isViewingOther ? empProfile?.firstName : (user?.firstName || empProfile?.firstName);
   const displayLastName = isViewingOther ? empProfile?.lastName : (user?.lastName || empProfile?.lastName);
   const displayEmail = isViewingOther ? empProfile?.email : (user?.email || empProfile?.email);
@@ -591,7 +295,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
       <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflowX: "hidden", backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
         
         {/* Top Header & Breadcrumbs Bar */}
-        <Box sx={{ mb: 2.5, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+        <Box sx={{ mb: 2.5, display: "flex", alignItems: "center", justify: "space-between", flexWrap: "wrap", gap: 2 }}>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.02em", mb: 0.5 }}>
               People Hub
@@ -617,12 +321,9 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             startIcon={<ArrowBackOutlinedIcon sx={{ fontSize: "18px !important" }} />}
             onClick={() => navigate(paths.employees.list)}
             sx={{
-              textTransform: "none",
-              fontWeight: 600,
               color: "#475569",
               backgroundColor: "#FFFFFF",
               border: "1px solid #E2E8F0",
-              borderRadius: "10px",
               px: 2,
               py: 0.8,
               boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
@@ -640,10 +341,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           sx={{
             p: { xs: 2, sm: 2.5, md: 3 },
             mb: 3,
-            borderRadius: "16px",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-            border: "1px solid #E2E8F0",
-            backgroundColor: "#FFFFFF",
             width: "100%",
             boxSizing: "border-box",
           }}
@@ -666,7 +364,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 {displayFirstName?.[0]?.toUpperCase() ?? "P"}
                 {displayLastName?.[0]?.toUpperCase() ?? "S"}
               </Avatar>
-              {/* Only show upload button if user has an employee record or viewing another employee */}
               {(user?.employeeId || isViewingOther) && (
                 <IconButton
                   size="small"
@@ -691,7 +388,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
             {/* Employee Title, Name & Meta Badges */}
             <Box sx={{ flexGrow: 1, minWidth: 0, textAlign: { xs: "center", md: "left" } }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1.5, mb: 0.5, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justify: { xs: "center", md: "flex-start" }, gap: 1.5, mb: 0.5, flexWrap: "wrap" }}>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
                   {displayName}
                 </Typography>
@@ -701,14 +398,13 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 {empProfile?.designationId?.name || displayRole} · {empProfile?.departmentId?.name || "Engineering"}
               </Typography>
 
-              {/* Status Badges */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 1, mb: 2, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justify: { xs: "center", md: "flex-start" }, gap: 1, mb: 2, flexWrap: "wrap" }}>
                 <Chip label="Active" size="small" sx={{ backgroundColor: "#DCFCE7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
                 <Chip label={(empProfile as any)?.band || "L5"} size="small" sx={{ backgroundColor: "#F1F5F9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
               </Box>
 
               {/* Key Meta Info */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", md: "flex-start" }, gap: 2, flexWrap: "wrap", color: "#64748B", fontSize: "0.825rem", wordBreak: "break-word" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justify: { xs: "center", md: "flex-start" }, gap: 2, flexWrap: "wrap", color: "#64748B", fontSize: "0.825rem", wordBreak: "break-word" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
                   <BadgeOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
                   <span>{empProfile?.employeeCode || "NX-001"}</span>
@@ -723,7 +419,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
                   <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span>{String((empProfile?.currentAddress as any)?.city || "Bangalore")}</span>
+                  <span>{String(empProfile?.currentAddress?.city || "Bangalore")}</span>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
                   <CalendarMonthOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
@@ -734,8 +430,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   <span>Reports to {empProfile?.managerId ? `${empProfile.managerId.firstName} ${empProfile.managerId.lastName}` : "Arjun Mehta"}</span>
                 </Box>
               </Box>
-
-
             </Box>
 
             {/* Top Right Header Action Buttons */}
@@ -747,9 +441,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 sx={{
                   borderColor: "#CBD5E1",
                   color: "#334155",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: "10px",
                   px: 2,
                   backgroundColor: "#FFFFFF",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
@@ -765,9 +456,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 sx={{
                   background: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
                   color: "#FFFFFF",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: "10px",
                   px: 2,
                   boxShadow: "0 4px 12px rgba(139, 92, 246, 0.25)",
                   "&:hover": { background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)" },
@@ -781,9 +469,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 sx={{
                   borderColor: "#E2E8F0",
                   color: "#475569",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: "10px",
                   px: 2,
                   "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
                 }}
@@ -797,7 +482,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           </Box>
         </Card>
 
-        {/* Key KPI Metrics Ribbon (8 Stat Cards - Responsive Grid) */}
+        {/* Key KPI Metrics Ribbon */}
         <Grid container spacing={1.5} sx={{ mb: 3, width: "100%" }}>
           {[
             { title: "94%", label: "Performance", sub: "Q2 2025", icon: <TrendingUpOutlinedIcon sx={{ fontSize: 18, color: "#4F46E5" }} /> },
@@ -819,9 +504,6 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 sx={{
                   p: 1.8,
                   borderRadius: "14px",
-                  border: "1px solid #E2E8F0",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-                  backgroundColor: "#FFFFFF",
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
@@ -831,7 +513,7 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)", transform: "translateY(-2px)" }
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.8 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justify: "space-between", mb: 0.8 }}>
                   {metric.icon}
                 </Box>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.2rem", lineHeight: 1.2 }}>
@@ -887,1042 +569,91 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           </Tabs>
         </Box>
 
-        {/* Tab 1: OVERVIEW MAIN 2-COLUMN DASHBOARD */}
-        {activeTab === "overview" && (
-          <Grid container spacing={3} sx={{ width: "100%" }}>
-            {/* Left Column (~75% Width on lg screens, 100% on md and below) */}
-            <Grid size={{ xs: 12, lg: 8.5 }}>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                
-                {/* 1. Contact Information & Employment Details Grid */}
-                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
-                  <Grid container spacing={3}>
-                    {/* Sub-card 1: Contact Information */}
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
-                        Contact Information
-                      </Typography>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
-                            <EmailOutlinedIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                          <Box>
-                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                              EMAIL
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
-                              {displayEmail || "priya.sharma@nexus.hr"}
-                            </Typography>
-                          </Box>
-                        </Box>
-
-                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
-                            <PhoneOutlinedIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                          <Box>
-                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                              PHONE
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
-                              {empProfile?.phone || "+91 98765 43210"}
-                            </Typography>
-                          </Box>
-                        </Box>
-
-                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
-                            <LocationOnOutlinedIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                          <Box>
-                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                              LOCATION
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
-                              {String((empProfile?.currentAddress as any)?.city || "Bangalore")}
-                            </Typography>
-                          </Box>
-                        </Box>
-
-                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                          <IconButton size="small" sx={{ backgroundColor: "#F1F5F9", color: "#64748B", p: 0.8 }}>
-                            <LanguageOutlinedIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                          <Box>
-                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                              WORK MODE
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
-                              {String((empProfile as any)?.workMode || "Hybrid")}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-                    </Grid>
-
-                    {/* Sub-card 2: Employment Details */}
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
-                        Employment Details
-                      </Typography>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                        {[
-                          { label: "Employee Code", value: empProfile?.employeeCode || "NX-001" },
-                          { label: "System Profile ID", value: String(displayId || "—") },
-                          { label: "Department", value: empProfile?.departmentId?.name || "Engineering" },
-                          { label: "Grade / Band", value: String((empProfile as any)?.band || "L5") },
-                          { label: "Business Unit", value: "Technology" },
-                          { label: "Cost Center", value: "CC-ENG-01" },
-                          { label: "Employment Type", value: "Full-time Permanent" },
-                          { label: "Account Created", value: formatDate(user?.createdAt) },
-                        ].map((row, idx) => (
-                          <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <Typography variant="body2" sx={{ color: "#64748B" }}>{row.label}</Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{row.value}</Typography>
-                          </Box>
-                        ))}
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Card>
-
-                {/* 2. Reporting Structure (Org Hierarchy Tree) */}
-                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
-                    Reporting Structure
-                  </Typography>
-
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-                    {/* Node 1: CTO */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar sx={{ width: 40, height: 40, backgroundColor: "#EEF2FF", color: "#4F46E5", fontWeight: 700, fontSize: "0.85rem" }}>
-                        CTO
-                      </Avatar>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 600, display: "block" }}>
-                          VP Engineering
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <ChevronRightIcon sx={{ color: "#CBD5E1" }} />
-
-                    {/* Node 2: Manager */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar sx={{ width: 40, height: 40, backgroundColor: "#F3E8FF", color: "#7C3AED", fontWeight: 700, fontSize: "0.85rem" }}>
-                        AM
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
-                          Arjun Mehta
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
-                          Manager
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <ChevronRightIcon sx={{ color: "#CBD5E1" }} />
-
-                    {/* Node 3: Employee */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar sx={{ width: 40, height: 40, backgroundColor: "#6366F1", color: "#FFFFFF", fontWeight: 700, fontSize: "0.85rem" }}>
-                        {displayFirstName?.[0]?.toUpperCase() ?? "P"}
-                        {displayLastName?.[0]?.toUpperCase() ?? "S"}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
-                          {displayFirstName || "Priya"}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#6366F1", fontWeight: 600, display: "block" }}>
-                          You
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Card>
-
-                {/* 3. Assigned Policies (2x3 Grid) */}
-                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
-                    Assigned Policies
-                  </Typography>
-
-                  <Grid container spacing={2}>
-                    {[
-                      { cat: "Leave Policy", title: "Annual Leave Policy v2.1" },
-                      { cat: "Attendance Policy", title: "Attendance & Shift Policy v1.4" },
-                      { cat: "Payroll Policy", title: "Payroll & Compensation v2.3" },
-                      { cat: "WFH Policy", title: "Work From Home Policy v3.0" },
-                      { cat: "Holiday Calendar", title: "India — Karnataka 2025" },
-                      { cat: "Performance Policy", title: "Performance Management v1.2" },
-                    ].map((pol, idx) => (
-                      <Grid key={idx} size={{ xs: 12, sm: 6 }}>
-                        <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                          <ArticleOutlinedIcon sx={{ color: "#6366F1", fontSize: 20, mt: 0.2 }} />
-                          <Box>
-                            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block", fontSize: "0.72rem" }}>
-                              {pol.cat}
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
-                              {pol.title}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Card>
-
-                {/* 4. Skills & Expertise */}
-                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
-                    Skills & Expertise
-                  </Typography>
-
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, flexWrap: "wrap" }}>
-                    {skills.map((skill, idx) => (
-                      <Chip
-                        key={idx}
-                        label={skill}
-                        sx={{
-                          backgroundColor: "#EEF2FF",
-                          color: "#4F46E5",
-                          fontWeight: 600,
-                          borderRadius: "8px",
-                          px: 0.5,
-                        }}
-                      />
-                    ))}
-                    <Chip
-                      icon={<AddIcon sx={{ fontSize: "16px !important" }} />}
-                      label="+ Add Skill"
-                      onClick={() => setAddSkillOpen(true)}
-                      sx={{
-                        backgroundColor: "#F1F5F9",
-                        color: "#475569",
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        "&:hover": { backgroundColor: "#E2E8F0" },
-                      }}
-                    />
-                  </Box>
-                </Card>
-
-                {/* 5. Recent Activity Feed */}
-                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
-                    Recent Activity
-                  </Typography>
-
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {[
-                      { icon: <TrendingUpOutlinedIcon sx={{ color: "#4F46E5", fontSize: 18 }} />, text: "Annual performance review completed — Score: 94%", date: "Jun 1, 2025" },
-                      { icon: <WorkspacePremiumOutlinedIcon sx={{ color: "#10B981", fontSize: 18 }} />, text: "Salary revision approved — +12% increment", date: "Mar 15, 2025" },
-                      { icon: <StarOutlinedIcon sx={{ color: "#8B5CF6", fontSize: 18 }} />, text: "Promoted to Senior Software Engineer", date: "Jan 10, 2025" },
-                      { icon: <CalendarMonthOutlinedIcon sx={{ color: "#0284C7", fontSize: 18 }} />, text: "Annual leave — 5 days (approved by Arjun Mehta)", date: "Nov 5, 2024" },
-                    ].map((act, idx) => (
-                      <Box key={idx} sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                        <IconButton size="small" sx={{ backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", p: 0.8 }}>
-                          {act.icon}
-                        </IconButton>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
-                            {act.text}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#94A3B8" }}>
-                            {act.date}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                </Card>
-
-                {/* 6. Related Employees / Peers in Engineering */}
-                <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)", backgroundColor: "#FFFFFF" }}>
-                  <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", mb: 2 }}>
-                    PEERS IN ENGINEERING
-                  </Typography>
-
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {[
-                      { initial: "AM", name: "Arjun Mehta", role: "Engineering Director", color: "#818CF8" },
-                      { initial: "RD", name: "Rohan Das", role: "DevOps Engineer", color: "#F97316" },
-                    ].map((peer, idx) => (
-                      <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Avatar sx={{ width: 38, height: 38, backgroundColor: peer.color, color: "#FFFFFF", fontWeight: 700, fontSize: "0.85rem" }}>
-                          {peer.initial}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
-                            {peer.name}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
-                            {peer.role}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                </Card>
-
-              </Box>
-            </Grid>
-
-            {/* Right Column Sidebar (~25% Width - AI Assistant & Actions) */}
-            <Grid size={{ xs: 12, lg: 3.5 }}>
-              {!aiInsightsDismissed && (
-                <Card
-                  sx={{
-                    p: 3,
-                    borderRadius: "16px",
-                    border: "1px solid #E2E8F0",
-                    boxShadow: "0 4px 20px rgba(139, 92, 246, 0.08)",
-                    backgroundColor: "#FFFFFF",
-                    position: "sticky",
-                    top: 24,
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 20 }} />
-                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "0.95rem" }}>
-                        AI Insights
-                      </Typography>
-                    </Box>
-                    <IconButton size="small" onClick={() => setAiInsightsDismissed(true)} sx={{ color: "#94A3B8" }}>
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-
-                  {/* AI Summary Highlight Box */}
-                  <Box
-                    sx={{
-                      p: 2,
-                      borderRadius: "12px",
-                      backgroundColor: "#F5F3FF",
-                      border: "1px solid #DDD6FE",
-                      mb: 2.5,
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ color: "#5B21B6", fontWeight: 500, lineHeight: 1.5, fontSize: "0.85rem" }}>
-                      Top performer — 94% score. Low attrition risk. Promotion-ready based on tenure and trajectory.
-                    </Typography>
-                  </Box>
-
-                  {/* Quick AI Action Trigger Buttons */}
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
-                    {[
-                      { icon: <StarOutlinedIcon sx={{ fontSize: 16 }} />, label: "Generate Review" },
-                      { icon: <ArticleOutlinedIcon sx={{ fontSize: 16 }} />, label: "Generate Promotion Summary" },
-                      { icon: <SchoolOutlinedIcon sx={{ fontSize: 16 }} />, label: "Recommend Training" },
-                      { icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />, label: "Schedule 1:1" },
-                      { icon: <FavoriteBorderOutlinedIcon sx={{ fontSize: 16 }} />, label: "Send Recognition" },
-                    ].map((btn, idx) => (
-                      <Button
-                        key={idx}
-                        fullWidth
-                        startIcon={btn.icon}
-                        variant="outlined"
-                        onClick={() => showSnackbar(`AI Action "${btn.label}" initiated`, "info")}
-                        sx={{
-                          justify: "flex-start",
-                          textTransform: "none",
-                          fontWeight: 600,
-                          fontSize: "0.825rem",
-                          color: "#475569",
-                          borderColor: "#E2E8F0",
-                          borderRadius: "10px",
-                          py: 1,
-                          backgroundColor: "#F8FAFC",
-                          "&:hover": { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE", color: "#4F46E5" }
-                        }}
-                      >
-                        {btn.label}
-                      </Button>
-                    ))}
-                  </Box>
-                </Card>
-              )}
-            </Grid>
-          </Grid>
-        )}
-
-        {/* Tab 2: PERSONAL DETAILS TAB */}
-        {activeTab === "personal" && (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
-                  <BadgeOutlinedIcon sx={{ color: "#4F46E5" }} />
-                  Personal Information
-                </Typography>
-                {!isViewingOther && (
-                  <Button size="small" startIcon={<EditOutlinedIcon />} onClick={handleOpenEditProfile} sx={{ textTransform: "none", color: "#4F46E5", fontWeight: 600 }}>
-                    Edit Details
-                  </Button>
-                )}
-              </Box>
-              <Grid container spacing={2.5}>
-                <Grid size={6}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>First Name</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayFirstName || "—"}</Typography>
-                </Grid>
-                <Grid size={6}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Last Name</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayLastName || "—"}</Typography>
-                </Grid>
-                <Grid size={6}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Email Address</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayEmail || "—"}</Typography>
-                </Grid>
-                <Grid size={6}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Phone Number</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{empProfile?.phone || "—"}</Typography>
-                </Grid>
-                <Grid size={6}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Gender</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{empProfile?.gender || "—"}</Typography>
-                </Grid>
-                <Grid size={6}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Date of Birth</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
-                    {empProfile?.dateOfBirth ? new Date(empProfile.dateOfBirth).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" }) : "—"}
-                  </Typography>
-                </Grid>
-                <Grid size={12}>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Current Address</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
-                    {empProfile?.currentAddress?.addressLine1 ? (
-                      `${empProfile.currentAddress.addressLine1}, ${empProfile.currentAddress.city || ""}, ${empProfile.currentAddress.state || ""}, ${empProfile.currentAddress.countryCode || ""} ${empProfile.currentAddress.zip || ""}`
-                    ) : "—"}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Card>
-
-            {/* Emergency Contacts Card */}
-            <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
-                  <ContactEmergencyOutlinedIcon sx={{ color: "#4F46E5" }} />
-                  Emergency Contacts
-                </Typography>
-                {!isViewingOther && (
-                  <Button size="small" startIcon={<AddIcon />} onClick={() => ecDialog.open()} sx={{ textTransform: "none", color: "#4F46E5", fontWeight: 600 }}>
-                    Add Contact
-                  </Button>
-                )}
-              </Box>
-
-              {(empProfile?.emergencyContacts ?? []).length === 0 ? (
-                <Typography variant="body2" sx={{ color: "#94A3B8", textAlign: "center", py: 2 }}>
-                  No emergency contacts added yet
-                </Typography>
-              ) : (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                  {(empProfile!.emergencyContacts!).map((ec, idx) => (
-                    <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{ec.name}</Typography>
-                        <Typography variant="caption" sx={{ color: "#64748B" }}>{ec.relationship} · {ec.phone}</Typography>
-                      </Box>
-                      {!isViewingOther && (
-                        <IconButton size="small" onClick={() => { setEcDeleteTarget(idx); setEcDeleteConfirmOpen(true); }} sx={{ color: "#94A3B8" }}>
-                          <DeleteOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </Card>
-          </Box>
-        )}
-
-        {/* Tab 3: DOCUMENTS TAB */}
-        {activeTab === "documents" && (
-          <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
-                <DescriptionOutlinedIcon sx={{ color: "#4F46E5" }} />
-                Documents Management
-              </Typography>
-              {!isViewingOther && (
-                <Button variant="contained" startIcon={<CloudUploadOutlinedIcon />} onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }} sx={{ textTransform: "none", fontWeight: 600, backgroundColor: "#4F46E5", borderRadius: 2 }}>
-                  Upload Document
-                </Button>
-              )}
-            </Box>
-            {(missingDocTypes || []).length > 0 && (
-              <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
-                Missing required verification documents: <strong>{(missingDocTypes || []).join(", ")}</strong>
-              </Alert>
-            )}
-            {documentsLoading ? (
-              <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
-            ) : documents.length === 0 ? (
-              <Typography variant="body2" sx={{ color: "#64748B", textAlign: "center", py: 3 }}>No documents uploaded yet.</Typography>
-            ) : (
-              <Grid container spacing={2}>
-                {documents.map((doc, index) => (
-                  <Grid key={doc.id || doc._id || index} size={{ xs: 12, sm: 6 }}>
-                    <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{doc.fileName}</Typography>
-                        <Chip label={doc.documentType} size="small" variant="outlined" sx={{ mt: 0.5, fontSize: "0.7rem" }} />
-                      </Box>
-                      <Button size="small" onClick={() => handleDocDownload(doc.id || doc._id)} sx={{ color: "#4F46E5" }}>
-                        <DownloadOutlinedIcon fontSize="small" />
-                      </Button>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
+        {/* Tab content screens wrapped in Suspense for optimization */}
+        <Suspense fallback={
+          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", display: "flex", justify: "center", alignItems: "center", minHeight: 200 }}>
+            <CircularProgress sx={{ color: "#4F46E5" }} />
           </Card>
-        )}
+        }>
+          {activeTab === "overview" && (
+            <OverviewTab
+              empProfile={empProfile}
+              displayEmail={displayEmail || ""}
+              displayFirstName={displayFirstName || ""}
+              displayLastName={displayLastName || ""}
+              displayId={displayId || ""}
+              user={user}
+              showSnackbar={showSnackbar}
+            />
+          )}
 
-        {/* Tab 4: PAYROLL & BANK ACCOUNTS TAB */}
-        {activeTab === "payroll" && (
-          <Card sx={{ p: 3.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
-                <AccountBalanceOutlinedIcon sx={{ color: "#4F46E5" }} />
-                Bank Accounts
+          {activeTab === "personal" && (
+            <PersonalTab
+              empProfile={empProfile}
+              isViewingOther={isViewingOther}
+              displayFirstName={displayFirstName || ""}
+              displayLastName={displayLastName || ""}
+              displayEmail={displayEmail || ""}
+              handleOpenEditProfile={handleOpenEditProfile}
+              onRefreshProfileData={loadProfileData}
+              showSnackbar={showSnackbar}
+            />
+          )}
+
+          {activeTab === "documents" && (
+            <DocumentsTab
+              documents={documents}
+              missingDocTypes={missingDocTypes}
+              documentsLoading={documentsLoading}
+              isViewingOther={isViewingOther}
+              onRefreshProfileData={loadProfileData}
+              showSnackbar={showSnackbar}
+            />
+          )}
+
+          {activeTab === "payroll" && (
+            <PayrollTab
+              bankAccounts={bankAccounts}
+              bankAccountsLoading={bankAccountsLoading}
+              isViewingOther={isViewingOther}
+              employeeId={employeeId || null}
+              user={user}
+              onRefreshProfileData={loadProfileData}
+              showSnackbar={showSnackbar}
+            />
+          )}
+
+          {activeTab === "leave" && (
+            <LeaveTab
+              isViewingOther={isViewingOther}
+              user={user}
+            />
+          )}
+
+          {/* Generic Content Fallback for remaining/placeholder tabs */}
+          {!["overview", "personal", "documents", "payroll", "leave"].includes(activeTab) && (
+             <Card sx={{ p: 5, textAlign: "center" }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
+                {activeTab} Section
               </Typography>
-              {!isViewingOther && (
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetBankForm(); setBankDialogOpen(true); }} sx={{ textTransform: "none", fontWeight: 600, backgroundColor: "#4F46E5", borderRadius: 2 }}>
-                  Add Bank Account
-                </Button>
-              )}
-            </Box>
-            {bankAccountsLoading ? (
-              <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
-            ) : bankAccounts.length === 0 ? (
-              <Typography variant="body2" sx={{ color: "#64748B", textAlign: "center", py: 3 }}>No bank account added yet.</Typography>
-            ) : (
-              <Grid container spacing={2}>
-                {bankAccounts.map((acc, index) => (
-                  <Grid key={acc.id || acc._id || index} size={{ xs: 12, sm: 6 }}>
-                    <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{acc.bankName}</Typography>
-                        {!isViewingOther && (
-                          <IconButton size="small" onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}>
-                            <DeleteOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        )}
-                      </Box>
-                      <Typography variant="caption" sx={{ color: "#64748B", fontFamily: "monospace", display: "block", mt: 0.5 }}>{acc.accountNumber}</Typography>
-                      <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                        <Chip label={acc.ifscCode} size="small" variant="outlined" sx={{ fontSize: "0.7rem", fontFamily: "monospace" }} />
-                        <Chip label={acc.accountType} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
-                      </Box>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Card>
-        )}
-
-        {/* Tab: LEAVE MANAGEMENT & SELF-SERVICE TAB */}
-        {activeTab === "leave" && (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {/* Header & Primary Action */}
-            <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Box sx={{ width: 42, height: 42, borderRadius: "12px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <CalendarMonthOutlinedIcon />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.1rem" }}>
-                    My Leave & Time Off
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748B" }}>
-                    Apply for leaves, track remaining balances, and check request approval statuses.
-                  </Typography>
-                </Box>
-              </Box>
-
-              {!isViewingOther && (
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => setApplyLeaveDialogOpen(true)}
-                  sx={{
-                    backgroundColor: "#4F46E5",
-                    textTransform: "none",
-                    fontWeight: 700,
-                    borderRadius: "10px",
-                    px: 3,
-                    height: 40,
-                    boxShadow: "0 2px 6px rgba(79, 70, 229, 0.25)",
-                    "&:hover": { backgroundColor: "#4338CA" },
-                  }}
-                >
-                  Apply Leave
-                </Button>
-              )}
-            </Card>
-
-            {/* 4 Summary Stat Cards Row */}
-            <Grid container spacing={2.5}>
-              {/* Card 1: Apply Leave Quick Action */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Card
-                  onClick={() => !isViewingOther && setApplyLeaveDialogOpen(true)}
-                  sx={{
-                    p: 2.5,
-                    borderRadius: "16px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#FFFFFF",
-                    cursor: isViewingOther ? "default" : "pointer",
-                    transition: "all 0.15s ease",
-                    "&:hover": { borderColor: "#C7D2FE", transform: "translateY(-2px)" },
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                      QUICK APPLY
-                    </Typography>
-                    <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <AddIcon fontSize="small" />
-                    </Box>
-                  </Box>
-                  <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#4F46E5", mb: 0.5 }}>
-                    Apply Leave
-                  </Typography>
-                  <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-                    Submit new leave request
-                  </Typography>
-                </Card>
-              </Grid>
-
-              {/* Card 2: Pending Requests */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Card sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                      PENDING REQUESTS
-                    </Typography>
-                    <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#FEF3C7", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <AccessTimeOutlinedIcon fontSize="small" />
-                    </Box>
-                  </Box>
-                  <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#D97706", mb: 0.5 }}>
-                    {myLeaveRequests.filter((r: any) => (r?.status || "").toUpperCase() === "PENDING").length} Pending
-                  </Typography>
-                  <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-                    Awaiting manager review
-                  </Typography>
-                </Card>
-              </Grid>
-
-              {/* Card 3: Leave Balances */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Card sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                      LEAVE BALANCE
-                    </Typography>
-                    <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <CalendarMonthOutlinedIcon fontSize="small" />
-                    </Box>
-                  </Box>
-                  <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#16A34A", mb: 0.5 }}>
-                    20 Days
-                  </Typography>
-                  <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-                    Annual (12d) • Sick (5d) • Casual (3d)
-                  </Typography>
-                </Card>
-              </Grid>
-
-              {/* Card 4: Comp-Off Balance */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Card sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                      COMP-OFF BALANCE
-                    </Typography>
-                    <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EDE9FE", color: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <BadgeOutlinedIcon fontSize="small" />
-                    </Box>
-                  </Box>
-                  <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#7C3AED", mb: 0.5 }}>
-                    1.0 Day
-                  </Typography>
-                  <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-                    Available credit balance
-                  </Typography>
-                </Card>
-              </Grid>
-            </Grid>
-
-            {/* Personal Leave History Table */}
-            <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A", mb: 2 }}>
-                My Leave Applications & History
+              <Typography variant="body2" sx={{ color: "#64748B" }}>
+                Detailed {activeTab} information for {displayName} is loaded into this section.
               </Typography>
-
-              {(() => {
-                const combinedReqs = Array.from(
-                  new Map([...localUserLeaves, ...myLeaveRequests].map((r: any) => [r._id || r.reason || `${r.fromDate}_${r.toDate}`, r])).values()
-                );
-
-                if (combinedReqs.length === 0) {
-                  return (
-                    <Box sx={{ py: 4, textAlign: "center" }}>
-                      <Typography sx={{ color: "#64748B", fontSize: "14px" }}>
-                        No leave requests found. Click <strong>"Apply Leave"</strong> to submit your first leave application.
-                      </Typography>
-                    </Box>
-                  );
-                }
-
-                return (
-                  <Box sx={{ overflowX: "auto" }}>
-                    <Box component="table" sx={{ width: "100%", borderCollapse: "collapse" }}>
-                      <Box component="thead" sx={{ backgroundColor: "#F8FAFC" }}>
-                        <Box component="tr">
-                          <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>LEAVE TYPE</Box>
-                          <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>PERIOD</Box>
-                          <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>DAYS</Box>
-                          <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>REASON</Box>
-                          <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>STATUS</Box>
-                        </Box>
-                      </Box>
-                      <Box component="tbody">
-                        {(() => {
-                          let statusMap: Record<string, string> = {};
-                          try {
-                            const saved = localStorage.getItem("hrms_leave_status_map");
-                            if (saved) statusMap = JSON.parse(saved);
-                          } catch {}
-
-                          return combinedReqs.map((req: any) => {
-                            const rawStatus = (req?.status || "PENDING").toUpperCase();
-                            const status = (
-                              statusMap[req._id] ||
-                              statusMap[req.reason] ||
-                              statusMap[`${req.fromDate}_${req.toDate}`] ||
-                              rawStatus
-                            ).toUpperCase();
-
-                            return (
-                              <Box component="tr" key={req._id || req.reason} sx={{ borderBottom: "1px solid #F1F5F9", "&:hover": { backgroundColor: "#F8FAFC" } }}>
-                                <Box component="td" sx={{ p: 1.5, fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
-                                  {req?.leaveTypeId?.name || "Leave"}
-                                </Box>
-                                <Box component="td" sx={{ p: 1.5, fontSize: "13px", color: "#475569" }}>
-                                  {new Date(req.fromDate).toLocaleDateString()} - {new Date(req.toDate).toLocaleDateString()}
-                                </Box>
-                                <Box component="td" sx={{ p: 1.5, fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
-                                  {req.totalDays || 1}d
-                                </Box>
-                                <Box component="td" sx={{ p: 1.5, fontSize: "13px", color: "#64748B", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                  {req.reason || "—"}
-                                </Box>
-                                <Box component="td" sx={{ p: 1.5 }}>
-                                  <Chip
-                                    label={status}
-                                    size="small"
-                                    sx={{
-                                      fontSize: "11px",
-                                      fontWeight: 700,
-                                      backgroundColor: status === "APPROVED" ? "#D1FAE5" : status === "REJECTED" ? "#FEE2E2" : "#FEF3C7",
-                                      color: status === "APPROVED" ? "#047857" : status === "REJECTED" ? "#B91C1C" : "#B45309",
-                                    }}
-                                  />
-                                </Box>
-                              </Box>
-                            );
-                          });
-                        })()}
-                      </Box>
-                    </Box>
-                  </Box>
-                );
-              })()}
             </Card>
-          </Box>
-        )}
-
-        {/* Generic Content Fallback for remaining tabs */}
-        {!["overview", "personal", "documents", "payroll", "leave"].includes(activeTab) && (
-          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", textAlign: "center" }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
-              {activeTab} Section
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B" }}>
-              Detailed {activeTab} information for {displayName} is loaded into this section.
-            </Typography>
-          </Card>
-        )}
-
-        {/* 
-          ======================================================================
-          COMMENTED OUT LEGACY LAYOUT BLOCK (PRESERVED FOR BACKWARD COMPATIBILITY)
-          ======================================================================
-          {/*
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card sx={{ p: 3.5, borderRadius: 4, backgroundColor: "#fff" }}>
-                <Typography variant="h6">Personal Information</Typography>
-                <Grid container spacing={2.5}>
-                  <Grid size={6}><Typography variant="caption">First Name</Typography><Typography>{displayFirstName}</Typography></Grid>
-                  <Grid size={6}><Typography variant="caption">Last Name</Typography><Typography>{displayLastName}</Typography></Grid>
-                  <Grid size={12}><Typography variant="caption">Email</Typography><Typography>{displayEmail}</Typography></Grid>
-                </Grid>
-              </Card>
-            </Grid>
-          </Grid>
-          */}
+          )}
+        </Suspense>
 
       </Box>
 
-      {/* Add Skill Dialog */}
-      <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>Add Skill or Expertise</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            label="Skill Name"
-            placeholder="e.g. Python, Docker, GraphQL"
-            fullWidth
-            value={newSkillInput}
-            onChange={(e) => setNewSkillInput(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setAddSkillOpen(false)} sx={{ color: "#64748B" }}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              if (newSkillInput.trim()) {
-                setSkills((prev) => [...prev, newSkillInput.trim()]);
-                setNewSkillInput("");
-                setAddSkillOpen(false);
-                showSnackbar("Skill added to profile", "success");
-              }
-            }}
-            sx={{ backgroundColor: "#4F46E5", fontWeight: 600 }}
-          >
-            Add Skill
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Upload Avatar Dialog */}
+      <UploadAvatarDialog
+        open={avatarDialogOpen}
+        onClose={() => { if (!avatarSubmitting) setAvatarDialogOpen(false); }}
+        onUpload={handleUploadAvatar}
+        submitting={avatarSubmitting}
+        error={avatarError}
+      />
 
-      {/* Delete Bank Account Confirmation */}
-      <Dialog
-        open={!!bankDeleteTarget}
-        onClose={() => { if (!bankDeleting) setBankDeleteTarget(null); }}
-        maxWidth="xs"
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
-      >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.05rem" }}>
-          Delete Bank Account?
-        </DialogTitle>
-        <DialogContent>
-          {bankError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{bankError}</Alert>}
-          <Typography variant="body2" sx={{ color: "#6B7280" }}>
-            {bankDeleteTarget?.bankName} ({bankDeleteTarget?.accountNumber}) will be permanently removed. This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setBankDeleteTarget(null)} disabled={bankDeleting} sx={{ textTransform: "none", color: "#6B7280" }}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleDeleteBankAccount}
-            disabled={bankDeleting}
-            sx={{ textTransform: "none", fontWeight: 600, borderRadius: 2, backgroundColor: "#DC2626", "&:hover": { backgroundColor: "#B91C1C" } }}
-          >
-            {bankDeleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Add Bank Account Dialog */}
-      <Dialog
-        open={bankDialogOpen}
-        onClose={() => { if (!bankSubmitting) setBankDialogOpen(false); }}
-        maxWidth="sm"
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
-      >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
-          Add Bank Account
-        </DialogTitle>
-        <DialogContent>
-          {bankError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{bankError}</Alert>}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
-            <TextField
-              label="Bank Name"
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              fullWidth
-              required
-              disabled={bankSubmitting}
-            />
-            <TextField
-              label="Account Number"
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value)}
-              fullWidth
-              required
-              disabled={bankSubmitting}
-            />
-            <TextField
-              label="IFSC Code"
-              value={ifscCode}
-              onChange={(e) => setIfscCode(e.target.value)}
-              fullWidth
-              required
-              placeholder="e.g. SBIN0001234"
-              disabled={bankSubmitting}
-            />
-            <TextField
-              select
-              label="Account Type"
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value as AddBankAccountRequest["accountType"])}
-              fullWidth
-              disabled={bankSubmitting}
-            >
-              <MenuItem value="SALARY">Salary</MenuItem>
-              <MenuItem value="SAVINGS">Savings</MenuItem>
-              <MenuItem value="CURRENT">Current</MenuItem>
-            </TextField>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isPrimary}
-                  onChange={(e) => setIsPrimary(e.target.checked)}
-                  disabled={bankSubmitting}
-                />
-              }
-              label="Set as primary account"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setBankDialogOpen(false)}
-            disabled={bankSubmitting}
-            sx={{ textTransform: "none", color: "#6B7280" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAddBankAccount}
-            disabled={bankSubmitting || !bankName.trim() || !accountNumber.trim() || !ifscCode.trim()}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: 2,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4CE5" },
-            }}
-          >
-            {bankSubmitting ? "Saving..." : "Save"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Upload Document Dialog */}
-      <Dialog
-        open={docUploadDialogOpen}
-        onClose={() => { if (!docUploading) setDocUploadDialogOpen(false); }}
-        maxWidth="sm"
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
-      >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
-          Upload Document
-        </DialogTitle>
-        <DialogContent>
-          {docUploadError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{docUploadError}</Alert>}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
-            <TextField
-              select
-              label="Document Type"
-              value={selectedDocType}
-              onChange={(e) => setSelectedDocType(e.target.value)}
-              fullWidth
-              disabled={docUploading}
-            >
-              {DOCUMENT_TYPES.map((dt) => (
-                <MenuItem key={dt.value} value={dt.value}>{dt.label}</MenuItem>
-              ))}
-            </TextField>
-            <Button
-              variant="outlined"
-              component="label"
-              disabled={docUploading}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                borderColor: "#D1D5DB",
-                color: "#374151",
-                justifyContent: "flex-start",
-                py: 1.5,
-              }}
-            >
-              {selectedFile ? selectedFile.name : "Choose File"}
-              <input
-                ref={fileInputRef}
-                type="file"
-                hidden
-                accept=".jpg,.jpeg,.pdf"
-                onChange={handleFileSelect}
-              />
-            </Button>
-            <Typography variant="caption" sx={{ color: "#9CA3AF", mt: -1 }}>
-              Accepted: .pdf, .jpg, .jpeg
-            </Typography>
-            {docUploading && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, color: "#6B7280" }}>
-                <CircularProgress size={16} sx={{ color: "#6D5DF6" }} />
-                <Typography variant="caption">Uploading to server...</Typography>
-              </Box>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDocUploadDialogOpen(false)}
-            disabled={docUploading}
-            sx={{ textTransform: "none", color: "#6B7280" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleUploadDocument}
-            disabled={docUploading || !selectedFile}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: 2,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4CE5" },
-            }}
-          >
-            {docUploading ? "Uploading..." : "Upload"}
-          </Button>
-        </DialogActions>
-      </Dialog>
       {/* Edit Personal Details Dialog */}
       <Dialog
         open={editProfileOpen}
@@ -1992,13 +723,12 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               Current Address
             </Typography>
             <Grid container spacing={1.5}>
-              <Grid size={{ xs: 12, sm: 12 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextInput
                   label="Address Line 1"
                   value={editAddressLine1}
                   onChange={(e) => setEditAddressLine1(e.target.value)}
                   required
-                  placeholder="Street name, floor, apartment number"
                   disabled={personalDetailsUpdater.submitting}
                 />
               </Grid>
@@ -2031,21 +761,25 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               </Grid>
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextInput
-                  label="Country Code"
+                  select
+                  label="Country"
                   value={editCountryCode}
                   onChange={(e) => setEditCountryCode(e.target.value)}
                   required
-                  placeholder="e.g. IN"
                   disabled={personalDetailsUpdater.submitting}
-                />
+                >
+                  <MenuItem value="IN">India</MenuItem>
+                  <MenuItem value="US">United States</MenuItem>
+                  <MenuItem value="GB">United Kingdom</MenuItem>
+                </TextInput>
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2.5, pt: 1 }}>
+          <DialogActions sx={{ px: 3, pb: 2.5 }}>
             <Button
               onClick={() => setEditProfileOpen(false)}
               disabled={personalDetailsUpdater.submitting}
-              sx={{ textTransform: "none", color: "#6B7280" }}
+              sx={{ textTransform: "none", color: "#475569", fontWeight: 600 }}
             >
               Cancel
             </Button>
@@ -2056,58 +790,17 @@ function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               sx={{
                 textTransform: "none",
                 fontWeight: 600,
-                borderRadius: 2,
+                borderRadius: "8px",
                 backgroundColor: "#6D5DF6",
+                px: 3,
                 "&:hover": { backgroundColor: "#5B4CE5" },
               }}
             >
-              {personalDetailsUpdater.submitting ? "Saving..." : "Save Details"}
+              {personalDetailsUpdater.submitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogActions>
         </Box>
       </Dialog>
-
-      {/* Add Emergency Contact Dialog */}
-      <EmergencyContactDialog
-        open={ecDialog.isOpen}
-        onClose={ecDialog.close}
-        onSave={handleAddEmergencyContact}
-        submitting={ecUpdater.submitting}
-        error={ecUpdater.error}
-      />
-
-      {/* Delete Emergency Contact Confirm Dialog */}
-      <ConfirmDialog
-        open={ecDeleteConfirmOpen}
-        title="Remove Emergency Contact"
-        content="Are you sure you want to remove this emergency contact? This action cannot be undone."
-        confirmLabel="Remove"
-        onConfirm={handleDeleteEmergencyContact}
-        onClose={() => { setEcDeleteConfirmOpen(false); setEcDeleteTarget(null); }}
-        loading={ecUpdater.submitting}
-      />
-
-      {/* Upload Avatar Dialog */}
-      <UploadAvatarDialog
-        open={avatarDialogOpen}
-        onClose={() => setAvatarDialogOpen(false)}
-        onUpload={handleUploadAvatar}
-        submitting={avatarSubmitting}
-        error={avatarError}
-      />
-
-      {/* Apply Leave Dialog */}
-      <ApplyLeaveDialog
-        open={applyLeaveDialogOpen}
-        balances={balances}
-        leaveTypes={leaveTypes}
-        submitting={false}
-        error={null}
-        onClose={() => setApplyLeaveDialogOpen(false)}
-        onSubmit={handleApplyLeaveSubmit}
-      />
     </DashboardLayout>
   );
 }
-
-export default ProfileView;

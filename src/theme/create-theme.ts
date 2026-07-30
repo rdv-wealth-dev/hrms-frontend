@@ -54,6 +54,17 @@ export const theme = createTheme({
       },
     },
 
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: "16px",
+          border: "1px solid #E2E8F0",
+          backgroundColor: "#FFFFFF",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+        },
+      },
+    },
+
     // ─── Backdrop Blur (Dialog & Modal Overlays) ────────────
     MuiBackdrop: {
       styleOverrides: {
@@ -110,6 +121,7 @@ export const theme = createTheme({
         root: {
           textTransform: "none", // global: no UPPERCASE buttons
           fontWeight: 600,
+          borderRadius: "10px",
         },
       },
     },
