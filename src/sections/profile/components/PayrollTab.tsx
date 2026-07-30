@@ -12,7 +12,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Alert from "@mui/material/Alert";
@@ -20,7 +19,9 @@ import Alert from "@mui/material/Alert";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 
+import TextInput from "../../../components/input/TextInput";
 import { addBankAccount, deleteBankAccount, type BankAccount, type AddBankAccountRequest } from "../../../api/employee.api";
 
 interface PayrollTabProps {
@@ -165,26 +166,46 @@ export default function PayrollTab({
         onClose={() => { if (!bankDeleting) setBankDeleteTarget(null); }}
         maxWidth="xs"
         fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.4)",
+            },
+          },
+          paper: { sx: { borderRadius: "16px", p: 1 } },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.05rem" }}>
-          Delete Bank Account?
+        <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            Delete Bank Account?
+          </Typography>
+          <IconButton onClick={() => setBankDeleteTarget(null)} size="small" sx={{ color: "#9CA3AF" }} disabled={bankDeleting}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
-          {bankError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{bankError}</Alert>}
+        <DialogContent sx={{ py: 2 }}>
+          {bankError && <Alert severity="error" sx={{ mb: 2, borderRadius: "10px" }}>{bankError}</Alert>}
           <Typography variant="body2" sx={{ color: "#6B7280" }}>
             {bankDeleteTarget?.bankName} ({bankDeleteTarget?.accountNumber}) will be permanently removed. This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setBankDeleteTarget(null)} disabled={bankDeleting} sx={{ color: "#6B7280" }}>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setBankDeleteTarget(null)} disabled={bankDeleting} color="inherit">
             Cancel
           </Button>
           <Button
+            type="button"
             variant="contained"
             onClick={handleDeleteBankAccount}
             disabled={bankDeleting}
-            sx={{ fontWeight: 600, borderRadius: 2, backgroundColor: "#DC2626", "&:hover": { backgroundColor: "#B91C1C" } }}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              backgroundColor: "#DC2626",
+              "&:hover": { backgroundColor: "#B91C1C" },
+              px: 3,
+            }}
           >
             {bankDeleting ? "Deleting..." : "Delete"}
           </Button>
@@ -197,78 +218,91 @@ export default function PayrollTab({
         onClose={() => { if (!bankSubmitting) setBankDialogOpen(false); }}
         maxWidth="sm"
         fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.4)",
+            },
+          },
+          paper: { sx: { borderRadius: "16px", p: 1 } },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
-          Add Bank Account
+        <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            Add Bank Account
+          </Typography>
+          <IconButton onClick={() => setBankDialogOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={bankSubmitting}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
-          {bankError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{bankError}</Alert>}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
-            <TextField
-              label="Bank Name"
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              fullWidth
-              required
-              disabled={bankSubmitting}
-            />
-            <TextField
-              label="Account Number"
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value)}
-              fullWidth
-              required
-              disabled={bankSubmitting}
-            />
-            <TextField
-              label="IFSC Code"
-              value={ifscCode}
-              onChange={(e) => setIfscCode(e.target.value)}
-              fullWidth
-              required
-              placeholder="e.g. SBIN0001234"
-              disabled={bankSubmitting}
-            />
-            <TextField
-              select
-              label="Account Type"
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value as AddBankAccountRequest["accountType"])}
-              fullWidth
-              disabled={bankSubmitting}
-            >
-              <MenuItem value="SALARY">Salary</MenuItem>
-              <MenuItem value="SAVINGS">Savings</MenuItem>
-              <MenuItem value="CURRENT">Current</MenuItem>
-            </TextField>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isPrimary}
-                  onChange={(e) => setIsPrimary(e.target.checked)}
-                  disabled={bankSubmitting}
-                />
-              }
-              label="Set as primary account"
-            />
-          </Box>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
+          {bankError && <Alert severity="error" sx={{ borderRadius: "10px" }}>{bankError}</Alert>}
+          <TextInput
+            label="Bank Name"
+            value={bankName}
+            onChange={(e) => setBankName(e.target.value)}
+            required
+            disabled={bankSubmitting}
+            placeholder="e.g. State Bank of India"
+          />
+          <TextInput
+            label="Account Number"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            required
+            disabled={bankSubmitting}
+            placeholder="e.g. 1234567890"
+          />
+          <TextInput
+            label="IFSC Code"
+            value={ifscCode}
+            onChange={(e) => setIfscCode(e.target.value)}
+            required
+            placeholder="e.g. SBIN0001234"
+            disabled={bankSubmitting}
+          />
+          <TextInput
+            select
+            label="Account Type"
+            value={accountType}
+            onChange={(e) => setAccountType(e.target.value as AddBankAccountRequest["accountType"])}
+            disabled={bankSubmitting}
+          >
+            <MenuItem value="SALARY">Salary</MenuItem>
+            <MenuItem value="SAVINGS">Savings</MenuItem>
+            <MenuItem value="CURRENT">Current</MenuItem>
+          </TextInput>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isPrimary}
+                onChange={(e) => setIsPrimary(e.target.checked)}
+                disabled={bankSubmitting}
+              />
+            }
+            label="Set as primary account"
+          />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 3, py: 2 }}>
           <Button
             onClick={() => setBankDialogOpen(false)}
             disabled={bankSubmitting}
-            sx={{ color: "#6B7280" }}
+            color="inherit"
           >
             Cancel
           </Button>
           <Button
+            type="button"
             variant="contained"
             onClick={handleAddBankAccount}
             disabled={bankSubmitting || !bankName.trim() || !accountNumber.trim() || !ifscCode.trim()}
             sx={{
+              textTransform: "none",
+              fontWeight: 600,
               backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4CE5" },
+              "&:hover": { backgroundColor: "#5B4BE4" },
+              px: 3,
             }}
           >
             {bankSubmitting ? "Saving..." : "Save"}

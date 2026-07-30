@@ -18,7 +18,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -33,6 +32,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../components/input/TextInput";
 import ConfirmDialog from "../../components/modal/ConfirmDialog";
@@ -158,14 +158,33 @@ function HolidayFormDialog({
     (scope === "STATE" && (!countryCode.trim() || !stateCode.trim()));
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>
-        {editingHoliday ? "Edit Holiday" : "Add New Holiday"}
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.4)",
+          },
+        },
+        paper: { sx: { borderRadius: "16px", p: 1 } },
+      }}
+    >
+      <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          {editingHoliday ? "Edit Holiday" : "Add New Holiday"}
+        </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: "16px !important" }}>
+      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 1 }}>
+          <Alert severity="error" sx={{ mb: 1, borderRadius: "10px" }}>
             {error}
           </Alert>
         )}
@@ -209,7 +228,7 @@ function HolidayFormDialog({
             <MenuItem value="STATE">State Scope (e.g. Karnataka, California)</MenuItem>
             <MenuItem value="BRANCH">Branch Scope (Local Office Override)</MenuItem>
           </TextInput>
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", ml: 0.5 }}>
             Determines whether this holiday applies Globally, per Country, per State, or to a specific Branch.
           </Typography>
         </Box>
@@ -240,7 +259,7 @@ function HolidayFormDialog({
               placeholder="e.g. IN or US"
               required
             />
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary", ml: 0.5 }}>
               2-letter ISO country code (e.g. IN, US)
             </Typography>
           </Box>
@@ -255,7 +274,7 @@ function HolidayFormDialog({
               placeholder="e.g. Karnataka or KA"
               required
             />
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary", ml: 0.5 }}>
               State code or full state name (e.g. Karnataka or KA)
             </Typography>
           </Box>
@@ -281,7 +300,7 @@ function HolidayFormDialog({
         />
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3 }}>
+      <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onClose} disabled={submitting} color="inherit">
           Cancel
         </Button>
@@ -291,7 +310,8 @@ function HolidayFormDialog({
           variant="contained"
           sx={{
             backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4EE4" },
+            "&:hover": { backgroundColor: "#5B4BE4" },
+            textTransform: "none",
             fontWeight: 600,
             px: 3,
           }}
@@ -340,22 +360,42 @@ function SeedHolidaysDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
-        <AutoAwesomeIcon sx={{ color: "#6D5DF6" }} />
-        Seed Default Statutory Holidays
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.4)",
+          },
+        },
+        paper: { sx: { borderRadius: "16px", p: 1 } },
+      }}
+    >
+      <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <AutoAwesomeIcon sx={{ color: "#6D5DF6" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            Seed Default Statutory Holidays
+          </Typography>
+        </Box>
+        <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "16px !important" }}>
-        {error && <Alert severity="error">{error}</Alert>}
+      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
+        {error && <Alert severity="error" sx={{ borderRadius: "10px" }}>{error}</Alert>}
 
-        <Alert severity="info" sx={{ fontSize: "13px" }}>
+        <Alert severity="info" sx={{ fontSize: "13px", borderRadius: "10px" }}>
           Generates statutory national (COUNTRY) & cantonal/regional (STATE) holidays for the selected country and state. Idempotent & safe to execute.
         </Alert>
 
-        <TextField
+        <TextInput
           select
-          fullWidth
           label="Target Country Code"
           value={countryCode}
           onChange={(e) => setCountryCode(e.target.value)}
@@ -366,7 +406,7 @@ function SeedHolidaysDialog({
           <MenuItem value="UK">United Kingdom (UK)</MenuItem>
           <MenuItem value="CA">Canada (CA)</MenuItem>
           <MenuItem value="AU">Australia (AU)</MenuItem>
-        </TextField>
+        </TextInput>
 
         <TextInput
           label="State / Canton Code (Optional)"
@@ -376,8 +416,8 @@ function SeedHolidaysDialog({
         />
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} disabled={submitting} sx={{ color: "text.secondary", textTransform: "none" }}>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} disabled={submitting} color="inherit">
           Cancel
         </Button>
         <Button
@@ -390,6 +430,7 @@ function SeedHolidaysDialog({
             textTransform: "none",
             fontWeight: 600,
             "&:hover": { backgroundColor: "#5B4EE4" },
+            px: 3,
           }}
         >
           Seed Statutory Holidays
@@ -412,6 +453,9 @@ export default function HolidayListView() {
   const dispatch = useDispatch<AppDispatch>();
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("holiday.create");
+
+  const user = useSelector((state: RootState) => state.auth?.user);
+  const isAuthorized = user?.role === "ORG_ADMIN" || user?.role === "HR_ADMIN";
 
   const { holidays = [], loading, submitting, success, error } = useSelector(
     (state: RootState) => state.leave ?? { holidays: [], loading: false, submitting: false, success: false, error: null }
@@ -621,119 +665,117 @@ export default function HolidayListView() {
         {/* Header */}
         <Box
           sx={{
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr auto 1fr" },
             alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
             gap: 2,
             mb: 4,
+            width: "100%",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          {/* Column 1: Left Spacer (balanced with right buttons) */}
+          <Box sx={{ display: { xs: "none", sm: "block" } }} />
+
+          {/* Column 2: Centered Holidays Title */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, justifyContent: "center" }}>
             <CalendarMonthOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                Holidays
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                Configure multi-scope organization holidays & resolve branch priority calendars
-              </Typography>
-            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              Holidays
+            </Typography>
           </Box>
 
-          {canCreate && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Button
-                variant="outlined"
-                startIcon={<AutoAwesomeIcon sx={{ color: "#6D5DF6" }} />}
-                onClick={handleOpenSeed}
-                sx={{
-                  borderColor: "#6D5DF6",
-                  color: "#6D5DF6",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: 2,
-                  "&:hover": { borderColor: "#5B4EE4", backgroundColor: "#F5F3FF" },
-                }}
-              >
-                Seed Defaults
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpenCreate}
-                sx={{
-                  backgroundColor: "#6D5DF6",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: 2,
-                  "&:hover": { backgroundColor: "#5B4EE4" },
-                }}
-              >
-                Add Holiday
-              </Button>
-            </Box>
-          )}
+          {/* Column 3: Action Buttons on the Right */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, justifyContent: { xs: "center", sm: "flex-end" } }}>
+            {canCreate && (
+              <>
+                <Button
+                  variant="outlined"
+                  startIcon={<AutoAwesomeIcon sx={{ color: "#6D5DF6" }} />}
+                  onClick={handleOpenSeed}
+                  sx={{
+                    borderColor: "#6D5DF6",
+                    color: "#6D5DF6",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    "&:hover": { borderColor: "#5B4EE4", backgroundColor: "#F5F3FF" },
+                  }}
+                >
+                  Seed Defaults
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={handleOpenCreate}
+                  sx={{
+                    backgroundColor: "#6D5DF6",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    "&:hover": { backgroundColor: "#5B4EE4" },
+                  }}
+                >
+                  Add Holiday
+                </Button>
+              </>
+            )}
+          </Box>
         </Box>
 
         {/* Filter Toolbar: Year, View Mode, Branch Selector */}
-        <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, mb: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
-              Year:
-            </Typography>
-            <TextField
-              select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value) || new Date().getFullYear())}
-              size="small"
-              sx={{ width: 110 }}
-            >
-              <MenuItem value={2024}>2024</MenuItem>
-              <MenuItem value={2025}>2025</MenuItem>
-              <MenuItem value={2026}>2026</MenuItem>
-              <MenuItem value={2027}>2027</MenuItem>
-              <MenuItem value={2028}>2028</MenuItem>
-            </TextField>
-          </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            flexWrap: "wrap",
+            gap: 2,
+            mb: 3,
+            alignItems: { xs: "stretch", sm: "center" },
+          }}
+        >
+          <TextInput
+            select
+            label="Year"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value) || new Date().getFullYear())}
+            sx={{ width: { xs: "100%", sm: 120 } }}
+          >
+            <MenuItem value={2024}>2024</MenuItem>
+            <MenuItem value={2025}>2025</MenuItem>
+            <MenuItem value={2026}>2026</MenuItem>
+            <MenuItem value={2027}>2027</MenuItem>
+            <MenuItem value={2028}>2028</MenuItem>
+          </TextInput>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
-              View Mode:
-            </Typography>
-            <TextField
+          {isAuthorized && (
+            <TextInput
               select
+              label="View Mode"
               value={viewMode}
-              onChange={(e) => setViewMode(e.target.value as "ALL" | "RESOLVED")}
-              size="small"
-              sx={{ minWidth: 220 }}
+              onChange={(e) => setViewMode(e.target.value as "ALL" | "RESOLVED" | "GRID" | "MY_SCHEDULE")}
+              sx={{ minWidth: { xs: "100%", sm: 260 }, flexGrow: { xs: 1, sm: 0 } }}
             >
               <MenuItem value="ALL">All Organization Master Holidays</MenuItem>
               <MenuItem value="RESOLVED">Resolve Branch List (GET /resolve)</MenuItem>
               <MenuItem value="GRID">Branch Monthly Calendar Grid (GET /calendar)</MenuItem>
               <MenuItem value="MY_SCHEDULE">My Personal Schedule (GET /branches/me/schedule)</MenuItem>
-            </TextField>
-          </Box>
+            </TextInput>
+          )}
 
-          {(viewMode === "RESOLVED" || viewMode === "GRID") && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
-                Branch:
-              </Typography>
-              <TextField
-                select
-                value={selectedBranchId}
-                onChange={(e) => setSelectedBranchId(e.target.value)}
-                size="small"
-                sx={{ minWidth: 200 }}
-              >
-                {branchesList.map((b) => (
-                  <MenuItem key={b._id} value={b._id}>
-                    {b.name || (b as any).branchName} ({b.address?.city || b.code || "Branch"})
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
+          {isAuthorized && (viewMode === "RESOLVED" || viewMode === "GRID") && (
+            <TextInput
+              select
+              label="Branch"
+              value={selectedBranchId}
+              onChange={(e) => setSelectedBranchId(e.target.value)}
+              sx={{ minWidth: { xs: "100%", sm: 240 }, flexGrow: { xs: 1, sm: 0 } }}
+            >
+              {branchesList.map((b) => (
+                <MenuItem key={b._id} value={b._id}>
+                  {b.name || (b as any).branchName} ({b.address?.city || b.code || "Branch"})
+                </MenuItem>
+              ))}
+            </TextInput>
           )}
         </Box>
 
@@ -840,17 +882,17 @@ export default function HolidayListView() {
             )}
           </Paper>
         ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)", border: "1px solid rgba(224, 224, 224, 0.8)" }}>
+          <TableContainer component={Paper} sx={{ overflowX: "auto", borderRadius: 3, boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)", border: "1px solid rgba(224, 224, 224, 0.8)" }}>
             <Table>
               <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Holiday Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Scope</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Is Optional</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, pr: 8 }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Holiday Name</TableCell>
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Scope</TableCell>
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Is Optional</TableCell>
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Description</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, pr: 8, whiteSpace: "nowrap" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -859,9 +901,9 @@ export default function HolidayListView() {
                   const scopeChip = getScopeChip(type);
                   return (
                     <TableRow key={type._id} hover>
-                      <TableCell sx={{ fontWeight: 500 }}>{type.name}</TableCell>
-                      <TableCell>{formatDate(type.date)}</TableCell>
-                      <TableCell>
+                      <TableCell sx={{ fontWeight: 500, whiteSpace: "nowrap" }}>{type.name}</TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>{formatDate(type.date)}</TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
                         <Chip
                           label={type.type}
                           size="small"
@@ -873,7 +915,7 @@ export default function HolidayListView() {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
                         <Chip
                           label={scopeChip.label}
                           size="small"
@@ -886,7 +928,7 @@ export default function HolidayListView() {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
                         <Chip
                           label={type.isOptional ? "Optional" : "Mandatory"}
                           size="small"
@@ -898,10 +940,10 @@ export default function HolidayListView() {
                           }}
                         />
                       </TableCell>
-                      <TableCell color="text.secondary">
+                      <TableCell sx={{ color: "text.secondary", minWidth: 200, maxWidth: 300, wordBreak: "break-word" }}>
                         {type.description || "—"}
                       </TableCell>
-                      <TableCell align="center" sx={{ pr: 8 }}>
+                      <TableCell align="center" sx={{ pr: 8, whiteSpace: "nowrap" }}>
                         <IconButton
                           size="small"
                           onClick={(e) => handleOpenMenu(e, type)}

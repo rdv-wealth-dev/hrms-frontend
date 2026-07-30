@@ -640,3 +640,82 @@ export const uploadEmployeeAvatar = async (
   );
   return response.data;
 };
+
+// ============================================================
+// Bulk Import / Export API Definitions
+// ============================================================
+
+export interface BulkImportErrorDetail {
+  rowNumber: number;
+  email?: string;
+  reason: string;
+}
+
+export interface BulkImportResponse {
+  succeeded: boolean;
+  success: boolean;
+  message: string;
+  errors: BulkImportErrorDetail[];
+  data: {
+    totalProcessed: number;
+    insertedCount: number;
+    failedCount: number;
+    errors: BulkImportErrorDetail[];
+  } | null;
+}
+
+export interface BulkExportResponse {
+  succeeded: boolean;
+  success: boolean;
+  message: string;
+  errors: any[];
+  data: {
+    fileName: string;
+    mimeType: string;
+    fileData: string; // Base64 spreadsheet
+    totalRecords: number;
+  } | null;
+}
+
+export const bulkImportEmployees = async (
+  file: File,
+  tenantSlug: string
+): Promise<BulkImportResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axiosInstance.post<BulkImportResponse>(
+    "/employees/bulk-import",
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+        "X-Tenant-Slug": tenantSlug,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const bulkExportEmployees = async (
+  params: {
+    format?: "csv" | "xlsx";
+    branchId?: string;
+    departmentId?: string;
+    status?: string;
+  },
+  tenantSlug: string
+): Promise<BulkExportResponse> => {
+  const response = await axiosInstance.get<BulkExportResponse>(
+    "/employees/bulk-export",
+    {
+      params,
+      headers: {
+        ...getAuthHeader(),
+        "X-Tenant-Slug": tenantSlug,
+      },
+    }
+  );
+  return response.data;
+};

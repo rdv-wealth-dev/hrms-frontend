@@ -4,7 +4,6 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
@@ -110,39 +109,6 @@ export default function LeaveTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Header & Primary Action */}
-      <Card sx={{ p: 3, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box sx={{ width: 42, height: 42, borderRadius: "12px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <CalendarMonthOutlinedIcon />
-          </Box>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.1rem" }}>
-              My Leave & Time Off
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B" }}>
-              Apply for leaves, track remaining balances, and check request approval statuses.
-            </Typography>
-          </Box>
-        </Box>
-
-        {!isViewingOther && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setApplyLeaveDialogOpen(true)}
-            sx={{
-              backgroundColor: "#4F46E5",
-              px: 3,
-              height: 40,
-              boxShadow: "0 2px 6px rgba(79, 70, 229, 0.25)",
-              "&:hover": { backgroundColor: "#4338CA" },
-            }}
-          >
-            Apply Leave
-          </Button>
-        )}
-      </Card>
 
       {/* 4 Summary Stat Cards Row */}
       <Grid container spacing={2.5}>

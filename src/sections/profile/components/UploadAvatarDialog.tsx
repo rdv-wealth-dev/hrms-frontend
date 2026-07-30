@@ -9,6 +9,7 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
 import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -107,10 +108,23 @@ export default function UploadAvatarDialog({
       onClose={submitting ? undefined : onClose}
       maxWidth="xs"
       fullWidth
-      slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.4)",
+          },
+        },
+        paper: { sx: { borderRadius: "16px", p: 1 } },
+      }}
     >
-      <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem", textAlign: "center", pb: 0.5 }}>
-        Upload Profile Picture
+      <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          Upload Profile Picture
+        </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       </DialogTitle>
 
       <Box component="form" onSubmit={handleSubmit}>
@@ -251,8 +265,8 @@ export default function UploadAvatarDialog({
           )}
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "space-between" }}>
-          <Button onClick={onClose} disabled={submitting} sx={{ textTransform: "none", color: "#64748B" }}>
+        <DialogActions sx={{ px: 3, pb: 2.5, pt: 0, justifyContent: "space-between" }}>
+          <Button onClick={onClose} disabled={submitting} color="inherit">
             Cancel
           </Button>
           <Button
@@ -262,10 +276,9 @@ export default function UploadAvatarDialog({
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              borderRadius: "10px",
               px: 3,
-              backgroundColor: "#4F46E5",
-              "&:hover": { backgroundColor: "#4338CA" },
+              backgroundColor: "#6D5DF6",
+              "&:hover": { backgroundColor: "#5B4BE4" },
             }}
           >
             {submitting ? "Uploading..." : "Upload Picture"}

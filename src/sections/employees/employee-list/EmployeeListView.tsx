@@ -51,9 +51,13 @@ import ManualAttendanceDialog from "../../attendance/components/ManualAttendance
 import ManageRoleDialog from "./components/ManageRoleDialog";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { listUsers, type UserAccountData } from "../../../api/user.api";
-import { deleteEmployee } from "../../../api/employee.api";
+import { deleteEmployee, bulkExportEmployees } from "../../../api/employee.api";
 import { ConfirmDialog } from "../../../components/modal";
 import CustomTablePagination from "../../../components/pagination";
+import UploadOutlinedIcon from "@mui/icons-material/UploadOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import BulkImportDialog from "./components/BulkImportDialog";
 
 // People Hub Dual Design Components
 import { ViewModeSwitcher, type ViewMode } from "./components/ViewModeSwitcher";
@@ -133,6 +137,88 @@ function EmployeeListView() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+
+  const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  // Extract org/tenant slug
+  const orgSlug = useSelector((state: RootState) => state.organization?.organization?.slug);
+  const tenantSlug = orgSlug || window.location.hostname.split(".")[0];
+
+  const handleExport = async (format: "csv" | "xlsx") => {
+    setExportAnchorEl(null);
+    setExportLoading(true);
+    try {
+      // Find database ObjectIDs of selected filter names if they are loaded
+      let branchId: string | undefined = undefined;
+      let departmentId: string | undefined = undefined;
+
+      // Map filter names to database IDs
+      if (filters.branch && filters.branch !== "All Branches") {
+        const found = branches.find((b: any) => b.name === filters.branch || (b as any).branchName === filters.branch);
+        if (found) branchId = found._id;
+      }
+      if (filters.department && filters.department !== "All Departments") {
+        const found = departments.find((d: any) => d.name === filters.department);
+        if (found) departmentId = found._id;
+      }
+
+      const activeStatus = filters.status || statusVal;
+      let backendStatus: string | undefined = undefined;
+      if (activeStatus && activeStatus !== "All Statuses") {
+        const upper = activeStatus.toUpperCase();
+        if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
+          backendStatus = upper;
+        }
+      }
+
+      const response = await bulkExportEmployees(
+        {
+          format,
+          branchId,
+          departmentId,
+          status: backendStatus,
+        },
+        tenantSlug
+      );
+
+      if (response?.succeeded && response?.data) {
+        const { fileName, mimeType, fileData } = response.data;
+        if (!fileData) {
+          throw new Error("No file data received from server.");
+        }
+
+        // 1. Convert base64 data to binary bytes
+        const byteCharacters = atob(fileData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+
+        // 2. Create a blob object
+        const blob = new Blob([byteArray], { type: mimeType });
+
+        // 3. Create dynamic link element and trigger download
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+      } else {
+        alert(response?.message || "Failed to generate export file.");
+      }
+    } catch (err: any) {
+      console.error("Export failed", err);
+      alert(err?.message || "Failed to export employee records. Please try again.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const [usersList, setUsersList] = useState<UserAccountData[]>([]);
 
@@ -564,9 +650,87 @@ function EmployeeListView() {
             </Box>
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
             {/* Design View Switcher (Design 1: Classic vs Design 2: People Hub) */}
             <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
+
+            {/* Export Button */}
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={exportLoading}
+              startIcon={exportLoading ? <CircularProgress size={16} color="inherit" /> : <DownloadOutlinedIcon sx={{ fontSize: 20 }} />}
+              endIcon={<KeyboardArrowDownIcon />}
+              onClick={(e) => setExportAnchorEl(e.currentTarget)}
+              sx={{
+                height: 40,
+                borderRadius: "10px",
+                textTransform: "none",
+                borderColor: "#E2E8F0",
+                color: "#475569",
+                fontWeight: 600,
+                fontSize: "14px",
+                px: 2.5,
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                "&:hover": {
+                  borderColor: "#CBD5E1",
+                  backgroundColor: "#F8FAFC",
+                },
+              }}
+            >
+              {exportLoading ? "Exporting..." : "Export"}
+            </Button>
+
+            {/* Export Format Popover Menu */}
+            <Menu
+              anchorEl={exportAnchorEl}
+              open={Boolean(exportAnchorEl)}
+              onClose={() => setExportAnchorEl(null)}
+              slotProps={{
+                paper: {
+                  elevation: 3,
+                  sx: { borderRadius: "12px", minWidth: 160, p: 0.5, mt: 0.5 },
+                },
+              }}
+            >
+              <MenuItem onClick={() => handleExport("csv")} sx={{ fontSize: "14px", fontWeight: 500 }}>
+                Export as CSV (.csv)
+              </MenuItem>
+              <MenuItem onClick={() => handleExport("xlsx")} sx={{ fontSize: "14px", fontWeight: 500 }}>
+                Export as Excel (.xlsx)
+              </MenuItem>
+            </Menu>
+
+            {/* Import Button */}
+            {canCreate && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<UploadOutlinedIcon sx={{ fontSize: 20 }} />}
+                onClick={() => setImportOpen(true)}
+                sx={{
+                  height: 40,
+                  borderRadius: "10px",
+                  textTransform: "none",
+                  borderColor: "#6D5DF6",
+                  color: "#6D5DF6",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  px: 2.5,
+                  boxSizing: "border-box",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  "&:hover": {
+                    borderColor: "#5B4BEA",
+                    backgroundColor: "#F5F3FF",
+                  },
+                }}
+              >
+                Import
+              </Button>
+            )}
 
             {/* Add Employee Button */}
             {canCreate && (
@@ -1092,6 +1256,24 @@ function EmployeeListView() {
         }}
         loading={deleteLoading}
       />
+
+      {canCreate && (
+        <BulkImportDialog
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          tenantSlug={tenantSlug}
+          onSuccess={() => {
+            dispatch(
+              listEmployeesRequest({
+                pageNumber,
+                pageSize,
+                search: debouncedSearchVal,
+                status: statusVal,
+              })
+            );
+          }}
+        />
+      )}
     </DashboardLayout>
   );
 }

@@ -167,13 +167,10 @@ export default function CollapsibleNavGroup({
   onNavigate,
 }: CollapsibleNavGroupProps) {
   const location = useLocation();
-  const { hasPermission, role } = usePermissions();
+  const { hasPermission } = usePermissions();
 
   // Filter items according to permissions & role rules
   const visibleItems = items.filter((item) => {
-    if (item.label === "My Attendance" && role === "ORG_ADMIN") {
-      return false;
-    }
     if (item.children && item.children.length > 0) {
       return item.children.some((child) => !child.permission || hasPermission(child.permission));
     }

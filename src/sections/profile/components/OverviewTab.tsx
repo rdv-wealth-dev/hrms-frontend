@@ -10,7 +10,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
@@ -30,6 +29,7 @@ import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlin
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 
 import type { CompleteProfileEmployee } from "../../../api/employee.api";
+import TextInput from "../../../components/input/TextInput";
 
 interface OverviewTabProps {
   empProfile: CompleteProfileEmployee | null;
@@ -425,22 +425,43 @@ export default function OverviewTab({
       </Grid>
 
       {/* Add Skill Dialog */}
-      <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>Add Skill or Expertise</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
+      <Dialog
+        open={addSkillOpen}
+        onClose={() => setAddSkillOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.4)",
+            },
+          },
+          paper: { sx: { borderRadius: "16px", p: 1 } },
+        }}
+      >
+        <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            Add Skill or Expertise
+          </Typography>
+          <IconButton onClick={() => setAddSkillOpen(false)} size="small" sx={{ color: "#9CA3AF" }}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
+          <TextInput
             label="Skill Name"
             placeholder="e.g. Python, Docker, GraphQL"
-            fullWidth
             value={newSkillInput}
             onChange={(e) => setNewSkillInput(e.target.value)}
-            sx={{ mt: 1 }}
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setAddSkillOpen(false)} sx={{ color: "#64748B" }}>Cancel</Button>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setAddSkillOpen(false)} color="inherit">
+            Cancel
+          </Button>
           <Button
+            type="button"
             variant="contained"
             onClick={() => {
               if (newSkillInput.trim()) {
@@ -450,7 +471,13 @@ export default function OverviewTab({
                 showSnackbar("Skill added to profile", "success");
               }
             }}
-            sx={{ backgroundColor: "#4F46E5", fontWeight: 600 }}
+            sx={{
+              backgroundColor: "#6D5DF6",
+              "&:hover": { backgroundColor: "#5B4BE4" },
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+            }}
           >
             Add Skill
           </Button>

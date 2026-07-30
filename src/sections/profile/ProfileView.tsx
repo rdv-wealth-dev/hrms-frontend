@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserAvatar } from "../../store/auth";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -24,6 +24,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
@@ -39,7 +40,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
 import type { RootState } from "../../store/rootReducer";
-import { paths } from "../../routes/paths";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
 import UploadAvatarDialog from "./components/UploadAvatarDialog";
@@ -64,6 +64,7 @@ const PersonalTab = lazy(() => import("./components/PersonalTab"));
 const DocumentsTab = lazy(() => import("./components/DocumentsTab"));
 const PayrollTab = lazy(() => import("./components/PayrollTab"));
 const LeaveTab = lazy(() => import("./components/LeaveTab"));
+const AttendanceTab = lazy(() => import("./components/AttendanceTab"));
 
 interface ProfileViewProps {
   targetEmployeeId?: string;
@@ -80,7 +81,24 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const employeeId = resolvedTargetId || user?.employeeId;
   const isViewingOther = !!resolvedTargetId;
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab") || "overview";
+  const [activeTab, setActiveTab] = useState(tabParam);
+
+  useEffect(() => {
+    const currentTab = searchParams.get("tab") || "overview";
+    if (currentTab === "attendance" && isViewingOther) {
+      setActiveTab("overview");
+      setSearchParams({ tab: "overview" });
+    } else {
+      setActiveTab(currentTab);
+    }
+  }, [searchParams, isViewingOther, setSearchParams]);
+
+  const handleTabChange = (_event: React.SyntheticEvent, newTab: string) => {
+    setActiveTab(newTab);
+    setSearchParams({ tab: newTab });
+  };
 
   // Bank & documents shared state
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
@@ -294,32 +312,11 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
     <DashboardLayout>
       <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflowX: "hidden", backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
         
-        {/* Top Header & Breadcrumbs Bar */}
-        <Box sx={{ mb: 2.5, display: "flex", alignItems: "center", justify: "space-between", flexWrap: "wrap", gap: 2 }}>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.02em", mb: 0.5 }}>
-              People Hub
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, fontSize: "0.85rem", color: "#64748B", flexWrap: "wrap" }}>
-              <Typography variant="body2" sx={{ color: "#64748B", fontSize: "0.85rem", cursor: "pointer", "&:hover": { color: "#4F46E5" } }} onClick={() => navigate(paths.dashboard)}>
-                Dashboard
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#94A3B8", fontSize: "0.85rem" }}>›</Typography>
-              <Typography variant="body2" sx={{ color: "#64748B", fontSize: "0.85rem" }}>People</Typography>
-              <Typography variant="body2" sx={{ color: "#94A3B8", fontSize: "0.85rem" }}>›</Typography>
-              <Typography variant="body2" sx={{ color: "#64748B", fontSize: "0.85rem", cursor: "pointer", "&:hover": { color: "#4F46E5" } }} onClick={() => navigate(paths.employees.list)}>
-                Employees
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#94A3B8", fontSize: "0.85rem" }}>›</Typography>
-              <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700, fontSize: "0.85rem", wordBreak: "break-word" }}>
-                {displayName}
-              </Typography>
-            </Box>
-          </Box>
-
+        {/* Top Back Button Bar */}
+        <Box sx={{ mb: 2.5, display: "flex", justifyContent: "flex-end" }}>
           <Button
             startIcon={<ArrowBackOutlinedIcon sx={{ fontSize: "18px !important" }} />}
-            onClick={() => navigate(paths.employees.list)}
+            onClick={() => navigate(-1)}
             sx={{
               color: "#475569",
               backgroundColor: "#FFFFFF",
@@ -332,7 +329,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" }
             }}
           >
-            Back to Directory
+            Back
           </Button>
         </Box>
 
@@ -346,7 +343,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             boxSizing: "border-box",
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, alignItems: { xs: "center", md: "flex-start" }, minWidth: 0, width: "100%" }}>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 3, alignItems: "flex-start", minWidth: 0, width: "100%" }}>
             {/* Avatar & Initial Badge */}
             <Box sx={{ position: "relative", flexShrink: 0 }}>
               <Avatar
@@ -387,8 +384,8 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             </Box>
 
             {/* Employee Title, Name & Meta Badges */}
-            <Box sx={{ flexGrow: 1, minWidth: 0, textAlign: { xs: "center", md: "left" } }}>
-              <Box sx={{ display: "flex", alignItems: "center", justify: { xs: "center", md: "flex-start" }, gap: 1.5, mb: 0.5, flexWrap: "wrap" }}>
+            <Box sx={{ flexGrow: 1, minWidth: 0, textAlign: "left" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 1.5, mb: 0.5, flexWrap: "wrap" }}>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
                   {displayName}
                 </Typography>
@@ -398,13 +395,13 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 {empProfile?.designationId?.name || displayRole} · {empProfile?.departmentId?.name || "Engineering"}
               </Typography>
 
-              <Box sx={{ display: "flex", alignItems: "center", justify: { xs: "center", md: "flex-start" }, gap: 1, mb: 2, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 1, mb: 2, flexWrap: "wrap" }}>
                 <Chip label="Active" size="small" sx={{ backgroundColor: "#DCFCE7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
                 <Chip label={(empProfile as any)?.band || "L5"} size="small" sx={{ backgroundColor: "#F1F5F9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
               </Box>
 
               {/* Key Meta Info */}
-              <Box sx={{ display: "flex", alignItems: "center", justify: { xs: "center", md: "flex-start" }, gap: 2, flexWrap: "wrap", color: "#64748B", fontSize: "0.825rem", wordBreak: "break-word" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 2, flexWrap: "wrap", color: "#64748B", fontSize: "0.825rem", wordBreak: "break-word" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
                   <BadgeOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
                   <span>{empProfile?.employeeCode || "NX-001"}</span>
@@ -433,7 +430,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             </Box>
 
             {/* Top Right Header Action Buttons */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", flexShrink: 0, alignSelf: { xs: "center", md: "flex-start" } }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", flexShrink: 0, alignSelf: "flex-start", width: { xs: "100%", sm: "auto" } }}>
               <Button
                 startIcon={<EditOutlinedIcon />}
                 onClick={handleOpenEditProfile}
@@ -445,6 +442,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   backgroundColor: "#FFFFFF",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                   "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#6D5DF6", color: "#6D5DF6" },
+                  flexGrow: { xs: 1, sm: 0 }
                 }}
               >
                 Edit
@@ -459,6 +457,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   px: 2,
                   boxShadow: "0 4px 12px rgba(139, 92, 246, 0.25)",
                   "&:hover": { background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)" },
+                  flexGrow: { xs: 1, sm: 0 }
                 }}
               >
                 AI Summary
@@ -471,11 +470,12 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   color: "#475569",
                   px: 2,
                   "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
+                  flexGrow: { xs: 1, sm: 0 }
                 }}
               >
                 Export
               </Button>
-              <IconButton sx={{ border: "1px solid #E2E8F0", borderRadius: "10px", p: 1, color: "#64748B" }}>
+              <IconButton sx={{ border: "1px solid #E2E8F0", borderRadius: "10px", p: 1, color: "#64748B", flexGrow: { xs: 1, sm: 0 } }}>
                 <MoreHorizOutlinedIcon />
               </IconButton>
             </Box>
@@ -507,13 +507,13 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  justify: "space-between",
+                  justifyContent: "space-between",
                   transition: "all 0.2s ease",
                   minWidth: 0,
                   "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)", transform: "translateY(-2px)" }
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", justify: "space-between", mb: 0.8 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.8 }}>
                   {metric.icon}
                 </Box>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.2rem", lineHeight: 1.2 }}>
@@ -534,7 +534,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         <Box sx={{ borderBottom: "1px solid #E2E8F0", mb: 3, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
           <Tabs
             value={activeTab}
-            onChange={(_, val) => setActiveTab(val)}
+            onChange={handleTabChange}
             variant="scrollable"
             scrollButtons="auto"
             allowScrollButtonsMobile
@@ -555,7 +555,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             <Tab label="Overview" value="overview" />
             <Tab label="Personal" value="personal" />
             <Tab label="Employment" value="employment" />
-            <Tab label="Attendance" value="attendance" />
+            {!isViewingOther && <Tab label="Attendance" value="attendance" />}
             <Tab label="Leave" value="leave" />
             <Tab label="Payroll" value="payroll" />
             <Tab label="Performance" value="performance" />
@@ -575,7 +575,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             <CircularProgress sx={{ color: "#4F46E5" }} />
           </Card>
         }>
-          {activeTab === "overview" && (
+          <Box sx={{ display: activeTab === "overview" ? "block" : "none" }}>
             <OverviewTab
               empProfile={empProfile}
               displayEmail={displayEmail || ""}
@@ -585,9 +585,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               user={user}
               showSnackbar={showSnackbar}
             />
-          )}
+          </Box>
 
-          {activeTab === "personal" && (
+          <Box sx={{ display: activeTab === "personal" ? "block" : "none" }}>
             <PersonalTab
               empProfile={empProfile}
               isViewingOther={isViewingOther}
@@ -598,9 +598,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          )}
+          </Box>
 
-          {activeTab === "documents" && (
+          <Box sx={{ display: activeTab === "documents" ? "block" : "none" }}>
             <DocumentsTab
               documents={documents}
               missingDocTypes={missingDocTypes}
@@ -609,9 +609,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          )}
+          </Box>
 
-          {activeTab === "payroll" && (
+          <Box sx={{ display: activeTab === "payroll" ? "block" : "none" }}>
             <PayrollTab
               bankAccounts={bankAccounts}
               bankAccountsLoading={bankAccountsLoading}
@@ -621,17 +621,21 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          )}
+          </Box>
 
-          {activeTab === "leave" && (
+          <Box sx={{ display: activeTab === "leave" ? "block" : "none" }}>
             <LeaveTab
               isViewingOther={isViewingOther}
               user={user}
             />
-          )}
+          </Box>
+
+          <Box sx={{ display: activeTab === "attendance" && !isViewingOther ? "block" : "none" }}>
+            <AttendanceTab />
+          </Box>
 
           {/* Generic Content Fallback for remaining/placeholder tabs */}
-          {!["overview", "personal", "documents", "payroll", "leave"].includes(activeTab) && (
+          {!["overview", "personal", "documents", "payroll", "leave", "attendance"].includes(activeTab) && (
              <Card sx={{ p: 5, textAlign: "center" }}>
               <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
                 {activeTab} Section
@@ -667,11 +671,16 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               backgroundColor: "rgba(15, 23, 42, 0.4)",
             },
           },
-          paper: { sx: { borderRadius: 3, p: 0.5 } },
+          paper: { sx: { borderRadius: "16px", p: 1 } },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem", px: 3, pt: 2.5, pb: 1 }}>
-          Edit Personal Details & Address
+        <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 3, pt: 2, pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            Edit Personal Details & Address
+          </Typography>
+          <IconButton onClick={() => setEditProfileOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={personalDetailsUpdater.submitting}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
         </DialogTitle>
         <Box component="form" onSubmit={handleSaveProfile}>
           <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, px: 3 }}>

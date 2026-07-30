@@ -56,11 +56,6 @@ const topNavItems: NavItem[] = [
 
 const timeAndLeaveNavItems: NavSubItem[] = [
     {
-        label: "My Attendance",
-        icon: <CalendarMonthOutlinedIcon fontSize="small" />,
-        path: paths.attendance,
-    },
-    {
         label: "Attendance Report",
         icon: <AssessmentOutlinedIcon fontSize="small" />,
         path: paths.reports,

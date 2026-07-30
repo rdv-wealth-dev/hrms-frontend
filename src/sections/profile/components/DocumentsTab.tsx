@@ -12,7 +12,10 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+
+import TextInput from "../../../components/input/TextInput";
 
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
@@ -165,26 +168,42 @@ export default function DocumentsTab({
         onClose={() => { if (!docUploading) setDocUploadDialogOpen(false); }}
         maxWidth="sm"
         fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(15, 23, 42, 0.4)",
+            },
+          },
+          paper: { sx: { borderRadius: "16px", p: 1 } },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
-          Upload Document
+        <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            Upload Document
+          </Typography>
+          <IconButton onClick={() => setDocUploadDialogOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={docUploading}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
-          {docUploadError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{docUploadError}</Alert>}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
-            <TextField
-              select
-              label="Document Type"
-              value={selectedDocType}
-              onChange={(e) => setSelectedDocType(e.target.value)}
-              fullWidth
-              disabled={docUploading}
-            >
-              {DOCUMENT_TYPES.map((dt) => (
-                <MenuItem key={dt.value} value={dt.value}>{dt.label}</MenuItem>
-              ))}
-            </TextField>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
+          {docUploadError && <Alert severity="error" sx={{ borderRadius: "10px" }}>{docUploadError}</Alert>}
+          <TextInput
+            select
+            label="Document Type"
+            value={selectedDocType}
+            onChange={(e) => setSelectedDocType(e.target.value)}
+            disabled={docUploading}
+          >
+            {DOCUMENT_TYPES.map((dt) => (
+              <MenuItem key={dt.value} value={dt.value}>{dt.label}</MenuItem>
+            ))}
+          </TextInput>
+          
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Typography variant="caption" sx={{ fontSize: "13px", fontWeight: 600, color: "#334155" }}>
+              Select File *
+            </Typography>
             <Button
               variant="outlined"
               component="label"
@@ -193,7 +212,12 @@ export default function DocumentsTab({
                 borderColor: "#D1D5DB",
                 color: "#374151",
                 justifyContent: "flex-start",
-                py: 1.5,
+                py: 1.25,
+                borderRadius: "12px",
+                textTransform: "none",
+                fontWeight: 500,
+                fontSize: "14px",
+                "&:hover": { borderColor: "#9CA3AF" },
               }}
             >
               {selectedFile ? selectedFile.name : "Choose File"}
@@ -205,32 +229,37 @@ export default function DocumentsTab({
                 onChange={handleFileSelect}
               />
             </Button>
-            <Typography variant="caption" sx={{ color: "#9CA3AF", mt: -1 }}>
-              Accepted: .pdf, .jpg, .jpeg
+            <Typography variant="caption" sx={{ color: "#9CA3AF", ml: 0.5, mt: 0.5 }}>
+              Accepted file formats: .pdf, .jpg, .jpeg
             </Typography>
-            {docUploading && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, color: "#6B7280" }}>
-                <CircularProgress size={16} sx={{ color: "#6D5DF6" }} />
-                <Typography variant="caption">Uploading to server...</Typography>
-              </Box>
-            )}
           </Box>
+
+          {docUploading && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, color: "#6B7280" }}>
+              <CircularProgress size={16} sx={{ color: "#6D5DF6" }} />
+              <Typography variant="caption">Uploading to server...</Typography>
+            </Box>
+          )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 3, py: 2 }}>
           <Button
             onClick={() => setDocUploadDialogOpen(false)}
             disabled={docUploading}
-            sx={{ color: "#6B7280" }}
+            color="inherit"
           >
             Cancel
           </Button>
           <Button
+            type="button"
             variant="contained"
             onClick={handleUploadDocument}
             disabled={docUploading || !selectedFile}
             sx={{
+              textTransform: "none",
+              fontWeight: 600,
               backgroundColor: "#6D5DF6",
               "&:hover": { backgroundColor: "#5B4CE5" },
+              px: 3,
             }}
           >
             {docUploading ? "Uploading..." : "Upload"}

@@ -153,11 +153,8 @@ export default function RegularizeRequestDialog({
 
       const response = await createRegularizationRequest(payload);
       if (response.succeeded) {
-        setSuccess("Regularization request submitted successfully!");
-        setTimeout(() => {
-          onSuccess?.();
-          onClose();
-        }, 1200);
+        onSuccess?.();
+        onClose();
       } else {
         setError(response.message || "Failed to submit regularization request");
       }
@@ -188,7 +185,7 @@ export default function RegularizeRequestDialog({
         paper: { sx: { borderRadius: "16px", p: 0.5 } },
       }}
     >
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+      <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <HistoryIcon sx={{ color: "#6D5DF6", fontSize: 24 }} />
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
@@ -288,7 +285,7 @@ export default function RegularizeRequestDialog({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
             <TextInput
               multiline
-              rows={3}
+              rows={2}
               label="Reason for Regularization"
               value={reason}
               onChange={(e) => setReason(e.target.value)}

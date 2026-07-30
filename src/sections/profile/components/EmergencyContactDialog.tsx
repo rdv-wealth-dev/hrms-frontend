@@ -4,9 +4,13 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import CloseIcon from "@mui/icons-material/Close";
+
+import TextInput from "../../../components/input/TextInput";
 import type { EmergencyContact } from "../../../api/employee.api";
 
 interface EmergencyContactDialogProps {
@@ -36,7 +40,7 @@ export default function EmergencyContactDialog({
   const isValid = form.name.trim() && form.relationship.trim() && form.phone.trim();
 
   const handleChange = (field: keyof EmergencyContact) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const val = field === "phone" ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value;
       setForm((prev) => ({ ...prev, [field]: val }));
     };
@@ -53,52 +57,64 @@ export default function EmergencyContactDialog({
       onClose={submitting ? undefined : onClose}
       maxWidth="xs"
       fullWidth
-      slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.4)",
+          },
+        },
+        paper: { sx: { borderRadius: "16px", p: 1 } },
+      }}
     >
-      <DialogTitle sx={{ fontWeight: 700, fontSize: "1.1rem" }}>
-        Add Emergency Contact
+      <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          Add Emergency Contact
+        </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       </DialogTitle>
+
       <Box component="form" onSubmit={handleSubmit}>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
           {error && (
-            <Alert severity="error" sx={{ borderRadius: 2 }}>
+            <Alert severity="error" sx={{ borderRadius: "10px" }}>
               {error}
             </Alert>
           )}
-          <TextField
+          <TextInput
             label="Full Name"
             value={form.name}
             onChange={handleChange("name")}
-            fullWidth
             required
             disabled={submitting}
             placeholder="e.g. Anita Nair"
           />
-          <TextField
+          <TextInput
             label="Relationship"
             value={form.relationship}
             onChange={handleChange("relationship")}
-            fullWidth
             required
             disabled={submitting}
             placeholder="e.g. Mother, Father, Spouse"
           />
-          <TextField
+          <TextInput
             label="Phone Number"
+            type="tel"
             value={form.phone}
             onChange={handleChange("phone")}
-            fullWidth
             required
             disabled={submitting}
             placeholder="e.g. 9876500001"
-            slotProps={{ htmlInput: { maxLength: 10 } }}
+            maxLength={10}
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 3, py: 2 }}>
           <Button
             onClick={onClose}
             disabled={submitting}
-            sx={{ textTransform: "none", color: "#6B7280" }}
+            color="inherit"
           >
             Cancel
           </Button>
@@ -109,9 +125,9 @@ export default function EmergencyContactDialog({
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              borderRadius: 2,
               backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4CE5" },
+              "&:hover": { backgroundColor: "#5B4BE4" },
+              px: 3,
             }}
           >
             {submitting ? "Saving..." : "Save Contact"}
