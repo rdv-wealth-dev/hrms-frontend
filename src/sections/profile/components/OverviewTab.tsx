@@ -67,9 +67,9 @@ export default function OverviewTab({
   const [aiInsightsDismissed, setAiInsightsDismissed] = useState(false);
 
   return (
-    <Grid container spacing={3} sx={{ width: "100%", m: 0 }}>
-      {/* Left Column (~75% Width on lg screens, 100% on md and below) */}
-      <Grid size={{ xs: 12, lg: 8.5 }} sx={{ p: "0 !important" }}>
+    <Grid container spacing={3}>
+      {/* Left Column (~75% Width on md/lg screens, 100% on small and below) */}
+      <Grid size={{ xs: 12, md: 8, lg: 8.5 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           
           {/* 1. Contact Information & Employment Details Grid */}
@@ -351,7 +351,7 @@ export default function OverviewTab({
       </Grid>
 
       {/* Right Column Sidebar (~25% Width - AI Assistant & Actions) */}
-      <Grid size={{ xs: 12, lg: 3.5 }} sx={{ p: "0 !important", pl: { lg: 3 } }}>
+      <Grid size={{ xs: 12, md: 4, lg: 3.5 }} sx={{ pl: { md: 3, xs: 0 }, mt: { xs: 3, md: 0 } }}>
         {!aiInsightsDismissed && (
           <Card
             sx={{

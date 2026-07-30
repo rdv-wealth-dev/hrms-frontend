@@ -40,7 +40,8 @@ export default function LeavePolicyView() {
           border: "1px solid #E2E8F0",
           backgroundColor: "#FFFFFF",
           display: "flex",
-          alignItems: "center",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
           gap: 2,
         }}
       >

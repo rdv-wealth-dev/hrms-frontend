@@ -315,33 +315,33 @@ export default function LeaveRequestsTable({
           border: "1px solid #E2E8F0",
           backgroundColor: "#FFFFFF",
           boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
-          overflow: "hidden",
+          overflowX: "auto",
         }}
       >
         <Table>
           <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", pl: 3 }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", pl: 3, whiteSpace: "nowrap" }}>
                 EMPLOYEE
               </TableCell>
 
-              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
                 TYPE
               </TableCell>
 
-              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
                 PERIOD
               </TableCell>
 
-              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
                 DAYS
               </TableCell>
 
-              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
                 STATUS
               </TableCell>
 
-              <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
+              <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
                 ACTIONS
               </TableCell>
             </TableRow>
@@ -374,6 +374,7 @@ export default function LeaveRequestsTable({
                     hover
                     sx={{
                       transition: "all 0.15s ease",
+                      "& .MuiTableCell-root": { whiteSpace: "nowrap" },
                     }}
                   >
                     {/* Employee Avatar & Name */}

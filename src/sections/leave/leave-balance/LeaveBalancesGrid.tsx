@@ -192,8 +192,10 @@ export default function LeaveBalancesGrid({
               border: "1px solid #E2E8F0",
               boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
               display: "flex",
-              alignItems: "center",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
               justifyContent: "space-between",
+              gap: { xs: 2.5, sm: 2 },
               transition: "transform 0.15s ease, box-shadow 0.15s ease",
               "&:hover": {
                 transform: "translateY(-2px)",
@@ -202,7 +204,7 @@ export default function LeaveBalancesGrid({
             }}
           >
             {/* Left: Avatar + Name + Role */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0, width: { xs: "100%", sm: "auto" } }}>
               <Avatar
                 src={emp.avatarUrl}
                 sx={{
@@ -245,9 +247,20 @@ export default function LeaveBalancesGrid({
             </Box>
 
             {/* Right: Annual, Sick, Casual Stat Columns */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 3, pl: 2, flexShrink: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: { xs: "space-between", sm: "flex-end" },
+                gap: { xs: 2, sm: 3 },
+                pl: { xs: 0, sm: 2 },
+                pr: { xs: 2, sm: 0 },
+                flexShrink: 0,
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
               {/* Annual */}
-              <Box sx={{ textAlign: "center" }}>
+              <Box sx={{ textAlign: "center", minWidth: 50 }}>
                 <Typography
                   sx={{
                     fontSize: "18px",
@@ -271,7 +284,7 @@ export default function LeaveBalancesGrid({
               </Box>
 
               {/* Sick */}
-              <Box sx={{ textAlign: "center" }}>
+              <Box sx={{ textAlign: "center", minWidth: 50 }}>
                 <Typography
                   sx={{
                     fontSize: "18px",
@@ -295,7 +308,7 @@ export default function LeaveBalancesGrid({
               </Box>
 
               {/* Casual */}
-              <Box sx={{ textAlign: "center" }}>
+              <Box sx={{ textAlign: "center", minWidth: 50 }}>
                 <Typography
                   sx={{
                     fontSize: "18px",

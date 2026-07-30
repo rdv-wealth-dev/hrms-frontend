@@ -444,9 +444,9 @@ export default function LeaveDashboardView() {
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
             justifyContent: "space-between",
-            flexWrap: "wrap",
             gap: 2,
             mb: 3,
           }}
@@ -475,6 +475,7 @@ export default function LeaveDashboardView() {
                 height: 40,
                 boxShadow: "0 2px 6px rgba(79, 70, 229, 0.25)",
                 "&:hover": { backgroundColor: "#4338CA" },
+                width: { xs: "100%", sm: "auto" },
               }}
             >
               Apply Leave

@@ -42,6 +42,7 @@ import Tab from "@mui/material/Tab";
 import type { RootState } from "../../store/rootReducer";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
+import { KpiCard } from "../../components/card/KpiCard";
 import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
   getEmployeeCompleteProfile,
@@ -343,94 +344,157 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             boxSizing: "border-box",
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 3, alignItems: "flex-start", minWidth: 0, width: "100%" }}>
-            {/* Avatar & Initial Badge */}
-            <Box sx={{ position: "relative", flexShrink: 0 }}>
-              <Avatar
-                src={empProfile?.avatarUrl || (isViewingOther ? undefined : user?.avatarUrl)}
-                sx={{
-                  width: 92,
-                  height: 92,
-                  fontSize: "2.1rem",
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg, #818CF8 0%, #6366F1 100%)",
-                  color: "#FFFFFF",
-                  boxShadow: "0 8px 20px rgba(99, 102, 241, 0.25)",
-                }}
-              >
-                {displayFirstName?.[0]?.toUpperCase() ?? "P"}
-                {displayLastName?.[0]?.toUpperCase() ?? "S"}
-              </Avatar>
-              {(user?.employeeId || isViewingOther) && (
-                <IconButton
-                  size="small"
-                  onClick={() => setAvatarDialogOpen(true)}
-                  title="Upload Profile Picture"
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 3,
+              alignItems: { xs: "stretch", md: "center" },
+              justifyContent: "space-between",
+              minWidth: 0,
+              width: "100%",
+            }}
+          >
+            {/* Left Column: Avatar + Profile Details info */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 3,
+                alignItems: "flex-start",
+                flexGrow: 1,
+                minWidth: 0,
+              }}
+            >
+              {/* Avatar & Initial Badge */}
+              <Box sx={{ position: "relative", flexShrink: 0, mx: { xs: "auto", sm: 0 } }}>
+                <Avatar
+                  src={empProfile?.avatarUrl || (isViewingOther ? undefined : user?.avatarUrl)}
                   sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    backgroundColor: "#4F46E5",
+                    width: 92,
+                    height: 92,
+                    fontSize: "2.1rem",
+                    fontWeight: 700,
+                    background: "linear-gradient(135deg, #818CF8 0%, #6366F1 100%)",
                     color: "#FFFFFF",
-                    width: 28,
-                    height: 28,
-                    border: "2px solid #FFFFFF",
-                    "&:hover": { backgroundColor: "#4338CA" },
+                    boxShadow: "0 8px 20px rgba(99, 102, 241, 0.25)",
                   }}
                 >
-                  <EditOutlinedIcon sx={{ fontSize: "15px" }} />
-                </IconButton>
-              )}
-            </Box>
+                  {displayFirstName?.[0]?.toUpperCase() ?? "P"}
+                  {displayLastName?.[0]?.toUpperCase() ?? "S"}
+                </Avatar>
+                {(user?.employeeId || isViewingOther) && (
+                  <IconButton
+                    size="small"
+                    onClick={() => setAvatarDialogOpen(true)}
+                    title="Upload Profile Picture"
+                    sx={{
+                      position: "absolute",
+                      bottom: 0,
+                      right: 0,
+                      backgroundColor: "#4F46E5",
+                      color: "#FFFFFF",
+                      width: 28,
+                      height: 28,
+                      border: "2px solid #FFFFFF",
+                      "&:hover": { backgroundColor: "#4338CA" },
+                    }}
+                  >
+                    <EditOutlinedIcon sx={{ fontSize: "15px" }} />
+                  </IconButton>
+                )}
+              </Box>
 
-            {/* Employee Title, Name & Meta Badges */}
-            <Box sx={{ flexGrow: 1, minWidth: 0, textAlign: "left" }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 1.5, mb: 0.5, flexWrap: "wrap" }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
-                  {displayName}
+              {/* Employee Title, Name & Meta Badges */}
+              <Box sx={{ flexGrow: 1, minWidth: 0, textAlign: { xs: "center", sm: "left" }, width: "100%" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: { xs: "center", sm: "flex-start" },
+                    gap: 1.5,
+                    mb: 0.5,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
+                    {displayName}
+                  </Typography>
+                </Box>
+
+                <Typography variant="subtitle1" sx={{ color: "#64748B", fontWeight: 500, mb: 1.5, fontSize: "0.95rem", wordBreak: "break-word" }}>
+                  {empProfile?.designationId?.name || displayRole} · {empProfile?.departmentId?.name || "Engineering"}
                 </Typography>
-              </Box>
 
-              <Typography variant="subtitle1" sx={{ color: "#64748B", fontWeight: 500, mb: 1.5, fontSize: "0.95rem", wordBreak: "break-word" }}>
-                {empProfile?.designationId?.name || displayRole} · {empProfile?.departmentId?.name || "Engineering"}
-              </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: { xs: "center", sm: "flex-start" },
+                    gap: 1,
+                    mb: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Chip label="Active" size="small" sx={{ backgroundColor: "#DCFCE7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
+                  <Chip label={(empProfile as any)?.band || "L5"} size="small" sx={{ backgroundColor: "#F1F5F9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
+                </Box>
 
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 1, mb: 2, flexWrap: "wrap" }}>
-                <Chip label="Active" size="small" sx={{ backgroundColor: "#DCFCE7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", px: 0.5 }} />
-                <Chip label={(empProfile as any)?.band || "L5"} size="small" sx={{ backgroundColor: "#F1F5F9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", px: 0.5 }} />
-              </Box>
-
-              {/* Key Meta Info */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 2, flexWrap: "wrap", color: "#64748B", fontSize: "0.825rem", wordBreak: "break-word" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                  <BadgeOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span>{empProfile?.employeeCode || "NX-001"}</span>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                  <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span style={{ wordBreak: "break-all" }}>{displayEmail || "priya.sharma@nexus.hr"}</span>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                  <PhoneOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span>{empProfile?.phone || "+91 98765 43210"}</span>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                  <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span>{String(empProfile?.currentAddress?.city || "Bangalore")}</span>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                  <CalendarMonthOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span>Joined 15 Mar 2021</span>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                  <GroupOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                  <span>Reports to {empProfile?.managerId ? `${empProfile.managerId.firstName} ${empProfile.managerId.lastName}` : "Arjun Mehta"}</span>
+                {/* Key Meta Info Details list */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: { xs: "center", sm: "flex-start" },
+                    gap: 2,
+                    flexWrap: "wrap",
+                    color: "#64748B",
+                    fontSize: "0.825rem",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                    <BadgeOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span>{empProfile?.employeeCode || "NX-001"}</span>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                    <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span style={{ wordBreak: "break-all" }}>{displayEmail || "priya.sharma@nexus.hr"}</span>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                    <PhoneOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span>{empProfile?.phone || "+91 98765 43210"}</span>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                    <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span>{String(empProfile?.currentAddress?.city || "Bangalore")}</span>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                    <CalendarMonthOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span>Joined 15 Mar 2021</span>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                    <GroupOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span>Reports to {empProfile?.managerId ? `${empProfile.managerId.firstName} ${empProfile.managerId.lastName}` : "Arjun Mehta"}</span>
+                  </Box>
                 </Box>
               </Box>
             </Box>
 
-            {/* Top Right Header Action Buttons */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", flexShrink: 0, alignSelf: "flex-start", width: { xs: "100%", sm: "auto" } }}>
+            {/* Right Column: Top Right Header Action Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                flexWrap: "wrap",
+                flexShrink: 0,
+                alignSelf: { xs: "stretch", md: "center" },
+                justifyContent: { xs: "center", md: "flex-end" },
+                width: { xs: "100%", md: "auto" },
+                mt: { xs: 1, md: 0 },
+              }}
+            >
               <Button
                 startIcon={<EditOutlinedIcon />}
                 onClick={handleOpenEditProfile}
@@ -442,7 +506,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   backgroundColor: "#FFFFFF",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                   "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#6D5DF6", color: "#6D5DF6" },
-                  flexGrow: { xs: 1, sm: 0 }
+                  flexGrow: { xs: 1, sm: 0 },
                 }}
               >
                 Edit
@@ -457,7 +521,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   px: 2,
                   boxShadow: "0 4px 12px rgba(139, 92, 246, 0.25)",
                   "&:hover": { background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)" },
-                  flexGrow: { xs: 1, sm: 0 }
+                  flexGrow: { xs: 1, sm: 0 },
                 }}
               >
                 AI Summary
@@ -470,12 +534,20 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                   color: "#475569",
                   px: 2,
                   "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
-                  flexGrow: { xs: 1, sm: 0 }
+                  flexGrow: { xs: 1, sm: 0 },
                 }}
               >
                 Export
               </Button>
-              <IconButton sx={{ border: "1px solid #E2E8F0", borderRadius: "10px", p: 1, color: "#64748B", flexGrow: { xs: 1, sm: 0 } }}>
+              <IconButton
+                sx={{
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "10px",
+                  p: 1,
+                  color: "#64748B",
+                  flexGrow: { xs: 1, sm: 0 },
+                }}
+              >
                 <MoreHorizOutlinedIcon />
               </IconButton>
             </Box>
@@ -483,7 +555,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         </Card>
 
         {/* Key KPI Metrics Ribbon */}
-        <Grid container spacing={1.5} sx={{ mb: 3, width: "100%" }}>
+        <Grid container spacing={1.5} sx={{ mb: 3 }}>
           {[
             { title: "94%", label: "Performance", sub: "Q2 2025", icon: <TrendingUpOutlinedIcon sx={{ fontSize: 18, color: "#4F46E5" }} /> },
             { title: "96.4%", label: "Attendance", sub: "This month", icon: <AccessTimeOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} /> },
@@ -499,33 +571,14 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               icon: <AutoAwesomeIcon sx={{ fontSize: 18, color: "#6366F1" }} /> 
             },
           ].map((metric, i) => (
-            <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 1.5 }}>
-              <Card
-                sx={{
-                  p: 1.8,
-                  borderRadius: "14px",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  transition: "all 0.2s ease",
-                  minWidth: 0,
-                  "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)", transform: "translateY(-2px)" }
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.8 }}>
-                  {metric.icon}
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.2rem", lineHeight: 1.2 }}>
-                  {metric.title}
-                </Typography>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: "#475569", display: "block", mt: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {metric.label}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.68rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {metric.sub}
-                </Typography>
-              </Card>
+            <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 3, xl: 1.5 }}>
+              <KpiCard
+                title={metric.label}
+                value={metric.title}
+                subtext={metric.sub}
+                icon={metric.icon}
+                iconBg="rgba(109, 93, 246, 0.08)"
+              />
             </Grid>
           ))}
         </Grid>
