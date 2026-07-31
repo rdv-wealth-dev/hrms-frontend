@@ -9,6 +9,9 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import Collapse from "@mui/material/Collapse";
+import CircularProgress from "@mui/material/CircularProgress";
+import InputAdornment from "@mui/material/InputAdornment";
 
 import AuthLayout from "../../../layouts/auth/AuthLayout";
 import AuthHeading from "../../../components/auth/AuthHeading";
@@ -139,29 +142,35 @@ function LoginView() {
       <Box
         sx={{
           width: "100%",
-          maxWidth: { xs: "100%", sm: "28rem", md: "32rem" },
+          maxWidth: { xs: "100%", sm: "30rem", md: "34rem" },
+          minHeight: { xs: "auto", sm: "445px" },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
           mx: "auto",
         }}
       >
-        {workspaceLogo || companyName ? (
-          <Box sx={{ textAlign: "center", mb: 3 }}>
+        <Box sx={{ textAlign: "center", mb: 3 }}>
+          <Collapse in={!!workspaceLogo} timeout={300} unmountOnExit>
             {workspaceLogo && (
               <Box
                 component="img"
                 src={workspaceLogo}
                 alt={companyName ?? "Workspace"}
-                sx={{ height: 48, mb: 1, mx: "auto" }}
+                sx={{ height: 48, mb: 1.5, mx: "auto", display: "block" }}
               />
             )}
-            {companyName && (
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary" }}>
-                {companyName}
-              </Typography>
-            )}
-          </Box>
-        ) : (
-          <AuthHeading title="Sign In" subtitle="Welcome back!" />
-        )}
+          </Collapse>
+          <AuthHeading
+            title={companyName || "Sign In"}
+            subtitle={companyName ? "Sign in to your workspace" : "Welcome back!"}
+            titleSize={
+              companyName && companyName.length > 15
+                ? { xs: "1.3rem", sm: "1.5rem", md: "1.7rem" }
+                : undefined
+            }
+          />
+        </Box>
 
         <Box
           component="form"
@@ -178,16 +187,27 @@ function LoginView() {
             placeholder="Enter company Email"
             registration={register("email")}
             error={errors.email?.message}
+            slotProps={{
+              input: {
+                endAdornment: checkEmailLoading ? (
+                  <InputAdornment position="end" sx={{ mr: 0.5 }}>
+                    <CircularProgress size={20} sx={{ color: "#6D5DF6" }} />
+                  </InputAdornment>
+                ) : null,
+              },
+            }}
           />
 
-          {checkEmailLoading && (
-            <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "center" }}>
-              Checking email...
-            </Typography>
-          )}
-
-          {!ssoEnabled && (
-            <>
+          <Collapse in={!ssoEnabled} timeout={300} unmountOnExit>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: { xs: 1.8, sm: 2 },
+                width: "100%",
+                pb: 0.5,
+              }}
+            >
               <TextInput
                 label="Password"
                 placeholder="Enter Password"
@@ -237,16 +257,16 @@ function LoginView() {
                   Forgot Password?
                 </Typography>
               </Box>
-            </>
-          )}
+            </Box>
+          </Collapse>
 
-          {ssoEnabled && (
+          <Collapse in={ssoEnabled} timeout={300} unmountOnExit>
             <Alert severity="info" sx={{ mt: 1 }}>
               {checkEmailResult?.provider
                 ? `Continue with ${checkEmailResult.provider}`
                 : "SSO is enabled for this account."}
             </Alert>
-          )}
+          </Collapse>
 
           {error && (
             <Box sx={{ textAlign: "center", mt: 0.5 }}>

@@ -342,19 +342,16 @@ function SeedHolidaysDialog({
   onClose,
   onSubmit,
 }: SeedHolidaysProps) {
-  const [countryCode, setCountryCode] = useState("IN");
   const [stateCode, setStateCode] = useState("");
 
   useEffect(() => {
     if (open) {
-      setCountryCode("IN");
       setStateCode("");
     }
   }, [open]);
 
   const handleSubmit = () => {
     onSubmit({
-      countryCode: countryCode.trim() || undefined,
       stateCode: stateCode.trim() || undefined,
     });
   };
@@ -391,22 +388,8 @@ function SeedHolidaysDialog({
         {error && <Alert severity="error" sx={{ borderRadius: "10px" }}>{error}</Alert>}
 
         <Alert severity="info" sx={{ fontSize: "13px", borderRadius: "10px" }}>
-          Generates statutory national (COUNTRY) & cantonal/regional (STATE) holidays for the selected country and state. Idempotent & safe to execute.
+          Generates statutory national (COUNTRY) & cantonal/regional (STATE) holidays based on your organization's registered locale. Idempotent & safe to execute.
         </Alert>
-
-        <TextInput
-          select
-          label="Target Country Code"
-          value={countryCode}
-          onChange={(e) => setCountryCode(e.target.value)}
-        >
-          <MenuItem value="IN">India (IN) — Primary Org Country</MenuItem>
-          <MenuItem value="CH">Switzerland (CH)</MenuItem>
-          <MenuItem value="US">United States (US)</MenuItem>
-          <MenuItem value="UK">United Kingdom (UK)</MenuItem>
-          <MenuItem value="CA">Canada (CA)</MenuItem>
-          <MenuItem value="AU">Australia (AU)</MenuItem>
-        </TextInput>
 
         <TextInput
           label="State / Canton Code (Optional)"

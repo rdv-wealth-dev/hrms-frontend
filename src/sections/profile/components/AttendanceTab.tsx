@@ -717,7 +717,23 @@ export default function AttendanceTab() {
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
                     Daily Status
                   </Typography>
-                  <AttendanceStatusChip status={selectedRecord.status} />
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <AttendanceStatusChip status={selectedRecord.status} />
+                    {selectedRecord?.overtimeId && (
+                      <Chip
+                        label="OT Computed"
+                        size="small"
+                        sx={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          backgroundColor: "#ECFDF5",
+                          color: "#047857",
+                          border: "1px solid #A7F3D0",
+                          height: "22px",
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>

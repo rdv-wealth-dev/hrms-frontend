@@ -196,7 +196,7 @@ export const seedDefaultHolidays = async (
   stateCode?: string
 ): Promise<SeedDefaultHolidaysResponse> => {
   const params: Record<string, string> = {};
-  if (countryCode) params.countryCode = countryCode;
+  // Note: countryCode is ignored (always derived from organization locale on the backend)
   if (stateCode) params.stateCode = stateCode;
 
   const response = await axiosInstance.post<SeedDefaultHolidaysResponse>(
@@ -332,6 +332,7 @@ export interface LeaveRequest {
     firstName: string;
     lastName: string;
     avatarUrl?: string;
+    profilePicture?: string;
   };
   leaveTypeId: {
     _id: string;

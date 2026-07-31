@@ -20,6 +20,8 @@ export interface CreateShiftRequest {
   fullDayMinutes?: number;
   breakDurationMinutes?: number;
   isDefault?: boolean;
+  absentThresholdMinutes?: number;
+  lateArrivalHalfDayMinutes?: number;
 }
 
 export type UpdateShiftRequest = Partial<CreateShiftRequest>;
@@ -38,6 +40,8 @@ export interface Shift {
   fullDayMinutes: number;
   breakDurationMinutes: number;
   isDefault: boolean;
+  absentThresholdMinutes: number;
+  lateArrivalHalfDayMinutes: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -88,6 +92,7 @@ export interface AttendanceRecord {
   isRegularized: boolean;
   firstCheckIn?: string;
   lastCheckOut?: string;
+  overtimeId?: string;
 }
 
 export interface AttendanceRecordResponse {

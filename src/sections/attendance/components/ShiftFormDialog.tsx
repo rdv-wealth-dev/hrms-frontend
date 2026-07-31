@@ -38,6 +38,8 @@ export function ShiftFormDialog({
   const [breakDurationMinutes, setBreakDurationMinutes] = useState<number | "">(60);
   const [halfDayThresholdMinutes, setHalfDayThresholdMinutes] = useState<number | "">(240);
   const [fullDayMinutes, setFullDayMinutes] = useState<number | "">(480);
+  const [absentThresholdMinutes, setAbsentThresholdMinutes] = useState<number | "">(255);
+  const [lateArrivalHalfDayMinutes, setLateArrivalHalfDayMinutes] = useState<number | "">(90);
   const [isDefault, setIsDefault] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -56,6 +58,8 @@ export function ShiftFormDialog({
         setBreakDurationMinutes(initialValues.breakDurationMinutes ?? 60);
         setHalfDayThresholdMinutes(initialValues.halfDayThresholdMinutes ?? 240);
         setFullDayMinutes(initialValues.fullDayMinutes ?? 480);
+        setAbsentThresholdMinutes(initialValues.absentThresholdMinutes ?? 255);
+        setLateArrivalHalfDayMinutes(initialValues.lateArrivalHalfDayMinutes ?? 90);
         setIsDefault(initialValues.isDefault ?? false);
       } else {
         setName("");
@@ -67,6 +71,8 @@ export function ShiftFormDialog({
         setBreakDurationMinutes(60);
         setHalfDayThresholdMinutes(240);
         setFullDayMinutes(480);
+        setAbsentThresholdMinutes(255);
+        setLateArrivalHalfDayMinutes(90);
         setIsDefault(false);
       }
     }
@@ -103,6 +109,8 @@ export function ShiftFormDialog({
 
     const halfDay = Number(halfDayThresholdMinutes);
     const fullDay = Number(fullDayMinutes);
+    const absentT = Number(absentThresholdMinutes);
+    const lateArrivalT = Number(lateArrivalHalfDayMinutes);
 
     if (isNaN(halfDay) || halfDay <= 0) {
       setError("Half-day threshold minutes must be a positive number.");
@@ -114,6 +122,14 @@ export function ShiftFormDialog({
     }
     if (fullDay <= halfDay) {
       setError("Full-day minutes must be strictly greater than half-day threshold minutes.");
+      return;
+    }
+    if (isNaN(absentT) || absentT < 0) {
+      setError("Absent threshold minutes must be a non-negative number.");
+      return;
+    }
+    if (isNaN(lateArrivalT) || lateArrivalT < 0) {
+      setError("Late arrival half-day threshold minutes must be a non-negative number.");
       return;
     }
 
@@ -130,6 +146,8 @@ export function ShiftFormDialog({
           breakDurationMinutes: Number(breakDurationMinutes) || 0,
           halfDayThresholdMinutes: halfDay,
           fullDayMinutes: fullDay,
+          absentThresholdMinutes: absentT,
+          lateArrivalHalfDayMinutes: lateArrivalT,
           isDefault,
         };
         await createShift(payload);
@@ -144,6 +162,8 @@ export function ShiftFormDialog({
           breakDurationMinutes: Number(breakDurationMinutes) || 0,
           halfDayThresholdMinutes: halfDay,
           fullDayMinutes: fullDay,
+          absentThresholdMinutes: absentT,
+          lateArrivalHalfDayMinutes: lateArrivalT,
           isDefault,
         };
         await updateShift(initialValues._id, payload);
@@ -280,6 +300,26 @@ export function ShiftFormDialog({
               value={fullDayMinutes}
               onChange={(e) => setFullDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
               placeholder="480"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Absent Threshold (Minutes) *"
+              type="number"
+              value={absentThresholdMinutes}
+              onChange={(e) => setAbsentThresholdMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="255"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Late Arrival Half-Day Threshold (Minutes) *"
+              type="number"
+              value={lateArrivalHalfDayMinutes}
+              onChange={(e) => setLateArrivalHalfDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="90"
             />
           </Grid>
 

@@ -651,6 +651,13 @@ export interface BulkImportErrorDetail {
   reason: string;
 }
 
+export interface BulkImportWarningDetail {
+  rowNumber: number;
+  email?: string;
+  reason: string;
+  severity: "WARNING";
+}
+
 export interface BulkImportResponse {
   succeeded: boolean;
   success: boolean;
@@ -661,6 +668,22 @@ export interface BulkImportResponse {
     insertedCount: number;
     failedCount: number;
     errors: BulkImportErrorDetail[];
+    warnings?: BulkImportWarningDetail[];
+    created?: {
+      departments?: string[];
+      designations?: string[];
+    };
+  } | null;
+}
+
+export interface ImportTemplateResponse {
+  succeeded: boolean;
+  message: string;
+  errors: any[];
+  data: {
+    fileName: string;
+    mimeType: string;
+    fileData: string; // Base64 spreadsheet
   } | null;
 }
 
@@ -715,6 +738,19 @@ export const bulkExportEmployees = async (
         ...getAuthHeader(),
         "X-Tenant-Slug": tenantSlug,
       },
+    }
+  );
+  return response.data;
+};
+
+export const getImportTemplate = async (
+  format: "xlsx" | "csv" = "xlsx"
+): Promise<ImportTemplateResponse> => {
+  const response = await axiosInstance.get<ImportTemplateResponse>(
+    "/employees/import-template",
+    {
+      params: { format },
+      headers: getAuthHeader(),
     }
   );
   return response.data;

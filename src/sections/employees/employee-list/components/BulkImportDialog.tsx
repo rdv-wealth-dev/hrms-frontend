@@ -25,7 +25,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-import { bulkImportEmployees, type BulkImportResponse } from "../../../../api/employee.api";
+import { bulkImportEmployees, getImportTemplate, type BulkImportResponse } from "../../../../api/employee.api";
 
 interface BulkImportDialogProps {
   open: boolean;
@@ -46,6 +46,7 @@ export default function BulkImportDialog({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BulkImportResponse | null>(null);
   const [showHeaders, setShowHeaders] = useState(false);
+  const [templateLoading, setTemplateLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +58,37 @@ export default function BulkImportDialog({
     setResult(null);
     setShowHeaders(false);
     onClose();
+  };
+
+  const handleDownloadTemplate = async (format: "xlsx" | "csv") => {
+    setTemplateLoading(true);
+    setError(null);
+    try {
+      const res = await getImportTemplate(format);
+      if (res?.succeeded && res?.data?.fileData) {
+        const { fileName, mimeType, fileData } = res.data;
+        const byteCharacters = atob(fileData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+      } else {
+        setError(res?.message || "Failed to download the template.");
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "An error occurred while fetching the template.");
+    } finally {
+      setTemplateLoading(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,6 +291,65 @@ export default function BulkImportDialog({
                 </TableContainer>
               </Box>
             )}
+
+            {/* Fuzzy Match & Auto-Creation Warnings List */}
+            {result?.data?.warnings && result.data.warnings.length > 0 && (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#D97706" }}>
+                  Fuzzy Match & Auto-Creation Warnings List ({result.data.warnings.length})
+                </Typography>
+                <TableContainer component={Paper} sx={{ maxHeight: 200, border: "1px solid #FCD34D", borderRadius: "8px", boxShadow: "none" }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, backgroundColor: "#FFFBEB", color: "#B45309" }}>Row</TableCell>
+                        <TableCell sx={{ fontWeight: 600, backgroundColor: "#FFFBEB", color: "#B45309" }}>Email</TableCell>
+                        <TableCell sx={{ fontWeight: 600, backgroundColor: "#FFFBEB", color: "#B45309" }}>Warning Details</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {result.data.warnings.map((warn: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell sx={{ fontWeight: 500 }}>{warn?.rowNumber}</TableCell>
+                          <TableCell>{warn?.email || "—"}</TableCell>
+                          <TableCell sx={{ color: "#D97706" }}>{warn?.reason}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            )}
+
+            {/* Master Creation Summary Block */}
+            {((result?.data?.created?.departments && result.data.created.departments.length > 0) ||
+              (result?.data?.created?.designations && result.data.created.designations.length > 0)) && (
+              <Alert severity="warning" sx={{ borderRadius: "10px", mt: 1, backgroundColor: "#FFFBEB", border: "1px solid #FCD34D" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#B45309" }}>
+                  System Masters Automatically Created/Updated:
+                </Typography>
+                {result?.data?.created?.departments && result.data.created.departments.length > 0 && (
+                  <Box sx={{ mt: 0.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: "#78350F" }}>Departments: </Typography>
+                    {result.data.created.departments.map((dept, i) => (
+                      <span key={i} style={{ fontStyle: "italic", fontSize: "12px", color: "#78350F" }}>
+                        "{dept}"{i < (result.data.created?.departments?.length ?? 0) - 1 ? ", " : ""}
+                      </span>
+                    ))}
+                  </Box>
+                )}
+                {result?.data?.created?.designations && result.data.created.designations.length > 0 && (
+                  <Box sx={{ mt: 0.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: "#78350F" }}>Designations: </Typography>
+                    {result.data.created.designations.map((desig, i) => (
+                      <span key={i} style={{ fontStyle: "italic", fontSize: "12px", color: "#78350F" }}>
+                        "{desig}"{i < (result.data.created?.designations?.length ?? 0) - 1 ? ", " : ""}
+                      </span>
+                    ))}
+                  </Box>
+                )}
+              </Alert>
+            )}
           </Box>
         )}
 
@@ -268,6 +359,30 @@ export default function BulkImportDialog({
             <Alert severity="info" sx={{ borderRadius: "10px", fontSize: "13px" }}>
               Upload your employee list. Ensure columns align with existing system values.
             </Alert>
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 0.5, px: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#475569" }}>
+                Need a template?
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1.5 }}>
+                <Button
+                  size="small"
+                  onClick={() => handleDownloadTemplate("xlsx")}
+                  disabled={templateLoading}
+                  sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+                >
+                  Download Excel Template
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => handleDownloadTemplate("csv")}
+                  disabled={templateLoading}
+                  sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+                >
+                  Download CSV Template
+                </Button>
+              </Box>
+            </Box>
 
             {/* Drag & Drop Frame */}
             {!file ? (
