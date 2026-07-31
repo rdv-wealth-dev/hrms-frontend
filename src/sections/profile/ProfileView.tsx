@@ -42,6 +42,7 @@ import Tab from "@mui/material/Tab";
 import type { RootState } from "../../store/rootReducer";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
+import { usePermissions } from "../../hooks/usePermissions";
 import { KpiCard } from "../../components/card/KpiCard";
 import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
@@ -77,10 +78,12 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const { showSnackbar } = useSnackbar();
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
+  const { hasPermission } = usePermissions();
 
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;
   const isViewingOther = !!resolvedTargetId;
+  const canViewAttendance = !isViewingOther || hasPermission("attendance.read") || hasPermission("attendance.create");
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab") || "overview";
@@ -88,13 +91,13 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
   useEffect(() => {
     const currentTab = searchParams.get("tab") || "overview";
-    if (currentTab === "attendance" && isViewingOther) {
+    if (currentTab === "attendance" && !canViewAttendance) {
       setActiveTab("overview");
       setSearchParams({ tab: "overview" });
     } else {
       setActiveTab(currentTab);
     }
-  }, [searchParams, isViewingOther, setSearchParams]);
+  }, [searchParams, canViewAttendance, setSearchParams]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newTab: string) => {
     setActiveTab(newTab);
@@ -608,7 +611,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             <Tab label="Overview" value="overview" />
             <Tab label="Personal" value="personal" />
             <Tab label="Employment" value="employment" />
-            {!isViewingOther && <Tab label="Attendance" value="attendance" />}
+            {canViewAttendance && <Tab label="Attendance" value="attendance" />}
             <Tab label="Leave" value="leave" />
             <Tab label="Payroll" value="payroll" />
             <Tab label="Performance" value="performance" />
@@ -683,8 +686,8 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             />
           </Box>
 
-          <Box sx={{ display: activeTab === "attendance" && !isViewingOther ? "block" : "none" }}>
-            <AttendanceTab />
+          <Box sx={{ display: activeTab === "attendance" && canViewAttendance ? "block" : "none" }}>
+            <AttendanceTab employeeId={employeeId || undefined} isViewingOther={isViewingOther} />
           </Box>
 
           {/* Generic Content Fallback for remaining/placeholder tabs */}

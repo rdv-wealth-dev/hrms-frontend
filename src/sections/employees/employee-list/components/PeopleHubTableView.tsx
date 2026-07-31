@@ -221,6 +221,7 @@ export function PeopleHubTableView({
                 hover
                 sx={{
                   transition: "background-color 0.15s ease",
+                  height: 64,
                   "&:last-child td": { borderBottom: 0 },
                   "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
                 }}
@@ -399,6 +400,21 @@ export function PeopleHubTableView({
               </TableRow>
             );
           })}
+          {Math.max(0, 10 - employees.length) > 0 &&
+            Array.from({ length: Math.max(0, 10 - employees.length) }).map((_, index) => {
+              const isLast = index === Math.max(0, 10 - employees.length) - 1;
+              return (
+                <TableRow
+                  key={`empty-${index}`}
+                  sx={{
+                    height: 64,
+                    "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
+                  }}
+                >
+                  <TableCell colSpan={9} />
+                </TableRow>
+              );
+            })}
         </TableBody>
       </Table>
 

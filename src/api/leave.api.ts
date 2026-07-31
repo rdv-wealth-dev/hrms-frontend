@@ -192,7 +192,7 @@ export interface SeedDefaultHolidaysResponse {
 }
 
 export const seedDefaultHolidays = async (
-  countryCode?: string,
+  _countryCode?: string,
   stateCode?: string
 ): Promise<SeedDefaultHolidaysResponse> => {
   const params: Record<string, string> = {};

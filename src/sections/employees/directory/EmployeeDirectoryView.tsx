@@ -19,6 +19,9 @@ import type { RootState } from "../../../store/rootReducer";
 import { listEmployeesRequest } from "../../../store/employee";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { listDepartmentsRequest } from "../../../store/department/department.actions";
+import { listDesignationsRequest } from "../../../store/designation/designation.actions";
+import { listBranchesRequest } from "../../../store/branch/branch.actions";
 
 import { PeopleHubKpiCards } from "../employee-list/components/PeopleHubKpiCards";
 import { PeopleHubDepartmentTabs, type FilterState } from "../employee-list/components/PeopleHubDepartmentTabs";
@@ -103,44 +106,81 @@ function EmployeeDirectoryView() {
   const [filters, setFilters] = useState<FilterState>({});
   const debouncedSearchVal = useDebounce(searchVal, 500);
 
+  // Fetch initial setup data if not loaded
   useEffect(() => {
+    if (departments.length === 0) {
+      dispatch(listDepartmentsRequest());
+    }
+    if (designations.length === 0) {
+      dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 50 }));
+    }
+    if (branches.length === 0) {
+      dispatch(listBranchesRequest());
+    }
+  }, [dispatch, departments.length, designations.length, branches.length]);
+
+  useEffect(() => {
+    let branchId: string | undefined = undefined;
+    let departmentId: string | undefined = undefined;
+    let designationId: string | undefined = undefined;
+
+    if (filters.branch && filters.branch !== "All Branches") {
+      const found = branches.find((b: any) => b.name === filters.branch || (b as any).branchName === filters.branch);
+      if (found) branchId = found._id;
+    }
+    if (filters.department && filters.department !== "All Departments") {
+      const found = departments.find((d: any) => d.name === filters.department);
+      if (found) departmentId = found._id;
+    }
+    if (filters.designation && filters.designation !== "All Designations") {
+      const found = designations.find((d: any) => d.name === filters.designation);
+      if (found) designationId = found._id;
+    }
+
+    let backendStatus: string | undefined = undefined;
+    if (filters.status && filters.status !== "All Statuses") {
+      const upper = filters.status.toUpperCase();
+      if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
+        backendStatus = upper;
+      }
+    }
+
+    const mapping = (period?: string) => {
+      if (!period) return undefined;
+      if (period === "This Month") return "this_month";
+      if (period === "Last 3 Months") return "last_3_months";
+      if (period === "Last 6 Months") return "last_6_months";
+      if (period === "This Year") return "last_year";
+      return undefined;
+    };
+
     dispatch(
       listEmployeesRequest({
         pageNumber: 1,
         pageSize: 50,
         search: debouncedSearchVal,
+        status: backendStatus,
+        joiningPeriod: mapping(filters.dateOfJoining),
+        branchId,
+        departmentId,
+        designationId,
       })
     );
-  }, [dispatch, debouncedSearchVal]);
+  }, [
+    dispatch,
+    debouncedSearchVal,
+    filters.branch,
+    filters.department,
+    filters.designation,
+    filters.status,
+    filters.dateOfJoining,
+    branches,
+    departments,
+    designations,
+  ]);
 
   const displayedEmployees = employees.filter((emp) => {
-    // 1. Department Filter
-    const activeDept = filters.department || selectedDeptFilter;
-    if (activeDept) {
-      const deptObj = typeof emp.departmentId === "object" ? (emp.departmentId as any) : null;
-      const deptName = deptObj?.name || "";
-      if (!deptName.toLowerCase().includes(activeDept.toLowerCase())) {
-        return false;
-      }
-    }
-
-    // 2. Designation Filter
-    if (filters.designation) {
-      const desigObj = typeof emp.designationId === "object" ? (emp.designationId as any) : null;
-      const desigName = desigObj?.name || "";
-      if (!desigName.toLowerCase().includes(filters.designation.toLowerCase())) {
-        return false;
-      }
-    }
-
-    // 3. Branch Filter
-    if (filters.branch) {
-      const branchObj = typeof (emp as any).branchId === "object" ? ((emp as any).branchId as any) : null;
-      const branchName = branchObj?.name || "";
-      if (branchName && !branchName.toLowerCase().includes(filters.branch.toLowerCase())) {
-        return false;
-      }
-    }
+    // Note: Department, Designation, and Branch filters are executed server-side.
 
     // 4. Team Filter
     if (filters.team) {

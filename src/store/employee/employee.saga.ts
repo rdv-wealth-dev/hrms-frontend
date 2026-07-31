@@ -63,7 +63,10 @@ function* handleListEmployees(action: ListEmployeesRequestAction): SagaIterator 
       action.payload.pageSize,
       action.payload.search,
       action.payload.status,
-      action.payload.joiningPeriod
+      action.payload.joiningPeriod,
+      action.payload.designationId,
+      action.payload.departmentId,
+      action.payload.branchId
     );
 
     if (!response || !response.succeeded) {

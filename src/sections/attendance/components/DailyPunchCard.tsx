@@ -627,17 +627,53 @@ export default function DailyPunchCard() {
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     Clock In
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
-                    {checkInTime}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
+                      {checkInTime}
+                    </Typography>
+                    {record?.isLate && (
+                      <Chip
+                        label="Late"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          backgroundColor: "rgba(245, 158, 11, 0.08)",
+                          color: "#F59E0B",
+                          border: "1px solid rgba(245, 158, 11, 0.15)",
+                          px: 0.5,
+                          borderRadius: "4px"
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     Clock Out
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
-                    {checkOutTime}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
+                      {checkOutTime}
+                    </Typography>
+                    {record?.isCheckOutEarly && (
+                      <Chip
+                        label="Early"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          backgroundColor: "rgba(239, 68, 68, 0.08)",
+                          color: "#EF4444",
+                          border: "1px solid rgba(239, 68, 68, 0.15)",
+                          px: 0.5,
+                          borderRadius: "4px"
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>

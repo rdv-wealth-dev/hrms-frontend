@@ -93,6 +93,8 @@ export interface AttendanceRecord {
   firstCheckIn?: string;
   lastCheckOut?: string;
   overtimeId?: string;
+  isLate?: boolean;
+  isCheckOutEarly?: boolean;
 }
 
 export interface AttendanceRecordResponse {

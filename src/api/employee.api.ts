@@ -35,7 +35,10 @@ export const listEmployees = async (
   pageSize = 10,
   search?: string,
   status?: string,
-  joiningPeriod?: string
+  joiningPeriod?: string,
+  designationId?: string,
+  departmentId?: string,
+  branchId?: string
 ): Promise<EmployeeListResponse> => {
   let url = `/employees?pageNumber=${pageNumber}&pageSize=${pageSize}`;
   if (search) {
@@ -46,6 +49,15 @@ export const listEmployees = async (
   }
   if (joiningPeriod) {
     url += `&joiningPeriod=${encodeURIComponent(joiningPeriod)}`;
+  }
+  if (designationId) {
+    url += `&designationId=${encodeURIComponent(designationId)}`;
+  }
+  if (departmentId) {
+    url += `&departmentId=${encodeURIComponent(departmentId)}`;
+  }
+  if (branchId) {
+    url += `&branchId=${encodeURIComponent(branchId)}`;
   }
   const response = await axiosInstance.get<EmployeeListResponse>(
     url,

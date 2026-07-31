@@ -322,28 +322,28 @@ export default function BulkImportDialog({
             )}
 
             {/* Master Creation Summary Block */}
-            {((result?.data?.created?.departments && result.data.created.departments.length > 0) ||
-              (result?.data?.created?.designations && result.data.created.designations.length > 0)) && (
+            {((result?.data?.created?.departments && result?.data?.created?.departments.length > 0) ||
+              (result?.data?.created?.designations && result?.data?.created?.designations.length > 0)) && (
               <Alert severity="warning" sx={{ borderRadius: "10px", mt: 1, backgroundColor: "#FFFBEB", border: "1px solid #FCD34D" }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#B45309" }}>
                   System Masters Automatically Created/Updated:
                 </Typography>
-                {result?.data?.created?.departments && result.data.created.departments.length > 0 && (
+                {result?.data?.created?.departments && result?.data?.created?.departments.length > 0 && (
                   <Box sx={{ mt: 0.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 700, color: "#78350F" }}>Departments: </Typography>
-                    {result.data.created.departments.map((dept, i) => (
+                    {result?.data?.created?.departments.map((dept, i) => (
                       <span key={i} style={{ fontStyle: "italic", fontSize: "12px", color: "#78350F" }}>
-                        "{dept}"{i < (result.data.created?.departments?.length ?? 0) - 1 ? ", " : ""}
+                        "{dept}"{i < (result?.data?.created?.departments?.length ?? 0) - 1 ? ", " : ""}
                       </span>
                     ))}
                   </Box>
                 )}
-                {result?.data?.created?.designations && result.data.created.designations.length > 0 && (
+                {result?.data?.created?.designations && result?.data?.created?.designations.length > 0 && (
                   <Box sx={{ mt: 0.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 700, color: "#78350F" }}>Designations: </Typography>
-                    {result.data.created.designations.map((desig, i) => (
+                    {result?.data?.created?.designations.map((desig, i) => (
                       <span key={i} style={{ fontStyle: "italic", fontSize: "12px", color: "#78350F" }}>
-                        "{desig}"{i < (result.data.created?.designations?.length ?? 0) - 1 ? ", " : ""}
+                        "{desig}"{i < (result?.data?.created?.designations?.length ?? 0) - 1 ? ", " : ""}
                       </span>
                     ))}
                   </Box>

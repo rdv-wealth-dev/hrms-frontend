@@ -37,14 +37,19 @@ import { usePermissions } from "../../../hooks/usePermissions";
 import ManualAttendanceDialog from "../../attendance/components/ManualAttendanceDialog";
 import RegularizeRequestDialog from "../../attendance/components/RegularizeRequestDialog";
 
-import { getMyAttendanceHistory, getMyRegularizationRequests } from "../../../api/attendance.api";
+import { getMyAttendanceHistory, getMyRegularizationRequests, getAttendanceReport } from "../../../api/attendance.api";
 import { listCompanyEvents, type CompanyEvent } from "../../../api/event.api";
 import CreateEventDialog from "../../attendance/components/CreateEventDialog";
 import type { AttendanceRecord, RegularizationRequest } from "../../../store/attendance/attendance.types";
 import AttendanceStatusChip from "../../attendance/components/AttendanceStatusChip";
 import { formatWorkedTime } from "../../../utils/time";
 
-export default function AttendanceTab() {
+interface AttendanceTabProps {
+  employeeId?: string;
+  isViewingOther?: boolean;
+}
+
+export default function AttendanceTab({ employeeId, isViewingOther = false }: AttendanceTabProps) {
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("attendance.create");
   const [manualOpen, setManualOpen] = useState(false);
@@ -150,18 +155,30 @@ export default function AttendanceTab() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getMyAttendanceHistory(fromDate, toDate);
-      if (response.succeeded && response.data) {
-        // Sort records by date descending
-        const sorted = [...response.data].sort((a, b) => {
-          const dateA = a.attendanceDate ? new Date(a.attendanceDate).getTime() : 0;
-          const dateB = b.attendanceDate ? new Date(b.attendanceDate).getTime() : 0;
-          return dateB - dateA;
-        });
-        setRecords(sorted);
+      let fetchedRecords: AttendanceRecord[] = [];
+      if (isViewingOther && employeeId) {
+        const response = await getAttendanceReport(fromDate, toDate, 1, 1000, undefined, employeeId);
+        if (response.succeeded && response.data?.data) {
+          fetchedRecords = response.data.data;
+        } else {
+          setError(response.message || "Failed to fetch attendance history");
+        }
       } else {
-        setError(response.message || "Failed to fetch attendance history");
+        const response = await getMyAttendanceHistory(fromDate, toDate);
+        if (response.succeeded && response.data) {
+          fetchedRecords = response.data;
+        } else {
+          setError(response.message || "Failed to fetch attendance history");
+        }
       }
+
+      // Sort records by date descending
+      const sorted = [...fetchedRecords].sort((a, b) => {
+        const dateA = a.attendanceDate ? new Date(a.attendanceDate).getTime() : 0;
+        const dateB = b.attendanceDate ? new Date(b.attendanceDate).getTime() : 0;
+        return dateB - dateA;
+      });
+      setRecords(sorted);
     } catch (err: any) {
       setError(
         err.response?.data?.message || err.message || "Failed to load attendance history"
@@ -208,9 +225,13 @@ export default function AttendanceTab() {
 
   // Fetch all data in parallel on mount — both tabs are ready instantly
   useEffect(() => {
-    Promise.all([fetchHistory(), fetchEvents(), fetchRegularizationRequests()]);
+    const promises: Promise<any>[] = [fetchHistory(), fetchEvents()];
+    if (!isViewingOther) {
+      promises.push(fetchRegularizationRequests());
+    }
+    Promise.all(promises);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isViewingOther, employeeId]);
 
   const handleRegSuccess = () => {
     fetchHistory();
@@ -289,34 +310,33 @@ export default function AttendanceTab() {
         <CalendarMonthOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
-            My Attendance
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Track your daily check-in logs, shifts, and total worked duration
+            Attendance
           </Typography>
         </Box>
       </Box>
 
       {/* Tab Selection */}
-      <Tabs
-        value={tabValue}
-        onChange={(_, newValue) => setTabValue(newValue)}
-        sx={{
-          mb: 3,
-          borderBottom: "1px solid rgba(0,0,0,0.08)",
-          "& .MuiTabs-indicator": { backgroundColor: "#6D5DF6" },
-          "& .MuiTab-root": {
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: "0.95rem",
-            color: "#6B7280",
-            "&.Mui-selected": { color: "#6D5DF6" },
-          },
-        }}
-      >
-        <Tab label="Attendance History" />
-        <Tab label="Regularization Requests" />
-      </Tabs>
+      {!isViewingOther && (
+        <Tabs
+          value={tabValue}
+          onChange={(_, newValue) => setTabValue(newValue)}
+          sx={{
+            mb: 3,
+            borderBottom: "1px solid rgba(0,0,0,0.08)",
+            "& .MuiTabs-indicator": { backgroundColor: "#6D5DF6" },
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              color: "#6B7280",
+              "&.Mui-selected": { color: "#6D5DF6" },
+            },
+          }}
+        >
+          <Tab label="Attendance History" />
+          <Tab label="Regularization Requests" />
+        </Tabs>
+      )}
 
       {tabValue === 0 && (
         <Card
@@ -584,10 +604,46 @@ export default function AttendanceTab() {
                         General Shift
                       </TableCell>
                       <TableCell sx={{ color: "#111827", fontWeight: 500, whiteSpace: "nowrap" }}>
-                        {formatTime(row.firstCheckIn)}
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                          <span>{formatTime(row.firstCheckIn)}</span>
+                          {row.isLate && (
+                            <Chip
+                              label="Late"
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: "10px",
+                                fontWeight: 700,
+                                backgroundColor: "rgba(245, 158, 11, 0.08)",
+                                color: "#F59E0B",
+                                border: "1px solid rgba(245, 158, 11, 0.15)",
+                                px: 0.5,
+                                borderRadius: "4px"
+                              }}
+                            />
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell sx={{ color: "#111827", fontWeight: 500, whiteSpace: "nowrap" }}>
-                        {formatTime(row.lastCheckOut)}
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                          <span>{formatTime(row.lastCheckOut)}</span>
+                          {row.isCheckOutEarly && (
+                            <Chip
+                              label="Early"
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: "10px",
+                                fontWeight: 700,
+                                backgroundColor: "rgba(239, 68, 68, 0.08)",
+                                color: "#EF4444",
+                                border: "1px solid rgba(239, 68, 68, 0.15)",
+                                px: 0.5,
+                                borderRadius: "4px"
+                              }}
+                            />
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell sx={{ fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}>
                         {formatWorkedTime(row.workedMinutes)}
@@ -604,7 +660,7 @@ export default function AttendanceTab() {
                         >
                           <InfoOutlinedIcon fontSize="small" />
                         </IconButton>
-                        {!row.isRegularized && (
+                        {!isViewingOther && !row.isRegularized && (
                           <IconButton
                             size="small"
                             onClick={() => {
@@ -786,14 +842,46 @@ export default function AttendanceTab() {
                                 mb: 1,
                               }}
                             />
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                              {new Date(session.timestamp).toLocaleTimeString(navigator.language, {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                second: "2-digit",
-                                hour12: true,
-                              })}
-                            </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                                {new Date(session.timestamp).toLocaleTimeString(navigator.language, {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                  hour12: true,
+                                })}
+                              </Typography>
+                              {isCheckIn && selectedRecord.isLate && (
+                                <Chip
+                                  label="Late"
+                                  size="small"
+                                  sx={{
+                                    height: 16,
+                                    fontSize: "9px",
+                                    fontWeight: 700,
+                                    backgroundColor: "rgba(245, 158, 11, 0.08)",
+                                    color: "#F59E0B",
+                                    border: "1px solid rgba(245, 158, 11, 0.15)",
+                                    borderRadius: "4px"
+                                  }}
+                                />
+                              )}
+                              {session.type === "CHECK_OUT" && selectedRecord.isCheckOutEarly && (
+                                <Chip
+                                  label="Early Checkout"
+                                  size="small"
+                                  sx={{
+                                    height: 16,
+                                    fontSize: "9px",
+                                    fontWeight: 700,
+                                    backgroundColor: "rgba(239, 68, 68, 0.08)",
+                                    color: "#EF4444",
+                                    border: "1px solid rgba(239, 68, 68, 0.15)",
+                                    borderRadius: "4px"
+                                  }}
+                                />
+                              )}
+                            </Box>
                             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5, maxWidth: "320px", wordBreak: "break-all" }}>
                               Device: {session.deviceInfo || "Browser Agent"}
                             </Typography>
@@ -822,7 +910,7 @@ export default function AttendanceTab() {
           )}
         </DialogContent>
         <DialogActions sx={{ px: 2, py: 1.5 }}>
-          {selectedRecord && !selectedRecord.isRegularized && (
+          {selectedRecord && !isViewingOther && !selectedRecord.isRegularized && (
             <Button
               onClick={() => {
                 setRegTarget(selectedRecord);

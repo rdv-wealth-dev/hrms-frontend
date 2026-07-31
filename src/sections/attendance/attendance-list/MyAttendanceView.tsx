@@ -293,12 +293,9 @@ export default function MyAttendanceView() {
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
           <CalendarMonthOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
-          <Box sx={{ mb: 3 }}>
+          <Box>
             <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
-              My Attendance
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Track your daily check-in logs, shifts, and total worked duration
+              Attendance
             </Typography>
           </Box>
         </Box>
@@ -580,10 +577,46 @@ export default function MyAttendanceView() {
                           General Shift
                         </TableCell>
                         <TableCell sx={{ color: "#111827", fontWeight: 500 }}>
-                          {formatTime(row.firstCheckIn)}
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                            <span>{formatTime(row.firstCheckIn)}</span>
+                            {row.isLate && (
+                              <Chip
+                                label="Late"
+                                size="small"
+                                sx={{
+                                  height: 18,
+                                  fontSize: "10px",
+                                  fontWeight: 700,
+                                  backgroundColor: "rgba(245, 158, 11, 0.08)",
+                                  color: "#F59E0B",
+                                  border: "1px solid rgba(245, 158, 11, 0.15)",
+                                  px: 0.5,
+                                  borderRadius: "4px"
+                                }}
+                              />
+                            )}
+                          </Box>
                         </TableCell>
                         <TableCell sx={{ color: "#111827", fontWeight: 500 }}>
-                          {formatTime(row.lastCheckOut)}
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                            <span>{formatTime(row.lastCheckOut)}</span>
+                            {row.isCheckOutEarly && (
+                              <Chip
+                                label="Early"
+                                size="small"
+                                sx={{
+                                  height: 18,
+                                  fontSize: "10px",
+                                  fontWeight: 700,
+                                  backgroundColor: "rgba(239, 68, 68, 0.08)",
+                                  color: "#EF4444",
+                                  border: "1px solid rgba(239, 68, 68, 0.15)",
+                                  px: 0.5,
+                                  borderRadius: "4px"
+                                }}
+                              />
+                            )}
+                          </Box>
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: "#374151" }}>
                           {formatWorkedTime(row.workedMinutes)}
@@ -766,14 +799,46 @@ export default function MyAttendanceView() {
                                   mb: 1,
                                 }}
                               />
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                                {new Date(session.timestamp).toLocaleTimeString(navigator.language, {
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                  hour12: true,
-                                })}
-                              </Typography>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                                  {new Date(session.timestamp).toLocaleTimeString(navigator.language, {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                    hour12: true,
+                                  })}
+                                </Typography>
+                                {isCheckIn && selectedRecord.isLate && (
+                                  <Chip
+                                    label="Late"
+                                    size="small"
+                                    sx={{
+                                      height: 16,
+                                      fontSize: "9px",
+                                      fontWeight: 700,
+                                      backgroundColor: "rgba(245, 158, 11, 0.08)",
+                                      color: "#F59E0B",
+                                      border: "1px solid rgba(245, 158, 11, 0.15)",
+                                      borderRadius: "4px"
+                                    }}
+                                  />
+                                )}
+                                {session.type === "CHECK_OUT" && selectedRecord.isCheckOutEarly && (
+                                  <Chip
+                                    label="Early Checkout"
+                                    size="small"
+                                    sx={{
+                                      height: 16,
+                                      fontSize: "9px",
+                                      fontWeight: 700,
+                                      backgroundColor: "rgba(239, 68, 68, 0.08)",
+                                      color: "#EF4444",
+                                      border: "1px solid rgba(239, 68, 68, 0.15)",
+                                      borderRadius: "4px"
+                                    }}
+                                  />
+                                )}
+                              </Box>
                               <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5, maxWidth: "320px", wordBreak: "break-all" }}>
                                 Device: {session.deviceInfo || "Browser Agent"}
                               </Typography>

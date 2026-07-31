@@ -135,97 +135,133 @@ export function PeopleHubDepartmentTabs({
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
-          gap: 1.2,
-          overflowX: "auto",
-          py: 0.5,
-          px: 0.5,
-          maxWidth: "100%",
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": { display: "none" },
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { xs: "stretch", md: "center" },
+          gap: 1.5,
+          width: "100%",
         }}
       >
-        {searchElement}
-        {CATEGORIES.map((cat) => {
-          const selectedValue = localFilters[cat.id as keyof FilterState];
-          const isSelected = Boolean(selectedValue);
-          const isOpen = activeCategory === cat.id;
+        {searchElement && (
+          <Box sx={{
+            width: { xs: "100%", md: "auto" },
+            flexShrink: 0,
+            "& .MuiTextField-root": {
+              width: "100% !important"
+            }
+          }}>
+            {searchElement}
+          </Box>
+        )}
+        <Box
+          sx={{
+            display: { xs: "grid", sm: "flex" },
+            gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "none" },
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: { xs: 0.8, sm: 1.2 },
+            py: 0.5,
+            px: 0.5,
+            flexGrow: 1,
+            width: "100%",
+          }}
+        >
+          <Box
+            sx={{
+              display: { xs: "grid", sm: "contents" },
+              gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "none" },
+              gap: { xs: 0.8, sm: 0 },
+              width: "100%",
+              gridColumn: { xs: "span 3", sm: "auto" }
+            }}
+          >
+            {CATEGORIES.map((cat) => {
+              const selectedValue = localFilters[cat.id as keyof FilterState];
+              const isSelected = Boolean(selectedValue);
+              const isOpen = activeCategory === cat.id;
 
-          return (
+              return (
+                <Button
+                  key={cat.id}
+                  onClick={() => handleToggleCategory(cat.id)}
+                  size="small"
+                  endIcon={
+                    cat.isDate ? (
+                      <CalendarTodayOutlinedIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: isOpen ? "#6D5DF6" : "#64748B" }} />
+                    ) : (
+                      <KeyboardArrowDownIcon
+                        sx={{
+                          fontSize: { xs: 14, sm: 18 },
+                          color: isOpen ? "#6D5DF6" : "#64748B",
+                          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                        }}
+                      />
+                    )
+                  }
+                  sx={{
+                    height: { xs: 36, sm: 40 },
+                    borderRadius: "10px",
+                    px: { xs: 0.8, sm: 1.8 },
+                    fontSize: { xs: "11px", sm: "14px" },
+                    fontWeight: isSelected || isOpen ? 600 : 500,
+                    textTransform: "none",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    transition: "all 0.15s ease",
+                    backgroundColor: isOpen ? "#EEF2FF" : "#FFFFFF",
+                    color: isSelected || isOpen ? "#0F172A" : "#475569",
+                    border: isOpen
+                      ? "1.5px solid #6D5DF6"
+                      : isSelected
+                      ? "1px solid #6D5DF6"
+                      : "1px solid #CBD5E1",
+                    boxShadow: isOpen ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    minWidth: { xs: "auto", sm: cat.isDate ? 145 : 125 },
+                    "&:hover": {
+                      backgroundColor: isOpen ? "#E0E7FF" : "#F8FAFC",
+                      borderColor: isSelected || isOpen ? "#6D5DF6" : "#94A3B8",
+                      color: "#0F172A",
+                    },
+                  }}
+                >
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {selectedValue ? selectedValue : cat.label}
+                  </span>
+                </Button>
+              );
+            })}
+          </Box>
+
+          {hasActiveFilters && (
             <Button
-              key={cat.id}
-              onClick={() => handleToggleCategory(cat.id)}
+              onClick={handleResetFilters}
               size="small"
-              endIcon={
-                cat.isDate ? (
-                  <CalendarTodayOutlinedIcon sx={{ fontSize: 16, color: isOpen ? "#6D5DF6" : "#64748B" }} />
-                ) : (
-                  <KeyboardArrowDownIcon
-                    sx={{
-                      fontSize: 18,
-                      color: isOpen ? "#6D5DF6" : "#64748B",
-                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 0.2s ease",
-                    }}
-                  />
-                )
-              }
+              startIcon={<RestartAltIcon sx={{ fontSize: 16 }} />}
               sx={{
                 height: 40,
                 borderRadius: "10px",
-                px: 1.8,
-                fontSize: "14px",
-                fontWeight: isSelected || isOpen ? 600 : 500,
+                px: 1.5,
+                fontSize: "13px",
+                fontWeight: 600,
                 textTransform: "none",
+                color: "#EF4444",
+                backgroundColor: "#FEF2F2",
                 whiteSpace: "nowrap",
-                transition: "all 0.15s ease",
-                backgroundColor: isOpen ? "#EEF2FF" : "#FFFFFF",
-                color: isSelected || isOpen ? "#0F172A" : "#475569",
-                border: isOpen
-                  ? "1.5px solid #6D5DF6"
-                  : isSelected
-                  ? "1px solid #6D5DF6"
-                  : "1px solid #CBD5E1",
-                boxShadow: isOpen ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                minWidth: cat.isDate ? 145 : 125,
+                width: { xs: "100%", sm: "auto" },
+                gridColumn: { xs: "span 3", sm: "auto" },
                 "&:hover": {
-                  backgroundColor: isOpen ? "#E0E7FF" : "#F8FAFC",
-                  borderColor: isSelected || isOpen ? "#6D5DF6" : "#94A3B8",
-                  color: "#0F172A",
+                  backgroundColor: "#FEE2E2",
                 },
               }}
             >
-              {selectedValue ? selectedValue : cat.label}
+              Reset
             </Button>
-          );
-        })}
-
-        {hasActiveFilters && (
-          <Button
-            onClick={handleResetFilters}
-            size="small"
-            startIcon={<RestartAltIcon sx={{ fontSize: 16 }} />}
-            sx={{
-              height: 40,
-              borderRadius: "10px",
-              px: 1.5,
-              fontSize: "13px",
-              fontWeight: 600,
-              textTransform: "none",
-              color: "#EF4444",
-              backgroundColor: "#FEF2F2",
-              whiteSpace: "nowrap",
-              "&:hover": {
-                backgroundColor: "#FEE2E2",
-              },
-            }}
-          >
-            Reset
-          </Button>
-        )}
+          )}
+        </Box>
       </Box>
 
       {/* In-Line Push-Down Filter Options Panel */}

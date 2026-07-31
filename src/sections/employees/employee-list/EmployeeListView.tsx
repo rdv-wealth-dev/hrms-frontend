@@ -452,6 +452,23 @@ function EmployeeListView() {
 
     const joiningPeriod = mapJoiningPeriodToBackend(filters.dateOfJoining);
 
+    let branchId: string | undefined = undefined;
+    let departmentId: string | undefined = undefined;
+    let designationId: string | undefined = undefined;
+
+    if (filters.branch && filters.branch !== "All Branches") {
+      const found = branches.find((b: any) => b.name === filters.branch || (b as any).branchName === filters.branch);
+      if (found) branchId = found._id;
+    }
+    if (filters.department && filters.department !== "All Departments") {
+      const found = departments.find((d: any) => d.name === filters.department);
+      if (found) departmentId = found._id;
+    }
+    if (filters.designation && filters.designation !== "All Designations") {
+      const found = designations.find((d: any) => d.name === filters.designation);
+      if (found) designationId = found._id;
+    }
+
     dispatch(
       listEmployeesRequest({
         pageNumber,
@@ -459,14 +476,40 @@ function EmployeeListView() {
         search: debouncedSearchVal,
         status: backendStatus,
         joiningPeriod,
+        branchId,
+        departmentId,
+        designationId,
       })
     );
-  }, [dispatch, pageNumber, pageSize, debouncedSearchVal, statusVal, filters.status, filters.dateOfJoining]);
+  }, [
+    dispatch,
+    pageNumber,
+    pageSize,
+    debouncedSearchVal,
+    statusVal,
+    filters.status,
+    filters.dateOfJoining,
+    filters.branch,
+    filters.department,
+    filters.designation,
+    branches,
+    departments,
+    designations,
+  ]);
 
   // Reset to first page when search filter or status changes
   useEffect(() => {
     setPageNumber(1);
-  }, [debouncedSearchVal, statusVal, filters.status, filters.dateOfJoining, setPageNumber]);
+  }, [
+    debouncedSearchVal,
+    statusVal,
+    filters.status,
+    filters.dateOfJoining,
+    filters.branch,
+    filters.department,
+    filters.designation,
+    setPageNumber,
+  ]);
 
   // Helper mapping IDs to human-readable names
   const getDepartmentName = (id: any) => {
@@ -519,33 +562,7 @@ function EmployeeListView() {
   };
 
   const displayedEmployees = employees.filter((emp) => {
-    // 1. Department Filter
-    const activeDept = filters.department || selectedDeptFilter;
-    if (activeDept) {
-      const deptObj = typeof emp.departmentId === "object" ? (emp.departmentId as any) : null;
-      const deptName = deptObj?.name || getDepartmentName(emp.departmentId);
-      if (!deptName.toLowerCase().includes(activeDept.toLowerCase())) {
-        return false;
-      }
-    }
-
-    // 2. Designation Filter
-    if (filters.designation) {
-      const desigObj = typeof emp.designationId === "object" ? (emp.designationId as any) : null;
-      const desigName = desigObj?.name || getDesignationName(emp.designationId);
-      if (!desigName.toLowerCase().includes(filters.designation.toLowerCase())) {
-        return false;
-      }
-    }
-
-    // 3. Branch Filter
-    if (filters.branch) {
-      const branchObj = typeof (emp as any).branchId === "object" ? ((emp as any).branchId as any) : null;
-      const branchName = branchObj?.name || "";
-      if (branchName && !branchName.toLowerCase().includes(filters.branch.toLowerCase())) {
-        return false;
-      }
-    }
+    // Note: Department, Designation, and Branch filters are executed server-side.
 
     // 4. Team Filter
     if (filters.team) {
@@ -878,264 +895,299 @@ function EmployeeListView() {
 
         {/* Conditional View Rendering: Design 2 (People Hub) vs Design 1 (Classic) */}
         {viewMode === "people_hub" ? (
-          loading && displayedEmployees.length === 0 ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-              <CircularProgress sx={{ color: "#6D5DF6" }} />
-            </Box>
-          ) : (
-            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-              <PeopleHubTableView
-                employees={displayedEmployees}
-                loading={loading}
-                canUpdate={canUpdate}
-                canDelete={canDelete}
-                canManageRoles={canManageRoles}
-                onEdit={(emp) => {
-                  setEditTarget(emp);
-                  setEditOpen(true);
+          <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(255, 255, 255, 0.6)",
+                  zIndex: 10,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
-                onDelete={(emp) => {
-                  setDeleteTarget(emp);
-                  setDeleteOpen(true);
-                }}
-                onRoleManage={(emp) => {
-                  setRoleTarget(emp);
-                  setRoleOpen(true);
-                }}
-                onCompOffCredit={(emp) => {
-                  setCompOffTarget(emp);
-                  setCompOffOpen(true);
-                }}
-                onManualAttendance={(emp) => {
-                  setManualTarget(emp);
-                  setManualOpen(true);
-                }}
-                onSelectEmployee={(emp) => {
-                  navigate(paths.employees.detail.replace(":id", emp._id));
-                }}
-              />
-              <CustomTablePagination
-                count={total}
-                rowsPerPage={pageSize}
-                page={pageNumber}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                rowsPerPageOptions={[10, 25, 50, 100]}
-              />
-            </Card>
-          )
-        ) : (
-
-          <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-            {loading && displayedEmployees.length === 0 ? (
-              <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+              >
                 <CircularProgress sx={{ color: "#6D5DF6" }} />
               </Box>
-            ) : (
-            <>
-              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Employee Name</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Phone</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Department</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Designation</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                      {canReadRoles && (
-                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
-                      )}
-                      {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
-                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
-                      )}
-                    </TableRow>
-                  </TableHead>
-
-                  <TableBody>
-                    {displayedEmployees.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)}
-                          align="center"
-                        >
-                          <Box sx={{ py: 8 }}>
-                            <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
-                            <Typography variant="body2" color="text.secondary">
-                              No employees found. {canCreate && 'Click "Add Employee" to create one.'}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      displayedEmployees.map((emp, index) => (
-                        <TableRow
-                          key={emp._id || index}
-                          hover
-                          sx={{ "&:last-child td": { border: 0 } }}
-                        >
-                          <TableCell>
-                            <Chip
-                              label={emp.employeeCode || "—"}
-                              size="small"
-                              sx={{
-                                backgroundColor: "#EEF2FF",
-                                color: "#6D5DF6",
-                                fontWeight: 600,
-                                fontSize: 12,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
-                            onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
-                          >
-                            {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>{emp.email || "—"}</TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>{emp.phone || "—"}</TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>
-                            {getDepartmentName(emp.departmentId)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>
-                            {getDesignationName(emp.designationId)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
-                            {formatEmployeeType(emp.employeeType)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>
-                            {formatDate(emp.joiningDate)}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              {...getStatusChipProps(emp.status)}
-                              size="small"
-                              onClick={
-                                canUpdate
-                                  ? (e) => {
-                                      setStatusMenuAnchor(e.currentTarget);
-                                      setStatusMenuTarget(emp);
-                                    }
-                                  : undefined
-                              }
-                              sx={{
-                                cursor: canUpdate ? "pointer" : "default",
-                                "&:hover": canUpdate
-                                  ? {
-                                      backgroundColor: "rgba(0, 0, 0, 0.04)",
-                                    }
-                                  : {},
-                              }}
-                            />
-                          </TableCell>
-                          {canReadRoles && (
-                            <TableCell>
-                              <Chip
-                                label={getUserRoleLabel(emp)}
-                                size="small"
-                                sx={{
-                                  backgroundColor: getUserRoleChipColor(getUserRole(emp)),
-                                  color: getUserRoleChipTextColor(getUserRole(emp)),
-                                  fontWeight: 600,
-                                  fontSize: 11,
-                                }}
-                              />
-                            </TableCell>
-                          )}
-                          {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
-                            <TableCell>
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                {canUpdate && (
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                      setEditTarget(emp);
-                                      setEditOpen(true);
-                                    }}
-                                    sx={{ color: "#6D5DF6" }}
-                                  >
-                                    <EditOutlinedIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {canManageRoles && (
-                                  <IconButton
-                                    size="small"
-                                    title="Manage System Role"
-                                    onClick={() => {
-                                      setRoleTarget(emp);
-                                      setRoleOpen(true);
-                                    }}
-                                    sx={{ color: "#8B5CF6" }}
-                                  >
-                                    <AdminPanelSettingsIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {hasPermission("attendance.create") && (
-                                  <IconButton
-                                    size="small"
-                                    title="Record Manual Attendance"
-                                    onClick={() => {
-                                      setManualTarget(emp);
-                                      setManualOpen(true);
-                                    }}
-                                    sx={{ color: "#10B981" }}
-                                  >
-                                    <CalendarMonthOutlinedIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {hasPermission("leave.create") && (
-                                  <IconButton
-                                    size="small"
-                                    title="Credit Comp-Off"
-                                    onClick={() => {
-                                      setCompOffTarget(emp);
-                                      setCompOffOpen(true);
-                                    }}
-                                    sx={{ color: "#D97706" }}
-                                  >
-                                    <AccessTimeIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {canDelete && (
-                                  <IconButton
-                                    size="small"
-                                    title="Delete Employee"
-                                    onClick={() => {
-                                      setDeleteTarget(emp);
-                                      setDeleteOpen(true);
-                                    }}
-                                    sx={{ color: "#EF4444" }}
-                                  >
-                                    <DeleteOutlineIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                              </Box>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      ))
+            )}
+            <PeopleHubTableView
+              employees={displayedEmployees}
+              loading={loading}
+              canUpdate={canUpdate}
+              canDelete={canDelete}
+              canManageRoles={canManageRoles}
+              onEdit={(emp) => {
+                setEditTarget(emp);
+                setEditOpen(true);
+              }}
+              onDelete={(emp) => {
+                setDeleteTarget(emp);
+                setDeleteOpen(true);
+              }}
+              onRoleManage={(emp) => {
+                setRoleTarget(emp);
+                setRoleOpen(true);
+              }}
+              onCompOffCredit={(emp) => {
+                setCompOffTarget(emp);
+                setCompOffOpen(true);
+              }}
+              onManualAttendance={(emp) => {
+                setManualTarget(emp);
+                setManualOpen(true);
+              }}
+              onSelectEmployee={(emp) => {
+                navigate(paths.employees.detail.replace(":id", emp._id));
+              }}
+            />
+            <CustomTablePagination
+              count={total}
+              rowsPerPage={pageSize}
+              page={pageNumber}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              rowsPerPageOptions={[10, 25, 50, 100]}
+            />
+          </Card>
+        ) : (
+          <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(255, 255, 255, 0.6)",
+                  zIndex: 10,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress sx={{ color: "#6D5DF6" }} />
+              </Box>
+            )}
+            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Employee Name</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Phone</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Department</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Designation</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
+                    {canReadRoles && (
+                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
                     )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
+                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
+                    )}
+                  </TableRow>
+                </TableHead>
 
-              {/* Table Pagination */}
-              <CustomTablePagination
-                count={total}
-                rowsPerPage={pageSize}
-                page={pageNumber}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                rowsPerPageOptions={[10, 25, 50, 100]}
-              />
+                <TableBody>
+                  {displayedEmployees.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)}
+                        align="center"
+                      >
+                        <Box sx={{ py: 8 }}>
+                          <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
+                          <Typography variant="body2" color="text.secondary">
+                            No employees found. {canCreate && 'Click "Add Employee" to create one.'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    displayedEmployees.map((emp, index) => (
+                      <TableRow
+                        key={emp._id || index}
+                        hover
+                        sx={{ height: 53, "&:last-child td": { border: 0 } }}
+                      >
+                        <TableCell>
+                          <Chip
+                            label={emp.employeeCode || "—"}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#EEF2FF",
+                              color: "#6D5DF6",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
+                          onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
+                        >
+                          {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>{emp.email || "—"}</TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>{emp.phone || "—"}</TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>
+                          {getDepartmentName(emp.departmentId)}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>
+                          {getDesignationName(emp.designationId)}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
+                          {formatEmployeeType(emp.employeeType)}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>
+                          {formatDate(emp.joiningDate)}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            {...getStatusChipProps(emp.status)}
+                            size="small"
+                            onClick={
+                              canUpdate
+                                ? (e) => {
+                                    setStatusMenuAnchor(e.currentTarget);
+                                    setStatusMenuTarget(emp);
+                                  }
+                                : undefined
+                            }
+                            sx={{
+                              cursor: canUpdate ? "pointer" : "default",
+                              "&:hover": canUpdate
+                                ? {
+                                    backgroundColor: "rgba(0, 0, 0, 0.04)",
+                                  }
+                                : {},
+                            }}
+                          />
+                        </TableCell>
+                        {canReadRoles && (
+                          <TableCell>
+                            <Chip
+                              label={getUserRoleLabel(emp)}
+                              size="small"
+                              sx={{
+                                backgroundColor: getUserRoleChipColor(getUserRole(emp)),
+                                color: getUserRoleChipTextColor(getUserRole(emp)),
+                                fontWeight: 600,
+                                fontSize: 11,
+                              }}
+                            />
+                          </TableCell>
+                        )}
+                        {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
+                          <TableCell>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              {canUpdate && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setEditTarget(emp);
+                                    setEditOpen(true);
+                                  }}
+                                  sx={{ color: "#6D5DF6" }}
+                                >
+                                  <EditOutlinedIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {canManageRoles && (
+                                <IconButton
+                                  size="small"
+                                  title="Manage System Role"
+                                  onClick={() => {
+                                    setRoleTarget(emp);
+                                    setRoleOpen(true);
+                                  }}
+                                  sx={{ color: "#8B5CF6" }}
+                                >
+                                  <AdminPanelSettingsIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {hasPermission("attendance.create") && (
+                                <IconButton
+                                  size="small"
+                                  title="Record Manual Attendance"
+                                  onClick={() => {
+                                    setManualTarget(emp);
+                                    setManualOpen(true);
+                                  }}
+                                  sx={{ color: "#10B981" }}
+                                >
+                                  <CalendarMonthOutlinedIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {hasPermission("leave.create") && (
+                                <IconButton
+                                  size="small"
+                                  title="Credit Comp-Off"
+                                  onClick={() => {
+                                    setCompOffTarget(emp);
+                                    setCompOffOpen(true);
+                                  }}
+                                  sx={{ color: "#D97706" }}
+                                >
+                                  <AccessTimeIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {canDelete && (
+                                <IconButton
+                                  size="small"
+                                  title="Delete Employee"
+                                  onClick={() => {
+                                    setDeleteTarget(emp);
+                                    setDeleteOpen(true);
+                                  }}
+                                  sx={{ color: "#EF4444" }}
+                                >
+                                  <DeleteOutlineIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  )}
+                  {displayedEmployees.length > 0 && Math.max(0, 10 - displayedEmployees.length) > 0 &&
+                    Array.from({ length: Math.max(0, 10 - displayedEmployees.length) }).map((_, index) => {
+                      const isLast = index === Math.max(0, 10 - displayedEmployees.length) - 1;
+                      return (
+                        <TableRow
+                          key={`empty-classic-${index}`}
+                          sx={{
+                            height: 53,
+                            "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
+                          }}
+                        >
+                          <TableCell colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)} />
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-            </>
-          )}
-        </Card>
-      )}
+            {/* Table Pagination */}
+            <CustomTablePagination
+              count={total}
+              rowsPerPage={pageSize}
+              page={pageNumber}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              rowsPerPageOptions={[10, 25, 50, 100]}
+            />
+          </Card>
+        )}
       </Box>
 
       {editOpen && (

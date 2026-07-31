@@ -45,6 +45,22 @@ export function ShiftFormDialog({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const autoUpdateThresholds = (start: string, end: string, breakM: number | "") => {
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (timeRegex.test(start) && timeRegex.test(end)) {
+      const [startH, startM] = start.split(":").map(Number);
+      const [endH, endM] = end.split(":").map(Number);
+      const startMin = startH * 60 + startM;
+      const endMin = endH * 60 + endM;
+      const totalDuration = endMin >= startMin ? endMin - startMin : (1440 - startMin) + endMin;
+      const breakMin = Number(breakM) || 0;
+      const fullDayVal = Math.max(0, totalDuration - breakMin);
+      const halfDayVal = Math.round(fullDayVal / 2);
+      setFullDayMinutes(fullDayVal);
+      setHalfDayThresholdMinutes(halfDayVal);
+    }
+  };
+
   useEffect(() => {
     if (open) {
       setError(null);
@@ -239,7 +255,10 @@ export function ShiftFormDialog({
             <TextInput
               label="Start Time (HH:mm) *"
               value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
+              onChange={(e) => {
+                setStartTime(e.target.value);
+                autoUpdateThresholds(e.target.value, endTime, breakDurationMinutes);
+              }}
               placeholder="09:00"
             />
           </Grid>
@@ -248,7 +267,10 @@ export function ShiftFormDialog({
             <TextInput
               label="End Time (HH:mm) *"
               value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
+              onChange={(e) => {
+                setEndTime(e.target.value);
+                autoUpdateThresholds(startTime, e.target.value, breakDurationMinutes);
+              }}
               placeholder="18:00"
             />
           </Grid>
@@ -278,7 +300,11 @@ export function ShiftFormDialog({
               label="Break Duration (Minutes)"
               type="number"
               value={breakDurationMinutes}
-              onChange={(e) => setBreakDurationMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) => {
+                const val = e.target.value === "" ? "" : Number(e.target.value);
+                setBreakDurationMinutes(val);
+                autoUpdateThresholds(startTime, endTime, val);
+              }}
               placeholder="60"
             />
           </Grid>
