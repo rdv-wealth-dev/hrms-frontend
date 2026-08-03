@@ -739,9 +739,9 @@ export default function HolidayListView() {
               sx={{ minWidth: { xs: "100%", sm: 260 }, flexGrow: { xs: 1, sm: 0 } }}
             >
               <MenuItem value="ALL">All Organization Master Holidays</MenuItem>
-              <MenuItem value="RESOLVED">Resolve Branch List (GET /resolve)</MenuItem>
-              <MenuItem value="GRID">Branch Monthly Calendar Grid (GET /calendar)</MenuItem>
-              <MenuItem value="MY_SCHEDULE">My Personal Schedule (GET /branches/me/schedule)</MenuItem>
+              <MenuItem value="RESOLVED">Resolve Branch List</MenuItem>
+              <MenuItem value="GRID">Branch Monthly Calendar Grid</MenuItem>
+              <MenuItem value="MY_SCHEDULE">My Personal Schedule</MenuItem>
             </TextInput>
           )}
 

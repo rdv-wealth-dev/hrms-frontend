@@ -121,6 +121,9 @@ export function leaveReducer(
 
     case LEAVE_ACTIONS.CREATE_REQUEST:
     case LEAVE_ACTIONS.CREATE_HOLIDAY_REQUEST:
+    case LEAVE_ACTIONS.UPDATE_HOLIDAY_REQUEST:
+    case LEAVE_ACTIONS.DELETE_HOLIDAY_REQUEST:
+    case LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_REQUEST:
     case LEAVE_ACTIONS.APPLY_LEAVE_REQUEST:
     case LEAVE_ACTIONS.REVIEW_REQUEST_REQUEST:
     case LEAVE_ACTIONS.CANCEL_LEAVE_REQUEST:
@@ -175,7 +178,7 @@ export function leaveReducer(
         submitting: false,
         success: true,
         holidays: action.payload && Array.isArray(action.payload) && action.payload.length > 0
-          ? action.payload
+          ? [...action.payload]
           : state.holidays,
         error: null,
       }
@@ -192,6 +195,9 @@ export function leaveReducer(
 
     case LEAVE_ACTIONS.CREATE_FAILURE:
     case LEAVE_ACTIONS.CREATE_HOLIDAY_FAILURE:
+    case LEAVE_ACTIONS.UPDATE_HOLIDAY_FAILURE:
+    case LEAVE_ACTIONS.DELETE_HOLIDAY_FAILURE:
+    case LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_FAILURE:
     case LEAVE_ACTIONS.APPLY_LEAVE_FAILURE:
     case LEAVE_ACTIONS.REVIEW_REQUEST_FAILURE:
     case LEAVE_ACTIONS.CANCEL_LEAVE_FAILURE:

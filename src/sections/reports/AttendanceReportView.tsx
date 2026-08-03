@@ -100,12 +100,12 @@ export default function AttendanceReportView() {
   const day = String(now.getDate()).padStart(2, "0");
   const todayStr = `${year}-${month}-${day}`;
 
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, "0")}-${String(sevenDaysAgo.getDate()).padStart(2, "0")}`;
+  // Start from beginning of current year to show all data
+  const yearStart = new Date(year, 0, 1);
+  const yearStartStr = `${yearStart.getFullYear()}-01-01`;
 
-  const [fromDate, setFromDate] = useState(sevenDaysAgoStr);
-  const [toDate, setToDate] = useState(todayStr);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
@@ -113,8 +113,8 @@ export default function AttendanceReportView() {
     branchId: "ALL",
     departmentId: "ALL",
     status: "ALL",
-    fromDate: sevenDaysAgoStr,
-    toDate: todayStr,
+    fromDate: "",
+    toDate: "",
   });
 
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -153,9 +153,14 @@ export default function AttendanceReportView() {
     setError(null);
     try {
       const activeStatus = statusFilter === "ALL" ? undefined : statusFilter;
+      
+      // Use wide date range if no specific dates are set
+      const effectiveFromDate = fromDate || yearStartStr;
+      const effectiveToDate = toDate || todayStr;
+      
       const response = await getAttendanceReport(
-        fromDate,
-        toDate,
+        effectiveFromDate,
+        effectiveToDate,
         pageNumber,
         pageSize,
         activeStatus,
@@ -609,8 +614,8 @@ export default function AttendanceReportView() {
           }}
           onReset={() => {
             setSearchQuery("");
-            setFromDate(sevenDaysAgoStr);
-            setToDate(todayStr);
+            setFromDate("");
+            setToDate("");
             setStatusFilter("ALL");
             setFilterValues({
               designationId: "ALL",

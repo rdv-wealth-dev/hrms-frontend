@@ -63,13 +63,19 @@ export const DEFAULT_STARTER_DEPARTMENTS = [
   { name: "Operations", code: "OPS", description: "Day-to-day business operations and logistics" },
 ];
 
-export const seedDefaultDepartments = async (): Promise<boolean> => {
+export const seedDefaultDepartments = async (branchId: string): Promise<string[]> => {
+  const createdDepartmentIds: string[] = [];
+  
   for (const dept of DEFAULT_STARTER_DEPARTMENTS) {
     try {
-      await createDepartment(dept);
+      const response = await createDepartment({ ...dept, branchId });
+      if (response.succeeded && response.data?._id) {
+        createdDepartmentIds.push(response.data._id);
+      }
     } catch {
       // Ignore if individual department code already exists
     }
   }
-  return true;
+  
+  return createdDepartmentIds;
 };

@@ -61,8 +61,13 @@ export default function MyAttendanceView() {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
 
-  const [fromDate, setFromDate] = useState(`${year}-${month}-01`);
-  const [toDate, setToDate] = useState(`${year}-${month}-${day}`);
+  // Start from beginning of current year to show all data
+  const yearStart = new Date(year, 0, 1);
+  const yearStartStr = `${yearStart.getFullYear()}-01-01`;
+  const todayStr = `${year}-${month}-${day}`;
+
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -151,7 +156,11 @@ export default function MyAttendanceView() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getMyAttendanceHistory(fromDate, toDate);
+      // Use wide date range if no specific dates are set
+      const effectiveFromDate = fromDate || yearStartStr;
+      const effectiveToDate = toDate || todayStr;
+      
+      const response = await getMyAttendanceHistory(effectiveFromDate, effectiveToDate);
       if (response.succeeded && response.data) {
         // Sort records by date descending
         const sorted = [...response.data].sort((a, b) => {

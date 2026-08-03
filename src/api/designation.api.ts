@@ -71,13 +71,25 @@ export const DEFAULT_STARTER_DESIGNATIONS = [
     { name: "Operations Executive", code: "OPS_EXEC", description: "Coordinates daily operational workflows" },
 ];
 
-export const seedDefaultDesignations = async (): Promise<boolean> => {
-    for (const desig of DEFAULT_STARTER_DESIGNATIONS) {
-        try {
-            await createDesignation(desig);
-        } catch {
-            // Ignore if individual designation code already exists
-        }
+export const seedDefaultDesignations = async (branchId: string, departmentIds: string[]): Promise<boolean> => {
+  // Distribute designations across departments
+  // If we have 5 designations and 5 departments, assign 1 to each
+  // If departments mismatch, cycle through available departments
+  
+  for (let i = 0; i < DEFAULT_STARTER_DESIGNATIONS.length; i++) {
+    const desig = DEFAULT_STARTER_DESIGNATIONS[i];
+    const departmentId = departmentIds[i % departmentIds.length]; // Cycle through departments
+    
+    try {
+      await createDesignation({ 
+        ...desig, 
+        branchId,
+        departmentId 
+      });
+    } catch {
+      // Ignore if individual designation code already exists
     }
-    return true;
+  }
+  
+  return true;
 };
