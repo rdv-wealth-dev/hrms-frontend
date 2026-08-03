@@ -176,12 +176,27 @@ export const getAttendanceReport = async (
   pageNumber = 1,
   pageSize = 20,
   status?: string,
-  employeeId?: string
+  employeeId?: string,
+  designationId?: string,
+  branchId?: string,
+  departmentId?: string,
+  search?: string
 ): Promise<AttendanceReportResponse> => {
   const response = await axiosInstance.get<AttendanceReportResponse>(
     "/attendance/report",
     {
-      params: { fromDate, toDate, pageNumber, pageSize, status, employeeId },
+      params: { 
+        fromDate, 
+        toDate, 
+        pageNumber, 
+        pageSize, 
+        status, 
+        employeeId,
+        designationId,
+        branchId,
+        departmentId,
+        search
+      },
       headers: getAuthHeader(),
     }
   );

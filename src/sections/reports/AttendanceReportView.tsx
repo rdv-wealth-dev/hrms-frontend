@@ -111,7 +111,6 @@ export default function AttendanceReportView() {
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
     designationId: "ALL",
     branchId: "ALL",
-    teamId: "ALL",
     departmentId: "ALL",
     status: "ALL",
     fromDate: sevenDaysAgoStr,
@@ -159,12 +158,17 @@ export default function AttendanceReportView() {
         toDate,
         pageNumber,
         pageSize,
-        activeStatus
+        activeStatus,
+        undefined, // employeeId
+        filterValues?.designationId !== "ALL" ? filterValues?.designationId : undefined,
+        filterValues?.branchId !== "ALL" ? filterValues?.branchId : undefined,
+        filterValues?.departmentId !== "ALL" ? filterValues?.departmentId : undefined,
+        searchQuery?.trim() || undefined
       );
 
       if (response) {
         const raw: any = response;
-        const dataObj: any = raw.data ?? raw;
+        const dataObj: any = raw?.data ?? raw;
 
         let list: AttendanceRecord[] = [];
         let total = 0;
@@ -172,12 +176,12 @@ export default function AttendanceReportView() {
         if (Array.isArray(dataObj)) {
           list = dataObj;
           total = dataObj.length;
-        } else if (dataObj && Array.isArray(dataObj.data)) {
+        } else if (dataObj && Array.isArray(dataObj?.data)) {
           list = dataObj.data;
-          total = dataObj.totalRecords ?? dataObj.total ?? dataObj.data.length;
-        } else if (dataObj && Array.isArray(dataObj.records)) {
+          total = dataObj?.totalRecords ?? dataObj?.total ?? dataObj.data.length;
+        } else if (dataObj && Array.isArray(dataObj?.records)) {
           list = dataObj.records;
-          total = dataObj.totalRecords ?? dataObj.records.length;
+          total = dataObj?.totalRecords ?? dataObj.records.length;
         }
 
         setRecords(list);
@@ -187,7 +191,7 @@ export default function AttendanceReportView() {
       }
     } catch (err: any) {
       setError(
-        err.response?.data?.message || err.message || "Failed to load attendance report"
+        err?.response?.data?.message || err?.message || "Failed to load attendance report"
       );
     } finally {
       setLoading(false);
@@ -197,7 +201,17 @@ export default function AttendanceReportView() {
   useEffect(() => {
     fetchReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, fromDate, toDate, statusFilter]);
+  }, [
+    pageNumber, 
+    pageSize, 
+    fromDate, 
+    toDate, 
+    statusFilter,
+    filterValues?.designationId,
+    filterValues?.branchId,
+    filterValues?.departmentId,
+    searchQuery
+  ]);
 
 
 
@@ -376,28 +390,28 @@ export default function AttendanceReportView() {
   // Convert real live API records to table row format
   const tableRows: AttendanceRecordRow[] = useMemo(() => {
     return todayRecords.map((r) => {
-      const empObj = typeof r.employeeId === "object" ? r.employeeId : r.employee;
-      const firstName = (empObj as any)?.firstName || (r as any)?.firstName || "";
-      const lastName = (empObj as any)?.lastName || (r as any)?.lastName || "";
-      const fullName = (empObj as any)?.fullName || (r as any)?.fullName || (r as any)?.employeeName || `${firstName} ${lastName}`.trim();
+      const empObj = typeof r?.employeeId === "object" ? r.employeeId : r?.employee;
+      const firstName = empObj?.firstName || (r as any)?.firstName || "";
+      const lastName = empObj?.lastName || (r as any)?.lastName || "";
+      const fullName = empObj?.fullName || (r as any)?.fullName || (r as any)?.employeeName || `${firstName} ${lastName}`.trim();
       const empName = fullName || "Employee";
 
       const avatarUrl =
-        (empObj as any)?.avatarUrl ||
-        (empObj as any)?.profilePicture ||
+        empObj?.avatarUrl ||
+        empObj?.profilePicture ||
         (r as any)?.avatarUrl ||
         (r as any)?.profilePicture ||
-        (empObj as any)?.user?.avatarUrl;
+        empObj?.user?.avatarUrl;
 
       const mins = getRealWorkedMinutes(r);
       const status = getResolvedStatus(r);
 
-      const deptName = (empObj as any)?.department?.name || (empObj as any)?.departmentName || (r as any)?.departmentName || "";
-      const desigName = (empObj as any)?.designation?.title || (empObj as any)?.designationName || (r as any)?.designationName || "";
-      const branchName = (empObj as any)?.branch?.name || (empObj as any)?.branchName || (r as any)?.branchName || "";
+      const deptName = empObj?.department?.name || empObj?.departmentName || (r as any)?.departmentName || "";
+      const desigName = empObj?.designation?.title || empObj?.designationName || (r as any)?.designationName || "";
+      const branchName = empObj?.branch?.name || empObj?.branchName || (r as any)?.branchName || "";
 
       return {
-        id: r._id || Math.random().toString(),
+        id: r?._id || Math.random().toString(),
         employeeName: empName,
         initials: getInitials(empName),
         avatarColor: getColorForName(empName),
@@ -405,54 +419,19 @@ export default function AttendanceReportView() {
         departmentName: deptName,
         designationName: desigName,
         branchName: branchName,
-        checkIn: formatTime(r.firstCheckIn),
-        checkOut: formatTime(r.lastCheckOut),
+        checkIn: formatTime(r?.firstCheckIn),
+        checkOut: formatTime(r?.lastCheckOut),
         hours: formatWorkedTime(mins),
         status: status,
       };
-    }).filter((row) => {
-      // 1. Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        if (!row.employeeName.toLowerCase().includes(q)) return false;
-      }
-
-      // 2. Department Filter
-      const selDept = filterValues.departmentId;
-      if (selDept && selDept !== "ALL") {
-        const d = String(row.departmentName || "").toLowerCase();
-        if (!d.includes(selDept.toLowerCase())) return false;
-      }
-
-      // 3. Designation Filter
-      const selDesig = filterValues.designationId;
-      if (selDesig && selDesig !== "ALL") {
-        const des = String(row.designationName || "").toLowerCase();
-        if (!des.includes(selDesig.toLowerCase())) return false;
-      }
-
-      // 4. Branch Filter
-      const selBranch = filterValues.branchId;
-      if (selBranch && selBranch !== "ALL") {
-        const b = String(row.branchName || "").toLowerCase();
-        if (!b.includes(selBranch.toLowerCase())) return false;
-      }
-
-      // 5. Status Filter
-      const selStatus = filterValues.status || statusFilter;
-      if (selStatus && selStatus !== "ALL") {
-        if (row.status.toUpperCase() !== selStatus.toUpperCase()) return false;
-      }
-
-      return true;
     });
-  }, [todayRecords, searchQuery, filterValues, statusFilter]);
+  }, [todayRecords]);
 
   // Reset client page when any filter changes
   useEffect(() => {
     setClientPage(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromDate, toDate, statusFilter, searchQuery, JSON.stringify(filterValues)]);
+  }, [fromDate, toDate, statusFilter, searchQuery, filterValues?.designationId, filterValues?.branchId, filterValues?.departmentId]);
 
   // Reset client page when filters change
   const handleClientPageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -596,13 +575,6 @@ export default function AttendanceReportView() {
               minWidth: 140,
             },
             {
-              key: "teamId",
-              label: "Team",
-              type: "select",
-              options: [{ value: "ALL", label: "All Teams" }],
-              minWidth: 130,
-            },
-            {
               key: "departmentId",
               label: "Departments",
               type: "select",
@@ -643,7 +615,6 @@ export default function AttendanceReportView() {
             setFilterValues({
               designationId: "ALL",
               branchId: "ALL",
-              teamId: "ALL",
               departmentId: "ALL",
             });
             setPageNumber(1);
