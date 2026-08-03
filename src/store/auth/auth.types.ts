@@ -49,6 +49,7 @@ export type AuthState = {
   // Check Email
   checkEmailLoading: boolean;
   checkEmailResult: CheckEmailResponseData | null;
+  checkEmailError: string | null;
 
   loginCooldownSeconds: number | null;
 

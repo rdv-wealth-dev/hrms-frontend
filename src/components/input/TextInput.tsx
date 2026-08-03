@@ -130,7 +130,7 @@ function TextInput({
         }
       : {
           "& .MuiOutlinedInput-root": {
-            height: multiline ? "auto" : 44,
+            height: multiline ? "auto" : 40,
             borderRadius: "12px",
             backgroundColor: "#FFFFFF",
             fontSize: "14px",
@@ -153,7 +153,7 @@ function TextInput({
             },
           },
           "& .MuiOutlinedInput-input": {
-            py: multiline ? "10px" : "12px",
+            py: multiline ? "10px" : "10px",
             px: "14px",
             fontSize: "14px",
             color: "#0F172A",
@@ -165,7 +165,7 @@ function TextInput({
             fontWeight: 400,
           },
           "& .MuiSelect-select": {
-            py: "12px !important",
+            py: "10px !important",
             display: "flex",
             alignItems: "center",
           },
@@ -187,10 +187,10 @@ function TextInput({
       {label && (
         <Typography
           sx={{
-            fontSize: "13.5px",
+            fontSize: "13px",
             fontWeight: 600,
             color: "#334155",
-            mb: 0.8,
+            mb: 0.6,
             display: "block",
           }}
         >

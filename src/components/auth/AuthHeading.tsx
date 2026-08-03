@@ -13,13 +13,13 @@ function AuthHeading({
   titleSize,
 }: AuthHeadingProps) {
   return (
-    <Box sx={{ mb: { xs: 1.5, sm: 2 }, textAlign: "center" }}>
+    <Box sx={{ mb: { xs: 1, sm: 1.3 }, textAlign: "center" }}>
       <Typography
         variant="h3"
         sx={{
           fontWeight: 700,
           color: "#111827",
-          fontSize: titleSize || { xs: "1.6rem", sm: "1.9rem", md: "2.2rem" },
+          fontSize: titleSize || { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
           letterSpacing: "-0.02em",
         }}
       >
@@ -29,7 +29,7 @@ function AuthHeading({
       {subtitle && (
         <Typography
           sx={{
-            mt: 1,
+            mt: 0.6,
             fontSize: { xs: "13px", sm: "14px" },
             color: "#6B7280",
           }}

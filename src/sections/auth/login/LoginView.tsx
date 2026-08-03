@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import Collapse from "@mui/material/Collapse";
 import CircularProgress from "@mui/material/CircularProgress";
 import InputAdornment from "@mui/material/InputAdornment";
 
@@ -36,6 +36,7 @@ function LoginView() {
   const {
     loading,
     error,
+    checkEmailError,
     isAuthenticated,
     user,
     requiresPasswordReset,
@@ -109,7 +110,8 @@ function LoginView() {
   const debouncedEmail = useDebounce(emailValue, 500);
 
   useEffect(() => {
-    if (debouncedEmail) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (debouncedEmail && emailRegex.test(debouncedEmail)) {
       dispatch(checkEmailRequest({ email: debouncedEmail }));
     }
   }, [debouncedEmail, dispatch]);
@@ -133,9 +135,35 @@ function LoginView() {
     return match ? parseInt(match[1], 10) : null;
   };
 
-  const isDeactivatedError = error?.toLowerCase().includes("deactivated");
-  const isVerificationError = error?.toLowerCase().includes("verif");
-  const attemptsLeft = error ? guessAttemptsLeft(error) : null;
+  // Trigger toast on auth errors
+  useEffect(() => {
+    if (error && !isActive) {
+      const isVerif = error.toLowerCase().includes("verif");
+      const isDeactivated = error.toLowerCase().includes("deactivated");
+      const attempts = guessAttemptsLeft(error);
+
+      let toastMessage = error;
+      if (isDeactivated) {
+        toastMessage = "Your account has been deactivated. Please contact your administrator.";
+      } else if (attempts != null) {
+        toastMessage = `${error} (${attempts} attempt${attempts !== 1 ? "s" : ""} remaining)`;
+      }
+
+      if (isVerif) {
+        toast.error(toastMessage, {
+          action: {
+            label: "Resend Email",
+            onClick: handleResendVerification,
+          },
+          duration: 10000,
+        });
+      } else {
+        toast.error(toastMessage, {
+          duration: 5000,
+        });
+      }
+    }
+  }, [error, isActive, handleResendVerification]);
 
   return (
     <AuthLayout>
@@ -143,15 +171,22 @@ function LoginView() {
         sx={{
           width: "100%",
           maxWidth: { xs: "100%", sm: "30rem", md: "34rem" },
-          minHeight: { xs: "auto", sm: "445px" },
+          height: { xs: "auto", sm: "520px" },
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           mx: "auto",
         }}
       >
-        <Box sx={{ textAlign: "center", mb: 3 }}>
-          <Collapse in={!!workspaceLogo} timeout={300} unmountOnExit>
+        <Box sx={{ textAlign: "center", mb: 3, minHeight: "140px" }}>
+          <Box
+            sx={{
+              height: workspaceLogo ? 64 : 0,
+              transition: "height 0.2s ease, opacity 0.2s ease",
+              opacity: workspaceLogo ? 1 : 0,
+              overflow: "hidden",
+            }}
+          >
             {workspaceLogo && (
               <Box
                 component="img"
@@ -160,7 +195,7 @@ function LoginView() {
                 sx={{ height: 48, mb: 1.5, mx: "auto", display: "block" }}
               />
             )}
-          </Collapse>
+          </Box>
           <AuthHeading
             title={companyName || "Sign In"}
             subtitle={companyName ? "Sign in to your workspace" : "Welcome back!"}
@@ -169,6 +204,7 @@ function LoginView() {
                 ? { xs: "1.3rem", sm: "1.5rem", md: "1.7rem" }
                 : undefined
             }
+
           />
         </Box>
 
@@ -198,137 +234,106 @@ function LoginView() {
             }}
           />
 
-          <Collapse in={!ssoEnabled} timeout={300} unmountOnExit>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: { xs: 1.8, sm: 2 },
-                width: "100%",
-                pb: 0.5,
-              }}
-            >
-              <TextInput
-                label="Password"
-                placeholder="Enter Password"
-                type="password"
-                registration={register("password")}
-                error={errors.password?.message}
+          <Box
+            sx={{
+              display: ssoEnabled ? "none" : "flex",
+              flexDirection: "column",
+              gap: { xs: 1.8, sm: 2 },
+              width: "100%",
+              pb: 0.5,
+            }}
+          >
+            <TextInput
+              label="Password"
+              placeholder="Enter Password"
+              type="password"
+              registration={register("password")}
+              error={errors.password?.message}
+            />
+
+            {/* Remember Device + Forgot Password row */}
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: -0.5 }}>
+              <Controller
+                name="rememberDevice"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        {...field}
+                        checked={field.value ?? false}
+                        size="small"
+                        sx={{ color: "#CBD5E1", "&.Mui-checked": { color: "#6D5DF6" } }}
+                      />
+                    }
+                    label={
+                      <Typography sx={{ fontSize: "13px", color: "#475569" }}>
+                        Remember this device
+                      </Typography>
+                    }
+                  />
+                )}
               />
-
-              {/* Remember Device + Forgot Password row */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: -0.5 }}>
-                <Controller
-                  name="rememberDevice"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          {...field}
-                          checked={field.value ?? false}
-                          size="small"
-                          sx={{ color: "#CBD5E1", "&.Mui-checked": { color: "#6D5DF6" } }}
-                        />
-                      }
-                      label={
-                        <Typography sx={{ fontSize: "13px", color: "#475569" }}>
-                          Remember this device
-                        </Typography>
-                      }
-                    />
-                  )}
-                />
-                <Typography
-                  component="button"
-                  type="button"
-                  onClick={() => navigate(paths.auth.forgotPassword)}
-                  sx={{
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
-                    fontSize: { xs: "13px", sm: "14px" },
-                    color: "#4F46E5",
-                    fontWeight: 500,
-                    p: 0,
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  Forgot Password?
-                </Typography>
-              </Box>
+              <Typography
+                component="button"
+                type="button"
+                onClick={() => navigate(paths.auth.forgotPassword)}
+                sx={{
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: { xs: "13px", sm: "14px" },
+                  color: "#4F46E5",
+                  fontWeight: 500,
+                  p: 0,
+                  "&:hover": { textDecoration: "underline" },
+                }}
+              >
+                Forgot Password?
+              </Typography>
             </Box>
-          </Collapse>
+          </Box>
 
-          <Collapse in={ssoEnabled} timeout={300} unmountOnExit>
+          <Box sx={{ display: ssoEnabled ? "block" : "none" }}>
             <Alert severity="info" sx={{ mt: 1 }}>
               {checkEmailResult?.provider
                 ? `Continue with ${checkEmailResult.provider}`
                 : "SSO is enabled for this account."}
             </Alert>
-          </Collapse>
+          </Box>
 
-          {error && (
+          {error && isActive && (
             <Box sx={{ textAlign: "center", mt: 0.5 }}>
-              {isDeactivatedError ? (
-                <Typography color="error" variant="body2" sx={{ fontSize: { xs: "13px", sm: "14px" } }}>
-                  Your account has been deactivated. Please contact your administrator.
-                </Typography>
-              ) : isActive ? (
-                <Typography color="error" variant="body2" sx={{ fontSize: { xs: "13px", sm: "14px" } }}>
-                  Too many attempts. Try again in {secondsLeft} seconds.
-                </Typography>
-              ) : (
-                <Typography color="error" variant="body2" sx={{ fontSize: { xs: "13px", sm: "14px" } }}>
-                  {error}
-                  {attemptsLeft != null && (
-                    <Box component="span" sx={{ display: "block", mt: 0.5 }}>
-                      {attemptsLeft} attempt{attemptsLeft !== 1 ? "s" : ""} remaining.
-                    </Box>
-                  )}
-                </Typography>
-              )}
+              <Typography color="error" variant="body2" sx={{ fontSize: { xs: "13px", sm: "14px" } }}>
+                Too many attempts. Try again in {secondsLeft} seconds.
+              </Typography>
+              <Typography
+                component="button"
+                type="button"
+                onClick={() => navigate(paths.auth.forgotPassword)}
+                sx={{
+                  mt: 0.5,
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: { xs: "12px", sm: "13px" },
+                  color: "#4F46E5",
+                  fontWeight: 600,
+                  textDecoration: "underline",
+                  display: "block",
+                  mx: "auto",
+                }}
+              >
+                Reset Password?
+              </Typography>
+            </Box>
+          )}
 
-              {isVerificationError && !isActive && (
-                <Typography
-                  component="button"
-                  type="button"
-                  onClick={handleResendVerification}
-                  sx={{
-                    mt: 0.5,
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
-                    fontSize: { xs: "12px", sm: "13px" },
-                    color: "#4F46E5",
-                    fontWeight: 600,
-                    textDecoration: "underline",
-                  }}
-                >
-                  Need a new verification email? Resend Email
-                </Typography>
-              )}
-
-              {(isActive || isDeactivatedError) && (
-                <Typography
-                  component="button"
-                  type="button"
-                  onClick={() => navigate(paths.auth.forgotPassword)}
-                  sx={{
-                    mt: 0.5,
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
-                    fontSize: { xs: "12px", sm: "13px" },
-                    color: "#4F46E5",
-                    fontWeight: 600,
-                    textDecoration: "underline",
-                    display: "block",
-                  }}
-                >
-                  Reset Password?
-                </Typography>
-              )}
+          {checkEmailError && (
+            <Box sx={{ textAlign: "center", mt: 0.5 }}>
+              <Typography color="error" variant="body2" sx={{ fontSize: { xs: "13px", sm: "14px" } }}>
+                {checkEmailError}
+              </Typography>
             </Box>
           )}
 

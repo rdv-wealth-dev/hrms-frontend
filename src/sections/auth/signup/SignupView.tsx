@@ -125,7 +125,7 @@ function SignupView() {
   return (
     <AuthLayout>
       <Box sx={{ width: "100%", maxWidth: "36rem" }}>
-        <Box sx={{ mt: -2 }}>
+        <Box sx={{ mt: -1 }}>
           <AuthHeading
             title="Create your workspace"
             subtitle="Set up your company HRMS in minutes"
@@ -138,7 +138,7 @@ function SignupView() {
           sx={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: { xs: 1.5, sm: 1.8 },
+            gap: { xs: 1, sm: 1.2 },
           }}
         >
           {/* Row 1: Company Name | Team Size */}
@@ -270,7 +270,7 @@ function SignupView() {
           )}
 
           {/* Submit */}
-          <Box sx={{ gridColumn: "1 / 3", mt: { xs: 0.5, sm: 1 } }}>
+          <Box sx={{ gridColumn: "1 / 3", mt: { xs: 0.3, sm: 0.6 } }}>
             <PrimaryButton
               type="submit"
               loading={loading}

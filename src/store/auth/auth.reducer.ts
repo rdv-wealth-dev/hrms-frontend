@@ -43,6 +43,7 @@ const initialState: AuthState = {
   isAuthenticated: !!storedToken,
   loading: false,
   error: null,
+  checkEmailError: null,
 };
 
 export function authReducer(state = initialState, action: AuthAction): AuthState {
@@ -95,7 +96,7 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
     // ==========================
 
     case AUTH_ACTIONS.LOGIN_REQUEST:
-      return { ...state, loading: true, error: null, loginCooldownSeconds: null };
+      return { ...state, loading: true, error: null, checkEmailError: null, loginCooldownSeconds: null };
 
     case AUTH_ACTIONS.LOGIN_SUCCESS:
       return {
@@ -204,13 +205,13 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
     // ==========================
 
     case AUTH_ACTIONS.CHECK_EMAIL_REQUEST:
-      return { ...state, checkEmailLoading: true, checkEmailResult: null, error: null };
+      return { ...state, checkEmailLoading: true, checkEmailResult: null, checkEmailError: null };
 
     case AUTH_ACTIONS.CHECK_EMAIL_SUCCESS:
-      return { ...state, checkEmailLoading: false, checkEmailResult: action.payload, error: null };
+      return { ...state, checkEmailLoading: false, checkEmailResult: action.payload, checkEmailError: null };
 
     case AUTH_ACTIONS.CHECK_EMAIL_FAILURE:
-      return { ...state, checkEmailLoading: false, checkEmailResult: null, error: action.payload };
+      return { ...state, checkEmailLoading: false, checkEmailResult: null, checkEmailError: action.payload };
 
     // ==========================
     // Login Cooldown

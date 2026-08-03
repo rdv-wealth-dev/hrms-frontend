@@ -219,9 +219,7 @@ export default function MyAttendanceView() {
 
   const handleRegSuccess = () => {
     fetchHistory();
-    if (tabValue === 1) {
-      fetchRegularizationRequests();
-    }
+    fetchRegularizationRequests();
   };
 
   const formatDate = (dateStr?: string) => {

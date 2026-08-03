@@ -233,11 +233,17 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isViewingOther, employeeId]);
 
-  const handleRegSuccess = () => {
-    fetchHistory();
-    if (tabValue === 1) {
+  // Refetch requests when switching to the requests tab
+  useEffect(() => {
+    if (tabValue === 1 && !isViewingOther) {
       fetchRegularizationRequests();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabValue, isViewingOther]);
+
+  const handleRegSuccess = () => {
+    fetchHistory();
+    fetchRegularizationRequests();
   };
 
   const formatDate = (dateStr?: string) => {
