@@ -18,6 +18,8 @@ export interface SlugInputProps {
   error?: string;
   /** Notify parent whether slug is confirmed available (true), taken (false), or unchecked (null) */
   onAvailabilityChange?: (available: boolean | null) => void;
+  /** Called when the user manually types in the slug field — used by parent to stop auto-generating from company name */
+  onManualEdit?: () => void;
 }
 
 export default function SlugInput({
@@ -25,6 +27,7 @@ export default function SlugInput({
   onChange,
   error,
   onAvailabilityChange,
+  onManualEdit,
 }: SlugInputProps) {
   const [status, setStatus] = useState<SlugStatus>("idle");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -81,6 +84,8 @@ export default function SlugInput({
     onChange(sanitized);
     setStatus("idle");
     onAvailabilityChange?.(null);
+    // Signal parent that user has manually edited the slug field
+    onManualEdit?.();
   };
 
   return (
@@ -190,6 +195,15 @@ export default function SlugInput({
               ))}
             </Box>
           )}
+        </Box>
+      )}
+
+      {status === "error" && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, mt: 0.8 }}>
+          <ErrorOutlinedIcon sx={{ fontSize: 15, color: "#F59E0B" }} />
+          <Typography variant="caption" sx={{ color: "#F59E0B", fontWeight: 600, fontSize: "12px" }}>
+            Could not check availability. Please try again.
+          </Typography>
         </Box>
       )}
     </Box>

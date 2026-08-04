@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -59,6 +59,9 @@ function SignupView() {
 
   const [submittedEmail, setSubmittedEmail] = useState<string>("");
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  // Track whether the user has manually edited the slug field
+  // If true, stop auto-generating from company name
+  const isSlugManuallyEdited = useRef(false);
 
   useEffect(() => {
     if (isRegisterSuccess) {
@@ -92,15 +95,13 @@ function SignupView() {
   });
 
   // Auto-generate slug from company name as user types
+  // Stops auto-updating once the user manually edits the slug field
   const companyName = watch("companyName");
-  const currentSlug = watch("workspaceSlug");
 
   useEffect(() => {
-    // Only auto-fill if user hasn't manually typed a custom slug
-    if (companyName && !currentSlug) {
-      const generated = toSlug(companyName);
-      if (generated) setValue("workspaceSlug", generated);
-    }
+    if (isSlugManuallyEdited.current) return;
+    const generated = toSlug(companyName);
+    setValue("workspaceSlug", generated);
   }, [companyName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = (data: SignupFormData) => {
@@ -176,6 +177,7 @@ function SignupView() {
                   onChange={field.onChange}
                   error={errors.workspaceSlug?.message}
                   onAvailabilityChange={setSlugAvailable}
+                  onManualEdit={() => { isSlugManuallyEdited.current = true; }}
                 />
               )}
             />
@@ -220,7 +222,7 @@ function SignupView() {
             label="Phone (optional)"
             placeholder="9876543210"
             type="tel"
-            maxLength={15}
+            maxLength={10}
             registration={register("phone")}
             error={errors.phone?.message}
           />

@@ -29,7 +29,7 @@ function AuthLayout({ children }: Props) {
         {/* Card Decorative Circle Right Small */}
         <div className="absolute -right-8 sm:-right-10 top-4 sm:top-6 h-28 w-28 sm:h-40 sm:w-40 rounded-full bg-[#6D5DF6]/5 pointer-events-none" />
 
-        <div className="relative z-10 flex items-center justify-center py-4 sm:py-5 md:py-6 px-5 sm:px-6 md:px-10 w-full box-sizing-border">
+        <div className="relative z-10 flex items-center justify-center py-6 sm:py-7 md:py-9 px-5 sm:px-6 md:px-10 w-full box-sizing-border">
           {children}
         </div>
       </div>

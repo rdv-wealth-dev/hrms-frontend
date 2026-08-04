@@ -178,8 +178,17 @@ export default function FilterBar({
     if (onFilterChange) {
       onFilterChange(key, val);
     }
-    // Auto-close sub-panel smoothly when option is selected (matching Employee behavior)
+    // Auto-close sub-panel when a select option is chosen
     setActivePanelKey(null);
+  };
+
+  // Date fields: update value without closing the panel
+  // (native date input fires onChange on every arrow/spinner interaction,
+  //  closing on each change would dismiss the picker mid-navigation)
+  const handleDateChange = (key: string, val: string) => {
+    if (onFilterChange) {
+      onFilterChange(key, val);
+    }
   };
 
   return (
@@ -369,7 +378,7 @@ export default function FilterBar({
                   type="date"
                   size="small"
                   value={values[activeField.key] || ""}
-                  onChange={(e) => handleSelectOption(activeField.key, e.target.value)}
+                  onChange={(e) => handleDateChange(activeField.key, e.target.value)}
                   sx={{
                     width: 220,
                     "& .MuiOutlinedInput-root": COMMON_INPUT_SX,

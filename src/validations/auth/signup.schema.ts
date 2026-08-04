@@ -46,7 +46,7 @@ export const signupSchema = z
     phone: z
       .string()
       .regex(/^\d*$/, "Phone number must contain digits only")
-      .max(15, "Phone number cannot exceed 15 digits")
+      .max(10, "Phone number cannot exceed 10 digits")
       .optional()
       .or(z.literal("")),
 
