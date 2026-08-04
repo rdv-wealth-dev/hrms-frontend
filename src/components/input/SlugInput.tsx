@@ -31,6 +31,13 @@ export default function SlugInput({
 
   const debouncedSlug = useDebounce(value, 400);
 
+  // Immediately reset status when value changes so stale results ("taken"/"available") aren't displayed during debounce window
+  useEffect(() => {
+    setStatus("idle");
+    setSuggestions([]);
+    onAvailabilityChange?.(null);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!debouncedSlug || debouncedSlug.length < 3) {
       setStatus("idle");

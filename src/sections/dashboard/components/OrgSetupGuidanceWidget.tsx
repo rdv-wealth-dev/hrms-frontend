@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
 import LinearProgress from "@mui/material/LinearProgress";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -16,6 +17,7 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { paths } from "../../../routes/paths";
 import { listDepartments, seedDefaultDepartments } from "../../../api/department.api";
@@ -44,16 +46,31 @@ export default function OrgSetupGuidanceWidget() {
     setLoading(true);
     setError(null);
     try {
-      const [deptRes, desigRes, branchRes] = await Promise.all([
+      // Check for head office branch first
+      let branchExists = false;
+      try {
+        const branchRes = await getHeadOffice();
+        console.log("Head Office Response:", branchRes);
+        branchExists = branchRes?.succeeded && !!branchRes?.data;
+        console.log("Branch exists:", branchExists);
+      } catch (branchErr) {
+        // Head office API might return 404 if not found - this is okay
+        console.log("Head office API error (expected if no branch):", branchErr);
+        branchExists = false;
+      }
+      
+      // Fetch departments and designations
+      const [deptRes, desigRes] = await Promise.all([
         listDepartments(1, 1).catch(() => null),
         listDesignations(1, 1).catch(() => null),
-        getHeadOffice().catch(() => null),
       ]);
 
       setDeptCount(deptRes?.totalRecords ?? deptRes?.data?.length ?? 0);
       setDesigCount(desigRes?.totalRecords ?? desigRes?.data?.length ?? 0);
-      setHasBranch(branchRes?.succeeded && !!branchRes?.data);
+      setHasBranch(branchExists);
+      console.log("Final state - hasBranch:", branchExists, "deptCount:", deptRes?.totalRecords, "desigCount:", desigRes?.totalRecords);
     } catch (err: any) {
+      console.error("fetchCounts error:", err);
       setError("Failed to check organization setup status.");
     } finally {
       setLoading(false);
@@ -67,6 +84,13 @@ export default function OrgSetupGuidanceWidget() {
       setLoading(false);
     }
   }, [role]);
+
+  // Re-fetch when user or branch changes in Redux (after branch creation)
+  useEffect(() => {
+    if ((role === "ORG_ADMIN" || role === "HR_ADMIN") && !loading) {
+      fetchCounts();
+    }
+  }, [user?.branchIds, branch?.id, branch?._id]);
 
   const handleSeedAll = async () => {
     setSeeding(true);
@@ -177,8 +201,20 @@ export default function OrgSetupGuidanceWidget() {
             <RocketLaunchOutlinedIcon sx={{ fontSize: 28, color: "#fff" }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", lineHeight: 1.2, display: "flex", alignItems: "center", gap: 1 }}>
               Organization Initial Setup Required 🎉
+              <IconButton
+                onClick={fetchCounts}
+                disabled={loading}
+                size="small"
+                sx={{
+                  color: "#fff",
+                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+                }}
+                title="Refresh status"
+              >
+                <RefreshIcon fontSize="small" />
+              </IconButton>
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.85)", mt: 0.5 }}>
               Set up your departments and designations to start managing employees effectively.
