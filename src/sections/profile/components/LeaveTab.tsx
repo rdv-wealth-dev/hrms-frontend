@@ -92,10 +92,6 @@ export default function LeaveTab({
       const updatedLocal = [newLocalLeave, ...prev];
       try {
         localStorage.setItem("hrms_local_user_leaves", JSON.stringify(updatedLocal));
-
-        // Also append to global team pending leaves for Leave Management tab
-        const globalPending = JSON.parse(localStorage.getItem("hrms_all_pending_leaves") || "[]");
-        localStorage.setItem("hrms_all_pending_leaves", JSON.stringify([newLocalLeave, ...globalPending]));
       } catch (e) {
         console.error("Failed to save local leave request", e);
       }

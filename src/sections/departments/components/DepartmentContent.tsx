@@ -331,29 +331,6 @@ function DepartmentContent() {
                         </Box>
                     </Box>
 
-                    {/* Action Buttons — only for HR/SUPER_ADMIN */}
-                    {canCreate && (
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setHasSubmittedCreate(false);
-                                    dispatch(clearDepartmentError());
-                                    setCreateOpen(true);
-                                }}
-                                sx={{
-                                    borderRadius: 2,
-                                    textTransform: "none",
-                                    backgroundColor: "#6D5DF6",
-                                    "&:hover": { backgroundColor: "#5B4BEA" },
-                                }}
-                            >
-                                Create Department
-                            </Button>
-                        </Box>
-                    )}
                 </Box>
 
                 {/* Error Banner */}

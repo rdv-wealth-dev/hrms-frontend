@@ -50,132 +50,7 @@ import LeaveRequestsTable from "../components/LeaveRequestsTable";
 import LeaveCalendarView from "../components/LeaveCalendarView";
 import LeavePolicyView from "../components/LeavePolicyView";
 
-const SAMPLE_TEAM_LEAVE_REQUESTS: LeaveRequest[] = [
-  {
-    _id: "sample-req-1",
-    tenantId: "t1",
-    branchId: "b1",
-    employeeId: {
-      _id: "emp-101",
-      employeeCode: "NX-101",
-      firstName: "Priya",
-      lastName: "Sharma",
-      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-    },
-    leaveTypeId: {
-      _id: "lt-1",
-      name: "Annual Leave",
-      code: "AL",
-    },
-    fromDate: "2026-06-23T00:00:00.000Z",
-    toDate: "2026-06-27T00:00:00.000Z",
-    fromSession: "FULL_DAY",
-    toSession: "FULL_DAY",
-    totalDays: 5,
-    baseDays: 5,
-    isSandwiched: false,
-    reason: "Vacation trip with family",
-    status: "PENDING",
-    currentApprovalLevel: 1,
-    approvals: [],
-    appliedAt: "2026-06-20T00:00:00.000Z",
-    createdAt: "2026-06-20T00:00:00.000Z",
-    updatedAt: "2026-06-20T00:00:00.000Z",
-  },
-  {
-    _id: "sample-req-2",
-    tenantId: "t1",
-    branchId: "b1",
-    employeeId: {
-      _id: "emp-102",
-      employeeCode: "NX-102",
-      firstName: "Vikram",
-      lastName: "Nair",
-      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-    },
-    leaveTypeId: {
-      _id: "lt-2",
-      name: "Sick Leave",
-      code: "SL",
-    },
-    fromDate: "2026-06-18T00:00:00.000Z",
-    toDate: "2026-06-18T00:00:00.000Z",
-    fromSession: "FULL_DAY",
-    toSession: "FULL_DAY",
-    totalDays: 1,
-    baseDays: 1,
-    isSandwiched: false,
-    reason: "Fever and doctor visit",
-    status: "APPROVED",
-    currentApprovalLevel: 1,
-    approvals: [],
-    appliedAt: "2026-06-17T00:00:00.000Z",
-    createdAt: "2026-06-17T00:00:00.000Z",
-    updatedAt: "2026-06-18T00:00:00.000Z",
-  },
-  {
-    _id: "sample-req-3",
-    tenantId: "t1",
-    branchId: "b1",
-    employeeId: {
-      _id: "emp-103",
-      employeeCode: "NX-103",
-      firstName: "Kavya",
-      lastName: "Reddy",
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    },
-    leaveTypeId: {
-      _id: "lt-3",
-      name: "Casual Leave",
-      code: "CL",
-    },
-    fromDate: "2026-06-20T00:00:00.000Z",
-    toDate: "2026-06-20T00:00:00.000Z",
-    fromSession: "FULL_DAY",
-    toSession: "FULL_DAY",
-    totalDays: 1,
-    baseDays: 1,
-    isSandwiched: false,
-    reason: "Personal work at bank",
-    status: "PENDING",
-    currentApprovalLevel: 1,
-    approvals: [],
-    appliedAt: "2026-06-19T00:00:00.000Z",
-    createdAt: "2026-06-19T00:00:00.000Z",
-    updatedAt: "2026-06-19T00:00:00.000Z",
-  },
-  {
-    _id: "sample-req-4",
-    tenantId: "t1",
-    branchId: "b1",
-    employeeId: {
-      _id: "emp-104",
-      employeeCode: "NX-104",
-      firstName: "Aisha",
-      lastName: "Khan",
-      avatarUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
-    },
-    leaveTypeId: {
-      _id: "lt-1",
-      name: "Annual Leave",
-      code: "AL",
-    },
-    fromDate: "2026-07-01T00:00:00.000Z",
-    toDate: "2026-07-05T00:00:00.000Z",
-    fromSession: "FULL_DAY",
-    toSession: "FULL_DAY",
-    totalDays: 5,
-    baseDays: 5,
-    isSandwiched: false,
-    reason: "Personal travel",
-    status: "APPROVED",
-    currentApprovalLevel: 1,
-    approvals: [],
-    appliedAt: "2026-06-25T00:00:00.000Z",
-    createdAt: "2026-06-25T00:00:00.000Z",
-    updatedAt: "2026-06-26T00:00:00.000Z",
-  },
-];
+// Real live team leave requests handled dynamically via Redux & backend APIs
 
 // ============================================================
 // Detail Dialog Component
@@ -408,19 +283,9 @@ export default function LeaveDashboardView() {
     detailDialog.open(req);
   };
 
-  // Compute merged list of requests including user-applied emergency leaves
-  const userPendingLeaves = (() => {
-    try {
-      const saved = localStorage.getItem("hrms_all_pending_leaves");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  })();
-
-  const liveReqs = [...userPendingLeaves, ...pendingRequests, ...myRequests];
+  const liveReqs = [...pendingRequests, ...myRequests];
   const mergedReqs = Array.from(
-    new Map([...liveReqs, ...SAMPLE_TEAM_LEAVE_REQUESTS].map((r) => [r._id || r.reason, r])).values()
+    new Map(liveReqs.map((r) => [r._id || r.reason, r])).values()
   );
 
   const displayRequests = mergedReqs.map((r) => {

@@ -193,26 +193,6 @@ function DesignationContent() {
             </Box>
           </Box>
 
-          {canCreate && (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setHasSubmittedCreate(false);
-                dispatch(clearDesignationError());
-                setCreateOpen(true);
-              }}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                backgroundColor: "#6D5DF6",
-                "&:hover": { backgroundColor: "#5B4BEA" },
-              }}
-            >
-              Create Designation
-            </Button>
-          )}
         </Box>
 
         {/* Error Banner (only when all dialogs are closed) */}
