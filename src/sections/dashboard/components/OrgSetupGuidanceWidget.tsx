@@ -24,6 +24,7 @@ import { listDesignations, seedDefaultDesignations } from "../../../api/designat
 import { getHeadOffice } from "../../../api/branch.api";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
+import AdminSetupWizardDialog from "./AdminSetupWizardDialog";
 
 export default function OrgSetupGuidanceWidget() {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export default function OrgSetupGuidanceWidget() {
   const [hasBranch, setHasBranch] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [setupDialogOpen, setSetupDialogOpen] = useState(false);
 
   const fetchCounts = async () => {
     setLoading(true);
@@ -205,34 +207,59 @@ export default function OrgSetupGuidanceWidget() {
           </Box>
         </Box>
 
-        {/* 1-Click Starter Seed Button */}
-        <Button
-          variant="contained"
-          onClick={handleSeedAll}
-          disabled={seeding || !hasBranch}
-          startIcon={seeding ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeIcon />}
-          sx={{
-            backgroundColor: "#fff",
-            color: "#6D5DF6",
-            fontWeight: 700,
-            textTransform: "none",
-            borderRadius: 2.5,
-            px: 2.5,
-            py: 1,
-            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)",
-            "&:hover": {
-              backgroundColor: "rgba(255, 255, 255, 0.92)",
-              transform: "translateY(-1px)",
-            },
-            "&.Mui-disabled": {
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              color: "rgba(109, 93, 246, 0.5)",
-            },
-          }}
-          title={!hasBranch ? "Create a branch first before seeding" : ""}
-        >
-          {seeding ? "Seeding Starter Pack..." : "Seed Recommended Starter Structure"}
-        </Button>
+        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+          <Button
+            variant="contained"
+            onClick={() => setSetupDialogOpen(true)}
+            startIcon={<RocketLaunchOutlinedIcon />}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              color: "#fff",
+              fontWeight: 700,
+              textTransform: "none",
+              borderRadius: 2.5,
+              px: 2.5,
+              py: 1,
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255, 255, 255, 0.3)",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.3)",
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            Complete Initial Setup
+          </Button>
+
+          {/* 1-Click Starter Seed Button */}
+          <Button
+            variant="contained"
+            onClick={handleSeedAll}
+            disabled={seeding || !hasBranch}
+            startIcon={seeding ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeIcon />}
+            sx={{
+              backgroundColor: "#fff",
+              color: "#6D5DF6",
+              fontWeight: 700,
+              textTransform: "none",
+              borderRadius: 2.5,
+              px: 2.5,
+              py: 1,
+              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.92)",
+                transform: "translateY(-1px)",
+              },
+              "&.Mui-disabled": {
+                backgroundColor: "rgba(255, 255, 255, 0.5)",
+                color: "rgba(109, 93, 246, 0.5)",
+              },
+            }}
+            title={!hasBranch ? "Create a branch first before seeding" : ""}
+          >
+            {seeding ? "Seeding Starter Pack..." : "Seed Recommended Starter Structure"}
+          </Button>
+        </Box>
       </Box>
 
       {/* Alerts */}
@@ -460,6 +487,12 @@ export default function OrgSetupGuidanceWidget() {
           </Button>
         </Box>
       </Box>
+
+      <AdminSetupWizardDialog
+        open={setupDialogOpen}
+        onClose={() => setSetupDialogOpen(false)}
+        onSuccess={fetchCounts}
+      />
     </Card>
   );
 }

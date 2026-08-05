@@ -127,3 +127,31 @@ export const activateAccount = async (
   );
   return response.data;
 };
+
+export interface CompleteOnboardingRequest {
+  countryCode: string;
+  timezone: string;
+  employeeCountRange: string;
+  industry: string;
+  phone: string;
+  baseCurrency: string;
+  fiscalYearStart: string;
+  adminJobTitle: string;
+}
+
+export interface CompleteOnboardingResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data?: any;
+}
+
+export const completeOnboarding = async (
+  payload: CompleteOnboardingRequest
+): Promise<CompleteOnboardingResponse> => {
+  const response = await axiosInstance.post<CompleteOnboardingResponse>(
+    "/auth/complete-onboarding",
+    payload
+  );
+  return response.data;
+};

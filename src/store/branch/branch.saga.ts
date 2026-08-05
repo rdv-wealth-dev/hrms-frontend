@@ -17,6 +17,7 @@ import {
   seedBranchSuccess,
   seedBranchFailure,
 } from "./branch.actions";
+import { loadOrganizationRequest } from "../organization/organization.actions";
 import {
   BRANCH_ACTIONS,
   type CreateBranchRequestAction,
@@ -64,6 +65,7 @@ function* handleCreateBranch(action: CreateBranchRequestAction): SagaIterator {
     }
 
     yield put(createBranchSuccess(response.data));
+    yield put(loadOrganizationRequest());
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(
@@ -91,6 +93,7 @@ function* handleUpdateBranch(action: UpdateBranchRequestAction): SagaIterator {
     }
 
     yield put(updateBranchSuccess(response.data));
+    yield put(loadOrganizationRequest());
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(

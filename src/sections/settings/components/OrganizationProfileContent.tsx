@@ -34,6 +34,7 @@ import {
 import { usePermissions } from "../../../hooks/usePermissions";
 import { CustomWeekOffRulesBuilder } from "../../../components/settings/CustomWeekOffRulesBuilder";
 import type { CustomWeekOffRule } from "../../../store/organization/organization.types";
+import { parseWorkingHoursToDecimal, formatWorkingHoursDisplay } from "../../../utils/format-date";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -110,7 +111,7 @@ function OrganizationProfileContent() {
   const [timeFormat, setTimeFormat] = useState("12h");
   const [fiscalYearStart, setFiscalYearStart] = useState("");
   const [weeklyOffDays, setWeeklyOffDays] = useState<string[]>([]);
-  const [workingHoursPerDay, setWorkingHoursPerDay] = useState(8);
+  const [workingHoursInput, setWorkingHoursInput] = useState("8");
   const [customWeekOffRules, setCustomWeekOffRules] = useState<CustomWeekOffRule[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -145,7 +146,7 @@ function OrganizationProfileContent() {
       setTimeFormat(organization.locale?.timeFormat === "24h" ? "24h" : "12h");
       setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
       setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
-      setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
+      setWorkingHoursInput(formatWorkingHoursDisplay(organization.locale?.workingHoursPerDay || 8));
       
       const savedRules = localStorage.getItem("hrms_org_custom_week_off_rules");
       const orgRules = organization.locale?.customWeekOffRules;
@@ -191,8 +192,7 @@ function OrganizationProfileContent() {
       setTimeFormat(organization.locale?.timeFormat === "24h" ? "24h" : "12h");
       setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
       setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
-      setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
-      setCustomWeekOffRules(organization.locale?.customWeekOffRules || []);
+      setWorkingHoursInput(formatWorkingHoursDisplay(organization.locale?.workingHoursPerDay || 8));
     }
     setIsEditing(false);
   };
@@ -227,7 +227,7 @@ function OrganizationProfileContent() {
           timeFormat: timeFormat as "12h" | "24h",
           fiscalYearStart,
           weeklyOffDays,
-          workingHoursPerDay,
+          workingHoursPerDay: parseWorkingHoursToDecimal(workingHoursInput),
           customWeekOffRules,
         },
       })
@@ -617,13 +617,12 @@ function OrganizationProfileContent() {
               </Grid>
               <Grid size={6}>
                 <TextInput
-                  type="number"
+                  type="text"
                   label="Working Hours / Day"
-                  value={workingHoursPerDay || ""}
-                  placeholder="8"
-                  onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? 8 : Number(e.target.value))}
+                  value={workingHoursInput}
+                  placeholder="08:40 or 8"
+                  onChange={(e) => setWorkingHoursInput(e.target.value ?? "")}
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { min: 1, max: 24 } }}
                 />
               </Grid>
               <Grid size={6}>

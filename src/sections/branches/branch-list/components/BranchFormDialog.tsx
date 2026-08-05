@@ -16,6 +16,12 @@ import TextInput from "../../../../components/input/TextInput";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
 import { CustomWeekOffRulesBuilder } from "../../../../components/settings/CustomWeekOffRulesBuilder";
 import type { CustomWeekOffRule } from "../../../../store/organization/organization.types";
+import { syncBranchDataToOrganization } from "../../../../utils/org-sync-helper";
+import {
+  calculateWorkingHoursFromTimes,
+  parseWorkingHoursToDecimal,
+  formatWorkingHoursDisplay,
+} from "../../../../utils/format-date";
 
 type Props = {
   open: boolean;
@@ -67,7 +73,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
   const [weeklyOffDays, setWeeklyOffDays] = useState<string[]>(["Saturday", "Sunday"]);
   const [shiftStartTime, setShiftStartTime] = useState("09:00");
   const [shiftEndTime, setShiftEndTime] = useState("18:00");
-  const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(9);
+  const [workingHoursInput, setWorkingHoursInput] = useState("9");
   const [customWeekOffRules, setCustomWeekOffRules] = useState<CustomWeekOffRule[]>([]);
 
   // Statutory
@@ -75,43 +81,6 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
   const [esiApplicable, setEsiApplicable] = useState(false);
   const [ptApplicable, setPtApplicable] = useState(false);
   const [ptStateCode, setPtStateCode] = useState("");
-
-function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number | null {
-  if (!startTimeStr || !endTimeStr) return null;
-
-  const parseToMinutes = (timeStr: string): number | null => {
-    const trimmed = timeStr.trim().toUpperCase();
-    if (!trimmed) return null;
-
-    const isPM = trimmed.includes("PM");
-    const isAM = trimmed.includes("AM");
-    const cleanStr = trimmed.replace(/(AM|PM)/g, "").trim();
-
-    const parts = cleanStr.split(":").map((v) => parseInt(v, 10));
-    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
-
-    let hours = parts[0];
-    const minutes = parts[1];
-
-    if (isPM && hours < 12) hours += 12;
-    if (isAM && hours === 12) hours = 0;
-
-    return hours * 60 + minutes;
-  };
-
-  const startMins = parseToMinutes(startTimeStr);
-  const endMins = parseToMinutes(endTimeStr);
-
-  if (startMins === null || endMins === null) return null;
-
-  let diffMins = endMins - startMins;
-  if (diffMins < 0) {
-    diffMins += 24 * 60; // Spans midnight
-  }
-
-  const hours = diffMins / 60;
-  return Math.round(hours * 100) / 100;
-}
 
   useEffect(() => {
     if (open) {
@@ -130,7 +99,7 @@ function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number
         setWeeklyOffDays(initialValues.workPolicy?.weeklyOffDays ?? []);
         setShiftStartTime(initialValues.workPolicy?.shiftStartTime ?? "09:00");
         setShiftEndTime(initialValues.workPolicy?.shiftEndTime ?? "18:00");
-        setWorkingHoursPerDay(initialValues.workPolicy?.workingHoursPerDay ?? 9);
+        setWorkingHoursInput(formatWorkingHoursDisplay(initialValues.workPolicy?.workingHoursPerDay ?? 9));
         setCustomWeekOffRules(initialValues.workPolicy?.customWeekOffRules ?? []);
         setPfApplicable(initialValues.statutory?.pfApplicable ?? false);
         setEsiApplicable(initialValues.statutory?.esiApplicable ?? false);
@@ -152,7 +121,7 @@ function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number
         setWeeklyOffDays(["Saturday", "Sunday"]);
         setShiftStartTime("09:00");
         setShiftEndTime("18:00");
-        setWorkingHoursPerDay(9);
+        setWorkingHoursInput("9");
         setCustomWeekOffRules([]);
         setPfApplicable(false);
         setEsiApplicable(false);
@@ -164,9 +133,9 @@ function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number
 
   // Auto-calculate working hours whenever shiftStartTime or shiftEndTime changes
   useEffect(() => {
-    const calculated = calculateHoursBetween(shiftStartTime, shiftEndTime);
-    if (calculated !== null && calculated > 0 && calculated <= 24) {
-      setWorkingHoursPerDay(calculated);
+    if (shiftStartTime && shiftEndTime) {
+      const calculatedDisplay = calculateWorkingHoursFromTimes(shiftStartTime, shiftEndTime);
+      setWorkingHoursInput(calculatedDisplay);
     }
   }, [shiftStartTime, shiftEndTime]);
 
@@ -202,7 +171,7 @@ function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number
         weeklyOffDays,
         shiftStartTime: shiftStartTime || undefined,
         shiftEndTime: shiftEndTime || undefined,
-        workingHoursPerDay: Number(workingHoursPerDay) || undefined,
+        workingHoursPerDay: parseWorkingHoursToDecimal(workingHoursInput),
         customWeekOffRules,
       },
       statutory: {
@@ -213,6 +182,9 @@ function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number
       },
       geo: { geofenceEnabled: true },
     };
+
+    // Sync Branch data to Organization Profile
+    syncBranchDataToOrganization(payload);
 
     onSubmit(payload);
   };
@@ -414,10 +386,10 @@ function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextInput
                 label="Working Hours Per Day"
-                type="number"
-                value={workingHoursPerDay || ""}
-                onChange={(e) => setWorkingHoursPerDay(e.target.value === "" ? 8 : Number(e.target.value))}
-                placeholder="8"
+                type="text"
+                value={workingHoursInput}
+                onChange={(e) => setWorkingHoursInput(e.target.value ?? "")}
+                placeholder="08:40 or 8"
               />
             </Grid>
             <Grid size={{ xs: 6, sm: 6 }}>

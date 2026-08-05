@@ -123,3 +123,92 @@ export function formatDateRange(
   }
   return `${formatDate(startDateInput, options)} - ${formatDate(endDateInput, options)}`;
 }
+
+/**
+ * Parses user input such as "8:40", "08:40", "9:30", "8.5", "8,5", or "8" into decimal hours (e.g. 8.67 or 9.5).
+ */
+export function parseWorkingHoursToDecimal(input: string | number): number {
+  if (typeof input === "number") return Math.round(input * 100) / 100;
+  if (!input) return 8;
+
+  const str = String(input).trim();
+  if (!str) return 8;
+
+  if (str.includes(":")) {
+    const parts = str.split(":").map((p) => parseInt(p, 10));
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      const hours = parts[0];
+      const minutes = parts[1];
+      const decimalHours = hours + minutes / 60;
+      return Math.round(decimalHours * 100) / 100;
+    }
+  }
+
+  const num = parseFloat(str.replace(",", "."));
+  if (!isNaN(num) && num >= 0 && num <= 24) {
+    return Math.round(num * 100) / 100;
+  }
+
+  return 8;
+}
+
+/**
+ * Formats a decimal or HH:MM hours input into display text for inputs (e.g., 8.67 -> "08:40", 9.5 -> "09:30", 8 -> "8").
+ */
+export function formatWorkingHoursDisplay(input: string | number): string {
+  if (typeof input === "string" && input.includes(":")) return input;
+  const num = typeof input === "number" ? input : parseFloat(String(input));
+  if (isNaN(num) || num <= 0) return "8";
+
+  const totalMins = Math.round(num * 60);
+  const hours = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+
+  if (mins === 0) return String(hours);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(hours)}:${pad(mins)}`;
+}
+
+/**
+ * Calculates the exact HH:MM display between start time (e.g. "11:00") and end time (e.g. "19:40").
+ */
+export function calculateWorkingHoursFromTimes(startTimeStr: string, endTimeStr: string): string {
+  if (!startTimeStr || !endTimeStr) return "8";
+
+  const parseToMinutes = (timeStr: string): number | null => {
+    const trimmed = timeStr.trim().toUpperCase();
+    if (!trimmed) return null;
+
+    const isPM = trimmed.includes("PM");
+    const isAM = trimmed.includes("AM");
+    const cleanStr = trimmed.replace(/(AM|PM)/g, "").trim();
+
+    const parts = cleanStr.split(":").map((v) => parseInt(v, 10));
+    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+
+    let hours = parts[0];
+    const minutes = parts[1];
+
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  };
+
+  const startMins = parseToMinutes(startTimeStr);
+  const endMins = parseToMinutes(endTimeStr);
+
+  if (startMins === null || endMins === null) return "8";
+
+  let diffMins = endMins - startMins;
+  if (diffMins < 0) {
+    diffMins += 24 * 60; // Night shift spanning midnight
+  }
+
+  const hours = Math.floor(diffMins / 60);
+  const mins = Math.round(diffMins % 60);
+
+  if (mins === 0) return String(hours);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(hours)}:${pad(mins)}`;
+}
