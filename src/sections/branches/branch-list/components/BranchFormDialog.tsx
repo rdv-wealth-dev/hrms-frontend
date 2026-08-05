@@ -276,9 +276,11 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
               <TextInput
                 label="Branch Code"
                 value={code}
-                onChange={(e) => setCode((e.target.value ?? "").toUpperCase())}
+                onChange={(e) => setCode(e.target.value ?? "")}
+                onBlur={() => setCode((prev) => prev.toUpperCase())}
                 placeholder="e.g. BLR-01"
                 required
+                slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
               />
             </Grid>
 

@@ -17,6 +17,7 @@ export type TextInputProps = {
   error?: string;
   value?: any;
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   select?: boolean;
   children?: React.ReactNode;
   required?: boolean;
@@ -39,6 +40,7 @@ function TextInput({
   error,
   value,
   onChange,
+  onBlur,
   select,
   children,
   required,
@@ -180,6 +182,9 @@ function TextInput({
   }
   if (onChange !== undefined) {
     extraProps.onChange = onChange;
+  }
+  if (onBlur !== undefined) {
+    extraProps.onBlur = onBlur;
   }
 
   return (

@@ -243,11 +243,14 @@ export function ShiftFormDialog({
 
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label="Shift Code *"
+              label="Shift Code"
+              required
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => setCode(e.target.value ?? "")}
+              onBlur={() => setCode((prev) => prev.toUpperCase())}
               placeholder="e.g. GEN_SHIFT"
               disabled={mode === "edit"}
+              slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
             />
           </Grid>
 

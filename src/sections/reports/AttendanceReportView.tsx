@@ -14,7 +14,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
-import { getAttendanceReport } from "../../api/attendance.api";
+import { getAttendanceReport, listShifts } from "../../api/attendance.api";
 import type { AttendanceRecord } from "../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../utils/time";
 import { formatTime } from "../../utils/format-date";
@@ -230,12 +230,58 @@ export default function AttendanceReportView() {
     return list.length > 0 ? list : records;
   }, [records, todayStr]);
 
-  // Compute dynamic KPI metrics for Today from live API records
+  const [shiftTiming, setShiftTiming] = useState<{
+    startTime: string;
+    graceMins: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchDefaultShift = async () => {
+      try {
+        const res = await listShifts();
+        if (Array.isArray(res) && res.length > 0) {
+          const def = res.find((s) => s.isDefault) || res[0];
+          if (def && def.startTime) {
+            setShiftTiming({
+              startTime: def.startTime,
+              graceMins: def.gracePeriodMinutes ?? 15,
+            });
+          }
+        }
+      } catch {
+        // Ignore, fallback to default 09:00 AM + 15m grace
+      }
+    };
+    fetchDefaultShift();
+  }, []);
+
+  const formatMinsTo12h = (totalMins: number): string => {
+    const mins = ((totalMins % 1440) + 1440) % 1440;
+    const hours24 = Math.floor(mins / 60);
+    const minutes = mins % 60;
+    const period = hours24 >= 12 ? "PM" : "AM";
+    const hours12 = hours24 % 12 || 12;
+    const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+    return `${pad(hours12)}:${pad(minutes)} ${period}`;
+  };
+
+  // Compute 4 Summary KPI Cards from real live API records
   const kpiData: AttendanceKpiData = useMemo(() => {
     let presentCount = 0;
     let absentCount = 0;
     let lateCount = 0;
     let wfhCount = 0;
+
+    // Shift start & grace calculation
+    const shiftStart = shiftTiming?.startTime || "09:00";
+    const graceMins = shiftTiming?.graceMins ?? 15;
+
+    const [shHours, shMins] = shiftStart.split(":").map((n) => parseInt(n, 10) || 0);
+    const startMins = shHours * 60 + shMins;
+    const lateThresholdMins = startMins + graceMins;
+
+    const shiftStart12h = formatMinsTo12h(startMins);
+    const cutoff12h = formatMinsTo12h(lateThresholdMins);
 
     todayRecords.forEach((r) => {
       const s = String(r.status || "").toUpperCase();
@@ -244,13 +290,13 @@ export default function AttendanceReportView() {
 
       let isLate = s.includes("LATE") || (r as any).isLate === true;
 
-      // Check check-in timestamp against shift start (10:00 AM + 15m grace = 10:15 AM / 615 mins)
+      // Check check-in timestamp against dynamic shift start + grace
       if (!isLate && checkInTime) {
         try {
           const d = new Date(checkInTime);
           if (!isNaN(d.getTime())) {
             const totalMins = d.getHours() * 60 + d.getMinutes();
-            if (totalMins > 615) {
+            if (totalMins > lateThresholdMins) {
               isLate = true;
             }
           }
@@ -286,11 +332,11 @@ export default function AttendanceReportView() {
       absentCount,
       absentSubtext: `${absentCount} absent today`,
       lateCount,
-      lateSubtext: `After 10:15 AM (10:00 Shift + 15m Grace)`,
+      lateSubtext: `After ${cutoff12h} (${shiftStart12h} Shift + ${graceMins}m Grace)`,
       wfhCount,
       wfhSubtext: `${wfhRate}% of workforce`,
     };
-  }, [todayRecords, totalRecords]);
+  }, [todayRecords, totalRecords, shiftTiming]);
 
 
   // Compute status breakdown counts from real live API records
