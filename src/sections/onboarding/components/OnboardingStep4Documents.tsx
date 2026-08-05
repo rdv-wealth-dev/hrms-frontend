@@ -13,6 +13,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import TextInput from "../../../components/input/TextInput";
 import { uploadDocument, getEmployeeDocuments, type EmployeeDocument } from "../../../api/employee.api";
+import { getDocumentDefinition, type DocumentDefinition } from "../../../utils/doc-helpers";
 
 interface OnboardingStep4Props {
   missingDocuments?: string[];
@@ -22,12 +23,10 @@ interface OnboardingStep4Props {
   errorMsg?: string | null;
 }
 
-const MANDATORY_DOCS = [
-  { code: "PAN", label: "PAN Card", description: "Government issued 10-character PAN card", placeholder: "e.g. ABCDE1234F", maxLength: 10 },
-  { code: "AADHAAR", label: "Aadhaar Card", description: "Government issued 12-digit UID Aadhaar card", placeholder: "e.g. 123456789012", maxLength: 12 },
-];
+const DEFAULT_DOC_CODES = ["PAN", "AADHAAR", "PASSPORT", "DRIVING_LICENSE", "RESUME", "DEGREE"];
 
 export default function OnboardingStep4Documents({
+  missingDocuments,
   onSubmitStep,
   onBack,
   loading,
@@ -36,10 +35,7 @@ export default function OnboardingStep4Documents({
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [docNumbers, setDocNumbers] = useState<Record<string, string>>({
-    PAN: "",
-    AADHAAR: "",
-  });
+  const [docNumbers, setDocNumbers] = useState<Record<string, string>>({});
 
   const fetchDocs = async () => {
     try {
@@ -55,6 +51,13 @@ export default function OnboardingStep4Documents({
   useEffect(() => {
     fetchDocs();
   }, []);
+
+  // Compute dynamic document list based on organization requirements / missing documents
+  const docCodesToRender = missingDocuments && missingDocuments.length > 0
+    ? Array.from(new Set(["PAN", "AADHAAR", ...missingDocuments]))
+    : DEFAULT_DOC_CODES;
+
+  const docList: DocumentDefinition[] = docCodesToRender.map((code) => getDocumentDefinition(code));
 
   const handleFileUpload = async (docType: string, file: File) => {
     setUploadingDocType(docType);
@@ -74,10 +77,8 @@ export default function OnboardingStep4Documents({
     }
   };
 
-  const isUploaded = (code: string) => {
-    return documents.some(
-      (d) => d.documentType?.toUpperCase() === code.toUpperCase()
-    );
+  const getUploadedDoc = (code: string) => {
+    return documents.find((d) => d.documentType?.toUpperCase() === code.toUpperCase());
   };
 
   return (
@@ -87,7 +88,7 @@ export default function OnboardingStep4Documents({
           4. Mandatory Documents Confirmation
         </Typography>
         <Typography variant="body2" sx={{ color: "#64748B", mb: 3 }}>
-          Please enter your document numbers and upload the corresponding files before proceeding.
+          Please upload files and enter details for all mandatory documents required by your organization.
         </Typography>
 
         {(errorMsg || uploadError) && (
@@ -97,8 +98,9 @@ export default function OnboardingStep4Documents({
         )}
 
         <Grid container spacing={2}>
-          {MANDATORY_DOCS.map((doc) => {
-            const uploaded = isUploaded(doc.code);
+          {docList.map((doc) => {
+            const uploadedDoc = getUploadedDoc(doc.code);
+            const isUploaded = !!uploadedDoc;
             const isUploading = uploadingDocType === doc.code;
 
             return (
@@ -108,12 +110,12 @@ export default function OnboardingStep4Documents({
                   sx={{
                     p: 2.5,
                     borderRadius: 2.5,
-                    borderColor: uploaded ? "#A7F3D0" : "#E2E8F0",
-                    backgroundColor: uploaded ? "#ECFDF5" : "#FFFFFF",
+                    borderColor: isUploaded ? "#A7F3D0" : "#E2E8F0",
+                    backgroundColor: isUploaded ? "#ECFDF5" : "#FFFFFF",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    minHeight: 180,
+                    minHeight: 190,
                   }}
                 >
                   <Box>
@@ -121,7 +123,7 @@ export default function OnboardingStep4Documents({
                       <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
                         {doc.label}
                       </Typography>
-                      {uploaded ? (
+                      {isUploaded ? (
                         <Chip
                           icon={<CheckCircleIcon />}
                           label="Uploaded"
@@ -137,24 +139,32 @@ export default function OnboardingStep4Documents({
                       {doc.description}
                     </Typography>
 
-                    <TextInput
-                      label={`${doc.label} Number`}
-                      placeholder={doc.placeholder}
-                      maxLength={doc.maxLength}
-                      value={docNumbers[doc.code] || ""}
-                      onChange={(e) =>
-                        setDocNumbers((prev) => ({
-                          ...prev,
-                          [doc.code]: doc.code === "PAN" ? e.target.value.toUpperCase() : e.target.value,
-                        }))
-                      }
-                    />
+                    {doc.requiresNumber && (
+                      <TextInput
+                        label={`${doc.label} Number`}
+                        placeholder={doc.placeholder || `Enter ${doc.label} number`}
+                        maxLength={doc.maxLength}
+                        value={docNumbers[doc.code] || ""}
+                        onChange={(e) =>
+                          setDocNumbers((prev) => ({
+                            ...prev,
+                            [doc.code]: doc.code === "PAN" ? e.target.value.toUpperCase() : e.target.value,
+                          }))
+                        }
+                      />
+                    )}
+
+                    {uploadedDoc?.fileName && (
+                      <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, display: "block", mt: 1 }}>
+                        File: {uploadedDoc.fileName}
+                      </Typography>
+                    )}
                   </Box>
 
                   <Box sx={{ mt: 2 }}>
                     <Button
                       component="label"
-                      variant={uploaded ? "outlined" : "contained"}
+                      variant={isUploaded ? "outlined" : "contained"}
                       size="small"
                       disabled={isUploading}
                       startIcon={<CloudUploadIcon />}
@@ -162,12 +172,12 @@ export default function OnboardingStep4Documents({
                         textTransform: "none",
                         fontWeight: 600,
                         borderRadius: "8px",
-                        ...(uploaded
+                        ...(isUploaded
                           ? { borderColor: "#059669", color: "#059669" }
                           : { backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" } }),
                       }}
                     >
-                      {isUploading ? "Uploading..." : uploaded ? "Replace File" : "Upload File"}
+                      {isUploading ? "Uploading..." : isUploaded ? "Replace File" : "Upload File"}
                       <input
                         type="file"
                         accept="image/png, image/jpeg, application/pdf"
