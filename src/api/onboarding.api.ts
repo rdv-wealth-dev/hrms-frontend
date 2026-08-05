@@ -1,10 +1,5 @@
 import axiosInstance from "./axios";
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem("accessToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export interface CurrentAddress {
   addressLine1: string;
   addressLine2?: string;
@@ -94,8 +89,7 @@ export interface OnboardingStepResponse {
 export const getOnboardingStatus = async (): Promise<OnboardingStatusResponse> => {
   try {
     const response = await axiosInstance.get<OnboardingStatusResponse>(
-      "/onboarding/status",
-      { headers: getAuthHeader() }
+      "/onboarding/status"
     );
     if (response.data && response.data.data) {
       const step = response.data.data.onboardingStep || 1;
@@ -116,8 +110,7 @@ export const submitOnboardingStep1 = async (payload: Step1Payload): Promise<Onbo
   try {
     const response = await axiosInstance.post<OnboardingStepResponse>(
       "/onboarding/step-1",
-      payload,
-      { headers: getAuthHeader() }
+      payload
     );
     return response.data;
   } catch (err: any) {
@@ -130,8 +123,7 @@ export const submitOnboardingStep2 = async (payload: Step2Payload): Promise<Onbo
   try {
     const response = await axiosInstance.post<OnboardingStepResponse>(
       "/onboarding/step-2",
-      payload,
-      { headers: getAuthHeader() }
+      payload
     );
     return response.data;
   } catch (err: any) {
@@ -144,8 +136,7 @@ export const submitOnboardingStep3 = async (payload: Step3Payload): Promise<Onbo
   try {
     const response = await axiosInstance.post<OnboardingStepResponse>(
       "/onboarding/step-3",
-      payload,
-      { headers: getAuthHeader() }
+      payload
     );
     return response.data;
   } catch (err: any) {
@@ -158,8 +149,7 @@ export const submitOnboardingStep4 = async (): Promise<OnboardingStepResponse> =
   try {
     const response = await axiosInstance.post<OnboardingStepResponse>(
       "/onboarding/step-4",
-      {},
-      { headers: getAuthHeader() }
+      {}
     );
     return response.data;
   } catch (err: any) {
@@ -172,8 +162,7 @@ export const submitOnboardingStep5 = async (_payload: Step5Payload): Promise<Onb
   try {
     const response = await axiosInstance.post<OnboardingStepResponse>(
       "/onboarding/step-5",
-      {},
-      { headers: getAuthHeader() }
+      {}
     );
     return response.data;
   } catch (err: any) {

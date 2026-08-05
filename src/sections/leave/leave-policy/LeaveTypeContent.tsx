@@ -27,6 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 
 import TextInput from "../../../components/input/TextInput";
+import { StatusChip } from "../../../components/common/StatusChip";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import { usePermissions } from "../../../hooks/usePermissions";
@@ -514,16 +515,7 @@ export default function LeaveTypeContent() {
                       {type.accrualFrequency === "NONE" ? "Upfront Credit" : type.accrualFrequency}
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={type.isPaid ? "Paid" : "Unpaid"}
-                        size="small"
-                        sx={{
-                          fontWeight: 600,
-                          backgroundColor: type.isPaid ? "#ECFDF5" : "#FEF2F2",
-                          color: type.isPaid ? "#047857" : "#B91C1C",
-                          borderRadius: 1.5,
-                        }}
-                      />
+                      <StatusChip status={type.isPaid ? "ACTIVE" : "INACTIVE"} label={type.isPaid ? "Paid" : "Unpaid"} />
                     </TableCell>
                     <TableCell>{type.approvalLevels} Level(s)</TableCell>
                   </TableRow>

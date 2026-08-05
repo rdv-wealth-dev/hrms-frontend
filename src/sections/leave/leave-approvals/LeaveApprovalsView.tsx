@@ -31,6 +31,7 @@ import type { RootState } from "../../../store/rootReducer";
 import { usePagination } from "../../../hooks/usePagination";
 import { useSubmitSuccess } from "../../../hooks/useSubmitSuccess";
 import { useDialog } from "../../../hooks/useDialog";
+import { formatDate } from "../../../utils/format-date";
 import {
   getPendingLeaveRequestsRequest,
   reviewLeaveRequestRequest,
@@ -128,20 +129,6 @@ export default function LeaveApprovalsView() {
           reviewComments: reviewComments.trim() || undefined,
         })
       );
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const dateObj = new Date(dateStr);
-      return dateObj.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      });
-    } catch {
-      return dateStr;
     }
   };
 
@@ -245,11 +232,11 @@ export default function LeaveApprovalsView() {
                         {/* Duration */}
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatDate(request.fromDate)}
+                            {formatDate(request.fromDate, { treatAsDateOnly: true })}
                           </Typography>
                           {request.fromDate !== request.toDate && (
                             <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                              to {formatDate(request.toDate)}
+                              to {formatDate(request.toDate, { treatAsDateOnly: true })}
                             </Typography>
                           )}
                         </TableCell>

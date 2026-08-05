@@ -18,6 +18,7 @@ import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../components/input/TextInput";
+import { formatToYYYYMMDD } from "../../../utils/format-date";
 
 import { createManualAttendance } from "../../../api/attendance.api";
 import { listEmployees } from "../../../api/employee.api";
@@ -84,7 +85,7 @@ export function ManualAttendanceDialog({
 
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const todayIsoDate = new Date().toISOString().split("T")[0];
+  const todayIsoDate = formatToYYYYMMDD(new Date());
 
   const {
     control,

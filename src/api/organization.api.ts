@@ -9,15 +9,8 @@ import type {
   UpdateStatutoryResponse,
 } from "../store/organization/organization.types";
 
-const getAuthHeader = () => ({
-  Authorization: `Bearer ${localStorage.getItem("accessToken") ?? ""}`,
-});
-
 export const getOrganization = async (): Promise<GetOrganizationResponse> => {
-  const response = await axiosInstance.get<GetOrganizationResponse>(
-    "/organizations/me",
-    { headers: getAuthHeader() }
-  );
+  const response = await axiosInstance.get<GetOrganizationResponse>("/organizations/me");
   return response.data;
 };
 
@@ -26,8 +19,7 @@ export const updateOrganization = async (
 ): Promise<UpdateOrganizationResponse> => {
   const response = await axiosInstance.patch<UpdateOrganizationResponse>(
     "/organizations/me",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -37,8 +29,7 @@ export const updateModules = async (
 ): Promise<UpdateModulesResponse> => {
   const response = await axiosInstance.patch<UpdateModulesResponse>(
     "/organizations/me/modules",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -48,8 +39,7 @@ export const updateStatutory = async (
 ): Promise<UpdateStatutoryResponse> => {
   const response = await axiosInstance.patch<UpdateStatutoryResponse>(
     "/organizations/me/statutory",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -59,8 +49,7 @@ export const updateMandatoryDocs = async (
 ): Promise<UpdateOrganizationResponse> => {
   const response = await axiosInstance.patch<UpdateOrganizationResponse>(
     "/organizations/me/mandatory-docs",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };

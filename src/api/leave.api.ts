@@ -1,15 +1,5 @@
 import axiosInstance from "./axios";
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    throw new Error("No access token found. Please log in again.");
-  }
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
-
 export interface CreateLeaveTypeRequest {
   name: string;
   code: string;
@@ -77,16 +67,14 @@ export const createLeaveType = async (
 ): Promise<CreateLeaveTypeResponse> => {
   const response = await axiosInstance.post<CreateLeaveTypeResponse>(
     "/leave/types",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
 
 export const listLeaveTypes = async (): Promise<LeaveTypesPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveTypesPaginatedResponse>(
-    "/leave/types?pageNumber=1&pageSize=50",
-    { headers: getAuthHeader() }
+    "/leave/types?pageNumber=1&pageSize=50"
   );
   return response.data;
 };
@@ -140,8 +128,7 @@ export const createHoliday = async (
 ): Promise<CreateHolidayResponse> => {
   const response = await axiosInstance.post<CreateHolidayResponse>(
     "/leave/holidays",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -164,8 +151,7 @@ export const updateHoliday = async (
 ): Promise<CreateHolidayResponse> => {
   const response = await axiosInstance.patch<CreateHolidayResponse>(
     `/leave/holidays/${id}`,
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -178,8 +164,7 @@ export interface DeleteHolidayResponse {
 
 export const deleteHoliday = async (id: string): Promise<DeleteHolidayResponse> => {
   const response = await axiosInstance.delete<DeleteHolidayResponse>(
-    `/leave/holidays/${id}`,
-    { headers: getAuthHeader() }
+    `/leave/holidays/${id}`
   );
   return response.data;
 };
@@ -204,7 +189,6 @@ export const seedDefaultHolidays = async (
     {},
     {
       params,
-      headers: getAuthHeader(),
     }
   );
   return response.data;
@@ -215,7 +199,6 @@ export const listHolidays = async (year?: number): Promise<HolidayListResponse> 
     "/leave/holidays",
     {
       params: year ? { year } : undefined,
-      headers: getAuthHeader(),
     }
   );
   return response.data;
@@ -235,7 +218,6 @@ export const resolveBranchHolidays = async (
     "/leave/holidays/resolve",
     {
       params: { branchId, year: year || new Date().getFullYear() },
-      headers: getAuthHeader(),
     }
   );
   return response.data;
@@ -271,7 +253,6 @@ export const getMyLeaveBalances = async (
     "/leave/balances/me",
     {
       params: year ? { year } : undefined,
-      headers: getAuthHeader(),
     }
   );
   return response.data;
@@ -316,8 +297,7 @@ export const applyForLeave = async (
 ): Promise<CreateLeaveRequestResponse> => {
   const response = await axiosInstance.post<CreateLeaveRequestResponse>(
     "/leave/requests",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -385,8 +365,7 @@ export const getPendingLeaveRequests = async (
   pageSize = 20
 ): Promise<LeaveRequestsPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
-    `/leave/requests/pending?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    { headers: getAuthHeader() }
+    `/leave/requests/pending?pageNumber=${pageNumber}&pageSize=${pageSize}`
   );
   return response.data;
 };
@@ -398,8 +377,7 @@ export const reviewLeaveRequest = async (
 ): Promise<ReviewLeaveRequestResponse> => {
   const response = await axiosInstance.patch<ReviewLeaveRequestResponse>(
     `/leave/requests/${id}/review`,
-    { status, reviewComments },
-    { headers: getAuthHeader() }
+    { status, reviewComments }
   );
   return response.data;
 };
@@ -409,8 +387,7 @@ export const getMyLeaveRequests = async (
   pageSize = 10
 ): Promise<LeaveRequestsPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
-    `/leave/requests/me?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    { headers: getAuthHeader() }
+    `/leave/requests/me?pageNumber=${pageNumber}&pageSize=${pageSize}`
   );
   return response.data;
 };
@@ -428,8 +405,7 @@ export const cancelLeaveRequest = async (
 ): Promise<CancelLeaveRequestResponse> => {
   const response = await axiosInstance.patch<CancelLeaveRequestResponse>(
     `/leave/requests/${id}/cancel`,
-    { cancelReason },
-    { headers: getAuthHeader() }
+    { cancelReason }
   );
   return response.data;
 };
@@ -461,8 +437,7 @@ export interface CompOffBalanceResponse {
 
 export const getMyCompOffBalances = async (): Promise<CompOffBalanceResponse> => {
   const response = await axiosInstance.get<CompOffBalanceResponse>(
-    "/leave/comp-off/me",
-    { headers: getAuthHeader() }
+    "/leave/comp-off/me"
   );
   return response.data;
 };
@@ -485,8 +460,7 @@ export const creditCompOff = async (
 ): Promise<CreditCompOffResponse> => {
   const response = await axiosInstance.post<CreditCompOffResponse>(
     "/leave/comp-off",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };

@@ -43,6 +43,8 @@ import CreateEventDialog from "../../attendance/components/CreateEventDialog";
 import type { AttendanceRecord, RegularizationRequest } from "../../../store/attendance/attendance.types";
 import AttendanceStatusChip from "../../attendance/components/AttendanceStatusChip";
 import { formatWorkedTime } from "../../../utils/time";
+import { formatDate, formatTime } from "../../../utils/format-date";
+import { StatusChip } from "../../../components/common/StatusChip";
 
 interface AttendanceTabProps {
   employeeId?: string;
@@ -244,59 +246,6 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
   const handleRegSuccess = () => {
     fetchHistory();
     fetchRegularizationRequests();
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "—";
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat(navigator.language, {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(date);
-  };
-
-  const formatTime = (timeStr?: string) => {
-    if (!timeStr) return "—";
-    return new Date(timeStr).toLocaleTimeString(navigator.language, {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const getRegStatusChip = (status: string) => {
-    let color = "#F59E0B";
-    let bg = "rgba(245, 158, 11, 0.08)";
-    let border = "1px solid rgba(245, 158, 11, 0.15)";
-    let label = "Pending";
-
-    if (status === "APPROVED") {
-      color = "#10B981";
-      bg = "rgba(16, 185, 129, 0.08)";
-      border = "1px solid rgba(16, 185, 129, 0.15)";
-      label = "Approved";
-    } else if (status === "REJECTED") {
-      color = "#EF4444";
-      bg = "rgba(239, 68, 68, 0.08)";
-      border = "1px solid rgba(239, 68, 68, 0.15)";
-      label = "Rejected";
-    }
-
-    return (
-      <Chip
-        label={label}
-        size="small"
-        sx={{
-          fontWeight: 600,
-          fontSize: "0.75rem",
-          color,
-          backgroundColor: bg,
-          border,
-        }}
-      />
-    );
   };
 
   const handleOpenDetails = (record: AttendanceRecord) => {
@@ -729,7 +678,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
                         {row.reason}
                       </TableCell>
                       <TableCell sx={{ whiteSpace: "nowrap" }}>
-                        {getRegStatusChip(row.status)}
+                        <StatusChip status={row.status} />
                       </TableCell>
                       <TableCell sx={{ fontSize: 13, color: "#6B7280", whiteSpace: "nowrap" }}>
                         {new Date(row.createdAt).toLocaleDateString(navigator.language, {

@@ -17,6 +17,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
+import { StatusChip } from "../../../components/common/StatusChip";
+import { formatDateRange } from "../../../utils/format-date";
+
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/rootReducer";
 import type { LeaveRequest } from "../../../api/leave.api";
@@ -132,89 +135,6 @@ export default function LeaveRequestsTable({
       url = url.startsWith("/") ? `${backendOrigin}${url}` : `${backendOrigin}/${url}`;
     }
     return url || undefined;
-  };
-
-  const formatDateRange = (fromDateStr?: string, toDateStr?: string) => {
-    if (!fromDateStr || !toDateStr) return "—";
-    try {
-      const fromD = new Date(fromDateStr);
-      const toD = new Date(toDateStr);
-      if (isNaN(fromD.getTime()) || isNaN(toD.getTime())) return "—";
-
-      const fromFmt = fromD.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-      const toFmt = toD.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-
-      if (fromFmt === toFmt) return fromFmt;
-      return `${fromFmt} - ${toFmt}`;
-    } catch {
-      return "—";
-    }
-  };
-
-  const getStatusChip = (status?: string) => {
-    const s = (status || "").toUpperCase();
-    if (s === "PENDING") {
-      return (
-        <Chip
-          label="Pending"
-          size="small"
-          sx={{
-            fontWeight: 700,
-            fontSize: "12px",
-            backgroundColor: "#FEF3C7",
-            color: "#B45309",
-            borderRadius: "12px",
-            px: 0.5,
-          }}
-        />
-      );
-    }
-    if (s === "APPROVED") {
-      return (
-        <Chip
-          label="Approved"
-          size="small"
-          sx={{
-            fontWeight: 700,
-            fontSize: "12px",
-            backgroundColor: "#D1FAE5",
-            color: "#047857",
-            borderRadius: "12px",
-            px: 0.5,
-          }}
-        />
-      );
-    }
-    if (s === "REJECTED") {
-      return (
-        <Chip
-          label="Rejected"
-          size="small"
-          sx={{
-            fontWeight: 700,
-            fontSize: "12px",
-            backgroundColor: "#FEE2E2",
-            color: "#B91C1C",
-            borderRadius: "12px",
-            px: 0.5,
-          }}
-        />
-      );
-    }
-    return (
-      <Chip
-        label={status || "Cancelled"}
-        size="small"
-        sx={{
-          fontWeight: 700,
-          fontSize: "12px",
-          backgroundColor: "#F1F5F9",
-          color: "#64748B",
-          borderRadius: "12px",
-          px: 0.5,
-        }}
-      />
-    );
   };
 
   return (
@@ -421,7 +341,7 @@ export default function LeaveRequestsTable({
                     </TableCell>
 
                     {/* Status Badge */}
-                    <TableCell>{getStatusChip(req?.status)}</TableCell>
+                    <TableCell><StatusChip status={req?.status} /></TableCell>
 
                     {/* Inline Actions */}
                     <TableCell align="center">

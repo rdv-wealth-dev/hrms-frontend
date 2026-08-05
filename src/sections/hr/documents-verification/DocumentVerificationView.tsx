@@ -20,6 +20,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextInput from "../../../components/input/TextInput";
+import { formatDate } from "../../../utils/format-date";
+import { StatusChip } from "../../../components/common/StatusChip";
 import Tooltip from "@mui/material/Tooltip";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
@@ -206,16 +208,11 @@ export function DocumentVerificationView() {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ color: "#6B7280", fontSize: "0.8rem" }}>
-                          {new Date(doc.createdAt).toLocaleDateString()}
+                          {formatDate(doc.createdAt)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          icon={<HourglassEmptyOutlinedIcon sx={{ fontSize: "14px !important" }} />}
-                          label="Pending"
-                          size="small"
-                          sx={{ backgroundColor: "#FEF3C7", color: "#92400E", fontWeight: 600, fontSize: "0.75rem" }}
-                        />
+                        <StatusChip status={(doc as any).status || "PENDING"} />
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>

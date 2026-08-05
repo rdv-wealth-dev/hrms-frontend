@@ -37,6 +37,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import TextInput from "../../components/input/TextInput";
 import ConfirmDialog from "../../components/modal/ConfirmDialog";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
+import { formatDate } from "../../utils/format-date";
 import type { AppDispatch } from "../../store/store";
 import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -582,20 +583,6 @@ export default function HolidayListView() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      const dateObj = new Date(dateStr);
-      return dateObj.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   const getHolidayTypeChipColor = (type: string) => {
     switch (type) {
       case "NATIONAL":
@@ -885,7 +872,7 @@ export default function HolidayListView() {
                   return (
                     <TableRow key={type._id} hover>
                       <TableCell sx={{ fontWeight: 500, whiteSpace: "nowrap" }}>{type.name}</TableCell>
-                      <TableCell sx={{ whiteSpace: "nowrap" }}>{formatDate(type.date)}</TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>{formatDate(type.date, { treatAsDateOnly: true })}</TableCell>
                       <TableCell sx={{ whiteSpace: "nowrap" }}>
                         <Chip
                           label={type.type}

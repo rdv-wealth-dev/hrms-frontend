@@ -9,7 +9,6 @@ import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Chip from "@mui/material/Chip";
 import TablePagination from "@mui/material/TablePagination";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -18,6 +17,8 @@ import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { getAttendanceReport } from "../../api/attendance.api";
 import type { AttendanceRecord } from "../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../utils/time";
+import { formatTime } from "../../utils/format-date";
+import { StatusChip } from "../../components/common/StatusChip";
 import { usePagination } from "../../hooks/usePagination";
 import { useDialog } from "../../hooks/useDialog";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -228,16 +229,6 @@ export default function AttendanceReportView() {
     });
     return list.length > 0 ? list : records;
   }, [records, todayStr]);
-
-
-  const formatTime = (timeStr?: string) => {
-    if (!timeStr) return "—";
-    return new Date(timeStr).toLocaleTimeString(navigator.language, {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
 
   // Compute dynamic KPI metrics for Today from live API records
   const kpiData: AttendanceKpiData = useMemo(() => {
@@ -689,7 +680,7 @@ export default function AttendanceReportView() {
               <>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography variant="body2" color="text.secondary">Status:</Typography>
-                  <Chip label={detailDialog.target.status} size="small" color="primary" />
+                  <StatusChip status={detailDialog.target.status} />
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography variant="body2" color="text.secondary">First Check In:</Typography>

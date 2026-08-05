@@ -20,6 +20,7 @@ import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import TextInput from "../../../components/input/TextInput";
+import { formatToYYYYMMDD } from "../../../utils/format-date";
 import { paths } from "../../../routes/paths";
 
 import type { AppDispatch } from "../../../store/store";
@@ -159,50 +160,6 @@ function EmployeeCreateView() {
       navigate(paths.employees.directory);
     }
   }, [success, navigate, dispatch]);
-
-function formatToYYYYMMDD(dateStr?: string): string | undefined {
-  if (!dateStr) return undefined;
-  const str = dateStr.trim();
-  if (!str) return undefined;
-
-  // Already YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-    return str;
-  }
-
-  if (str.includes("/") || str.includes("-")) {
-    const parts = str.split(/[/|-]/);
-    if (parts.length === 3) {
-      let year: string, month: string, day: string;
-      if (parts[0].length === 4) {
-        [year, month, day] = parts;
-      } else if (parts[2].length === 4) {
-        year = parts[2];
-        if (parseInt(parts[0], 10) > 12) {
-          day = parts[0];
-          month = parts[1];
-        } else if (parseInt(parts[1], 10) > 12) {
-          month = parts[0];
-          day = parts[1];
-        } else {
-          month = parts[0];
-          day = parts[1];
-        }
-      } else {
-        return str;
-      }
-      const pad = (num: string) => num.padStart(2, "0");
-      return `${year}-${pad(month)}-${pad(day)}`;
-    }
-  }
-
-  const d = new Date(str);
-  if (!isNaN(d.getTime())) {
-    return d.toISOString().split("T")[0];
-  }
-
-  return str;
-}
 
   const onInvalidForm = (validationErrors: any) => {
     console.error("Form Validation Errors:", validationErrors);

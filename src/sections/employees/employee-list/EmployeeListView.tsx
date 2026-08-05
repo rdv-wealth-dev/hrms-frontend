@@ -31,6 +31,8 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
+import { formatDate } from "../../../utils/format-date";
+import { StatusChip } from "../../../components/common/StatusChip";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import CreditCompOffDialog from "../../leave/components/CreditCompOffDialog";
@@ -318,18 +320,6 @@ function EmployeeListView() {
     }
   };
 
-  const getStatusChipProps = (statusStr: string) => {
-    switch (statusStr) {
-      case "ACTIVE":
-        return { label: "Active", color: "success" as const, variant: "outlined" as const };
-      case "ON_LEAVE":
-        return { label: "On Leave", color: "warning" as const, variant: "outlined" as const };
-      case "INACTIVE":
-      default:
-        return { label: "Inactive", color: "default" as const, variant: "outlined" as const };
-    }
-  };
-
   const handleStatusChange = (newStatus: string) => {
     if (statusMenuTarget?._id) {
       dispatch(updateEmployeeStatusRequest(statusMenuTarget._id, newStatus));
@@ -544,21 +534,6 @@ function EmployeeListView() {
       .split("_")
       .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
       .join(" ");
-  };
-
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "—";
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return "—";
-      return d.toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return "—";
-    }
   };
 
   const displayedEmployees = employees.filter((emp) => {
@@ -1050,8 +1025,8 @@ function EmployeeListView() {
                           {formatDate(emp.joiningDate)}
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            {...getStatusChipProps(emp.status)}
+                          <StatusChip
+                            status={emp.status}
                             size="small"
                             onClick={
                               canUpdate

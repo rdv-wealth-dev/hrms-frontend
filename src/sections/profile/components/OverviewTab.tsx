@@ -27,6 +27,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import { formatDate } from "../../../utils/format-date";
 
 import type { CompleteProfileEmployee } from "../../../api/employee.api";
 import TextInput from "../../../components/input/TextInput";
@@ -40,17 +41,6 @@ interface OverviewTabProps {
   user: any;
   showSnackbar: (msg: string, variant: "success" | "error" | "info" | "warning") => void;
 }
-
-const formatDate = (dateStr?: string) => {
-  if (!dateStr) return "—";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime())
-    ? "—"
-    : date.toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      });
-};
 
 export default function OverviewTab({
   empProfile,

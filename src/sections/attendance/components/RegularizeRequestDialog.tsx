@@ -16,6 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import HistoryIcon from "@mui/icons-material/History";
 
 import TextInput from "../../../components/input/TextInput";
+import { formatDate, formatTime } from "../../../utils/format-date";
 import { createRegularizationRequest } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
 
@@ -57,33 +58,6 @@ export default function RegularizeRequestDialog({
   }, [open, record]);
 
   if (!record) return null;
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatTime = (timeStr?: string | null) => {
-    if (!timeStr) return "None";
-    try {
-      if (timeStr.includes("T")) {
-        const d = new Date(timeStr);
-        return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-      }
-      return timeStr;
-    } catch {
-      return timeStr;
-    }
-  };
 
   const formatTimeForInput = (timeStr: string) => {
     try {
@@ -208,7 +182,7 @@ export default function RegularizeRequestDialog({
                 Shift Date
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                {formatDate(record.attendanceDate || "")}
+                {formatDate(record.attendanceDate || "", { treatAsDateOnly: true })}
               </Typography>
             </Box>
             <Divider sx={{ my: 0.5 }} />
