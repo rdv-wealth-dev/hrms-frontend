@@ -406,14 +406,15 @@ export default function AttendanceReportView() {
         empObj?.profilePicture ||
         (r as any)?.avatarUrl ||
         (r as any)?.profilePicture ||
-        empObj?.user?.avatarUrl;
+        (empObj as any)?.user?.avatarUrl ||
+        "";
 
       const mins = getRealWorkedMinutes(r);
       const status = getResolvedStatus(r);
 
-      const deptName = empObj?.department?.name || empObj?.departmentName || (r as any)?.departmentName || "";
-      const desigName = empObj?.designation?.title || empObj?.designationName || (r as any)?.designationName || "";
-      const branchName = empObj?.branch?.name || empObj?.branchName || (r as any)?.branchName || "";
+      const deptName = (empObj as any)?.department?.name || (empObj as any)?.departmentName || (r as any)?.departmentName || "";
+      const desigName = (empObj as any)?.designation?.title || (empObj as any)?.designationName || (r as any)?.designationName || "";
+      const branchName = (empObj as any)?.branch?.name || (empObj as any)?.branchName || (r as any)?.branchName || "";
 
       return {
         id: r?._id || Math.random().toString(),

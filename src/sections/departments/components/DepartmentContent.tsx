@@ -29,6 +29,7 @@ import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import type { Department } from "../../../auth/types";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 
 import {
     listDepartmentsRequest,
@@ -36,6 +37,7 @@ import {
     updateDepartmentRequest,
     clearDepartmentError,
 } from "../../../store/department";
+import { listBranchesRequest, getHeadOfficeRequest } from "../../../store/branch";
 
 // ============================================================
 // Create / Update Form Dialog
@@ -226,8 +228,7 @@ function DepartmentContent() {
             total: 0,
         });
 
-    const user = useSelector((state: RootState) => state.auth?.user);
-    const branchId = user?.branchIds?.[0] ?? "";
+    const branchId = useActiveBranchId();
     
     const { hasPermission } = usePermissions();
     const canCreate = hasPermission("department.create");
@@ -239,9 +240,11 @@ function DepartmentContent() {
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
     const [editTarget, setEditTarget] = useState<Department | null>(null);
 
-    // Load on mount
+    // Load departments and ensure branch data is in Redux for useActiveBranchId
     useEffect(() => {
         dispatch(listDepartmentsRequest());
+        dispatch(getHeadOfficeRequest());
+        dispatch(listBranchesRequest());
     }, [dispatch]);
 
     // Only close "Create" dialog after an actual submit succeeded

@@ -38,6 +38,7 @@ import {
 } from "../../../validations/employee/create-employee.schema";
 import { listShifts } from "../../../api/attendance.api";
 import type { Shift } from "../../../store/attendance";
+import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 
 
 
@@ -54,8 +55,7 @@ function EmployeeCreateView() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const user = useSelector((state: RootState) => state.auth?.user);
-  const branchId = user?.branchIds?.[0] ?? "";
+  const branchId = useActiveBranchId();
 
   const { submitting, success, error } = useSelector(
     (state: RootState) => state.employee
@@ -72,8 +72,6 @@ function EmployeeCreateView() {
     (state: RootState) => state.branch?.branches ?? []
   );
 
-  const effectiveBranchId = branchId || branches[0]?._id || "";
-
   const [manageSalary, setManageSalary] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
@@ -88,7 +86,7 @@ function EmployeeCreateView() {
   } = useForm<CreateEmployeeFormData>({
     resolver: zodResolver(createEmployeeSchema),
     defaultValues: {
-      branchId: effectiveBranchId || "",
+      branchId: branchId || "",
       departmentId: "",
       designationId: "",
       countryCode: "IN",
@@ -111,10 +109,10 @@ function EmployeeCreateView() {
   }, [dispatch, branches.length, departments.length, designations.length]);
 
   useEffect(() => {
-    if (effectiveBranchId) {
-      setValue("branchId", effectiveBranchId);
+    if (branchId) {
+      setValue("branchId", branchId);
     }
-  }, [effectiveBranchId, setValue]);
+  }, [branchId, setValue]);
 
   useEffect(() => {
     const fetchShifts = async () => {
@@ -220,7 +218,7 @@ function formatToYYYYMMDD(dateStr?: string): string | undefined {
     setFormValidationError(null);
     const payload: any = { ...data };
 
-    payload.branchId = payload.branchId || effectiveBranchId;
+    payload.branchId = payload.branchId || branchId;
 
     if (payload.joiningDate) {
       payload.joiningDate = formatToYYYYMMDD(payload.joiningDate);

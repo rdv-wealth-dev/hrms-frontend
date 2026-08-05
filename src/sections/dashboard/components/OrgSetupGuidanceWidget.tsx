@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
@@ -24,15 +23,14 @@ import { listDepartments, seedDefaultDepartments } from "../../../api/department
 import { listDesignations, seedDefaultDesignations } from "../../../api/designation.api";
 import { getHeadOffice } from "../../../api/branch.api";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 
 export default function OrgSetupGuidanceWidget() {
   const navigate = useNavigate();
   const { role } = usePermissions();
 
-  // Get branchId from Redux auth state
-  const user = useSelector((state: any) => state.auth?.user);
-  const branch = useSelector((state: any) => state.auth?.branch);
-  const branchId = user?.branchIds?.[0] || branch?.id || branch?._id;
+  // Get branchId using the shared hook — handles ORG_ADMIN (empty branchIds) correctly
+  const branchId = useActiveBranchId();
 
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
@@ -85,34 +83,19 @@ export default function OrgSetupGuidanceWidget() {
     }
   }, [role]);
 
-  // Re-fetch when user or branch changes in Redux (after branch creation)
+  // Re-fetch when resolved branchId changes (e.g. after branch creation loads into Redux)
   useEffect(() => {
     if ((role === "ORG_ADMIN" || role === "HR_ADMIN") && !loading) {
       fetchCounts();
     }
-  }, [user?.branchIds, branch?.id, branch?._id]);
+  }, [branchId]);
 
   const handleSeedAll = async () => {
     setSeeding(true);
     setError(null);
     setSuccessMessage(null);
     try {
-      // First, try to get the head office branch
-      let resolvedBranchId = branchId;
-      
-      if (!resolvedBranchId) {
-        try {
-          const headOfficeRes = await getHeadOffice();
-          if (headOfficeRes.succeeded && headOfficeRes.data?._id) {
-            resolvedBranchId = headOfficeRes.data._id;
-          }
-        } catch (headOfficeErr: any) {
-          // Head office doesn't exist yet - this is expected for new organizations
-          setError("Please create a branch (Head Office) first before seeding departments and designations. Go to Branches section to add one.");
-          setSeeding(false);
-          return;
-        }
-      }
+      const resolvedBranchId = branchId;
 
       if (!resolvedBranchId) {
         setError("Unable to determine your branch. Please create a branch first.");

@@ -30,6 +30,7 @@ import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import type { Designation } from "../../../auth/types";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 
 import {
   createDesignationRequest,
@@ -38,6 +39,7 @@ import {
   clearDesignationError,
 } from "../../../store/designation";
 import { listDepartmentsRequest } from "../../../store/department";
+import { listBranchesRequest, getHeadOfficeRequest } from "../../../store/branch";
 
 // ============================================================
 // Designation Content — layout-agnostic, embeddable anywhere
@@ -56,8 +58,7 @@ function DesignationContent() {
       }
   );
 
-  const user = useSelector((state: RootState) => state.auth?.user);
-  const branchId = user?.branchIds?.[0] ?? "";
+  const branchId = useActiveBranchId();
   
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("designation.create");
@@ -85,9 +86,11 @@ function DesignationContent() {
   const [editDescription, setEditDescription] = useState("");
   const [editLevel, setEditLevel] = useState("1");
 
-  // Fetch list on mount
+  // Fetch list on mount and ensure branch data is in Redux for useActiveBranchId
   useEffect(() => {
     dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 10 }));
+    dispatch(getHeadOfficeRequest());
+    dispatch(listBranchesRequest());
   }, [dispatch]);
 
   // Fetch departments if cache is empty
