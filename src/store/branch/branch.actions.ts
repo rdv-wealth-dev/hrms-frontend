@@ -77,3 +77,17 @@ export const deleteBranchFailure = (error: string) => ({
   type: BRANCH_ACTIONS.DELETE_FAILURE,
   payload: error,
 });
+
+export const seedBranchRequest = (branchId: string) => ({
+  type: BRANCH_ACTIONS.SEED_REQUEST,
+  payload: branchId,
+});
+
+export const seedBranchSuccess = () => ({
+  type: BRANCH_ACTIONS.SEED_SUCCESS,
+});
+
+export const seedBranchFailure = (error: string) => ({
+  type: BRANCH_ACTIONS.SEED_FAILURE,
+  payload: error,
+});

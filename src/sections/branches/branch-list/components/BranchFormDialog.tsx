@@ -76,6 +76,43 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
   const [ptApplicable, setPtApplicable] = useState(false);
   const [ptStateCode, setPtStateCode] = useState("");
 
+function calculateHoursBetween(startTimeStr: string, endTimeStr: string): number | null {
+  if (!startTimeStr || !endTimeStr) return null;
+
+  const parseToMinutes = (timeStr: string): number | null => {
+    const trimmed = timeStr.trim().toUpperCase();
+    if (!trimmed) return null;
+
+    const isPM = trimmed.includes("PM");
+    const isAM = trimmed.includes("AM");
+    const cleanStr = trimmed.replace(/(AM|PM)/g, "").trim();
+
+    const parts = cleanStr.split(":").map((v) => parseInt(v, 10));
+    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+
+    let hours = parts[0];
+    const minutes = parts[1];
+
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  };
+
+  const startMins = parseToMinutes(startTimeStr);
+  const endMins = parseToMinutes(endTimeStr);
+
+  if (startMins === null || endMins === null) return null;
+
+  let diffMins = endMins - startMins;
+  if (diffMins < 0) {
+    diffMins += 24 * 60; // Spans midnight
+  }
+
+  const hours = diffMins / 60;
+  return Math.round(hours * 100) / 100;
+}
+
   useEffect(() => {
     if (open) {
       if (mode === "update" && initialValues) {
@@ -124,6 +161,14 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
       }
     }
   }, [open, mode, initialValues]);
+
+  // Auto-calculate working hours whenever shiftStartTime or shiftEndTime changes
+  useEffect(() => {
+    const calculated = calculateHoursBetween(shiftStartTime, shiftEndTime);
+    if (calculated !== null && calculated > 0 && calculated <= 24) {
+      setWorkingHoursPerDay(calculated);
+    }
+  }, [shiftStartTime, shiftEndTime]);
 
   const handleWeeklyOffToggle = (day: string) => {
     if (weeklyOffDays.includes(day)) {

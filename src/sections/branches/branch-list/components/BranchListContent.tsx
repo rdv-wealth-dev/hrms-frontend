@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -28,6 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 import type { AppDispatch } from "../../../../store/store";
 import type { RootState } from "../../../../store/rootReducer";
@@ -42,8 +42,10 @@ import {
 import { usePermissions } from "../../../../hooks/usePermissions";
 import { useDialog } from "../../../../hooks/useDialog";
 import { useSubmitSuccess } from "../../../../hooks/useSubmitSuccess";
+import { useSnackbar } from "../../../../components/snackbar";
 import BranchFormDialog from "./BranchFormDialog";
 import BranchCalendarDialog from "./BranchCalendarDialog";
+import SeedBranchDialog from "./SeedBranchDialog";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
 
 function BranchListContent() {
@@ -57,14 +59,22 @@ function BranchListContent() {
     (state: RootState) => state.branch
   );
 
+  const { showSnackbar } = useSnackbar();
   const formDialog = useDialog<Branch>();
   const deleteDialog = useDialog<Branch>();
   const calendarDialog = useDialog<Branch>();
+  const seedDialog = useDialog<Branch>();
 
   useEffect(() => {
     dispatch(listBranchesRequest());
     dispatch(getHeadOfficeRequest());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (error && error !== "Head office not found") {
+      showSnackbar(error, "error");
+    }
+  }, [error, showSnackbar]);
 
   useSubmitSuccess({
     submitting,
@@ -333,13 +343,7 @@ function BranchListContent() {
         </Box>
       )}
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!loading && !error && branches.length === 0 && (
+      {!loading && branches.length === 0 && (
         <Paper
           sx={{
             p: 5,
@@ -547,14 +551,25 @@ function BranchListContent() {
                         </IconButton>
 
                         {canUpdate && (
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenEdit(branch)}
-                            sx={{ color: "#6D5DF6" }}
-                            title="Edit Branch"
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={() => seedDialog.open(branch)}
+                              sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                              title="Seed Master Data (Leave Types & Shifts)"
+                            >
+                              <AutoAwesomeIcon fontSize="small" />
+                            </IconButton>
+
+                            <IconButton
+                              size="small"
+                              onClick={() => handleOpenEdit(branch)}
+                              sx={{ color: "#6D5DF6" }}
+                              title="Edit Branch"
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </>
                         )}
                         {canDelete && (
                           <IconButton
@@ -575,6 +590,17 @@ function BranchListContent() {
           </Table>
         </TableContainer>
       )}
+
+      {/* Seed Branch Master Data Dialog */}
+      <SeedBranchDialog
+        open={seedDialog.isOpen}
+        branch={seedDialog.target}
+        onClose={seedDialog.close}
+        onSuccess={() => {
+          dispatch(listBranchesRequest());
+          dispatch(getHeadOfficeRequest());
+        }}
+      />
 
       {/* Branch Calendar Dialog */}
       <BranchCalendarDialog

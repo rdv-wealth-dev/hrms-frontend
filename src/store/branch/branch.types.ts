@@ -151,6 +151,10 @@ export const BRANCH_ACTIONS = {
   HEAD_OFFICE_REQUEST: "branch/headOfficeRequest",
   HEAD_OFFICE_SUCCESS: "branch/headOfficeSuccess",
   HEAD_OFFICE_FAILURE: "branch/headOfficeFailure",
+
+  SEED_REQUEST: "branch/seedRequest",
+  SEED_SUCCESS: "branch/seedSuccess",
+  SEED_FAILURE: "branch/seedFailure",
 } as const;
 
 // ===========================================
@@ -233,6 +237,20 @@ export type DeleteBranchFailureAction = {
   payload: string;
 };
 
+export type SeedBranchRequestAction = {
+  type: typeof BRANCH_ACTIONS.SEED_REQUEST;
+  payload: string;
+};
+
+export type SeedBranchSuccessAction = {
+  type: typeof BRANCH_ACTIONS.SEED_SUCCESS;
+};
+
+export type SeedBranchFailureAction = {
+  type: typeof BRANCH_ACTIONS.SEED_FAILURE;
+  payload: string;
+};
+
 export type BranchAction =
   | ListBranchesRequestAction
   | ListBranchesSuccessAction
@@ -249,7 +267,10 @@ export type BranchAction =
   | DeleteBranchFailureAction
   | GetHeadOfficeRequestAction
   | GetHeadOfficeSuccessAction
-  | GetHeadOfficeFailureAction;
+  | GetHeadOfficeFailureAction
+  | SeedBranchRequestAction
+  | SeedBranchSuccessAction
+  | SeedBranchFailureAction;
 
 // ===========================================
 // Branch Calendar Types

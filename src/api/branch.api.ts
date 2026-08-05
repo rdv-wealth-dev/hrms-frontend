@@ -10,15 +10,17 @@ import type {
   GetBranchCalendarResponse,
 } from "../store/branch/branch.types";
 
-const getAuthHeader = () => ({
-  Authorization: `Bearer ${localStorage.getItem("accessToken") ?? ""}`,
-});
+export interface SeedBranchMasterDataResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data?: {
+    message: string;
+  };
+}
 
 export const listBranches = async (): Promise<BranchListResponse> => {
-  const response = await axiosInstance.get<BranchListResponse>(
-    "/branches",
-    { headers: getAuthHeader() }
-  );
+  const response = await axiosInstance.get<BranchListResponse>("/branches");
   return response.data;
 };
 
@@ -27,16 +29,14 @@ export const createBranch = async (
 ): Promise<CreateBranchResponse> => {
   const response = await axiosInstance.post<CreateBranchResponse>(
     "/branches",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
 
 export const getHeadOffice = async (): Promise<GetHeadOfficeResponse> => {
   const response = await axiosInstance.get<GetHeadOfficeResponse>(
-    "/branches/head-office",
-    { headers: getAuthHeader() }
+    "/branches/head-office"
   );
   return response.data;
 };
@@ -47,16 +47,23 @@ export const updateBranch = async (
 ): Promise<UpdateBranchResponse> => {
   const response = await axiosInstance.patch<UpdateBranchResponse>(
     `/branches/${id}`,
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
 
 export const deleteBranch = async (id: string): Promise<DeleteBranchResponse> => {
   const response = await axiosInstance.delete<DeleteBranchResponse>(
-    `/branches/${id}`,
-    { headers: getAuthHeader() }
+    `/branches/${id}`
+  );
+  return response.data;
+};
+
+export const seedBranchMasterData = async (
+  branchId: string
+): Promise<SeedBranchMasterDataResponse> => {
+  const response = await axiosInstance.post<SeedBranchMasterDataResponse>(
+    `/branches/${branchId}/seed`
   );
   return response.data;
 };
@@ -72,10 +79,7 @@ export const getBranchCalendar = async (
 
   const response = await axiosInstance.get<GetBranchCalendarResponse>(
     `/branches/${branchId}/calendar`,
-    {
-      params,
-      headers: getAuthHeader(),
-    }
+    { params }
   );
   return response.data;
 };
@@ -90,10 +94,7 @@ export const getMyBranchCalendar = async (
 
   const response = await axiosInstance.get<GetBranchCalendarResponse>(
     "/branches/my/calendar",
-    {
-      params,
-      headers: getAuthHeader(),
-    }
+    { params }
   );
   return response.data;
 };
@@ -108,12 +109,7 @@ export const getMySchedule = async (
 
   const response = await axiosInstance.get<GetBranchCalendarResponse>(
     "/branches/me/schedule",
-    {
-      params,
-      headers: getAuthHeader(),
-    }
+    { params }
   );
   return response.data;
 };
-
-
