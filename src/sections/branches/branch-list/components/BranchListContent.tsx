@@ -374,23 +374,22 @@ function BranchListContent() {
             borderRadius: 3,
             boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
             border: "1px solid rgba(0,0,0,0.06)",
-            overflow: "hidden",
+            width: "100%",
+            maxWidth: "100%",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
-          <Table>
+          <Table sx={{ minWidth: { xs: 900, sm: 1000, md: 1100 } }}>
             <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 650 }}>Branch Info</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Location</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Contact Details</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Work Policy</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Statutory Details</TableCell>
-                <TableCell sx={{ fontWeight: 650 }} align="center">
-                  Status
-                </TableCell>
-                <TableCell sx={{ fontWeight: 650 }} align="right">
-                  Actions
-                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Branch Info</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 220 }}>Location</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Contact Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Work Policy</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 130, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 90, whiteSpace: "nowrap" }}>Status</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -441,11 +440,11 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Location */}
-                    <TableCell>
+                    <TableCell sx={{ maxWidth: 260, wordBreak: "break-word" }}>
                       {addressString ? (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled" }} />
-                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.8 }}>
+                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled", mt: 0.2, flexShrink: 0 }} />
+                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13, wordBreak: "break-word" }}>
                             {addressString}
                           </Typography>
                         </Box>
@@ -484,8 +483,8 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Work Policy */}
-                    <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                    <TableCell align="center">
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center", textAlign: "center" }}>
                         {workPolicy?.timezone && (
                           <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
                             <strong>TZ:</strong> {workPolicy.timezone}
@@ -513,8 +512,8 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Statutory Details */}
-                    <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                    <TableCell align="center">
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center", textAlign: "center" }}>
                         <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
                           <strong>PF:</strong> {statutory?.pfApplicable ? "Yes" : "No"}
                         </Typography>
