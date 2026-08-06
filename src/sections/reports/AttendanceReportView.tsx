@@ -239,8 +239,9 @@ export default function AttendanceReportView() {
     const fetchDefaultShift = async () => {
       try {
         const res = await listShifts();
-        if (Array.isArray(res) && res.length > 0) {
-          const def = res.find((s) => s.isDefault) || res[0];
+        const shiftsArr = Array.isArray(res) ? res : ((res as any)?.data || []);
+        if (Array.isArray(shiftsArr) && shiftsArr.length > 0) {
+          const def = shiftsArr.find((s: any) => s.isDefault) || shiftsArr[0];
           if (def && def.startTime) {
             setShiftTiming({
               startTime: def.startTime,

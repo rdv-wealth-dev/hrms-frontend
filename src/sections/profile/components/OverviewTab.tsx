@@ -37,7 +37,7 @@ interface OverviewTabProps {
   displayEmail: string;
   displayFirstName: string;
   displayLastName: string;
-  displayId: string;
+  displayId?: string;
   user: any;
   showSnackbar: (msg: string, variant: "success" | "error" | "info" | "warning") => void;
 }
@@ -47,7 +47,7 @@ export default function OverviewTab({
   displayEmail,
   displayFirstName,
   displayLastName,
-  displayId,
+  displayId: _displayId,
   user,
   showSnackbar,
 }: OverviewTabProps) {
@@ -137,11 +137,24 @@ export default function OverviewTab({
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                   {[
                     { label: "Employee Code", value: empProfile?.employeeCode || "NX-001" },
-                    { label: "System Profile ID", value: String(displayId || "—") },
+                    {
+                      label: "Branch Name",
+                      value: empProfile?.branchId
+                        ? typeof empProfile.branchId === "object"
+                          ? empProfile.branchId.name || "Head Office"
+                          : empProfile.branchId
+                        : "Head Office",
+                    },
                     { label: "Department", value: empProfile?.departmentId?.name || "Engineering" },
                     { label: "Grade / Band", value: String((empProfile as any)?.band || "L5") },
                     { label: "Business Unit", value: "Technology" },
-                    { label: "Cost Center", value: "CC-ENG-01" },
+                    {
+                      label: "Shift Timing",
+                      value:
+                        empProfile?.shiftId && typeof empProfile.shiftId === "object"
+                          ? `${empProfile.shiftId.name} (${empProfile.shiftId.startTime} - ${empProfile.shiftId.endTime})`
+                          : "General Shift (09:00 AM - 06:00 PM)",
+                    },
                     { label: "Employment Type", value: "Full-time Permanent" },
                     { label: "Account Created", value: formatDate(user?.createdAt) },
                   ].map((row, idx) => (

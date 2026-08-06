@@ -465,6 +465,8 @@ export interface CompleteProfileEmployee {
   emergencyContacts?: EmergencyContact[];
   departmentId?: { _id?: string; id?: string; name: string; code?: string };
   designationId?: { _id?: string; id?: string; name: string };
+  branchId?: { _id?: string; id?: string; name?: string; code?: string } | string;
+  shiftId?: { _id?: string; id?: string; name?: string; startTime?: string; endTime?: string } | string;
   managerId?: { _id?: string; id?: string; firstName: string; lastName: string } | null;
   profileCompletion?: CompleteProfileCompletion;
   isProfileComplete?: boolean;

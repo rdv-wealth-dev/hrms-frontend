@@ -48,6 +48,7 @@ export interface Branch {
   isHeadOffice: boolean;
   isActive: boolean;
   parentBranchId?: string | null;
+  defaultShiftId?: string | { _id: string; name: string; startTime: string; endTime: string } | null;
   address?: BranchAddress;
   contact?: BranchContact;
   geo?: BranchGeo;
@@ -67,6 +68,7 @@ export interface BranchListResponse {
 export interface CreateBranchRequest {
   name: string;
   code: string;
+  defaultShiftId?: string | null;
   address?: BranchAddress;
   contact?: BranchContact;
   geo?: BranchGeo;
@@ -84,6 +86,7 @@ export interface CreateBranchResponse {
 export interface UpdateBranchRequest {
   name?: string;
   code?: string;
+  defaultShiftId?: string | null;
   address?: Partial<BranchAddress>;
   contact?: Partial<BranchContact>;
   geo?: BranchGeo;

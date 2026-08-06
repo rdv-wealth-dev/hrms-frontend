@@ -90,23 +90,19 @@ export default function DailyPunchCard() {
       if (!shiftIdToUse) {
         try {
           const shiftsRes = await listShifts();
-          if (shiftsRes.succeeded && shiftsRes.data && shiftsRes.data.length > 0) {
-            const defaultShift = shiftsRes.data.find((s) => s.isDefault) || shiftsRes.data[0];
+          if ((shiftsRes?.succeeded || (shiftsRes as any)?.success) && shiftsRes?.data && shiftsRes.data.length > 0) {
+            const defaultShift = shiftsRes.data.find((s: any) => s.isDefault) || shiftsRes.data[0];
             shiftIdToUse = defaultShift._id;
             setDefaultShiftId(shiftIdToUse);
           }
         } catch (shiftErr) {
-          console.warn("Failed to fetch shifts list:", shiftErr);
+          console.warn("Shift pre-fetch skipped (backend will resolve default shift):", shiftErr);
         }
-      }
-
-      if (!shiftIdToUse) {
-        throw new Error("No active shifts available. Please set up a shift in the system settings first.");
       }
 
       const loc = await getLocation();
       const response = await recordPunch("CHECK_IN", shiftIdToUse, loc?.longitude, loc?.latitude);
-      if (response.succeeded && response.data) {
+      if ((response?.succeeded || (response as any)?.success) && response?.data) {
         setRecord(response.data);
         setSuccess("Checked in successfully!");
 
@@ -116,7 +112,7 @@ export default function DailyPunchCard() {
           setNudgeModalOpen(true);
         }
       } else {
-        setError(response.message || "Failed to clock in");
+        setError(response?.message || "Failed to clock in");
       }
     } catch (err: any) {
       setError(
@@ -134,11 +130,11 @@ export default function DailyPunchCard() {
     try {
       const loc = await getLocation();
       const response = await recordPunch("CHECK_OUT", undefined, loc?.longitude, loc?.latitude);
-      if (response.succeeded && response.data) {
+      if ((response?.succeeded || (response as any)?.success) && response?.data) {
         setRecord(response.data);
         setSuccess("Checked out successfully!");
       } else {
-        setError(response.message || "Failed to clock out");
+        setError(response?.message || "Failed to clock out");
       }
     } catch (err: any) {
       setError(

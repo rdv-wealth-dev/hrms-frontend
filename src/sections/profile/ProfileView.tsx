@@ -31,7 +31,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
-import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
@@ -43,6 +43,7 @@ import type { RootState } from "../../store/rootReducer";
 import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
 import { usePermissions } from "../../hooks/usePermissions";
+import { loadOrganizationRequest } from "../../store/organization/organization.actions";
 import { KpiCard } from "../../components/card/KpiCard";
 import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
@@ -78,7 +79,14 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const { showSnackbar } = useSnackbar();
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
+  const organization = useSelector((state: RootState) => state.organization?.organization);
   const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    if (!organization) {
+      dispatch(loadOrganizationRequest());
+    }
+  }, [dispatch, organization]);
 
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;
@@ -477,8 +485,8 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                     <span>Joined 15 Mar 2021</span>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                    <GroupOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
-                    <span>Reports to {empProfile?.managerId ? `${empProfile.managerId.firstName} ${empProfile.managerId.lastName}` : "Arjun Mehta"}</span>
+                    <BusinessOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8", flexShrink: 0 }} />
+                    <span>{(empProfile as any)?.tenantId?.companyName || (empProfile as any)?.tenantId?.legalName || (empProfile as any)?.organizationName || organization?.companyName || organization?.legalName || (user as any)?.organizationName || (user as any)?.companyName || "Nexus HR Organization"}</span>
                   </Box>
                 </Box>
               </Box>
@@ -587,7 +595,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         </Grid>
 
         {/* Horizontal Navigation Tabs Bar */}
-        <Box sx={{ borderBottom: "1px solid #E2E8F0", mb: 3, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+        <Box sx={{ borderBottom: "1px solid #E2E8F0", mb: 3, width: "100%", maxWidth: "100%" }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
@@ -597,20 +605,28 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             sx={{
               minHeight: 44,
               "& .MuiTabs-indicator": { backgroundColor: "#4F46E5", height: 3, borderRadius: "3px 3px 0 0" },
+              "& .MuiTabs-scrollButtons": {
+                color: "#4F46E5",
+                width: 32,
+                "&.Mui-disabled": { opacity: 0.25 },
+              },
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontWeight: 600,
-                fontSize: "0.9rem",
+                fontSize: { xs: "0.8rem", sm: "0.84rem", md: "0.86rem" },
                 color: "#64748B",
                 minHeight: 44,
-                px: 2,
+                minWidth: 0,
+                px: { xs: 1.2, sm: 1.5, md: 1.75 },
+                py: 1,
+                whiteSpace: "nowrap",
+                "&:hover": { color: "#4338CA", backgroundColor: "rgba(99, 102, 241, 0.04)" },
                 "&.Mui-selected": { color: "#4F46E5", fontWeight: 700 },
               },
             }}
           >
             <Tab label="Overview" value="overview" />
             <Tab label="Personal" value="personal" />
-            <Tab label="Employment" value="employment" />
             {canViewAttendance && <Tab label="Attendance" value="attendance" />}
             <Tab label="Leave" value="leave" />
             <Tab label="Payroll" value="payroll" />
