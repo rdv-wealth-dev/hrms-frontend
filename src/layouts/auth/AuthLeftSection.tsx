@@ -1,22 +1,35 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 function AuthLeftSection() {
   return (
-    <div className="bg-[#F8F9FF] flex items-center justify-center p-10">
-      <div className="text-center">
-        <div className="w-80 h-80 bg-gray-200 rounded-2xl flex items-center justify-center">
+    <Box sx={{ backgroundColor: "#F8F9FF", display: "flex", alignItems: "center", justifyContent: "center", p: { xs: 3, sm: 5 } }}>
+      <Box sx={{ textAlign: "center" }}>
+        <Box
+          sx={{
+            width: { xs: 240, sm: 320 },
+            height: { xs: 240, sm: 320 },
+            backgroundColor: "#E5E7EB",
+            borderRadius: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mx: "auto",
+          }}
+        >
           Illustration
-        </div>
+        </Box>
 
-        <h2 className="mt-8 text-2xl font-bold text-gray-900">
+        <Typography variant="h5" sx={{ mt: 4, fontWeight: 700, color: "#111827" }}>
           Join Our HRMS Platform
-        </h2>
+        </Typography>
 
-        <p className="mt-3 text-gray-500">
-          Manage employees, attendance, leave,
-          payroll and more in one place.
-        </p>
-      </div>
-    </div>
-  )
+        <Typography variant="body1" sx={{ mt: 1.5, color: "#6B7280" }}>
+          Manage employees, attendance, leave, payroll and more in one place.
+        </Typography>
+      </Box>
+    </Box>
+  );
 }
 
-export default AuthLeftSection
+export default AuthLeftSection;
