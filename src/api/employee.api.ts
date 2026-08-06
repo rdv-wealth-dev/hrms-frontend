@@ -371,7 +371,7 @@ export interface GetPendingDocumentsResponse {
 
 export const getPendingDocuments = async (): Promise<GetPendingDocumentsResponse> => {
   const response = await axiosInstance.get<GetPendingDocumentsResponse>(
-    "/employees/documents/pending",
+    "/employee-documents/verification/pending",
     { headers: getAuthHeader() }
   );
   return response.data;
@@ -394,7 +394,7 @@ export const verifyDocument = async (
   payload: VerifyDocumentRequest
 ): Promise<VerifyDocumentResponse> => {
   const response = await axiosInstance.patch<VerifyDocumentResponse>(
-    `/employees/documents/${docId}/verify`,
+    `/employee-documents/${docId}/verify`,
     payload,
     { headers: getAuthHeader() }
   );
@@ -406,7 +406,7 @@ export const getHrDownloadUrl = async (
   docId: string
 ): Promise<GetDownloadUrlResponse> => {
   const response = await axiosInstance.get<GetDownloadUrlResponse>(
-    `/employees/${employeeId}/documents/${docId}/download-url`,
+    `/employee-documents/${employeeId}/${docId}/download-url`,
     { headers: getAuthHeader() }
   );
   return response.data;

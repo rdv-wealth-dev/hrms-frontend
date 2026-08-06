@@ -7,20 +7,18 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
 import LinearProgress from "@mui/material/LinearProgress";
-import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { paths } from "../../../routes/paths";
-import { listDepartments, seedDefaultDepartments } from "../../../api/department.api";
-import { listDesignations, seedDefaultDesignations } from "../../../api/designation.api";
+import { listDepartments } from "../../../api/department.api";
+import { listDesignations } from "../../../api/designation.api";
 import { getHeadOffice } from "../../../api/branch.api";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
@@ -34,12 +32,10 @@ export default function OrgSetupGuidanceWidget() {
   const branchId = useActiveBranchId();
 
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
   const [deptCount, setDeptCount] = useState<number | null>(null);
   const [desigCount, setDesigCount] = useState<number | null>(null);
   const [hasBranch, setHasBranch] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [setupDialogOpen, setSetupDialogOpen] = useState(false);
 
   const fetchCounts = async () => {
@@ -50,12 +46,8 @@ export default function OrgSetupGuidanceWidget() {
       let branchExists = false;
       try {
         const branchRes = await getHeadOffice();
-        console.log("Head Office Response:", branchRes);
         branchExists = branchRes?.succeeded && !!branchRes?.data;
-        console.log("Branch exists:", branchExists);
       } catch (branchErr) {
-        // Head office API might return 404 if not found - this is okay
-        console.log("Head office API error (expected if no branch):", branchErr);
         branchExists = false;
       }
       
@@ -68,7 +60,6 @@ export default function OrgSetupGuidanceWidget() {
       setDeptCount(deptRes?.totalRecords ?? deptRes?.data?.length ?? 0);
       setDesigCount(desigRes?.totalRecords ?? desigRes?.data?.length ?? 0);
       setHasBranch(branchExists);
-      console.log("Final state - hasBranch:", branchExists, "deptCount:", deptRes?.totalRecords, "desigCount:", desigRes?.totalRecords);
     } catch (err: any) {
       console.error("fetchCounts error:", err);
       setError("Failed to check organization setup status.");
@@ -91,41 +82,6 @@ export default function OrgSetupGuidanceWidget() {
       fetchCounts();
     }
   }, [branchId]);
-
-  const handleSeedAll = async () => {
-    setSeeding(true);
-    setError(null);
-    setSuccessMessage(null);
-    try {
-      const resolvedBranchId = branchId;
-
-      if (!resolvedBranchId) {
-        setError("Unable to determine your branch. Please create a branch first.");
-        setSeeding(false);
-        return;
-      }
-
-      // First, seed departments and get their IDs
-      const departmentIds = await seedDefaultDepartments(resolvedBranchId);
-      
-      if (departmentIds.length === 0) {
-        setError("Failed to create departments. They may already exist.");
-        setSeeding(false);
-        return;
-      }
-
-      // Then, seed designations with the created department IDs
-      await seedDefaultDesignations(resolvedBranchId, departmentIds);
-      
-      setSuccessMessage("Starter departments and designations created successfully!");
-      await fetchCounts();
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || err?.message || "Failed to seed starter items.";
-      setError(`${errorMsg} Please try adding them manually.`);
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   // Only Org Admin and HR Admin need setup guidance
   if (role !== "ORG_ADMIN" && role !== "HR_ADMIN") return null;
@@ -230,35 +186,6 @@ export default function OrgSetupGuidanceWidget() {
           >
             Complete Initial Setup
           </Button>
-
-          {/* 1-Click Starter Seed Button */}
-          <Button
-            variant="contained"
-            onClick={handleSeedAll}
-            disabled={seeding || !hasBranch}
-            startIcon={seeding ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeIcon />}
-            sx={{
-              backgroundColor: "#fff",
-              color: "#6D5DF6",
-              fontWeight: 700,
-              textTransform: "none",
-              borderRadius: 2.5,
-              px: 2.5,
-              py: 1,
-              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)",
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.92)",
-                transform: "translateY(-1px)",
-              },
-              "&.Mui-disabled": {
-                backgroundColor: "rgba(255, 255, 255, 0.5)",
-                color: "rgba(109, 93, 246, 0.5)",
-              },
-            }}
-            title={!hasBranch ? "Create a branch first before seeding" : ""}
-          >
-            {seeding ? "Seeding Starter Pack..." : "Seed Recommended Starter Structure"}
-          </Button>
         </Box>
       </Box>
 
@@ -266,11 +193,6 @@ export default function OrgSetupGuidanceWidget() {
       {error && (
         <Alert severity="error" sx={{ mb: 2, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)", color: "#991B1B" }}>
           {error}
-        </Alert>
-      )}
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 2, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)", color: "#065F46" }}>
-          {successMessage}
         </Alert>
       )}
 

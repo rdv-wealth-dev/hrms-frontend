@@ -435,11 +435,10 @@ import BranchCalendarGrid from "../../components/calendar/BranchCalendarGrid";
 
 export default function HolidayListView() {
   const dispatch = useDispatch<AppDispatch>();
-  const { hasPermission } = usePermissions();
-  const canCreate = hasPermission("holiday.create");
-
+  const { role, isSuperAdmin, hasPermission } = usePermissions();
   const user = useSelector((state: RootState) => state.auth?.user);
-  const isAuthorized = user?.role === "ORG_ADMIN" || user?.role === "HR_ADMIN";
+  const isAuthorized = isSuperAdmin || role === "ORG_ADMIN" || role === "HR_ADMIN" || user?.role === "ORG_ADMIN" || user?.role === "HR_ADMIN";
+  const canCreate = isAuthorized || hasPermission("holiday.create");
 
   const { holidays = [], loading, submitting, success, error } = useSelector(
     (state: RootState) => state.leave ?? { holidays: [], loading: false, submitting: false, success: false, error: null }
@@ -862,7 +861,9 @@ export default function HolidayListView() {
                   <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Scope</TableCell>
                   <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Is Optional</TableCell>
                   <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Description</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, pr: 8, whiteSpace: "nowrap" }}>Actions</TableCell>
+                  {isAuthorized && (
+                    <TableCell align="center" sx={{ fontWeight: 600, pr: 8, whiteSpace: "nowrap" }}>Actions</TableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -913,16 +914,18 @@ export default function HolidayListView() {
                       <TableCell sx={{ color: "text.secondary", minWidth: 200, maxWidth: 300, wordBreak: "break-word" }}>
                         {type.description || "—"}
                       </TableCell>
-                      <TableCell align="center" sx={{ pr: 8, whiteSpace: "nowrap" }}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleOpenMenu(e, type)}
-                          title="Actions"
-                          sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#F1F5F9" } }}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
+                      {isAuthorized && (
+                        <TableCell align="center" sx={{ pr: 8, whiteSpace: "nowrap" }}>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleOpenMenu(e, type)}
+                            title="Actions"
+                            sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#F1F5F9" } }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })}

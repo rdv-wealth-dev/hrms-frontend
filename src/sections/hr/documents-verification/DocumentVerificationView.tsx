@@ -52,13 +52,13 @@ export function DocumentVerificationView() {
     setError(null);
     try {
       const res = await getPendingDocuments();
-      if (res.succeeded) {
-        setDocuments(res.data);
+      if (res?.succeeded || (res as any)?.success) {
+        setDocuments(Array.isArray(res.data) ? res.data : []);
       } else {
-        setError(res.message || "Failed to fetch pending documents");
+        setError(res?.message || "Failed to fetch pending documents");
       }
-    } catch {
-      setError("Something went wrong");
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to load pending documents");
     } finally {
       setLoading(false);
     }
