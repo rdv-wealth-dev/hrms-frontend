@@ -22,6 +22,7 @@ import { formatWorkedTime } from "../../../utils/time";
 import { getCurrentPosition } from "../../../utils/geolocation";
 import { useProfileBlockDetect } from "../../../hooks/useProfileBlockDetect";
 import { paths } from "../../../routes/paths";
+import NudgeReminderModal from "../../../components/common/NudgeReminderModal";
 
 export default function DailyPunchCard() {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ export default function DailyPunchCard() {
   const [success, setSuccess] = useState<string | null>(null);
   const [time, setTime] = useState(new Date());
   const [defaultShiftId, setDefaultShiftId] = useState<string | null>(null);
+  const [nudgeModalOpen, setNudgeModalOpen] = useState(false);
+  const [nudgePct, setNudgePct] = useState(45);
   const { isBlocked, pendingSections, detectBlock, reset } = useProfileBlockDetect();
 
   const getLocation = async (): Promise<{ longitude: number; latitude: number } | null> => {
@@ -106,6 +109,12 @@ export default function DailyPunchCard() {
       if (response.succeeded && response.data) {
         setRecord(response.data);
         setSuccess("Checked in successfully!");
+
+        const onboardingData = (response as any)?.data?.onboarding || (response as any)?.onboarding;
+        if (onboardingData?.phase === "NUDGE") {
+          setNudgePct(onboardingData?.profileCompletionPct || 45);
+          setNudgeModalOpen(true);
+        }
       } else {
         setError(response.message || "Failed to clock in");
       }
@@ -690,6 +699,11 @@ export default function DailyPunchCard() {
       )}
         </>
       )}
+      <NudgeReminderModal
+        open={nudgeModalOpen}
+        onClose={() => setNudgeModalOpen(false)}
+        completionPct={nudgePct}
+      />
     </Paper>
   );
 }

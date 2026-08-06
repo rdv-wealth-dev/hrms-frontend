@@ -32,6 +32,7 @@ import { logout } from "../../store/auth";
 import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
+import { OnboardingBanner } from "../../components/common/OnboardingBanner";
 
 interface NavItem {
     label: string;
@@ -523,6 +524,7 @@ function DashboardLayout({ children }: Props) {
                     overflowX: "hidden",
                 }}
             >
+                <OnboardingBanner />
                 {children}
             </Box>
         </Box>

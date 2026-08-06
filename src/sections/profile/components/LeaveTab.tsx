@@ -15,6 +15,8 @@ import ApplyLeaveDialog from "../../leave/leave-apply/ApplyLeaveDialog";
 import { applyLeaveRequest, getMyLeaveRequestsRequest, getMyLeaveBalancesRequest } from "../../../store/leave";
 import type { RootState } from "../../../store/rootReducer";
 import { useSnackbar } from "../../../components/snackbar";
+import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
+import SoftGateLockCard from "../../../components/common/SoftGateLockCard";
 
 interface LeaveTabProps {
   isViewingOther: boolean;
@@ -33,6 +35,7 @@ export default function LeaveTab({
 }: LeaveTabProps) {
   const dispatch = useDispatch<any>();
   const { showSnackbar } = useSnackbar();
+  const { phase, completionPct } = useOnboardingStatus();
 
   const [applyLeaveDialogOpen, setApplyLeaveDialogOpen] = useState(false);
   const [localUserLeaves, setLocalUserLeaves] = useState<any[]>(() => {
@@ -105,6 +108,13 @@ export default function LeaveTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {phase === "RESTRICTED" && !isViewingOther && (
+        <SoftGateLockCard
+          featureTitle="Leave Applications Locked"
+          message="Your onboarding profile is incomplete. Complete your onboarding steps to apply for leave and view balances."
+          completionPct={completionPct}
+        />
+      )}
 
       {/* 4 Summary Stat Cards Row */}
       <Grid container spacing={2.5}>

@@ -57,13 +57,16 @@ export interface Step5Payload {
 }
 
 export interface OnboardingStatusResponse {
-  succeeded: boolean;
+  succeeded?: boolean;
+  success?: boolean;
   message?: string;
   data?: {
-    onboardingStep: number;
+    onboardingStep?: number;
     currentStep?: number;
-    onboardingComplete: boolean;
+    onboardingComplete?: boolean;
     isProfileComplete?: boolean;
+    onboardingPhase?: "GRACE" | "NUDGE" | "RESTRICTED" | "COMPLETE";
+    profileCompletionPct?: number;
     onboardingStepsCompleted?: {
       personalDetails?: boolean;
       familyDetails?: boolean;

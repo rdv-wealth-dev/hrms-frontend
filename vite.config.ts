@@ -30,6 +30,9 @@ export default defineConfig({
     }
   },
   server: {
+    watch: {
+      ignored: ['**/hrms-backend/**'],
+    },
     proxy: {},
   },
 });
