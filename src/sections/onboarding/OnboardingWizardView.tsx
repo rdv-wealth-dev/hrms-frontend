@@ -62,6 +62,7 @@ export default function OnboardingWizardView() {
   const [step2Data, setStep2Data] = useState<Partial<OnboardingStep2FormData>>({});
   const [step3Data, setStep3Data] = useState<Partial<OnboardingStep3FormData>>({});
   const [missingDocs, setMissingDocs] = useState<string[]>([]);
+  const [mandatoryDocTypes, setMandatoryDocTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -84,6 +85,7 @@ export default function OnboardingWizardView() {
           if (res.data.step2Data) setStep2Data(res.data.step2Data as Partial<OnboardingStep2FormData>);
           if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
           if (res.data.missingDocuments) setMissingDocs(res.data.missingDocuments);
+          if (res.data.mandatoryDocumentTypes) setMandatoryDocTypes(res.data.mandatoryDocumentTypes);
         } else if (res.message) {
           setStepError(res.message);
         }
@@ -294,6 +296,7 @@ export default function OnboardingWizardView() {
 
         {activeStep === 3 && (
           <OnboardingStep4Documents
+            mandatoryDocumentTypes={mandatoryDocTypes}
             missingDocuments={missingDocs}
             onSubmitStep={handleStep4Submit}
             onBack={() => setActiveStep(2)}

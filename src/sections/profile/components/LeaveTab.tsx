@@ -12,6 +12,7 @@ import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 
 import ApplyLeaveDialog from "../../leave/leave-apply/ApplyLeaveDialog";
+import LeaveBalanceDetailsDialog from "../../leave/leave-apply/LeaveBalanceDetailsDialog";
 import { applyLeaveRequest, getMyLeaveRequestsRequest, getMyLeaveBalancesRequest } from "../../../store/leave";
 import type { RootState } from "../../../store/rootReducer";
 import { useSnackbar } from "../../../components/snackbar";
@@ -38,6 +39,7 @@ export default function LeaveTab({
   const { phase, completionPct } = useOnboardingStatus();
 
   const [applyLeaveDialogOpen, setApplyLeaveDialogOpen] = useState(false);
+  const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
   const [localUserLeaves, setLocalUserLeaves] = useState<any[]>(() => {
     try {
       const saved = localStorage.getItem("hrms_local_user_leaves");
@@ -169,7 +171,20 @@ export default function LeaveTab({
 
         {/* Card 3: Leave Balances */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
-          <Card sx={{ p: 2.5, width: "100%" }}>
+          <Card
+            onClick={() => setBalanceDialogOpen(true)}
+            sx={{
+              p: 2.5,
+              width: "100%",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+              "&:hover": {
+                borderColor: "#86EFAC",
+                transform: "translateY(-2px)",
+                boxShadow: "0 8px 16px -4px rgba(22, 163, 74, 0.15)",
+              },
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
               <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
                 LEAVE BALANCE
@@ -181,9 +196,14 @@ export default function LeaveTab({
             <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#16A34A", mb: 0.5 }}>
               {balances.length > 0 ? `${balances.reduce((acc: number, curr: any) => acc + (curr.available || 0), 0)} Days` : "20 Days"}
             </Typography>
-            <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-              Available credit balance
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
+                Available credit balance
+              </Typography>
+              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#16A34A" }}>
+                Details →
+              </Typography>
+            </Box>
           </Card>
         </Grid>
 
@@ -208,22 +228,21 @@ export default function LeaveTab({
         </Grid>
       </Grid>
 
-      {/* Personal Leave History Table */}
-      <Card sx={{ p: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A", mb: 2 }}>
+      {/* Leave Table Section */}
+      <Card sx={{ p: 3, borderRadius: 3, border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(0,0,0,0.03)" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 2 }}>
           My Leave Applications & History
         </Typography>
 
         {(() => {
-          const combinedReqs = Array.from(
-            new Map([...localUserLeaves, ...myLeaveRequests].map((r: any) => [r._id || r.reason || `${r.fromDate}_${r.toDate}`, r])).values()
-          );
+          const allLeavesCombined = [...localUserLeaves, ...myLeaveRequests];
+          const uniqueLeaves = Array.from(new Map(allLeavesCombined.map((item) => [item._id, item])).values());
 
-          if (combinedReqs.length === 0) {
+          if (uniqueLeaves.length === 0) {
             return (
               <Box sx={{ py: 4, textAlign: "center" }}>
                 <Typography sx={{ color: "#64748B", fontSize: "14px" }}>
-                  No leave requests found. Click <strong>"Apply Leave"</strong> to submit your first leave application.
+                  No leave requests found. Click "Apply Leave" above to submit a new request.
                 </Typography>
               </Box>
             );
@@ -231,14 +250,14 @@ export default function LeaveTab({
 
           return (
             <Box sx={{ overflowX: "auto" }}>
-              <Box component="table" sx={{ width: "100%", borderCollapse: "collapse" }}>
-                <Box component="thead" sx={{ backgroundColor: "#F8FAFC" }}>
-                  <Box component="tr">
-                    <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>LEAVE TYPE</Box>
-                    <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>PERIOD</Box>
-                    <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>DAYS</Box>
-                    <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>REASON</Box>
-                    <Box component="th" sx={{ p: 1.5, textAlign: "left", fontSize: "11px", fontWeight: 700, color: "#64748B" }}>STATUS</Box>
+              <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                <Box component="thead">
+                  <Box component="tr" sx={{ borderBottom: "1px solid #E2E8F0", "& th": { py: 1.5, px: 2, fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" } }}>
+                    <Box component="th">LEAVE TYPE</Box>
+                    <Box component="th">PERIOD</Box>
+                    <Box component="th">DAYS</Box>
+                    <Box component="th">REASON</Box>
+                    <Box component="th">STATUS</Box>
                   </Box>
                 </Box>
                 <Box component="tbody">
@@ -249,7 +268,7 @@ export default function LeaveTab({
                       if (saved) statusMap = JSON.parse(saved);
                     } catch {}
 
-                    return combinedReqs.map((req: any) => {
+                    return uniqueLeaves.map((req: any) => {
                       const rawStatus = (req?.status || "PENDING").toUpperCase();
                       const status = (
                         statusMap[req._id] ||
@@ -258,13 +277,18 @@ export default function LeaveTab({
                         rawStatus
                       ).toUpperCase();
 
+                      const leaveTypeName = typeof req?.leaveTypeId === "object" ? req?.leaveTypeId?.name : "Emergency Leave";
+                      const fromStr = req?.fromDate ? new Date(req.fromDate).toLocaleDateString() : "";
+                      const toStr = req?.toDate ? new Date(req.toDate).toLocaleDateString() : "";
+                      const periodStr = fromStr && toStr ? `${fromStr} - ${toStr}` : "N/A";
+
                       return (
-                        <Box component="tr" key={req._id || req.reason} sx={{ borderBottom: "1px solid #F1F5F9", "&:hover": { backgroundColor: "#F8FAFC" } }}>
+                        <Box component="tr" key={req._id || req.reason || Math.random()} sx={{ borderBottom: "1px solid #F1F5F9", "&:hover": { backgroundColor: "#F8FAFC" } }}>
                           <Box component="td" sx={{ p: 1.5, fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
-                            {req?.leaveTypeId?.name || "Leave"}
+                            {leaveTypeName || "Emergency Leave"}
                           </Box>
                           <Box component="td" sx={{ p: 1.5, fontSize: "13px", color: "#475569" }}>
-                            {new Date(req.fromDate).toLocaleDateString()} - {new Date(req.toDate).toLocaleDateString()}
+                            {periodStr}
                           </Box>
                           <Box component="td" sx={{ p: 1.5, fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
                             {req.totalDays || 1}d
@@ -299,6 +323,15 @@ export default function LeaveTab({
         error={error}
         balances={balances}
         leaveTypes={leaveTypes}
+      />
+
+      {/* Leave Balance Details Dialog */}
+      <LeaveBalanceDetailsDialog
+        open={balanceDialogOpen}
+        onClose={() => setBalanceDialogOpen(false)}
+        balances={balances}
+        leaveTypes={leaveTypes}
+        user={user}
       />
     </Box>
   );

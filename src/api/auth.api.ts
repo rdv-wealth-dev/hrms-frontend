@@ -81,8 +81,12 @@ export const checkEmail = async (
 };
 
 export const logoutUser = async (): Promise<LogoutResponse> => {
-  const response = await axiosInstance.post<LogoutResponse>("/auth/logout");
-  return response.data;
+  try {
+    const response = await axiosInstance.post<LogoutResponse>("/auth/logout");
+    return response.data;
+  } catch (_err) {
+    return { succeeded: true, message: "Logged out locally" };
+  }
 };
 
 // ✅ New

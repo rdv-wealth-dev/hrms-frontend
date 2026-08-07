@@ -77,25 +77,6 @@ export function OnboardingBanner() {
           <Typography variant="body2" sx={{ fontWeight: 600, color: config.textColor, fontSize: "0.875rem" }}>
             {config.message}
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, maxWidth: 280 }}>
-            <LinearProgress
-              variant="determinate"
-              value={completionPct}
-              sx={{
-                flex: 1,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: "rgba(0,0,0,0.08)",
-                "& .MuiLinearProgress-bar": {
-                  backgroundColor: config.buttonColor,
-                  borderRadius: 3,
-                },
-              }}
-            />
-            <Typography variant="caption" sx={{ fontWeight: 700, color: config.textColor, fontSize: "0.75rem" }}>
-              {completionPct}%
-            </Typography>
-          </Box>
         </Box>
       </Box>
 

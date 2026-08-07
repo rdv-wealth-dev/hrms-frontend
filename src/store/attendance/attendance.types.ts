@@ -22,6 +22,17 @@ export interface CreateShiftRequest {
   isDefault?: boolean;
   absentThresholdMinutes?: number;
   lateArrivalHalfDayMinutes?: number;
+  firstHalfCutoffMinutes?: number;
+  secondHalfCutoffMinutes?: number;
+  minimumWorkMinutesForHalfDay?: number;
+  checkInWindowStart?: string;
+  checkInWindowEnd?: string;
+  allowedCheckInFromTime?: string;
+  earlyLeaveStartTime?: string;
+  rejectEarlyPunch?: boolean;
+  lateArrivalQuotaPerMonth?: number;
+  earlyLeaveQuotaPerMonth?: number;
+  halfDayWeight?: number;
 }
 
 export type UpdateShiftRequest = Partial<CreateShiftRequest>;
@@ -29,22 +40,33 @@ export type UpdateShiftRequest = Partial<CreateShiftRequest>;
 export interface Shift {
   _id: string;
   tenantId: string;
-  branchId: string;
+  branchId?: string;
   name: string;
   code: string;
   startTime: string;
   endTime: string;
-  gracePeriodMinutes: number;
-  graceLimitPerMonth: number;
-  halfDayThresholdMinutes: number;
-  fullDayMinutes: number;
-  breakDurationMinutes: number;
-  isDefault: boolean;
-  absentThresholdMinutes: number;
-  lateArrivalHalfDayMinutes: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  gracePeriodMinutes?: number;
+  graceLimitPerMonth?: number;
+  halfDayThresholdMinutes?: number;
+  fullDayMinutes?: number;
+  breakDurationMinutes?: number;
+  isDefault?: boolean;
+  absentThresholdMinutes?: number;
+  lateArrivalHalfDayMinutes?: number;
+  firstHalfCutoffMinutes?: number;
+  secondHalfCutoffMinutes?: number;
+  minimumWorkMinutesForHalfDay?: number;
+  checkInWindowStart?: string;
+  checkInWindowEnd?: string;
+  allowedCheckInFromTime?: string;
+  earlyLeaveStartTime?: string;
+  rejectEarlyPunch?: boolean;
+  lateArrivalQuotaPerMonth?: number;
+  earlyLeaveQuotaPerMonth?: number;
+  halfDayWeight?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ShiftResponse {

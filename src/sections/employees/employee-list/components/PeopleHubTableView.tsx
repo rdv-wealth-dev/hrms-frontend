@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -152,271 +153,366 @@ export function PeopleHubTableView({
     setSelectedEmp(null);
   };
 
-
-
   return (
-    <TableContainer
-      component={Paper}
-      elevation={0}
-      sx={{
-        borderRadius: 3,
-        border: "1px solid #E5E7EB",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
-        backgroundColor: "#FFFFFF",
-        overflowX: "auto",
-      }}
-    >
-      <Table sx={{ minWidth: 1100 }}>
-        <TableHead sx={{ backgroundColor: "#FAFAFA" }}>
-          <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8 } }}>
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              EMPLOYEE
-            </TableCell>
+    <Box sx={{ width: "100%" }}>
+      {/* Mobile Card View (xs < 600px) */}
+      <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 2 }}>
+        {employees.map((emp, index) => {
+          const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
+          const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
+          const meta = getPeopleHubMeta(index, emp);
+          const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
+          const desigName = typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Software Developer" : emp.designationId || "Software Developer";
+          const deptName = typeof emp.departmentId === "object" ? (emp.departmentId as any)?.name || "Engineering" : "Engineering";
 
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              DESIGNATION
-            </TableCell>
-
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              DEPARTMENT
-            </TableCell>
-
-            <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              EMAIL
-            </TableCell>
-
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              PHONE NUMBER
-            </TableCell>
-
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              JOINING DATE
-            </TableCell>
-
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }}>
-              STATUS
-            </TableCell>
-
-            <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px" }} width={130}>
-              PERFORMANCE
-            </TableCell>
-
-            <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }} width={110}>
-              QUICK ACTION
-            </TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {employees.map((emp, index) => {
-            const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
-            const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
-            const meta = getPeopleHubMeta(index, emp);
-
-            const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
-
-            return (
-              <TableRow
-                key={emp._id}
-                hover
-                sx={{
-                  transition: "background-color 0.15s ease",
-                  height: 64,
-                  "&:last-child td": { borderBottom: 0 },
-                  "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
-                }}
-              >
-                {/* Employee Info */}
-                <TableCell>
-                  <Box
-                    onClick={() => {
-                      if (onSelectEmployee) {
-                        onSelectEmployee(emp);
-                      } else {
-                        navigate(`/employees/${emp._id}`);
-                      }
-                    }}
+          return (
+            <Card
+              key={emp._id}
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #E5E7EB",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 1.5 }}>
+                <Box
+                  onClick={() => {
+                    if (onSelectEmployee) {
+                      onSelectEmployee(emp);
+                    } else {
+                      navigate(`/employees/${emp._id}`);
+                    }
+                  }}
+                  sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }}
+                >
+                  <Avatar
+                    src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      cursor: "pointer",
-                      width: "fit-content",
-                      "&:hover .emp-name": { color: "#6D5DF6" },
+                      width: 40,
+                      height: 40,
+                      backgroundColor: meta.color,
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      color: "#FFFFFF",
                     }}
                   >
-                    <Avatar
-                      src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        backgroundColor: meta.color,
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        color: "#FFFFFF",
-                      }}
-                    >
-                      {initials}
-                    </Avatar>
-                    <Typography
-                      variant="subtitle2"
-                      className="emp-name"
-                      sx={{
-                        fontWeight: 700,
-                        color: "#0F172A",
-                        lineHeight: 1.2,
-                        whiteSpace: "nowrap",
-                        transition: "color 0.15s ease",
-                      }}
-                    >
+                    {initials}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A" }}>
                       {fullName}
                     </Typography>
-                  </Box>
-                </TableCell>
-
-                {/* Designation */}
-                <TableCell sx={{ whiteSpace: "nowrap" }}>
-                  <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap" }}>
-                    {typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Software Developer" : emp.designationId || "Software Developer"}
-                  </Typography>
-                </TableCell>
-
-                {/* Department */}
-                <TableCell sx={{ whiteSpace: "nowrap" }}>
-                  <Typography variant="body2" sx={{ color: "#334155", fontWeight: 500, fontSize: "13px", whiteSpace: "nowrap" }}>
-                    {typeof emp.departmentId === "object" ? (emp.departmentId as any)?.name || "Engineering" : "Engineering"}
-                  </Typography>
-                </TableCell>
-
-                {/* Email */}
-                <TableCell align="center">
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0.75, color: "#64748B" }}>
-                    <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "#475569",
-                        fontSize: "13px",
-                        maxWidth: { xs: 140, sm: 180, md: 220 },
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {meta.email}
+                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500, fontSize: "12px", display: "block" }}>
+                      {desigName} • {deptName}
                     </Typography>
                   </Box>
-                </TableCell>
+                </Box>
 
-                {/* Phone Number */}
-                <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
-                    <PhoneOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "#475569",
-                        fontSize: "13px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {meta.phone}
-                    </Typography>
-                  </Box>
-                </TableCell>
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleOpenMenu(e, emp)}
+                  sx={{ color: "#64748B", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </Box>
 
-                {/* Joining Date */}
-                <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
-                    <CalendarMonthOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "#475569",
-                        fontSize: "13px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {emp.joiningDate
-                        ? new Date(emp.joiningDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-                        : ["15 Jan 2023", "01 Jun 2022", "10 Mar 2024", "20 Aug 2021", "05 Nov 2023"][index % 5]}
-                    </Typography>
-                  </Box>
-                </TableCell>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1, borderTop: "1px solid #F1F5F9" }}>
+                <Chip
+                  label={statusStyle.label}
+                  size="small"
+                  sx={{
+                    height: 22,
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    backgroundColor: statusStyle.bg,
+                    color: statusStyle.color,
+                    borderRadius: "12px",
+                  }}
+                />
+              </Box>
+            </Card>
+          );
+        })}
+      </Box>
 
-                {/* Status Badge */}
-                <TableCell>
-                  <Chip
-                    label={statusStyle.label}
-                    size="small"
-                    sx={{
-                      height: 22,
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      backgroundColor: statusStyle.bg,
-                      color: statusStyle.color,
-                      borderRadius: "12px",
-                      px: 0.5,
-                    }}
-                  />
-                </TableCell>
+      {/* Responsive Table View (sm+) with Sticky Quick Action Column */}
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          display: { xs: "none", sm: "block" },
+          borderRadius: 3,
+          border: "1px solid #E5E7EB",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
+          backgroundColor: "#FFFFFF",
+          overflowX: "auto",
+          maxWidth: "100%",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#CBD5E1 transparent",
+          "&::-webkit-scrollbar": { height: "6px" },
+          "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "10px" },
+        }}
+      >
+        <Table sx={{ minWidth: 1080, tableLayout: "auto" }}>
+          <TableHead sx={{ backgroundColor: "#FAFAFA" }}>
+            <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8 } }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 180 }}>
+                EMPLOYEE
+              </TableCell>
 
-                {/* Performance Progress Bar */}
-                <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={meta.performance}
-                      sx={{
-                        flexGrow: 1,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: "#E2E8F0",
-                        "& .MuiLinearProgress-bar": {
-                          borderRadius: 3,
-                          backgroundColor: "#6D5DF6",
-                        },
-                      }}
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{ fontWeight: 700, color: "#334155", minWidth: 28 }}
-                    >
-                      {meta.performance}%
-                    </Typography>
-                  </Box>
-                </TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 150 }}>
+                DESIGNATION
+              </TableCell>
 
-                {/* Action Trigger */}
-                <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleOpenMenu(e, emp)}
-                    sx={{ color: "#94A3B8", "&:hover": { color: "#6D5DF6", backgroundColor: "#F1F5F9" } }}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-          {Math.max(0, 10 - employees.length) > 0 &&
-            Array.from({ length: Math.max(0, 10 - employees.length) }).map((_, index) => {
-              const isLast = index === Math.max(0, 10 - employees.length) - 1;
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 130 }}>
+                DEPARTMENT
+              </TableCell>
+
+              <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 200 }}>
+                EMAIL
+              </TableCell>
+
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 130 }}>
+                PHONE NUMBER
+              </TableCell>
+
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 120 }}>
+                JOINING DATE
+              </TableCell>
+
+              <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 100 }}>
+                STATUS
+              </TableCell>
+
+              {/* Sticky Quick Action Column Header */}
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: "11px",
+                  color: "#64748B",
+                  letterSpacing: "0.5px",
+                  whiteSpace: "nowrap",
+                  position: "sticky",
+                  right: 0,
+                  backgroundColor: "#FAFAFA",
+                  zIndex: 2,
+                  px: 1.5,
+                }}
+                width={100}
+              >
+                QUICK ACTION
+              </TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {employees.map((emp, index) => {
+              const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
+              const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
+              const meta = getPeopleHubMeta(index, emp);
+
+              const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
+
               return (
                 <TableRow
-                  key={`empty-${index}`}
+                  key={emp._id}
+                  hover
                   sx={{
+                    transition: "background-color 0.15s ease",
                     height: 64,
-                    "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
+                    "&:last-child td": { borderBottom: 0 },
+                    "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
+                    "&:hover td:last-child": { backgroundColor: "#F8FAFC" },
                   }}
                 >
-                  <TableCell colSpan={9} />
+                  {/* Employee Info */}
+                  <TableCell sx={{ minWidth: 180 }}>
+                    <Box
+                      onClick={() => {
+                        if (onSelectEmployee) {
+                          onSelectEmployee(emp);
+                        } else {
+                          navigate(`/employees/${emp._id}`);
+                        }
+                      }}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        cursor: "pointer",
+                        width: "fit-content",
+                        "&:hover .emp-name": { color: "#6D5DF6" },
+                      }}
+                    >
+                      <Avatar
+                        src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          backgroundColor: meta.color,
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          color: "#FFFFFF",
+                        }}
+                      >
+                        {initials}
+                      </Avatar>
+                      <Typography
+                        variant="subtitle2"
+                        className="emp-name"
+                        sx={{
+                          fontWeight: 700,
+                          color: "#0F172A",
+                          lineHeight: 1.2,
+                          whiteSpace: "nowrap",
+                          transition: "color 0.15s ease",
+                        }}
+                      >
+                        {fullName}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* Designation */}
+                  <TableCell sx={{ minWidth: 150, whiteSpace: "nowrap" }}>
+                    <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap" }}>
+                      {typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Software Developer" : emp.designationId || "Software Developer"}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Department */}
+                  <TableCell sx={{ minWidth: 130, whiteSpace: "nowrap" }}>
+                    <Typography variant="body2" sx={{ color: "#334155", fontWeight: 500, fontSize: "13px", whiteSpace: "nowrap" }}>
+                      {typeof emp.departmentId === "object" ? (emp.departmentId as any)?.name || "Engineering" : "Engineering"}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Email */}
+                  <TableCell align="center" sx={{ minWidth: 200 }}>
+                    <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0.75, color: "#64748B" }}>
+                      <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "#475569",
+                          fontSize: "13px",
+                          maxWidth: 180,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {meta.email}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* Phone Number */}
+                  <TableCell sx={{ minWidth: 130 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
+                      <PhoneOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "#475569",
+                          fontSize: "13px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {meta.phone}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* Joining Date */}
+                  <TableCell sx={{ minWidth: 120 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
+                      <CalendarMonthOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "#475569",
+                          fontSize: "13px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {emp.joiningDate
+                          ? new Date(emp.joiningDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+                          : ["15 Jan 2023", "01 Jun 2022", "10 Mar 2024", "20 Aug 2021", "05 Nov 2023"][index % 5]}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* Status Badge */}
+                  <TableCell sx={{ minWidth: 100 }}>
+                    <Chip
+                      label={statusStyle.label}
+                      size="small"
+                      sx={{
+                        height: 22,
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        backgroundColor: statusStyle.bg,
+                        color: statusStyle.color,
+                        borderRadius: "12px",
+                        px: 0.5,
+                      }}
+                    />
+                  </TableCell>
+
+                  {/* Sticky Quick Action Trigger */}
+                  <TableCell
+                    align="center"
+                    onClick={(e) => e.stopPropagation()}
+                    sx={{
+                      position: "sticky",
+                      right: 0,
+                      backgroundColor: "#FFFFFF",
+                      zIndex: 1,
+                      px: 1.5,
+                    }}
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleOpenMenu(e, emp)}
+                      sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               );
             })}
-        </TableBody>
-      </Table>
+            {Math.max(0, 10 - employees.length) > 0 &&
+              Array.from({ length: Math.max(0, 10 - employees.length) }).map((_, index) => {
+                const isLast = index === Math.max(0, 10 - employees.length) - 1;
+                return (
+                  <TableRow
+                    key={`empty-${index}`}
+                    sx={{
+                      height: 64,
+                      "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
+                    }}
+                  >
+                    <TableCell colSpan={7} />
+                    <TableCell
+                      sx={{
+                        position: "sticky",
+                        right: 0,
+                        backgroundColor: "#FFFFFF",
+                        zIndex: 1,
+                      }}
+                    />
+                  </TableRow>
+                );
+              })}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Row Action Menu */}
       <Menu
@@ -503,7 +599,7 @@ export function PeopleHubTableView({
           </MenuItem>
         )}
       </Menu>
-    </TableContainer>
+    </Box>
   );
 }
 

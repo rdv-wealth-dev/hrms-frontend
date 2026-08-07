@@ -76,6 +76,60 @@ export const theme = createTheme({
       },
     },
 
+    // ─── Popover & Menu Dropdowns (Transparent Non-Blur Backdrop) ───
+    MuiPopover: {
+      styleOverrides: {
+        root: {
+          "& .MuiBackdrop-root": {
+            backdropFilter: "none !important",
+            backgroundColor: "transparent !important",
+          },
+        },
+      },
+    },
+
+    MuiMenu: {
+      styleOverrides: {
+        root: {
+          "& .MuiBackdrop-root": {
+            backdropFilter: "none !important",
+            backgroundColor: "transparent !important",
+          },
+        },
+        paper: ({ theme }) => ({
+          maxHeight: "184px !important",
+          maxWidth: "calc(100vw - 32px)",
+          borderRadius: "12px",
+          border: "1px solid #E2E8F0",
+          boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
+          marginTop: "4px",
+          overflowY: "auto !important",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#CBD5E1 transparent",
+          "&::-webkit-scrollbar": { width: "5px" },
+          "&::-webkit-scrollbar-track": { background: "transparent" },
+          "&::-webkit-scrollbar-thumb": { background: "#CBD5E1", borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb:hover": { background: "#94A3B8" },
+          [theme.breakpoints.down("sm")]: {
+            maxHeight: "184px !important",
+            borderRadius: "10px",
+          },
+          "& .MuiMenuItem-root": {
+            minHeight: "44px !important",
+            fontSize: "13.5px",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            [theme.breakpoints.up("sm")]: {
+              minHeight: "40px !important",
+              height: "40px",
+              fontSize: "14px",
+              whiteSpace: "nowrap",
+            },
+          },
+        }),
+      },
+    },
+
     // ─── Dialog: fullscreen on mobile ─────────────────────────
     MuiDialog: {
       defaultProps: {

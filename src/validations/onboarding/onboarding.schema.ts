@@ -8,7 +8,7 @@ export const currentAddressSchema = z.object({
   city: z.string().trim().min(1, "City is required").max(100, "Max 100 characters"),
   state: z.string().trim().min(1, "State is required").max(100, "Max 100 characters"),
   countryCode: z.string().trim().length(2, "Country code must be 2 characters (e.g. IN)").transform((v) => v.toUpperCase()),
-  zip: z.string().trim().min(4, "Zip code must be 4-10 characters").max(10, "Zip code must be 4-10 characters").regex(/^[a-zA-Z0-9\s-]+$/, "Zip code must be alphanumeric"),
+  zip: z.string().trim().regex(/^\d{6}$/, "Zip / Postal code must be exactly 6 digits"),
 });
 
 export const emergencyContactSchema = z.object({
@@ -24,7 +24,7 @@ export const onboardingStep1Schema = z.object({
   bloodGroup: z.enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).optional().or(z.literal("")),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"], { message: "Marital status is required" }),
   phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  pan: z.string().trim().refine((v) => !v || v.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
+  pan: z.string().trim().transform((v) => v.toUpperCase()).refine((v) => !v || v.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
   aadhaar: z.string().trim().refine((v) => !v || /^\d{12}$/.test(v), "Aadhaar must be exactly 12 numeric digits").optional().or(z.literal("")),
   passportNo: z.string().trim().optional().or(z.literal("")),
   currentAddress: currentAddressSchema,

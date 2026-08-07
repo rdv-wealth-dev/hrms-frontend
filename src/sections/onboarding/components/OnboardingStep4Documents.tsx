@@ -11,11 +11,16 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
+import CircularProgress from "@mui/material/CircularProgress";
+
 import TextInput from "../../../components/input/TextInput";
 import { uploadDocument, getEmployeeDocuments, type EmployeeDocument } from "../../../api/employee.api";
 import { getDocumentDefinition, type DocumentDefinition } from "../../../utils/doc-helpers";
 
+import { useMandatoryDocuments } from "../../../hooks/useMandatoryDocuments";
+
 interface OnboardingStep4Props {
+  mandatoryDocumentTypes?: string[];
   missingDocuments?: string[];
   onSubmitStep: () => Promise<void>;
   onBack: () => void;
@@ -23,15 +28,15 @@ interface OnboardingStep4Props {
   errorMsg?: string | null;
 }
 
-const DEFAULT_DOC_CODES = ["PAN", "AADHAAR", "PASSPORT", "DRIVING_LICENSE", "RESUME", "DEGREE"];
-
 export default function OnboardingStep4Documents({
+  mandatoryDocumentTypes,
   missingDocuments,
   onSubmitStep,
   onBack,
   loading,
   errorMsg,
 }: OnboardingStep4Props) {
+  const { docTypes, isLoading: docsLoading } = useMandatoryDocuments();
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -53,9 +58,14 @@ export default function OnboardingStep4Documents({
   }, []);
 
   // Compute dynamic document list based on organization requirements / missing documents
-  const docCodesToRender = missingDocuments && missingDocuments.length > 0
-    ? Array.from(new Set(["PAN", "AADHAAR", ...missingDocuments]))
-    : DEFAULT_DOC_CODES;
+  const docCodesToRender =
+    mandatoryDocumentTypes && mandatoryDocumentTypes.length > 0
+      ? mandatoryDocumentTypes
+      : docTypes !== null && docTypes.length > 0
+      ? docTypes
+      : missingDocuments && missingDocuments.length > 0
+      ? missingDocuments
+      : ["PAN", "AADHAAR"];
 
   const docList: DocumentDefinition[] = docCodesToRender.map((code) => getDocumentDefinition(code));
 
@@ -81,6 +91,17 @@ export default function OnboardingStep4Documents({
     return documents.find((d) => d.documentType?.toUpperCase() === code.toUpperCase());
   };
 
+  if (docsLoading || docTypes === null) {
+    return (
+      <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: "1px solid #E2E8F0", textAlign: "center" }}>
+        <CircularProgress size={36} sx={{ color: "#6D5DF6", mb: 2 }} />
+        <Typography variant="body2" sx={{ color: "#64748B" }}>
+          Loading mandatory document requirements...
+        </Typography>
+      </Paper>
+    );
+  }
+
   return (
     <Box>
       <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
@@ -96,6 +117,12 @@ export default function OnboardingStep4Documents({
             {errorMsg || uploadError}
           </Alert>
         )}
+
+        {docList.length === 0 ? (
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            No mandatory documents are required by your organization. You can click <strong>&quot;Save &amp; Continue&quot;</strong> below.
+          </Alert>
+        ) : (
 
         <Grid container spacing={2}>
           {docList.map((doc) => {
@@ -194,6 +221,7 @@ export default function OnboardingStep4Documents({
             );
           })}
         </Grid>
+        )}
       </Paper>
 
       {/* Navigation Buttons */}

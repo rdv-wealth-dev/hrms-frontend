@@ -142,6 +142,7 @@ export default function OnboardingStep2Family({
                 <Grid size={{ xs: 12, sm: 6, md: 2.3 }}>
                   <TextInput
                     label="Phone Number"
+                    type="tel"
                     placeholder="9876543210"
                     maxLength={10}
                     registration={register(`familyMembers.${idx}.phone` as const)}

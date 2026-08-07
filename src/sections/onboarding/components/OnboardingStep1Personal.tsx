@@ -44,6 +44,7 @@ export default function OnboardingStep1Personal({
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<OnboardingStep1FormData>({
     resolver: zodResolver(onboardingStep1Schema),
@@ -136,6 +137,7 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Phone Number"
+              type="tel"
               placeholder="Enter 10-digit phone number"
               maxLength={10}
               registration={register("phone")}
@@ -150,6 +152,11 @@ export default function OnboardingStep1Personal({
               maxLength={10}
               registration={register("pan")}
               error={errors.pan?.message}
+              slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
+              onChange={(e) => {
+                const upper = (e.target.value ?? "").toUpperCase();
+                setValue("pan", upper, { shouldValidate: true });
+              }}
             />
           </Grid>
 
@@ -228,7 +235,9 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Zip / Postal Code"
+              type="tel"
               placeholder="e.g. 400001"
+              maxLength={6}
               registration={register("currentAddress.zip")}
               error={errors.currentAddress?.zip?.message}
             />
@@ -280,6 +289,7 @@ export default function OnboardingStep1Personal({
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextInput
                   label="Phone Number"
+                  type="tel"
                   placeholder="9876543210"
                   maxLength={10}
                   registration={register(`emergencyContact.${idx}.phone` as const)}

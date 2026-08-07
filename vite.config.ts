@@ -4,6 +4,38 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    dedupe: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@emotion/react',
+      '@emotion/styled',
+      '@mui/material',
+    ],
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@emotion/react',
+      '@emotion/styled',
+      '@mui/material',
+      'react-redux',
+    ],
+  },
+  server: {
+    host: true,
+    port: 5173,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+    },
+    watch: {
+      ignored: ['**/hrms-backend/**'],
+    },
+  },
   build: {
     rollupOptions: {
       output: {
@@ -15,24 +47,12 @@ export default defineConfig({
             if (id.includes('@fullcalendar')) {
               return 'vendor-calendar';
             }
-            if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/react-router-dom/')) {
-              return 'vendor-react';
-            }
             if (id.includes('@reduxjs') || id.includes('redux')) {
               return 'vendor-redux';
-            }
-            if (id.includes('axios') || id.includes('zod') || id.includes('react-hook-form') || id.includes('sonner')) {
-              return 'vendor-utils';
             }
           }
         }
       }
     }
-  },
-  server: {
-    watch: {
-      ignored: ['**/hrms-backend/**'],
-    },
-    proxy: {},
   },
 });

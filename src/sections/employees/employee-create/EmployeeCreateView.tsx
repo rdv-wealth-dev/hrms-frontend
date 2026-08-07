@@ -428,12 +428,20 @@ function EmployeeCreateView() {
 
   return (
     <DashboardLayout>
-      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1000, mx: "auto" }}>
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1000, mx: "auto" }}>
         {/* Page Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <PersonAddOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: 1.5,
+            mb: 3,
+          }}
+        >
+          <PersonAddOutlinedIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: "#6D5DF6" }} />
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
               Add New Employee
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -446,7 +454,7 @@ function EmployeeCreateView() {
           <Alert
             severity="error"
             onClose={() => dispatch(clearEmployeeError())}
-            sx={{ mb: 3 }}
+            sx={{ mb: 3, borderRadius: 2 }}
           >
             {error}
           </Alert>
@@ -456,21 +464,21 @@ function EmployeeCreateView() {
           <Alert
             severity="error"
             onClose={() => setFormValidationError(null)}
-            sx={{ mb: 3 }}
+            sx={{ mb: 3, borderRadius: 2 }}
           >
             {formValidationError}
           </Alert>
         )}
 
         <form onSubmit={handleSubmit(onSubmit, onInvalidForm)}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2.5, sm: 3 }}>
             {/* Section 1: Basic Identity & Contact */}
-            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827" }}>
+            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", border: "1px solid #F1F5F9" }}>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827", fontSize: { xs: "1rem", sm: "1.15rem" } }}>
                   Basic Information
                 </Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="First Name"
@@ -523,12 +531,12 @@ function EmployeeCreateView() {
             </Card>
 
             {/* Section 2: Employment Details */}
-            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827" }}>
+            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", border: "1px solid #F1F5F9" }}>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#111827", fontSize: { xs: "1rem", sm: "1.15rem" } }}>
                   Employment &amp; Job Details
                 </Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
@@ -587,7 +595,7 @@ function EmployeeCreateView() {
                       ))}
                     </TextInput>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       select
                       label="Employee Type"
@@ -610,7 +618,7 @@ function EmployeeCreateView() {
                       ))}
                     </TextInput>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       label="Joining Date"
                       type="date"
@@ -619,7 +627,7 @@ function EmployeeCreateView() {
                       error={errors.joiningDate?.message}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       label="Probation End Date (optional)"
                       type="date"
@@ -661,40 +669,8 @@ function EmployeeCreateView() {
                         Select Shift
                       </MenuItem>
                       {shifts.map((shift) => (
-                        <MenuItem 
-                          key={shift._id} 
-                          value={shift._id}
-                          sx={{ 
-                            display: "flex", 
-                            justifyContent: "space-between", 
-                            alignItems: "center",
-                            py: 1
-                          }}
-                        >
-                          <Box sx={{ display: "flex", flexDirection: "column" }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#111827" }}>
-                              {shift.name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {shift.startTime} - {shift.endTime}
-                            </Typography>
-                          </Box>
-                          {shift.isDefault && (
-                            <Box
-                              sx={{
-                                px: 1,
-                                py: 0.25,
-                                borderRadius: 1,
-                                fontSize: "10px",
-                                fontWeight: 600,
-                                backgroundColor: "rgba(109, 93, 246, 0.08)",
-                                color: "#6D5DF6",
-                                border: "1px solid rgba(109, 93, 246, 0.2)",
-                              }}
-                            >
-                              Default
-                            </Box>
-                          )}
+                        <MenuItem key={shift._id} value={shift._id}>
+                          {shift.name} ({shift.startTime} - {shift.endTime}){shift.isDefault ? " (Default)" : ""}
                         </MenuItem>
                       ))}
                     </TextInput>
@@ -704,10 +680,10 @@ function EmployeeCreateView() {
             </Card>
 
             {/* Section 5: Salary Setup */}
-            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#111827" }}>
+            <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", border: "1px solid #F1F5F9" }}>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, flexWrap: "wrap", gap: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#111827", fontSize: { xs: "1rem", sm: "1.15rem" } }}>
                     Salary Setup {manageSalary ? "" : "(optional)"}
                   </Typography>
                   {!manageSalary && (
@@ -723,7 +699,7 @@ function EmployeeCreateView() {
                 </Box>
                 {manageSalary && (
                   <>
-                    <Grid container spacing={2}>
+                    <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                       <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput
                           select
@@ -777,13 +753,28 @@ function EmployeeCreateView() {
             </Card>
 
             {/* Submit Actions */}
-            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end", pt: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column-reverse", sm: "row" },
+                gap: 1.5,
+                justifyContent: "flex-end",
+                pt: 1,
+              }}
+            >
               <Button
                 variant="outlined"
                 color="inherit"
                 onClick={() => navigate(paths.employees.directory)}
                 disabled={submitting}
-                sx={{ borderRadius: 2, px: 4, py: 1.2, textTransform: "none" }}
+                sx={{
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.2,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  width: { xs: "100%", sm: "auto" },
+                }}
               >
                 Cancel
               </Button>
@@ -796,7 +787,9 @@ function EmployeeCreateView() {
                   px: 5,
                   py: 1.2,
                   textTransform: "none",
+                  fontWeight: 600,
                   backgroundColor: "#6D5DF6",
+                  width: { xs: "100%", sm: "auto" },
                   "&:hover": { backgroundColor: "#5B4BEA" },
                 }}
               >

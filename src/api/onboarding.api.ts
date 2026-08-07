@@ -78,6 +78,7 @@ export interface OnboardingStatusResponse {
     step2Data?: Partial<Step2Payload>;
     step3Data?: Partial<Step3Payload>;
     missingDocuments?: string[];
+    mandatoryDocumentTypes?: string[];
   };
 }
 
@@ -117,7 +118,7 @@ export const submitOnboardingStep1 = async (payload: Step1Payload): Promise<Onbo
     );
     return response.data;
   } catch (err: any) {
-    const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to save Step 1";
+    const msg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to save Step 1";
     return { succeeded: false, message: msg };
   }
 };
@@ -130,7 +131,7 @@ export const submitOnboardingStep2 = async (payload: Step2Payload): Promise<Onbo
     );
     return response.data;
   } catch (err: any) {
-    const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to save Step 2";
+    const msg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to save Step 2";
     return { succeeded: false, message: msg };
   }
 };
@@ -143,7 +144,7 @@ export const submitOnboardingStep3 = async (payload: Step3Payload): Promise<Onbo
     );
     return response.data;
   } catch (err: any) {
-    const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to save Step 3";
+    const msg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to save Step 3";
     return { succeeded: false, message: msg };
   }
 };
@@ -156,7 +157,7 @@ export const submitOnboardingStep4 = async (): Promise<OnboardingStepResponse> =
     );
     return response.data;
   } catch (err: any) {
-    const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Please upload all required documents before proceeding";
+    const msg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Please upload all required documents before proceeding";
     return { succeeded: false, message: msg };
   }
 };
@@ -169,7 +170,7 @@ export const submitOnboardingStep5 = async (_payload: Step5Payload): Promise<Onb
     );
     return response.data;
   } catch (err: any) {
-    const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to submit final onboarding";
+    const msg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || "Failed to submit final onboarding";
     return { succeeded: false, message: msg };
   }
 };

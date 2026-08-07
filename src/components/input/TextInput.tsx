@@ -88,7 +88,8 @@ function TextInput({
       onInput: (e: React.FormEvent<HTMLInputElement>) => {
         if (type === "tel") {
           const target = e.target as HTMLInputElement;
-          target.value = target.value.replace(/\D/g, "");
+          const max = maxLength || 10;
+          target.value = target.value.replace(/\D/g, "").slice(0, max);
         }
         slotProps?.htmlInput?.onInput?.(e);
       },
@@ -121,7 +122,52 @@ function TextInput({
           ...slotProps?.input,
         }
       : slotProps?.input,
-    select: slotProps?.select,
+    select: {
+      MenuProps: {
+        disableScrollLock: true,
+        anchorOrigin: { vertical: "bottom", horizontal: "left" },
+        transformOrigin: { vertical: "top", horizontal: "left" },
+        slotProps: {
+          backdrop: {
+            invisible: true,
+            style: { backdropFilter: "none", backgroundColor: "transparent" },
+          },
+        },
+        PaperProps: {
+          sx: {
+            maxHeight: { xs: "184px !important", sm: "176px !important" },
+            maxWidth: "calc(100vw - 32px)",
+            borderRadius: "12px",
+            border: "1px solid #E2E8F0",
+            boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
+            overflowY: "auto",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#CBD5E1 transparent",
+            "&::-webkit-scrollbar": { width: "5px" },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+            "&::-webkit-scrollbar-thumb": { background: "#CBD5E1", borderRadius: "10px" },
+            "&::-webkit-scrollbar-thumb:hover": { background: "#94A3B8" },
+            "& .MuiMenuItem-root": {
+              fontSize: { xs: "13.5px", sm: "14px" },
+              minHeight: { xs: "44px !important", sm: "40px !important" },
+              height: { xs: "auto", sm: "40px" },
+              whiteSpace: { xs: "normal", sm: "nowrap" },
+              wordBreak: { xs: "break-word", sm: "normal" },
+              py: { xs: 1, sm: 0 },
+              px: { xs: 1.5, sm: 1.8 },
+              borderRadius: "6px",
+              mx: 0.5,
+              my: 0.2,
+              color: "#334155",
+              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+              "&.Mui-selected": { backgroundColor: "#EEF2FF", color: "#4F46E5", fontWeight: 600 },
+            },
+          },
+        },
+        ...slotProps?.select?.MenuProps,
+      },
+      ...slotProps?.select,
+    },
   };
 
   const fieldStyles =
@@ -132,7 +178,7 @@ function TextInput({
         }
       : {
           "& .MuiOutlinedInput-root": {
-            height: multiline ? "auto" : 40,
+            minHeight: multiline ? "auto" : 40,
             borderRadius: "12px",
             backgroundColor: "#FFFFFF",
             fontSize: "14px",
@@ -155,10 +201,32 @@ function TextInput({
             },
           },
           "& .MuiOutlinedInput-input": {
-            py: multiline ? "10px" : "10px",
+            py: multiline ? "10px" : "8px",
             px: "14px",
             fontSize: "14px",
             color: "#0F172A",
+            boxSizing: "border-box",
+            "&[type='date']": {
+              position: "relative",
+              colorScheme: "light",
+              "&::-webkit-calendar-picker-indicator": {
+                cursor: "pointer",
+                borderRadius: "4px",
+                padding: "2px",
+                filter: "invert(0.3)",
+                transition: "all 0.15s ease",
+                "&:hover": {
+                  filter: "invert(0.1)",
+                  backgroundColor: "rgba(109, 93, 246, 0.08)",
+                },
+              },
+            },
+            "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active": {
+              WebkitBoxShadow: "0 0 0 1000px #FFFFFF inset !important",
+              WebkitTextFillColor: "#0F172A !important",
+              transition: "background-color 5000s ease-in-out 0s",
+              borderRadius: "12px",
+            },
           },
           "& .MuiInputBase-input::placeholder": {
             color: "#94A3B8",
@@ -167,9 +235,11 @@ function TextInput({
             fontWeight: 400,
           },
           "& .MuiSelect-select": {
-            py: "10px !important",
+            py: "8px !important",
+            minHeight: "22px !important",
             display: "flex",
             alignItems: "center",
+            boxSizing: "border-box",
           },
           ...sx,
         };

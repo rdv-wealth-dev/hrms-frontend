@@ -6,6 +6,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Alert from "@mui/material/Alert";
 import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -29,18 +31,36 @@ export function ShiftFormDialog({
   onClose,
   onSuccess,
 }: ShiftFormDialogProps) {
+  // 1. Basic Info
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("18:00");
+  const [isDefault, setIsDefault] = useState(false);
+
+  // 2. Timings & Windows
+  const [startTime, setStartTime] = useState("10:00");
+  const [endTime, setEndTime] = useState("19:30");
+  const [checkInWindowStart, setCheckInWindowStart] = useState("08:00");
+  const [checkInWindowEnd, setCheckInWindowEnd] = useState("10:00");
+  const [allowedCheckInFromTime, setAllowedCheckInFromTime] = useState("08:00");
+  const [earlyLeaveStartTime, setEarlyLeaveStartTime] = useState("18:00");
+
+  // 3. Grace & Duration Thresholds
   const [gracePeriodMinutes, setGracePeriodMinutes] = useState<number | "">(15);
-  const [graceLimitPerMonth, setGraceLimitPerMonth] = useState<number | "">(0);
+  const [graceLimitPerMonth, setGraceLimitPerMonth] = useState<number | "">(3);
   const [breakDurationMinutes, setBreakDurationMinutes] = useState<number | "">(60);
   const [halfDayThresholdMinutes, setHalfDayThresholdMinutes] = useState<number | "">(240);
   const [fullDayMinutes, setFullDayMinutes] = useState<number | "">(480);
   const [absentThresholdMinutes, setAbsentThresholdMinutes] = useState<number | "">(255);
   const [lateArrivalHalfDayMinutes, setLateArrivalHalfDayMinutes] = useState<number | "">(90);
-  const [isDefault, setIsDefault] = useState(false);
+
+  // 4. Cutoffs, Weights & Quotas
+  const [firstHalfCutoffMinutes, setFirstHalfCutoffMinutes] = useState<number | "">(240);
+  const [secondHalfCutoffMinutes, setSecondHalfCutoffMinutes] = useState<number | "">(210);
+  const [minimumWorkMinutesForHalfDay, setMinimumWorkMinutesForHalfDay] = useState<number | "">(270);
+  const [halfDayWeight, setHalfDayWeight] = useState<number | "">(0.5);
+  const [lateArrivalQuotaPerMonth, setLateArrivalQuotaPerMonth] = useState<number | "">(3);
+  const [earlyLeaveQuotaPerMonth, setEarlyLeaveQuotaPerMonth] = useState<number | "">(3);
+  const [rejectEarlyPunch, setRejectEarlyPunch] = useState(true);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,28 +87,54 @@ export function ShiftFormDialog({
       if (mode === "edit" && initialValues) {
         setName(initialValues.name || "");
         setCode(initialValues.code || "");
-        setStartTime(initialValues.startTime || "09:00");
-        setEndTime(initialValues.endTime || "18:00");
+        setStartTime(initialValues.startTime || "10:00");
+        setEndTime(initialValues.endTime || "19:30");
+        setCheckInWindowStart(initialValues.checkInWindowStart || "08:00");
+        setCheckInWindowEnd(initialValues.checkInWindowEnd || "10:00");
+        setAllowedCheckInFromTime(initialValues.allowedCheckInFromTime || "08:00");
+        setEarlyLeaveStartTime(initialValues.earlyLeaveStartTime || "18:00");
+
         setGracePeriodMinutes(initialValues.gracePeriodMinutes ?? 15);
-        setGraceLimitPerMonth(initialValues.graceLimitPerMonth ?? 0);
+        setGraceLimitPerMonth(initialValues.graceLimitPerMonth ?? 3);
         setBreakDurationMinutes(initialValues.breakDurationMinutes ?? 60);
         setHalfDayThresholdMinutes(initialValues.halfDayThresholdMinutes ?? 240);
         setFullDayMinutes(initialValues.fullDayMinutes ?? 480);
         setAbsentThresholdMinutes(initialValues.absentThresholdMinutes ?? 255);
         setLateArrivalHalfDayMinutes(initialValues.lateArrivalHalfDayMinutes ?? 90);
+
+        setFirstHalfCutoffMinutes(initialValues.firstHalfCutoffMinutes ?? 240);
+        setSecondHalfCutoffMinutes(initialValues.secondHalfCutoffMinutes ?? 210);
+        setMinimumWorkMinutesForHalfDay(initialValues.minimumWorkMinutesForHalfDay ?? 270);
+        setHalfDayWeight(initialValues.halfDayWeight ?? 0.5);
+        setLateArrivalQuotaPerMonth(initialValues.lateArrivalQuotaPerMonth ?? 3);
+        setEarlyLeaveQuotaPerMonth(initialValues.earlyLeaveQuotaPerMonth ?? 3);
+        setRejectEarlyPunch(initialValues.rejectEarlyPunch ?? true);
         setIsDefault(initialValues.isDefault ?? false);
       } else {
         setName("");
         setCode("");
-        setStartTime("09:00");
-        setEndTime("18:00");
+        setStartTime("10:00");
+        setEndTime("19:30");
+        setCheckInWindowStart("08:00");
+        setCheckInWindowEnd("10:00");
+        setAllowedCheckInFromTime("08:00");
+        setEarlyLeaveStartTime("18:00");
+
         setGracePeriodMinutes(15);
-        setGraceLimitPerMonth(0);
+        setGraceLimitPerMonth(3);
         setBreakDurationMinutes(60);
         setHalfDayThresholdMinutes(240);
         setFullDayMinutes(480);
         setAbsentThresholdMinutes(255);
         setLateArrivalHalfDayMinutes(90);
+
+        setFirstHalfCutoffMinutes(240);
+        setSecondHalfCutoffMinutes(210);
+        setMinimumWorkMinutesForHalfDay(270);
+        setHalfDayWeight(0.5);
+        setLateArrivalQuotaPerMonth(3);
+        setEarlyLeaveQuotaPerMonth(3);
+        setRejectEarlyPunch(true);
         setIsDefault(false);
       }
     }
@@ -97,7 +143,6 @@ export function ShiftFormDialog({
   const handleSubmit = async () => {
     setError(null);
 
-    // Client-side validations
     if (!name.trim()) {
       setError("Shift name is required.");
       return;
@@ -109,11 +154,11 @@ export function ShiftFormDialog({
 
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(startTime)) {
-      setError("Start time must be a valid time in HH:mm format (00:00–23:59).");
+      setError("Start time must be a valid time in HH:mm 24h format.");
       return;
     }
     if (!timeRegex.test(endTime)) {
-      setError("End time must be a valid time in HH:mm format (00:00–23:59).");
+      setError("End time must be a valid time in HH:mm 24h format.");
       return;
     }
 
@@ -125,9 +170,6 @@ export function ShiftFormDialog({
 
     const halfDay = Number(halfDayThresholdMinutes);
     const fullDay = Number(fullDayMinutes);
-    const absentT = Number(absentThresholdMinutes);
-    const lateArrivalT = Number(lateArrivalHalfDayMinutes);
-
     if (isNaN(halfDay) || halfDay <= 0) {
       setError("Half-day threshold minutes must be a positive number.");
       return;
@@ -140,54 +182,44 @@ export function ShiftFormDialog({
       setError("Full-day minutes must be strictly greater than half-day threshold minutes.");
       return;
     }
-    if (isNaN(absentT) || absentT < 0) {
-      setError("Absent threshold minutes must be a non-negative number.");
-      return;
-    }
-    if (isNaN(lateArrivalT) || lateArrivalT < 0) {
-      setError("Late arrival half-day threshold minutes must be a non-negative number.");
-      return;
-    }
 
     setSubmitting(true);
     try {
+      const payload: CreateShiftRequest = {
+        name: name.trim(),
+        code: code.trim().toUpperCase(),
+        startTime,
+        endTime,
+        checkInWindowStart,
+        checkInWindowEnd,
+        allowedCheckInFromTime,
+        earlyLeaveStartTime,
+        gracePeriodMinutes: grace,
+        graceLimitPerMonth: Number(graceLimitPerMonth) || 0,
+        breakDurationMinutes: Number(breakDurationMinutes) || 0,
+        halfDayThresholdMinutes: halfDay,
+        fullDayMinutes: fullDay,
+        absentThresholdMinutes: Number(absentThresholdMinutes) || 255,
+        lateArrivalHalfDayMinutes: Number(lateArrivalHalfDayMinutes) || 90,
+        firstHalfCutoffMinutes: Number(firstHalfCutoffMinutes) || 240,
+        secondHalfCutoffMinutes: Number(secondHalfCutoffMinutes) || 210,
+        minimumWorkMinutesForHalfDay: Number(minimumWorkMinutesForHalfDay) || 270,
+        halfDayWeight: Number(halfDayWeight) || 0.5,
+        lateArrivalQuotaPerMonth: Number(lateArrivalQuotaPerMonth) || 3,
+        earlyLeaveQuotaPerMonth: Number(earlyLeaveQuotaPerMonth) || 3,
+        rejectEarlyPunch,
+        isDefault,
+      };
+
       if (mode === "create") {
-        const payload: CreateShiftRequest = {
-          name: name.trim(),
-          code: code.trim().toUpperCase(),
-          startTime,
-          endTime,
-          gracePeriodMinutes: grace,
-          graceLimitPerMonth: Number(graceLimitPerMonth) || 0,
-          breakDurationMinutes: Number(breakDurationMinutes) || 0,
-          halfDayThresholdMinutes: halfDay,
-          fullDayMinutes: fullDay,
-          absentThresholdMinutes: absentT,
-          lateArrivalHalfDayMinutes: lateArrivalT,
-          isDefault,
-        };
         await createShift(payload);
       } else if (mode === "edit" && initialValues?._id) {
-        const payload: UpdateShiftRequest = {
-          name: name.trim(),
-          code: code.trim().toUpperCase(),
-          startTime,
-          endTime,
-          gracePeriodMinutes: grace,
-          graceLimitPerMonth: Number(graceLimitPerMonth) || 0,
-          breakDurationMinutes: Number(breakDurationMinutes) || 0,
-          halfDayThresholdMinutes: halfDay,
-          fullDayMinutes: fullDay,
-          absentThresholdMinutes: absentT,
-          lateArrivalHalfDayMinutes: lateArrivalT,
-          isDefault,
-        };
-        await updateShift(initialValues._id, payload);
+        await updateShift(initialValues._id, payload as UpdateShiftRequest);
       }
       onSuccess();
       onClose();
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || "Failed to save shift details.";
+      const msg = err?.response?.data?.message || err?.message || "Failed to save shift details.";
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -216,139 +248,45 @@ export function ShiftFormDialog({
             border: "1px solid #E2E8F0",
             mx: { xs: 2, sm: "auto" },
             width: { xs: "calc(100% - 32px)", sm: "100%" },
+            maxHeight: "90vh",
           },
         },
       }}
     >
       <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
-        {mode === "create" ? "Create New Shift" : "Edit Shift Details"}
+        {mode === "create" ? "Create Custom Shift" : "Edit Shift Configuration"}
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
+      <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 3 }}>
         {error && (
           <Alert severity="error" sx={{ borderRadius: 2 }}>
             {error}
           </Alert>
         )}
 
+        {/* ── 1. Basic Information ────────────────────────────────────────── */}
+        <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#4F46E5", textTransform: "uppercase", letterSpacing: 0.5, fontSize: "0.78rem" }}>
+          1. Basic Shift Information
+        </Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Shift Name *"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. General Shift"
+              placeholder="e.g. General Custom Shift"
             />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label="Shift Code"
-              required
+              label="Shift Code *"
               value={code}
               onChange={(e) => setCode(e.target.value ?? "")}
               onBlur={() => setCode((prev) => prev.toUpperCase())}
-              placeholder="e.g. GEN_SHIFT"
+              placeholder="e.g. GEN_CUST"
               disabled={mode === "edit"}
               slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Start Time (HH:mm) *"
-              value={startTime}
-              onChange={(e) => {
-                setStartTime(e.target.value);
-                autoUpdateThresholds(e.target.value, endTime, breakDurationMinutes);
-              }}
-              placeholder="09:00"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="End Time (HH:mm) *"
-              value={endTime}
-              onChange={(e) => {
-                setEndTime(e.target.value);
-                autoUpdateThresholds(startTime, e.target.value, breakDurationMinutes);
-              }}
-              placeholder="18:00"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Grace Period (Minutes)"
-              type="number"
-              value={gracePeriodMinutes}
-              onChange={(e) => setGracePeriodMinutes(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="15"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Grace Limit / Month (0 = Unlimited)"
-              type="number"
-              value={graceLimitPerMonth}
-              onChange={(e) => setGraceLimitPerMonth(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="0 for unlimited"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Break Duration (Minutes)"
-              type="number"
-              value={breakDurationMinutes}
-              onChange={(e) => {
-                const val = e.target.value === "" ? "" : Number(e.target.value);
-                setBreakDurationMinutes(val);
-                autoUpdateThresholds(startTime, endTime, val);
-              }}
-              placeholder="60"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Half-Day Threshold (Minutes) *"
-              type="number"
-              value={halfDayThresholdMinutes}
-              onChange={(e) => setHalfDayThresholdMinutes(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="240"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Full-Day Threshold (Minutes) *"
-              type="number"
-              value={fullDayMinutes}
-              onChange={(e) => setFullDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="480"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Absent Threshold (Minutes) *"
-              type="number"
-              value={absentThresholdMinutes}
-              onChange={(e) => setAbsentThresholdMinutes(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="255"
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Late Arrival Half-Day Threshold (Minutes) *"
-              type="number"
-              value={lateArrivalHalfDayMinutes}
-              onChange={(e) => setLateArrivalHalfDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="90"
             />
           </Grid>
 
@@ -361,7 +299,219 @@ export function ShiftFormDialog({
                   sx={{ color: "#6366F1", "&.Mui-checked": { color: "#6366F1" } }}
                 />
               }
-              label="Set as default shift for new employees"
+              label="Set as default shift for new organization employees"
+              sx={{ color: "#334155", fontWeight: 600 }}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider />
+
+        {/* ── 2. Timings & Windows ────────────────────────────────────────── */}
+        <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#4F46E5", textTransform: "uppercase", letterSpacing: 0.5, fontSize: "0.78rem" }}>
+          2. Shift Timings &amp; Check-in / Early Leave Windows
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Start Time (HH:mm) *"
+              value={startTime}
+              onChange={(e) => {
+                setStartTime(e.target.value);
+                autoUpdateThresholds(e.target.value, endTime, breakDurationMinutes);
+              }}
+              placeholder="10:00"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="End Time (HH:mm) *"
+              value={endTime}
+              onChange={(e) => {
+                setEndTime(e.target.value);
+                autoUpdateThresholds(startTime, e.target.value, breakDurationMinutes);
+              }}
+              placeholder="19:30"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Break Duration (Mins)"
+              type="number"
+              value={breakDurationMinutes}
+              onChange={(e) => {
+                const val = e.target.value === "" ? "" : Number(e.target.value);
+                setBreakDurationMinutes(val);
+                autoUpdateThresholds(startTime, endTime, val);
+              }}
+              placeholder="60"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Check-In Window Start"
+              value={checkInWindowStart}
+              onChange={(e) => setCheckInWindowStart(e.target.value)}
+              placeholder="08:00"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Check-In Window End"
+              value={checkInWindowEnd}
+              onChange={(e) => setCheckInWindowEnd(e.target.value)}
+              placeholder="10:00"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Allowed Punch From Time"
+              value={allowedCheckInFromTime}
+              onChange={(e) => setAllowedCheckInFromTime(e.target.value)}
+              placeholder="08:00"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Allowed Early Leave Start"
+              value={earlyLeaveStartTime}
+              onChange={(e) => setEarlyLeaveStartTime(e.target.value)}
+              placeholder="18:00"
+            />
+          </Grid>
+        </Grid>
+
+        <Divider />
+
+        {/* ── 3. Duration Thresholds & Cutoffs ───────────────────────────── */}
+        <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#4F46E5", textTransform: "uppercase", letterSpacing: 0.5, fontSize: "0.78rem" }}>
+          3. Work Duration Thresholds &amp; Cutoff Rules
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Grace Period (Minutes)"
+              type="number"
+              value={gracePeriodMinutes}
+              onChange={(e) => setGracePeriodMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="15"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Grace Limit / Month"
+              type="number"
+              value={graceLimitPerMonth}
+              onChange={(e) => setGraceLimitPerMonth(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="3"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Full-Day Work (Minutes)"
+              type="number"
+              value={fullDayMinutes}
+              onChange={(e) => setFullDayMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="480"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Half-Day Work (Minutes)"
+              type="number"
+              value={halfDayThresholdMinutes}
+              onChange={(e) => setHalfDayThresholdMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="240"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Min Half-Day Credit Floor"
+              type="number"
+              value={minimumWorkMinutesForHalfDay}
+              onChange={(e) => setMinimumWorkMinutesForHalfDay(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="270"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
+              label="Half-Day Weight Multiplier"
+              type="number"
+              value={halfDayWeight}
+              onChange={(e) => setHalfDayWeight(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="0.5"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="First-Half Cutoff (Minutes)"
+              type="number"
+              value={firstHalfCutoffMinutes}
+              onChange={(e) => setFirstHalfCutoffMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="240"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Second-Half Cutoff (Minutes)"
+              type="number"
+              value={secondHalfCutoffMinutes}
+              onChange={(e) => setSecondHalfCutoffMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="210"
+            />
+          </Grid>
+        </Grid>
+
+        <Divider />
+
+        {/* ── 4. Monthly Quotas & Punch Rules ────────────────────────────── */}
+        <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#4F46E5", textTransform: "uppercase", letterSpacing: 0.5, fontSize: "0.78rem" }}>
+          4. Monthly Quotas &amp; Punch Constraints
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Late Arrival Quota / Month"
+              type="number"
+              value={lateArrivalQuotaPerMonth}
+              onChange={(e) => setLateArrivalQuotaPerMonth(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="3"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Early Leave Quota / Month"
+              type="number"
+              value={earlyLeaveQuotaPerMonth}
+              onChange={(e) => setEarlyLeaveQuotaPerMonth(e.target.value === "" ? "" : Number(e.target.value))}
+              placeholder="3"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rejectEarlyPunch}
+                  onChange={(e) => setRejectEarlyPunch(e.target.checked)}
+                  sx={{ color: "#6366F1", "&.Mui-checked": { color: "#6366F1" } }}
+                />
+              }
+              label="Reject punches attempted before allowed check-in time"
               sx={{ color: "#334155", fontWeight: 600 }}
             />
           </Grid>

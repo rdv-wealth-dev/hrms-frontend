@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -11,6 +12,8 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../../components/input/TextInput";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
@@ -192,26 +195,26 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={submitting ? undefined : onClose}
       maxWidth="md"
       fullWidth
       slotProps={{
         backdrop: {
           sx: {
-            backdropFilter: "blur(6px)",
             backgroundColor: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: "none !important",
           },
         },
         paper: {
           sx: {
-            borderRadius: { xs: "16px", sm: "20px", md: "24px" },
+            borderRadius: { xs: "16px", sm: "20px" },
             p: 0,
             backgroundColor: "#FFFFFF",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
             border: "1px solid #E2E8F0",
             mx: { xs: 1.5, sm: "auto" },
-            width: { xs: "calc(100% - 24px)", sm: "calc(100% - 48px)", md: "100%" },
-            maxHeight: { xs: "90vh", sm: "88vh" },
+            width: { xs: "calc(100% - 24px)", sm: "100%" },
+            height: { xs: "90vh", sm: "84vh" },
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
@@ -219,34 +222,67 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         },
       }}
     >
-      <DialogTitle sx={{ pt: { xs: 2, sm: 2.5 }, px: { xs: 2, sm: 2.5 }, pb: 1, fontWeight: 800, fontSize: { xs: "1.1rem", sm: "1.25rem" }, color: "#0F172A", flexShrink: 0 }}>
-        {mode === "create" ? "Create Branch" : "Update Branch"}
+      {/* Pinned Modal Header */}
+      <DialogTitle
+        component="div"
+        sx={{
+          py: { xs: 1.5, sm: 2 },
+          px: { xs: 2, sm: 3 },
+          fontWeight: 800,
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          color: "#0F172A",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid #F1F5F9",
+          flexShrink: 0,
+        }}
+      >
+        <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.1rem", sm: "1.25rem" }, color: "#0F172A" }}>
+          {mode === "create" ? "Create Branch" : "Update Branch"}
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          disabled={submitting}
+          size="small"
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 20 }} />
+        </IconButton>
       </DialogTitle>
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", overflow: "hidden", flexGrow: 1 }}>
+      {/* Form Container */}
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: "1 1 auto",
+          height: "calc(100% - 60px)",
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
+        {/* Scrollable Dialog Content */}
         <DialogContent
           sx={{
-            px: { xs: 2, sm: 2.5 },
-            pb: { xs: 2, sm: 2.5 },
-            pt: 0.5,
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
+            p: { xs: 2, sm: 3 },
+            pb: { xs: 5, sm: 6 },
+            flex: "1 1 auto",
             overflowY: "auto",
-            flexGrow: 1,
+            minHeight: 0,
             "&::-webkit-scrollbar": {
               width: "6px",
-            },
-            "&::-webkit-scrollbar-track": {
-              backgroundColor: "transparent",
-              margin: "6px 0",
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#CBD5E1",
               borderRadius: "4px",
-              "&:hover": {
-                backgroundColor: "#94A3B8",
-              },
+              "&:hover": { backgroundColor: "#94A3B8" },
             },
           }}
         >
@@ -259,7 +295,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
           <Grid container spacing={{ xs: 1.25, sm: 1.5, md: 1.75 }}>
             {/* Basic Details */}
             <Grid size={12}>
-              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Basic Details
               </Typography>
             </Grid>
@@ -286,7 +322,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
 
             {/* Address Details */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Address Details
               </Typography>
             </Grid>
@@ -342,7 +378,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
 
             {/* Contact Details */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Contact Details
               </Typography>
             </Grid>
@@ -367,7 +403,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
 
             {/* Work Policy */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Work Policy
               </Typography>
             </Grid>
@@ -442,8 +478,9 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
               />
             </Grid>
 
+            {/* Statutory Configurations */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Statutory Configurations
               </Typography>
             </Grid>
@@ -492,51 +529,63 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 disabled={!ptApplicable}
               />
             </Grid>
-
-            {/* Responsive Actions inside form directly below Statutory Configurations */}
-            <Grid size={12} sx={{ display: "flex", flexDirection: { xs: "column-reverse", sm: "row" }, justifyContent: "flex-end", gap: 1.5, mt: 2 }}>
-              <Button
-                onClick={onClose}
-                disabled={submitting}
-                sx={{
-                  height: 42,
-                  borderRadius: "10px",
-                  px: 2.5,
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  color: "#475569",
-                  backgroundColor: "#F1F5F9",
-                  width: { xs: "100%", sm: "auto" },
-                  "&:hover": { backgroundColor: "#E2E8F0" },
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={submitting}
-                sx={{
-                  height: 42,
-                  borderRadius: "10px",
-                  px: 3,
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  backgroundColor: "#6D5DF6",
-                  color: "#FFFFFF",
-                  width: { xs: "100%", sm: "auto" },
-                  "&:hover": { backgroundColor: "#5B4BEA" },
-                }}
-              >
-                {submitting ? (
-                  <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
-                ) : null}
-                {mode === "create" ? "Create" : "Save"}
-              </Button>
-            </Grid>
           </Grid>
         </DialogContent>
+
+        {/* Pinned Dialog Footer Actions */}
+        <DialogActions
+          sx={{
+            py: 1.5,
+            px: { xs: 2, sm: 3 },
+            borderTop: "1px solid #F1F5F9",
+            backgroundColor: "#FAFAFA",
+            display: "flex",
+            flexDirection: { xs: "column-reverse", sm: "row" },
+            justifyContent: "flex-end",
+            gap: 1.5,
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              color: "#475569",
+              backgroundColor: "#F1F5F9",
+              width: { xs: "100%", sm: "auto" },
+              "&:hover": { backgroundColor: "#E2E8F0" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              color: "#FFFFFF",
+              width: { xs: "100%", sm: "auto" },
+              "&:hover": { backgroundColor: "#5B4BEA" },
+            }}
+          >
+            {submitting ? (
+              <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+            ) : null}
+            {mode === "create" ? "Create Branch" : "Save Changes"}
+          </Button>
+        </DialogActions>
       </Box>
     </Dialog>
   );
