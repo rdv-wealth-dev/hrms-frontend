@@ -85,7 +85,7 @@ export const logoutUser = async (): Promise<LogoutResponse> => {
     const response = await axiosInstance.post<LogoutResponse>("/auth/logout");
     return response.data;
   } catch (_err) {
-    return { succeeded: true, message: "Logged out locally" };
+    return { succeeded: true, message: "Logged out locally", errors: [], data: null };
   }
 };
 

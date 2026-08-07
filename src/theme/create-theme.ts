@@ -103,7 +103,7 @@ export const theme = createTheme({
           border: "1px solid #E2E8F0",
           boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
           marginTop: "4px",
-          overflowY: "auto !important",
+          overflowY: "auto !important" as any,
           scrollbarWidth: "thin",
           scrollbarColor: "#CBD5E1 transparent",
           "&::-webkit-scrollbar": { width: "5px" },

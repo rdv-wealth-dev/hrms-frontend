@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Grid from "@mui/material/Grid";
 import Chip from "@mui/material/Chip";
-import LinearProgress from "@mui/material/LinearProgress";
 import Avatar from "@mui/material/Avatar";
 import CloseIcon from "@mui/icons-material/Close";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
@@ -263,8 +262,8 @@ export default function LeaveBalanceDetailsDialog({
         <Grid
           container
           spacing={1.5}
-          justifyContent="center"
           sx={{
+            justifyContent: "center",
             width: "calc(100% + 12px)",
             ml: "-6px",
             mr: "-6px",
