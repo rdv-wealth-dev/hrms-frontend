@@ -1,4 +1,5 @@
-import { useForm, useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -20,6 +21,7 @@ import {
   type OnboardingStep2FormData,
 } from "../../../validations/onboarding/onboarding.schema";
 import TextInput from "../../../components/input/TextInput";
+import { formatToYYYYMMDD } from "../../../utils/format-date";
 
 const RELATIONSHIPS = ["SPOUSE", "CHILD", "FATHER", "MOTHER", "SIBLING", "OTHER"] as const;
 
@@ -29,6 +31,13 @@ interface OnboardingStep2Props {
   onBack: () => void;
   loading: boolean;
 }
+
+const buildStep2Defaults = (initial?: Partial<OnboardingStep2FormData>): OnboardingStep2FormData => ({
+  familyMembers: (initial?.familyMembers || []).map((m) => ({
+    ...m,
+    dateOfBirth: formatToYYYYMMDD(m.dateOfBirth) || "",
+  })),
+});
 
 export default function OnboardingStep2Family({
   initialValues,
@@ -40,15 +49,18 @@ export default function OnboardingStep2Family({
     register,
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<OnboardingStep2FormData>({
     resolver: zodResolver(onboardingStep2Schema),
-    defaultValues: {
-      familyMembers: initialValues?.familyMembers?.length
-        ? initialValues.familyMembers
-        : [],
-    },
+    defaultValues: buildStep2Defaults(initialValues),
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      reset(buildStep2Defaults(initialValues));
+    }
+  }, [initialValues, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -108,16 +120,22 @@ export default function OnboardingStep2Family({
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
-                  <TextInput
-                    select
-                    label="Relationship"
-                    registration={register(`familyMembers.${idx}.relationship` as const)}
-                    error={errors.familyMembers?.[idx]?.relationship?.message}
-                  >
-                    {RELATIONSHIPS.map((rel) => (
-                      <MenuItem key={rel} value={rel}>{rel}</MenuItem>
-                    ))}
-                  </TextInput>
+                  <Controller
+                    name={`familyMembers.${idx}.relationship` as const}
+                    control={control}
+                    render={({ field: selectField }) => (
+                      <TextInput
+                        {...selectField}
+                        select
+                        label="Relationship"
+                        error={errors.familyMembers?.[idx]?.relationship?.message}
+                      >
+                        {RELATIONSHIPS.map((rel) => (
+                          <MenuItem key={rel} value={rel}>{rel}</MenuItem>
+                        ))}
+                      </TextInput>
+                    )}
+                  />
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 2.3 }}>

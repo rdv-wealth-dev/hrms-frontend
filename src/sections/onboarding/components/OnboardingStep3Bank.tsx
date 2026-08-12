@@ -1,4 +1,5 @@
-import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -28,6 +29,13 @@ interface OnboardingStep3Props {
   loading: boolean;
 }
 
+const buildStep3Defaults = (initial?: Partial<OnboardingStep3FormData>): OnboardingStep3FormData => ({
+  bankName: initial?.bankName || "",
+  accountNumber: initial?.accountNumber || "",
+  ifscCode: initial?.ifscCode || "",
+  accountType: initial?.accountType || "SALARY",
+});
+
 export default function OnboardingStep3Bank({
   initialValues,
   onSubmitStep,
@@ -36,18 +44,20 @@ export default function OnboardingStep3Bank({
 }: OnboardingStep3Props) {
   const {
     register,
+    control,
     handleSubmit,
-    watch,
+    reset,
     formState: { errors },
   } = useForm<OnboardingStep3FormData>({
     resolver: zodResolver(onboardingStep3Schema),
-    defaultValues: {
-      bankName: initialValues?.bankName || "",
-      accountNumber: initialValues?.accountNumber || "",
-      ifscCode: initialValues?.ifscCode || "",
-      accountType: initialValues?.accountType || "SALARY",
-    },
+    defaultValues: buildStep3Defaults(initialValues),
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      reset(buildStep3Defaults(initialValues));
+    }
+  }, [initialValues, reset]);
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
@@ -85,17 +95,22 @@ export default function OnboardingStep3Bank({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Account Type"
-              value={watch("accountType") || "SALARY"}
-              registration={register("accountType")}
-              error={errors.accountType?.message}
-            >
-              {ACCOUNT_TYPES.map((t) => (
-                <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
-              ))}
-            </TextInput>
+            <Controller
+              name="accountType"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Account Type"
+                  error={errors.accountType?.message}
+                >
+                  {ACCOUNT_TYPES.map((t) => (
+                    <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
           </Grid>
         </Grid>
       </Paper>

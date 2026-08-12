@@ -1,4 +1,5 @@
-import { useForm, useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -17,6 +18,7 @@ import {
   type OnboardingStep1FormData,
 } from "../../../validations/onboarding/onboarding.schema";
 import TextInput from "../../../components/input/TextInput";
+import { formatToYYYYMMDD } from "../../../utils/format-date";
 
 const GENDERS = ["MALE", "FEMALE", "OTHER"];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
@@ -35,6 +37,28 @@ interface OnboardingStep1Props {
   loading: boolean;
 }
 
+const buildStep1Defaults = (initial?: Partial<OnboardingStep1FormData>): OnboardingStep1FormData => ({
+  dateOfBirth: formatToYYYYMMDD(initial?.dateOfBirth) || "",
+  gender: initial?.gender || "MALE",
+  bloodGroup: initial?.bloodGroup || "",
+  maritalStatus: initial?.maritalStatus || "SINGLE",
+  phone: initial?.phone || "",
+  pan: initial?.pan || "",
+  aadhaar: initial?.aadhaar || "",
+  passportNo: initial?.passportNo || "",
+  currentAddress: {
+    addressLine1: initial?.currentAddress?.addressLine1 || "",
+    addressLine2: initial?.currentAddress?.addressLine2 || "",
+    city: initial?.currentAddress?.city || "",
+    state: initial?.currentAddress?.state || "",
+    countryCode: initial?.currentAddress?.countryCode || "IN",
+    zip: initial?.currentAddress?.zip || "",
+  },
+  emergencyContact: initial?.emergencyContact?.length
+    ? initial.emergencyContact
+    : [{ name: "", relationship: "SPOUSE", phone: "", email: "" }],
+});
+
 export default function OnboardingStep1Personal({
   initialValues,
   onSubmitStep,
@@ -45,31 +69,18 @@ export default function OnboardingStep1Personal({
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<OnboardingStep1FormData>({
     resolver: zodResolver(onboardingStep1Schema),
-    defaultValues: {
-      dateOfBirth: initialValues?.dateOfBirth || "",
-      gender: initialValues?.gender || "MALE",
-      bloodGroup: initialValues?.bloodGroup || "",
-      maritalStatus: initialValues?.maritalStatus || "SINGLE",
-      phone: initialValues?.phone || "",
-      pan: initialValues?.pan || "",
-      aadhaar: initialValues?.aadhaar || "",
-      passportNo: initialValues?.passportNo || "",
-      currentAddress: {
-        addressLine1: initialValues?.currentAddress?.addressLine1 || "",
-        addressLine2: initialValues?.currentAddress?.addressLine2 || "",
-        city: initialValues?.currentAddress?.city || "",
-        state: initialValues?.currentAddress?.state || "",
-        countryCode: initialValues?.currentAddress?.countryCode || "IN",
-        zip: initialValues?.currentAddress?.zip || "",
-      },
-      emergencyContact: initialValues?.emergencyContact?.length
-        ? initialValues.emergencyContact
-        : [{ name: "", relationship: "SPOUSE", phone: "", email: "" }],
-    },
+    defaultValues: buildStep1Defaults(initialValues),
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      reset(buildStep1Defaults(initialValues));
+    }
+  }, [initialValues, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -95,43 +106,61 @@ export default function OnboardingStep1Personal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Gender"
-              registration={register("gender")}
-              error={errors.gender?.message}
-            >
-              {GENDERS.map((g) => (
-                <MenuItem key={g} value={g}>{g}</MenuItem>
-              ))}
-            </TextInput>
+            <Controller
+              name="gender"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Gender"
+                  error={errors.gender?.message}
+                >
+                  {GENDERS.map((g) => (
+                    <MenuItem key={g} value={g}>{g}</MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Marital Status"
-              registration={register("maritalStatus")}
-              error={errors.maritalStatus?.message}
-            >
-              {MARITAL_STATUSES.map((m) => (
-                <MenuItem key={m} value={m}>{m}</MenuItem>
-              ))}
-            </TextInput>
+            <Controller
+              name="maritalStatus"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Marital Status"
+                  error={errors.maritalStatus?.message}
+                >
+                  {MARITAL_STATUSES.map((m) => (
+                    <MenuItem key={m} value={m}>{m}</MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Blood Group (Optional)"
-              registration={register("bloodGroup")}
-              error={errors.bloodGroup?.message}
-            >
-              <MenuItem value="">Select Blood Group</MenuItem>
-              {BLOOD_GROUPS.map((bg) => (
-                <MenuItem key={bg} value={bg}>{bg}</MenuItem>
-              ))}
-            </TextInput>
+            <Controller
+              name="bloodGroup"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Blood Group (Optional)"
+                  error={errors.bloodGroup?.message}
+                >
+                  <MenuItem value="">Select Blood Group</MenuItem>
+                  {BLOOD_GROUPS.map((bg) => (
+                    <MenuItem key={bg} value={bg}>{bg}</MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
@@ -221,16 +250,22 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Country"
-              registration={register("currentAddress.countryCode")}
-              error={errors.currentAddress?.countryCode?.message}
-            >
-              {COUNTRIES.map((c) => (
-                <MenuItem key={c.code} value={c.code}>{c.name} ({c.code})</MenuItem>
-              ))}
-            </TextInput>
+            <Controller
+              name="currentAddress.countryCode"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Country"
+                  error={errors.currentAddress?.countryCode?.message}
+                >
+                  {COUNTRIES.map((c) => (
+                    <MenuItem key={c.code} value={c.code}>{c.name} ({c.code})</MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
