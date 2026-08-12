@@ -108,30 +108,36 @@ export const deleteEmployee = async (id: string): Promise<DeleteEmployeeResponse
 };
 
 export interface AddBankAccountRequest {
+  employeeId?: string;
   bankName: string;
+  accountHolderName?: string;
   accountNumber: string;
-  ifscCode: string;
-  accountType: "SALARY" | "SAVINGS" | "CURRENT";
-  isPrimary: boolean;
+  ifscOrRoutingCode?: string;
+  ifscCode?: string;
+  accountType?: "SALARY" | "SAVINGS" | "CURRENT";
+  isPrimary?: boolean;
 }
 
 export interface AddBankAccountResponse {
   succeeded: boolean;
   message: string;
-  errors: string[];
+  errors?: string[];
   data: {
     _id: string;
-    tenantId: string;
-    branchId: string;
+    tenantId?: string;
+    branchId?: string;
     employeeId: string;
     bankName: string;
-    accountNumber: string;
-    ifscCode: string;
-    accountType: string;
-    isPrimary: boolean;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
+    accountNumber?: string;
+    accountNumberMasked?: string;
+    ifscOrRoutingCode?: string;
+    ifscCode?: string;
+    accountType?: string;
+    isPrimary?: boolean;
+    isActive?: boolean;
+    isVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
   };
 }
 
@@ -827,32 +833,6 @@ export const getEligibleManagers = async (params: {
 };
 
 // ── Add Bank Account API ──
-
-export interface AddBankAccountRequest {
-  employeeId?: string;
-  bankName: string;
-  accountHolderName?: string;
-  accountNumber: string;
-  ifscOrRoutingCode?: string;
-  ifscCode?: string;
-  accountType?: "SAVINGS" | "CURRENT" | "SALARY";
-  isPrimary?: boolean;
-}
-
-export interface AddBankAccountResponse {
-  succeeded: boolean;
-  message: string;
-  data: {
-    _id: string;
-    employeeId: string;
-    bankName: string;
-    accountNumberMasked: string;
-    ifscOrRoutingCode?: string;
-    accountType?: string;
-    isPrimary?: boolean;
-    isVerified?: boolean;
-  };
-}
 
 export const addBankAccount = async (
   employeeIdOrPayload: string | AddBankAccountRequest,

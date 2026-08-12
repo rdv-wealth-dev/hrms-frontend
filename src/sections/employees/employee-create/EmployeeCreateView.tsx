@@ -20,8 +20,6 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Chip from "@mui/material/Chip";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
@@ -94,7 +92,6 @@ export default function EmployeeCreateView() {
   const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
 
   const [manageSalary, setManageSalary] = useState(false);
-  const [sameAsCurrentAddress, setSameAsCurrentAddress] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
   const [formValidationError, setFormValidationError] = useState<string | null>(null);
@@ -104,7 +101,6 @@ export default function EmployeeCreateView() {
     handleSubmit,
     watch,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm<CreateEmployeeFormData>({
     resolver: zodResolver(createEmployeeSchema),
@@ -120,7 +116,6 @@ export default function EmployeeCreateView() {
       maritalStatus: "SINGLE",
       bloodGroup: "O+",
       nationality: "Indian",
-      pfOnActuals: false,
     },
   });
 
@@ -278,20 +273,6 @@ export default function EmployeeCreateView() {
       navigate(paths.employees.directory);
     }
   }, [success, navigate, dispatch]);
-
-  // Same as Current Address Sync Toggle
-  const handleToggleSameAddress = (checked: boolean) => {
-    setSameAsCurrentAddress(checked);
-    if (checked) {
-      const current = getValues("currentAddress");
-      setValue("permanentAddress.addressLine1", current?.addressLine1 || "");
-      setValue("permanentAddress.addressLine2", current?.addressLine2 || "");
-      setValue("permanentAddress.city", current?.city || "");
-      setValue("permanentAddress.state", current?.state || "");
-      setValue("permanentAddress.countryCode", current?.countryCode || "IN");
-      setValue("permanentAddress.zip", current?.zip || "");
-    }
-  };
 
   const onInvalidForm = (validationErrors: any) => {
     console.error("Form Validation Errors:", validationErrors);
