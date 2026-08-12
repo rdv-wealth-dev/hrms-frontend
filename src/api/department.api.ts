@@ -12,13 +12,26 @@ const getAuthHeader = () => ({
 });
 
 export const listDepartments = async (
-  page = 1,
-  pageSize = 10,
+  pageOrParams?: number | { page?: number; limit?: number; pageNumber?: number; pageSize?: number; branchId?: string },
+  pageSize = 100,
   branchId?: string
 ): Promise<DepartmentListResponse> => {
-  let url = `/departments?pageNumber=${page}&pageSize=${pageSize}`;
-  if (branchId) {
-    url += `&branchId=${encodeURIComponent(branchId)}`;
+  let page = 1;
+  let limit = 100;
+  let bId = branchId;
+
+  if (typeof pageOrParams === "object" && pageOrParams !== null) {
+    page = pageOrParams.pageNumber ?? pageOrParams.page ?? 1;
+    limit = pageOrParams.pageSize ?? pageOrParams.limit ?? 100;
+    bId = pageOrParams.branchId ?? branchId;
+  } else if (typeof pageOrParams === "number") {
+    page = pageOrParams;
+    limit = pageSize;
+  }
+
+  let url = `/departments?pageNumber=${page}&pageSize=${limit}`;
+  if (bId) {
+    url += `&branchId=${encodeURIComponent(bId)}`;
   }
   const response = await axiosInstance.get<DepartmentListResponse>(
     url,

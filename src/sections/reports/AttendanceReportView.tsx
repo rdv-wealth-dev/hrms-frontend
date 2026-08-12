@@ -310,7 +310,6 @@ export default function AttendanceReportView() {
       const isAbsent = s === "ABSENT";
       const isHalfDay = s.includes("HALF");
       const isPresentStatus = s.includes("PRESENT") || isHalfDay || isLate || isWfh;
-
       const isPresent = !isAbsent && (hasCheckedIn || isPresentStatus);
 
       if (isLate) lateCount++;
@@ -318,10 +317,6 @@ export default function AttendanceReportView() {
       if (isAbsent) absentCount++;
       if (isPresent) presentCount++;
     });
-
-    if (presentCount === 0 && todayRecords.length > 0) {
-      presentCount = todayRecords.length;
-    }
 
     const total = totalRecords || todayRecords.length || 0;
     const presentRate = total > 0 ? Math.round((presentCount / total) * 100 * 10) / 10 : 0;
@@ -519,7 +514,7 @@ export default function AttendanceReportView() {
       }).length;
 
 
-      const dayCount = i === 0 ? (dayPresent || kpiData.presentCount) : dayPresent;
+      const dayCount = dayPresent;
 
       days.push({
         date: dateLabel,
@@ -529,7 +524,7 @@ export default function AttendanceReportView() {
     }
 
     return days;
-  }, [records, kpiData.presentCount]);
+  }, [records]);
 
   return (
     <DashboardLayout>

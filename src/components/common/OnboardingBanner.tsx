@@ -24,7 +24,7 @@ export function OnboardingBanner() {
           borderColor: "#BFDBFE",
           textColor: "#1E40AF",
           icon: <InfoOutlinedIcon sx={{ color: "#3B82F6", fontSize: 20 }} />,
-          message: `Welcome! Your profile is ${completionPct}% complete. Please complete your onboarding soon.`,
+          message: "Welcome! Your profile is Incomplete. Please complete your onboarding soon.",
           buttonColor: "#2563EB",
           buttonHover: "#1D4ED8",
         };

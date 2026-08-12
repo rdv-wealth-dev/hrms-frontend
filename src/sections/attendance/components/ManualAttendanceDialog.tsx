@@ -342,7 +342,7 @@ export function ManualAttendanceDialog({
                 {...field}
                 multiline
                 rows={3}
-                label="Reason / Notes"
+                label="Reason / Remark"
                 placeholder="e.g. Biometric machine error, manually logged by HR"
                 disabled={submitting}
                 error={errors.notes?.message}

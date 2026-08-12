@@ -229,6 +229,7 @@ function DepartmentContent() {
         });
 
     const branchId = useActiveBranchId();
+    const [selectedBranchId, setSelectedBranchId] = useState<string>(branchId || "");
     
     const { hasPermission } = usePermissions();
     const canCreate = hasPermission("department.create");
@@ -240,22 +241,28 @@ function DepartmentContent() {
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
     const [editTarget, setEditTarget] = useState<Department | null>(null);
 
-    // Load departments and ensure branch data is in Redux for useActiveBranchId
     useEffect(() => {
-        dispatch(listDepartmentsRequest());
+        if (branchId && !selectedBranchId) {
+            setSelectedBranchId(branchId);
+        }
+    }, [branchId, selectedBranchId]);
+
+    // Load departments filtered by selected branch
+    useEffect(() => {
+        dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
         dispatch(getHeadOfficeRequest());
         dispatch(listBranchesRequest());
-    }, [dispatch]);
+    }, [dispatch, selectedBranchId]);
 
     // Only close "Create" dialog after an actual submit succeeded
     useEffect(() => {
         if (hasSubmittedCreate && !submitting && !error && createOpen) {
             setCreateOpen(false);
             setHasSubmittedCreate(false);
-            dispatch(listDepartmentsRequest());
+            dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submitting, error, hasSubmittedCreate]);
+    }, [submitting, error, hasSubmittedCreate, selectedBranchId]);
 
     // Only close "Update" dialog after an actual submit succeeded
     useEffect(() => {
@@ -274,7 +281,10 @@ function DepartmentContent() {
         branchId: string;
     }) => {
         setHasSubmittedCreate(true);
-        dispatch(createDepartmentRequest({ ...data, branchId }));
+        dispatch(createDepartmentRequest({
+            ...data,
+            branchId: data.branchId || selectedBranchId || branchId,
+        }));
     };
 
     const handleUpdate = (data: {
@@ -310,8 +320,9 @@ function DepartmentContent() {
                 <Box
                     sx={{
                         display: "flex",
-                        alignItems: "center",
+                        alignItems: { xs: "stretch", sm: "center" },
                         justifyContent: "space-between",
+                        flexDirection: { xs: "column", sm: "row" },
                         flexWrap: "wrap",
                         gap: 2,
                         mb: 3,
@@ -331,6 +342,27 @@ function DepartmentContent() {
                         </Box>
                     </Box>
 
+                    {/* + Add Department Button */}
+                    {canCreate && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => setCreateOpen(true)}
+                            sx={{
+                                height: 40,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: "10px",
+                                px: 2.5,
+                                backgroundColor: "#6D5DF6",
+                                boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                                "&:hover": { backgroundColor: "#5B4BEA" },
+                                width: { xs: "100%", sm: "auto" },
+                            }}
+                        >
+                            Add Department
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Error Banner */}
@@ -460,7 +492,7 @@ function DepartmentContent() {
             <DeptFormDialog
                 open={createOpen}
                 mode="create"
-                branchId={branchId}
+                branchId={selectedBranchId || branchId}
                 submitting={submitting}
                 error={createOpen ? (error ?? null) : null}
                 onClose={() => {

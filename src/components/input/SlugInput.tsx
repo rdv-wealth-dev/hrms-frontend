@@ -6,7 +6,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
 
-import TextInput from "./TextInput";
 import { useDebounce } from "../../hooks/useDebounce";
 import { checkSlug } from "../../api/auth.api";
 
@@ -31,6 +30,7 @@ export default function SlugInput({
 }: SlugInputProps) {
   const [status, setStatus] = useState<SlugStatus>("idle");
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
 
   const debouncedSlug = useDebounce(value, 400);
 
@@ -90,57 +90,104 @@ export default function SlugInput({
 
   return (
     <Box sx={{ width: "100%" }}>
-      {/* Prefix label + input in a single visual row */}
+      {/* Label */}
       <Typography
         sx={{
-          fontSize: "13.5px",
+          fontSize: "13px",
           fontWeight: 600,
           color: "#334155",
-          mb: 0.8,
+          mb: 0.6,
           display: "block",
         }}
       >
         Workspace URL <span style={{ color: "#EF4444" }}>*</span>
       </Typography>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0 }}>
-        {/* Prefix badge */}
+      {/* Input Outer Container */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "stretch",
+          height: 40,
+          minHeight: 40,
+          borderRadius: "12px",
+          backgroundColor: "#FFFFFF",
+          overflow: "hidden",
+          border: error
+            ? "1.5px solid #EF4444"
+            : isFocused
+            ? "2px solid #6D5DF6"
+            : "1.5px solid #E2E8F0",
+          boxShadow: isFocused ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
+          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+          "&:hover": {
+            borderColor: error ? "#EF4444" : isFocused ? "#6D5DF6" : "#CBD5E1",
+          },
+        }}
+      >
+        {/* Prefix Badge */}
         <Box
           sx={{
-            height: 44,
             display: "flex",
             alignItems: "center",
-            px: 1.5,
+            px: 1.8,
             backgroundColor: "#F1F5F9",
-            border: "1.5px solid #E2E8F0",
-            borderRight: "none",
-            borderRadius: "12px 0 0 12px",
-            whiteSpace: "nowrap",
-            fontSize: "13px",
+            borderRight: "1.5px solid #E2E8F0",
             color: "#64748B",
             fontWeight: 500,
+            fontSize: "13.5px",
+            userSelect: "none",
             flexShrink: 0,
           }}
         >
           ourhrms.com/
         </Box>
 
-        {/* Slug text input — shares the border seamlessly */}
-        <TextInput
+        {/* Input Field */}
+        <Box
+          component="input"
+          type="text"
           placeholder="acme-corp"
           value={value}
           onChange={handleChange}
-          error={error}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "0 12px 12px 0 !important",
-              "& fieldset": {
-                borderLeftColor: "transparent !important",
-              },
+            flex: 1,
+            height: "100%",
+            px: "14px",
+            py: 0,
+            border: "none",
+            outline: "none",
+            backgroundColor: "transparent",
+            fontSize: "14px",
+            color: "#0F172A",
+            fontFamily: "inherit",
+            "&::placeholder": {
+              color: "#94A3B8",
+              opacity: 1,
+              fontSize: "13.5px",
+              fontWeight: 400,
             },
           }}
         />
       </Box>
+
+      {/* Validation Error Message */}
+      {error && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: "#EF4444",
+            fontSize: "12px",
+            mt: 0.5,
+            ml: 0.5,
+            display: "block",
+          }}
+        >
+          {error}
+        </Typography>
+      )}
 
       {/* Status row */}
       {status === "checking" && (

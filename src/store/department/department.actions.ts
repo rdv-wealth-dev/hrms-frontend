@@ -3,13 +3,17 @@ import type {
   CreateDepartmentPayload,
   UpdateDepartmentPayload,
   ListDepartmentsSuccessPayload,
+  ListDepartmentsRequestPayload,
 } from "./department.types";
 
 import { DEPARTMENT_ACTIONS } from "./department.types";
 import type { Department } from "../../auth/types";
 
-export const listDepartmentsRequest = (): DepartmentAction => ({
+export const listDepartmentsRequest = (
+  payload?: ListDepartmentsRequestPayload
+): DepartmentAction => ({
   type: DEPARTMENT_ACTIONS.LIST_REQUEST,
+  payload,
 });
 
 export const listDepartmentsSuccess = (

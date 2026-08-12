@@ -58,7 +58,6 @@ const EMPLOYEE_TYPES = [
   { value: "INTERN", label: "Intern" },
   { value: "CONSULTANT", label: "Consultant" },
   { value: "TEMPORARY", label: "Temporary" },
-  { value: "UNPAID", label: "Unpaid" },
   { value: "FREELANCE", label: "Freelance" },
 ];
 
@@ -528,6 +527,8 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <TextInput
                       label="Phone Number"
+                      type="tel"
+                      maxLength={10}
                       placeholder="e.g. 9820112233"
                       registration={register("phone")}
                       error={errors.phone?.message}

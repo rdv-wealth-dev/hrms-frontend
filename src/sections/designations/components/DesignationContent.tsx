@@ -193,6 +193,27 @@ function DesignationContent() {
             </Box>
           </Box>
 
+          {/* + Add Designation Button */}
+          {canCreate && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateOpen(true)}
+              sx={{
+                height: 40,
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: "10px",
+                px: 2.5,
+                backgroundColor: "#6D5DF6",
+                boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                "&:hover": { backgroundColor: "#5B4BEA" },
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
+              Add Designation
+            </Button>
+          )}
         </Box>
 
         {/* Error Banner (only when all dialogs are closed) */}

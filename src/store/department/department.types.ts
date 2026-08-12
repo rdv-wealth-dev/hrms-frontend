@@ -47,9 +47,13 @@ export const DEPARTMENT_ACTIONS = {
   CLEAR_ERROR: "department/clearError",
 } as const;
 
-// ===========================================
-// Payload Types
-// ===========================================
+export type ListDepartmentsRequestPayload = {
+  branchId?: string;
+  page?: number;
+  limit?: number;
+  pageNumber?: number;
+  pageSize?: number;
+};
 
 export type ListDepartmentsSuccessPayload = {
   items: Department[];
@@ -70,7 +74,7 @@ export type UpdateDepartmentPayload = {
 // ===========================================
 
 export type DepartmentAction =
-  | { type: typeof DEPARTMENT_ACTIONS.LIST_REQUEST }
+  | { type: typeof DEPARTMENT_ACTIONS.LIST_REQUEST; payload?: ListDepartmentsRequestPayload }
   | { type: typeof DEPARTMENT_ACTIONS.LIST_SUCCESS; payload: ListDepartmentsSuccessPayload }
   | { type: typeof DEPARTMENT_ACTIONS.LIST_FAILURE; payload: string }
   | { type: typeof DEPARTMENT_ACTIONS.GET_BY_ID_REQUEST; payload: string }
