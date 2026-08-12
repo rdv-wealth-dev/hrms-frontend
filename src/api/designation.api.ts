@@ -32,10 +32,15 @@ export const createDesignation = async (
 
 export const listDesignations = async (
     pageNumber = 1,
-    pageSize = 10
+    pageSize = 10,
+    departmentId?: string
 ): Promise<DesignationListResponse> => {
+    let url = `/designations?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    if (departmentId) {
+        url += `&departmentId=${encodeURIComponent(departmentId)}`;
+    }
     const response = await axiosInstance.get<DesignationListResponse>(
-        `/designations?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        url,
         { headers: getAuthHeader() }
     );
     return response.data;

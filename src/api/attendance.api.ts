@@ -240,3 +240,63 @@ export const assignRotationPlan = async (
     );
     return response.data;
 };
+
+export const deleteShift = async (
+    id: string
+): Promise<{ succeeded?: boolean; message?: string; data?: any }> => {
+    const response = await axiosInstance.delete<{ succeeded?: boolean; message?: string; data?: any }>(
+        `/attendance/shifts/${id}`,
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export interface MonthlyAttendanceSummaryData {
+  totalDays: number;
+  present: number;
+  late: number;
+  halfDay: number;
+  halfDayValue: number;
+  absent: number;
+  onLeave: number;
+  holiday: number;
+  weekOff: number;
+  totalWorkedMinutes: number;
+  regularizedDays: number;
+  totalWorkedHours: number;
+  attendancePercentage: number;
+}
+
+export interface MonthlyAttendanceSummaryResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message?: string;
+  data: MonthlyAttendanceSummaryData;
+}
+
+export const getMonthlyAttendanceSummary = async (
+  employeeId?: string | null,
+  year?: number,
+  month?: number
+): Promise<MonthlyAttendanceSummaryResponse> => {
+  const currentYear = year || new Date().getFullYear();
+  const currentMonth = month || new Date().getMonth() + 1;
+
+  let url = `/attendance/summary/me/${currentYear}/${currentMonth}`;
+  let params: any = {};
+
+  if (employeeId) {
+    url = `/attendance/summary/${employeeId}`;
+    params = { year: currentYear, month: currentMonth };
+  }
+
+  const response = await axiosInstance.get<MonthlyAttendanceSummaryResponse>(
+    url,
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+

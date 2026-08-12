@@ -22,12 +22,15 @@ import Chip from "@mui/material/Chip";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+
 import { listShifts, getShiftAssignments, listRotationPlans, createRotationPlan, assignRotationPlan } from "../../../api/attendance.api";
 import type { Shift, ShiftAssignment, ShiftRotationPlan, CreateRotationPlanRequest, RotationSlot, AssignRotationPlanRequest } from "../../../store/attendance/attendance.types";
 import { usePermissions } from "../../../hooks/usePermissions";
 import ShiftFormDialog from "./ShiftFormDialog";
 import RotationPlanFormDialog from "./RotationPlanFormDialog";
 import AssignRotationPlanDialog from "./AssignRotationPlanDialog";
+import DeleteShiftDialog from "./DeleteShiftDialog";
 
 export default function ShiftContent() {
   const { hasPermission } = usePermissions();
@@ -48,6 +51,9 @@ export default function ShiftContent() {
   const [shiftModalOpen, setShiftModalOpen] = useState(false);
   const [shiftModalMode, setShiftModalMode] = useState<"create" | "edit">("create");
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+
+  const [deleteShiftOpen, setDeleteShiftOpen] = useState(false);
+  const [deleteTargetShift, setDeleteTargetShift] = useState<Shift | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -386,15 +392,32 @@ export default function ShiftContent() {
                     </TableCell>
                     <TableCell align="right">
                       {canUpdate && (
-                        <Tooltip title="Edit Shift">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenEditShift(shift)}
-                            sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 0.5 }}>
+                          <Tooltip title="Edit Shift">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleOpenEditShift(shift)}
+                              sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title={shift.isDefault ? "Cannot delete default shift" : "Delete Shift"}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                disabled={shift.isDefault}
+                                onClick={() => {
+                                  setDeleteTargetShift(shift);
+                                  setDeleteShiftOpen(true);
+                                }}
+                                sx={{ color: "#64748B", "&:hover": { color: "#DC2626", backgroundColor: "#FEE2E2" } }}
+                              >
+                                <DeleteOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
                       )}
                     </TableCell>
                   </TableRow>
@@ -713,6 +736,18 @@ export default function ShiftContent() {
         rotationPlans={rotationPlans}
         onClose={() => setAssignPlanOpen(false)}
         onSubmit={handleAssignPlanSubmit}
+      />
+
+      {/* Delete Shift Dialog */}
+      <DeleteShiftDialog
+        open={deleteShiftOpen}
+        onClose={() => setDeleteShiftOpen(false)}
+        shift={deleteTargetShift}
+        onSuccess={async () => {
+          setSuccess("Shift deleted successfully!");
+          await loadShiftsList();
+        }}
+        showSnackbar={(msg) => setSuccess(msg)}
       />
     </Box>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -17,12 +17,22 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Alert from "@mui/material/Alert";
 
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../components/input/TextInput";
-import { addBankAccount, deleteBankAccount, type BankAccount, type AddBankAccountRequest } from "../../../api/employee.api";
+import {
+  addBankAccount,
+  deleteBankAccount,
+  getSalaryStructure,
+  type BankAccount,
+  type AddBankAccountRequest,
+  type SalaryStructureItem,
+} from "../../../api/employee.api";
+import SalaryStructureDialog from "./SalaryStructureDialog";
 
 interface PayrollTabProps {
   bankAccounts: BankAccount[];
@@ -54,6 +64,34 @@ export default function PayrollTab({
 
   const [bankDeleteTarget, setBankDeleteTarget] = useState<BankAccount | null>(null);
   const [bankDeleting, setBankDeleting] = useState(false);
+
+  // Salary Structure State
+  const [salaryStructure, setSalaryStructure] = useState<SalaryStructureItem | null>(null);
+  const [salaryLoading, setSalaryLoading] = useState(false);
+  const [salaryDialogOpen, setSalaryDialogOpen] = useState(false);
+
+  const targetEmployeeId = employeeId || user?.employeeId || "";
+
+  const fetchSalaryStructure = useCallback(async () => {
+    if (!targetEmployeeId) return;
+    setSalaryLoading(true);
+    try {
+      const res = await getSalaryStructure(targetEmployeeId);
+      if (res?.succeeded && res?.data) {
+        setSalaryStructure(res.data);
+      } else {
+        setSalaryStructure(null);
+      }
+    } catch (err) {
+      setSalaryStructure(null);
+    } finally {
+      setSalaryLoading(false);
+    }
+  }, [targetEmployeeId]);
+
+  useEffect(() => {
+    fetchSalaryStructure();
+  }, [fetchSalaryStructure]);
 
   const resetBankForm = () => {
     setBankName("");
@@ -118,19 +156,21 @@ export default function PayrollTab({
   };
 
   return (
-    <Box>
-      <Card sx={{ p: 3.5 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {/* ── CARD 1: BANK ACCOUNTS ── */}
+      <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
             <AccountBalanceOutlinedIcon sx={{ color: "#4F46E5" }} />
             Bank Accounts
           </Typography>
           {!isViewingOther && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetBankForm(); setBankDialogOpen(true); }} sx={{ backgroundColor: "#4F46E5" }}>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetBankForm(); setBankDialogOpen(true); }} sx={{ backgroundColor: "#4F46E5", borderRadius: "8px" }}>
               Add Bank Account
             </Button>
           )}
         </Box>
+
         {bankAccountsLoading ? (
           <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
         ) : bankAccounts.length === 0 ? (
@@ -157,6 +197,104 @@ export default function PayrollTab({
               </Grid>
             ))}
           </Grid>
+        )}
+      </Card>
+
+      {/* ── CARD 2: SALARY STRUCTURE & CTC PLAN ── */}
+      <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+            <PaymentsOutlinedIcon sx={{ color: "#4F46E5" }} />
+            Salary Structure & CTC Plan
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<EditOutlinedIcon />}
+            onClick={() => setSalaryDialogOpen(true)}
+            sx={{ backgroundColor: "#4F46E5", borderRadius: "8px" }}
+          >
+            {salaryStructure ? "Revise Salary Structure" : "Assign Salary Structure"}
+          </Button>
+        </Box>
+
+        {salaryLoading ? (
+          <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
+        ) : !salaryStructure ? (
+          <Box sx={{ textAlign: "center", py: 4, backgroundColor: "#F8FAFC", borderRadius: "10px", border: "1px dashed #E2E8F0" }}>
+            <Typography variant="body2" sx={{ color: "#64748B" }}>
+              No active salary structure assigned to this employee yet.
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+            {/* Top Metrics Cards */}
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Box sx={{ p: 2, borderRadius: "10px", backgroundColor: "#EEF2FF", border: "1px solid #C7D2FE" }}>
+                  <Typography variant="caption" sx={{ color: "#4338CA", fontWeight: 600 }}>
+                    ANNUAL CTC
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#1E1B4B", mt: 0.5 }}>
+                    ₹{(salaryStructure?.ctcAnnual || 0).toLocaleString("en-IN")}
+                  </Typography>
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Box sx={{ p: 2, borderRadius: "10px", backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+                  <Typography variant="caption" sx={{ color: "#15803D", fontWeight: 600 }}>
+                    GROSS MONTHLY
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#14532D", mt: 0.5 }}>
+                    ₹{(salaryStructure?.grossMonthly || Math.round((salaryStructure?.ctcAnnual || 0) / 12)).toLocaleString("en-IN")} / mo
+                  </Typography>
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Box sx={{ p: 2, borderRadius: "10px", backgroundColor: "#FFF7ED", border: "1px solid #FFEDD5" }}>
+                  <Typography variant="caption" sx={{ color: "#C2410C", fontWeight: 600 }}>
+                    STATUTORY WAGES (BASIC)
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#7C2D12", mt: 0.5 }}>
+                    ₹{(salaryStructure?.wagesForStatutory || 0).toLocaleString("en-IN")} / mo
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+
+            {/* Line Items Breakdown Table */}
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#334155", mb: 1.5 }}>
+                Salary Components Breakdown
+              </Typography>
+              <Grid container spacing={1.5}>
+                {salaryStructure?.lineItems?.map((item, idx) => (
+                  <Grid key={item?.componentCode || idx} size={{ xs: 12, sm: 4 }}>
+                    <Box sx={{ p: 1.8, borderRadius: "8px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                          {item?.componentCode === "BASIC"
+                            ? "Basic Salary"
+                            : item?.componentCode === "HRA"
+                            ? "House Rent Allowance (HRA)"
+                            : "Special Allowance"}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748B" }}>
+                          {item?.componentCode}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={`₹${(item?.amount || 0).toLocaleString("en-IN")}`}
+                        size="small"
+                        sx={{ fontWeight: 700, backgroundColor: "#F1F5F9", color: "#334155" }}
+                      />
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </Box>
         )}
       </Card>
 
@@ -309,6 +447,18 @@ export default function PayrollTab({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* ── Salary Structure Assignment Dialog ── */}
+      {targetEmployeeId && (
+        <SalaryStructureDialog
+          open={salaryDialogOpen}
+          onClose={() => setSalaryDialogOpen(false)}
+          employeeId={targetEmployeeId}
+          currentStructure={salaryStructure}
+          onSuccess={fetchSalaryStructure}
+          showSnackbar={showSnackbar}
+        />
+      )}
     </Box>
   );
 }

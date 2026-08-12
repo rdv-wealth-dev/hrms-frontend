@@ -166,7 +166,7 @@ export const getBankAccounts = async (): Promise<GetBankAccountsResponse> => {
   return response.data;
 };
 
-export const addBankAccount = async (
+export const addMyBankAccount = async (
   payload: AddBankAccountRequest
 ): Promise<AddBankAccountResponse> => {
   const response = await axiosInstance.post<AddBankAccountResponse>(
@@ -769,3 +769,176 @@ export const getImportTemplate = async (
   );
   return response.data;
 };
+
+// ── Dynamic Eligible Managers API ──
+
+export interface EligibleManagerItem {
+  _id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  avatarUrl?: string | null;
+  branchId?: string;
+  departmentId?: string;
+  departmentName?: string;
+  designationId?: string;
+  designationTitle?: string;
+  level?: number;
+  isDepartmentHead?: boolean;
+}
+
+export interface EligibleManagersResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    department?: {
+      _id: string;
+      name: string;
+      code: string;
+      head?: {
+        _id: string;
+        fullName: string;
+        employeeCode: string;
+      } | null;
+    } | null;
+    defaultManagerId?: string | null;
+    totalEligible: number;
+    managers: EligibleManagerItem[];
+  };
+}
+
+export const getEligibleManagers = async (params: {
+  branchId?: string;
+  departmentId?: string;
+  designationId?: string;
+  minLevel?: number;
+  search?: string;
+}): Promise<EligibleManagersResponse> => {
+  const response = await axiosInstance.get<EligibleManagersResponse>(
+    "/employees/eligible-managers",
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+// ── Add Bank Account API ──
+
+export interface AddBankAccountRequest {
+  employeeId?: string;
+  bankName: string;
+  accountHolderName?: string;
+  accountNumber: string;
+  ifscOrRoutingCode?: string;
+  ifscCode?: string;
+  accountType?: "SAVINGS" | "CURRENT" | "SALARY";
+  isPrimary?: boolean;
+}
+
+export interface AddBankAccountResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    _id: string;
+    employeeId: string;
+    bankName: string;
+    accountNumberMasked: string;
+    ifscOrRoutingCode?: string;
+    accountType?: string;
+    isPrimary?: boolean;
+    isVerified?: boolean;
+  };
+}
+
+export const addBankAccount = async (
+  employeeIdOrPayload: string | AddBankAccountRequest,
+  payload?: AddBankAccountRequest
+): Promise<AddBankAccountResponse> => {
+  if (typeof employeeIdOrPayload === "string") {
+    const response = await axiosInstance.post<AddBankAccountResponse>(
+      `/employees/${employeeIdOrPayload}/bank-accounts`,
+      payload,
+      { headers: getAuthHeader() }
+    );
+    return response.data;
+  }
+  return addMyBankAccount(employeeIdOrPayload);
+};
+
+// ── Assign Salary Structure API ──
+
+export interface CreateSalaryStructureRequest {
+  employeeId: string;
+  ctcAnnual: number;
+  grossMonthly?: number;
+  wagesForStatutory?: number;
+  currency?: string;
+  effectiveFrom?: string;
+  lineItems: Array<{
+    componentCode: string;
+    amount: number;
+  }>;
+}
+
+export interface CreateSalaryStructureResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    _id: string;
+    employeeId: string;
+    ctcAnnual: number;
+    grossMonthly?: number;
+    currency?: string;
+    isActive: boolean;
+  };
+}
+
+export const assignSalaryStructure = async (
+  payload: CreateSalaryStructureRequest
+): Promise<CreateSalaryStructureResponse> => {
+  const response = await axiosInstance.post<CreateSalaryStructureResponse>(
+    "/payroll/structures",
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface SalaryStructureItem {
+  _id: string;
+  employeeId: string;
+  ctcAnnual: number;
+  grossMonthly?: number;
+  netMonthly?: number;
+  wagesForStatutory?: number;
+  currency?: string;
+  effectiveFrom?: string;
+  isActive: boolean;
+  lineItems: Array<{
+    componentId?: string;
+    componentCode: string;
+    amount: number;
+  }>;
+}
+
+export interface GetSalaryStructureResponse {
+  succeeded: boolean;
+  message: string;
+  data: SalaryStructureItem;
+}
+
+export const getSalaryStructure = async (
+  employeeId: string
+): Promise<GetSalaryStructureResponse> => {
+  const response = await axiosInstance.get<GetSalaryStructureResponse>(
+    `/payroll/structures/${employeeId}`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+

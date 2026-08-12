@@ -13,10 +13,15 @@ const getAuthHeader = () => ({
 
 export const listDepartments = async (
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  branchId?: string
 ): Promise<DepartmentListResponse> => {
+  let url = `/departments?pageNumber=${page}&pageSize=${pageSize}`;
+  if (branchId) {
+    url += `&branchId=${encodeURIComponent(branchId)}`;
+  }
   const response = await axiosInstance.get<DepartmentListResponse>(
-    `/departments?pageNumber=${page}&pageSize=${pageSize}`,
+    url,
     { headers: getAuthHeader() }
   );
   return response.data;

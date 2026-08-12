@@ -45,6 +45,7 @@ import AttendanceStatusChip from "../../attendance/components/AttendanceStatusCh
 import { formatWorkedTime } from "../../../utils/time";
 import { formatDate, formatTime } from "../../../utils/format-date";
 import { StatusChip } from "../../../components/common/StatusChip";
+import MonthlyAttendanceSummaryCard from "./MonthlyAttendanceSummaryCard";
 
 interface AttendanceTabProps {
   employeeId?: string;
@@ -294,7 +295,9 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
       )}
 
       {tabValue === 0 && (
-        <Card
+        <>
+          <MonthlyAttendanceSummaryCard employeeId={employeeId} />
+          <Card
           sx={{
             p: 2.5,
             borderRadius: 3,
@@ -418,7 +421,8 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
             </Box>
           </Box>
         </Card>
-      )}
+      </>
+    )}
 
       {/* Error Alert */}
       {error && (
