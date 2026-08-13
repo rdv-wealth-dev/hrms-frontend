@@ -17,6 +17,7 @@ import { paths } from "../../routes/paths";
 
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store/rootReducer";
+import { useRole } from "../../auth/hooks/use-role";
 
 import {
   getOnboardingStatus,
@@ -49,6 +50,7 @@ const STEPS = [
 export default function OnboardingWizardView() {
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
+  const { role } = useRole();
 
   const user = useSelector((state: RootState) => state.auth?.user);
 
@@ -65,6 +67,10 @@ export default function OnboardingWizardView() {
   const [mandatoryDocTypes, setMandatoryDocTypes] = useState<string[]>([]);
 
   useEffect(() => {
+    if (role === "ORG_ADMIN") {
+      navigate(paths.dashboard);
+      return;
+    }
     const init = async () => {
       setLoadingStatus(true);
       try {

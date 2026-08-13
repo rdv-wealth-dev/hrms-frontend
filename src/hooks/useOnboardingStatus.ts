@@ -1,14 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { getOnboardingStatus, type OnboardingStatusResponse } from "../api/onboarding.api";
+import { useRole } from "../auth/hooks/use-role";
 
 export type OnboardingPhase = "GRACE" | "NUDGE" | "RESTRICTED" | "COMPLETE";
 
 export function useOnboardingStatus() {
+  const { role } = useRole();
+  const isOrgAdmin = role === "ORG_ADMIN";
+
   const [statusData, setStatusData] = useState<OnboardingStatusResponse["data"] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStatus = useCallback(async () => {
+    if (isOrgAdmin) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -23,15 +31,19 @@ export function useOnboardingStatus() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOrgAdmin]);
 
   useEffect(() => {
-    fetchStatus();
-  }, [fetchStatus]);
+    if (!isOrgAdmin) {
+      fetchStatus();
+    } else {
+      setLoading(false);
+    }
+  }, [fetchStatus, isOrgAdmin]);
 
-  const isProfileComplete = statusData?.isProfileComplete ?? statusData?.onboardingComplete ?? false;
-  const phase: OnboardingPhase = statusData?.onboardingPhase ?? (isProfileComplete ? "COMPLETE" : "GRACE");
-  const completionPct = statusData?.profileCompletionPct ?? (isProfileComplete ? 100 : 0);
+  const isProfileComplete = isOrgAdmin ? true : (statusData?.isProfileComplete ?? statusData?.onboardingComplete ?? false);
+  const phase: OnboardingPhase = isOrgAdmin ? "COMPLETE" : (statusData?.onboardingPhase ?? (isProfileComplete ? "COMPLETE" : "GRACE"));
+  const completionPct = isOrgAdmin ? 100 : (statusData?.profileCompletionPct ?? (isProfileComplete ? 100 : 0));
 
   return {
     statusData,
