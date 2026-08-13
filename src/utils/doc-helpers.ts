@@ -14,7 +14,7 @@ export const MASTER_DOCUMENT_CATALOG: Record<string, DocumentDefinition> = {
     description: "Government issued 10-character PAN card",
     placeholder: "e.g. ABCDE1234F",
     maxLength: 10,
-    requiresNumber: true,
+    requiresNumber: false,
   },
   AADHAAR: {
     code: "AADHAAR",
@@ -22,7 +22,7 @@ export const MASTER_DOCUMENT_CATALOG: Record<string, DocumentDefinition> = {
     description: "Government issued 12-digit UID Aadhaar card",
     placeholder: "e.g. 123456789012",
     maxLength: 12,
-    requiresNumber: true,
+    requiresNumber: false,
   },
   PASSPORT: {
     code: "PASSPORT",

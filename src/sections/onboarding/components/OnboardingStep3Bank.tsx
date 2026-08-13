@@ -33,7 +33,7 @@ const buildStep3Defaults = (initial?: Partial<OnboardingStep3FormData>): Onboard
   bankName: initial?.bankName || "",
   accountNumber: initial?.accountNumber || "",
   ifscCode: initial?.ifscCode || "",
-  accountType: initial?.accountType || "SALARY",
+  accountType: initial?.accountType || "",
 });
 
 export default function OnboardingStep3Bank({
@@ -70,7 +70,7 @@ export default function OnboardingStep3Bank({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Bank Name"
-              placeholder="e.g. HDFC Bank, State Bank of India"
+              required
               registration={register("bankName")}
               error={errors.bankName?.message}
             />
@@ -79,7 +79,7 @@ export default function OnboardingStep3Bank({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Account Number"
-              placeholder="8 to 20 numeric digits"
+              required
               registration={register("accountNumber")}
               error={errors.accountNumber?.message}
             />
@@ -88,7 +88,7 @@ export default function OnboardingStep3Bank({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="IFSC Code"
-              placeholder="e.g. SBIN0001234"
+              required
               registration={register("ifscCode")}
               error={errors.ifscCode?.message}
             />
@@ -102,9 +102,11 @@ export default function OnboardingStep3Bank({
                 <TextInput
                   {...field}
                   select
+                  required
                   label="Account Type"
                   error={errors.accountType?.message}
                 >
+                  <MenuItem value="">Select Account Type</MenuItem>
                   {ACCOUNT_TYPES.map((t) => (
                     <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
                   ))}

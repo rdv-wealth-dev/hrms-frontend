@@ -111,9 +111,9 @@ export default function EmployeeCreateView() {
       countryCode: "IN",
       employeeType: "FULL_TIME",
       shiftId: "",
-      gender: "MALE",
-      maritalStatus: "SINGLE",
-      bloodGroup: "O+",
+      gender: "",
+      maritalStatus: "",
+      bloodGroup: "",
       nationality: "Indian",
     },
   });

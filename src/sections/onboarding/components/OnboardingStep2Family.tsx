@@ -85,7 +85,7 @@ export default function OnboardingStep2Family({
             onClick={() =>
               append({
                 fullName: "",
-                relationship: "SPOUSE",
+                relationship: "",
                 dateOfBirth: "",
                 gender: "",
                 isDependent: true,
@@ -113,7 +113,7 @@ export default function OnboardingStep2Family({
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <TextInput
                     label="Full Name"
-                    placeholder="Full Name"
+                    required
                     registration={register(`familyMembers.${idx}.fullName` as const)}
                     error={errors.familyMembers?.[idx]?.fullName?.message}
                   />
@@ -127,9 +127,11 @@ export default function OnboardingStep2Family({
                       <TextInput
                         {...selectField}
                         select
+                        required
                         label="Relationship"
                         error={errors.familyMembers?.[idx]?.relationship?.message}
                       >
+                        <MenuItem value="">Select Relationship</MenuItem>
                         {RELATIONSHIPS.map((rel) => (
                           <MenuItem key={rel} value={rel}>{rel}</MenuItem>
                         ))}
@@ -142,7 +144,6 @@ export default function OnboardingStep2Family({
                   <TextInput
                     label="Date of Birth"
                     type="date"
-                    placeholder=""
                     registration={register(`familyMembers.${idx}.dateOfBirth` as const)}
                     error={errors.familyMembers?.[idx]?.dateOfBirth?.message}
                   />
@@ -151,7 +152,6 @@ export default function OnboardingStep2Family({
                 <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
                   <TextInput
                     label="Occupation (Optional)"
-                    placeholder="e.g. Engineer"
                     registration={register(`familyMembers.${idx}.occupation` as const)}
                     error={errors.familyMembers?.[idx]?.occupation?.message}
                   />
@@ -161,8 +161,8 @@ export default function OnboardingStep2Family({
                   <TextInput
                     label="Phone Number"
                     type="tel"
-                    placeholder="9876543210"
                     maxLength={10}
+                    required
                     registration={register(`familyMembers.${idx}.phone` as const)}
                     error={errors.familyMembers?.[idx]?.phone?.message}
                   />

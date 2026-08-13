@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -17,6 +17,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import TextInput from "../../../components/input/TextInput";
 import { useSnackbar } from "../../../components/snackbar";
 import { completeOnboarding, type CompleteOnboardingRequest } from "../../../api/auth.api";
+import { useUserOrgData } from "../../../hooks/useUserOrgData";
 
 type Props = {
   open: boolean;
@@ -71,15 +72,28 @@ const INDUSTRIES = [
 
 export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Props) {
   const { showSnackbar } = useSnackbar();
+  const orgData = useUserOrgData();
 
-  const [countryCode, setCountryCode] = useState("IN");
-  const [timezone, setTimezone] = useState("Asia/Kolkata");
-  const [baseCurrency, setBaseCurrency] = useState("INR");
-  const [fiscalYearStart, setFiscalYearStart] = useState("April");
-  const [employeeCountRange, setEmployeeCountRange] = useState("11-50");
-  const [industry, setIndustry] = useState("Technology");
-  const [phone, setPhone] = useState("+919876543210");
-  const [adminJobTitle, setAdminJobTitle] = useState("HR Manager");
+  const [countryCode, setCountryCode] = useState(orgData.countryCode || "");
+  const [timezone, setTimezone] = useState(orgData.timezone || "");
+  const [baseCurrency, setBaseCurrency] = useState(orgData.baseCurrency || "");
+  const [fiscalYearStart, setFiscalYearStart] = useState(orgData.fiscalYearStart || "");
+  const [employeeCountRange, setEmployeeCountRange] = useState(orgData.employeeCountRange || "");
+  const [industry, setIndustry] = useState(orgData.industry || "");
+  const [phone, setPhone] = useState((orgData.phone || "").replace(/\D/g, "").slice(0, 10));
+  const [adminJobTitle, setAdminJobTitle] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      if (orgData.countryCode) setCountryCode(orgData.countryCode);
+      if (orgData.timezone) setTimezone(orgData.timezone);
+      if (orgData.baseCurrency) setBaseCurrency(orgData.baseCurrency);
+      if (orgData.fiscalYearStart) setFiscalYearStart(orgData.fiscalYearStart);
+      if (orgData.employeeCountRange) setEmployeeCountRange(orgData.employeeCountRange);
+      if (orgData.industry) setIndustry(orgData.industry);
+      if (orgData.phone) setPhone(orgData.phone.replace(/\D/g, "").slice(0, 10));
+    }
+  }, [open, orgData]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +101,11 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim() || !adminJobTitle.trim()) return;
+
+    if (phone.replace(/\D/g, "").length !== 10) {
+      setError("Contact phone number must be exactly 10 digits.");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -212,7 +231,7 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
             </Alert>
           )}
 
-          <Grid container spacing={2}>
+          <Grid container spacing={2} sx={{ mt: 2 }} >
             {/* Country & Timezone */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextInput
@@ -315,10 +334,11 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
             {/* Contact Phone & Admin Title */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextInput
+                type="tel"
                 label="Contact Phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+919876543210"
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                maxLength={10}
                 required
               />
             </Grid>
@@ -328,7 +348,6 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
                 label="Admin Job Title"
                 value={adminJobTitle}
                 onChange={(e) => setAdminJobTitle(e.target.value)}
-                placeholder="e.g. HR Manager / Operations Director"
                 required
               />
             </Grid>

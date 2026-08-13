@@ -39,9 +39,9 @@ interface OnboardingStep1Props {
 
 const buildStep1Defaults = (initial?: Partial<OnboardingStep1FormData>): OnboardingStep1FormData => ({
   dateOfBirth: formatToYYYYMMDD(initial?.dateOfBirth) || "",
-  gender: initial?.gender || "MALE",
+  gender: initial?.gender || "",
   bloodGroup: initial?.bloodGroup || "",
-  maritalStatus: initial?.maritalStatus || "SINGLE",
+  maritalStatus: initial?.maritalStatus || "",
   phone: initial?.phone || "",
   pan: initial?.pan || "",
   aadhaar: initial?.aadhaar || "",
@@ -56,7 +56,7 @@ const buildStep1Defaults = (initial?: Partial<OnboardingStep1FormData>): Onboard
   },
   emergencyContact: initial?.emergencyContact?.length
     ? initial.emergencyContact
-    : [{ name: "", relationship: "SPOUSE", phone: "", email: "" }],
+    : [{ name: "", relationship: "", phone: "", email: "" }],
 });
 
 export default function OnboardingStep1Personal({
@@ -99,7 +99,7 @@ export default function OnboardingStep1Personal({
             <TextInput
               label="Date of Birth"
               type="date"
-              placeholder=""
+              required
               registration={register("dateOfBirth")}
               error={errors.dateOfBirth?.message}
             />
@@ -113,9 +113,11 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   {...field}
                   select
+                  required
                   label="Gender"
                   error={errors.gender?.message}
                 >
+                  <MenuItem value="">Select Gender</MenuItem>
                   {GENDERS.map((g) => (
                     <MenuItem key={g} value={g}>{g}</MenuItem>
                   ))}
@@ -132,9 +134,11 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   {...field}
                   select
+                  required
                   label="Marital Status"
                   error={errors.maritalStatus?.message}
                 >
+                  <MenuItem value="">Select Marital Status</MenuItem>
                   {MARITAL_STATUSES.map((m) => (
                     <MenuItem key={m} value={m}>{m}</MenuItem>
                   ))}
@@ -167,8 +171,8 @@ export default function OnboardingStep1Personal({
             <TextInput
               label="Phone Number"
               type="tel"
-              placeholder="Enter 10-digit phone number"
               maxLength={10}
+              required
               registration={register("phone")}
               error={errors.phone?.message}
             />
@@ -177,7 +181,6 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="PAN Card Number"
-              placeholder="ABCDE1234F"
               maxLength={10}
               registration={register("pan")}
               error={errors.pan?.message}
@@ -192,7 +195,6 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Aadhaar Card Number"
-              placeholder="123456789012"
               maxLength={12}
               registration={register("aadhaar")}
               error={errors.aadhaar?.message}
@@ -202,7 +204,6 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="Passport Number (Optional)"
-              placeholder="Z1234567"
               registration={register("passportNo")}
               error={errors.passportNo?.message}
             />
@@ -220,7 +221,7 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12 }}>
             <TextInput
               label="Address Line 1"
-              placeholder="Flat / House No., Building Name, Street"
+              required
               registration={register("currentAddress.addressLine1")}
               error={errors.currentAddress?.addressLine1?.message}
             />
@@ -228,7 +229,6 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12 }}>
             <TextInput
               label="Address Line 2 (Optional)"
-              placeholder="Landmark, Area"
               registration={register("currentAddress.addressLine2")}
               error={errors.currentAddress?.addressLine2?.message}
             />
@@ -236,7 +236,7 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="City"
-              placeholder="City name"
+              required
               registration={register("currentAddress.city")}
               error={errors.currentAddress?.city?.message}
             />
@@ -244,7 +244,7 @@ export default function OnboardingStep1Personal({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
               label="State"
-              placeholder="State name"
+              required
               registration={register("currentAddress.state")}
               error={errors.currentAddress?.state?.message}
             />
@@ -257,6 +257,7 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   {...field}
                   select
+                  required
                   label="Country"
                   error={errors.currentAddress?.countryCode?.message}
                 >
@@ -271,8 +272,8 @@ export default function OnboardingStep1Personal({
             <TextInput
               label="Zip / Postal Code"
               type="tel"
-              placeholder="e.g. 400001"
               maxLength={6}
+              required
               registration={register("currentAddress.zip")}
               error={errors.currentAddress?.zip?.message}
             />
@@ -308,7 +309,7 @@ export default function OnboardingStep1Personal({
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextInput
                   label="Contact Name"
-                  placeholder="Full Name"
+                  required
                   registration={register(`emergencyContact.${idx}.name` as const)}
                   error={errors.emergencyContact?.[idx]?.name?.message}
                 />
@@ -316,7 +317,7 @@ export default function OnboardingStep1Personal({
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextInput
                   label="Relationship"
-                  placeholder="e.g. Spouse, Sister"
+                  required
                   registration={register(`emergencyContact.${idx}.relationship` as const)}
                   error={errors.emergencyContact?.[idx]?.relationship?.message}
                 />
@@ -325,8 +326,8 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   label="Phone Number"
                   type="tel"
-                  placeholder="9876543210"
                   maxLength={10}
+                  required
                   registration={register(`emergencyContact.${idx}.phone` as const)}
                   error={errors.emergencyContact?.[idx]?.phone?.message}
                 />
@@ -334,7 +335,7 @@ export default function OnboardingStep1Personal({
               <Grid size={{ xs: 10, sm: 2.5 }}>
                 <TextInput
                   label="Email Address"
-                  placeholder="email@example.com"
+                  required
                   registration={register(`emergencyContact.${idx}.email` as const)}
                   error={errors.emergencyContact?.[idx]?.email?.message}
                 />

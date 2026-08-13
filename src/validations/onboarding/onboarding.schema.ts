@@ -20,9 +20,15 @@ export const emergencyContactSchema = z.object({
 
 export const onboardingStep1Schema = z.object({
   dateOfBirth: z.string().min(1, "Date of birth is required"),
-  gender: z.enum(["MALE", "FEMALE", "OTHER"], { message: "Gender is required" }),
+  gender: z.union([z.enum(["MALE", "FEMALE", "OTHER"]), z.literal("")]).refine(
+    (v): v is "MALE" | "FEMALE" | "OTHER" | "" => v !== "",
+    { message: "Gender is required" }
+  ),
   bloodGroup: z.enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).optional().or(z.literal("")),
-  maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"], { message: "Marital status is required" }),
+  maritalStatus: z.union([z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]), z.literal("")]).refine(
+    (v): v is "SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED" | "" => v !== "",
+    { message: "Marital status is required" }
+  ),
   phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
   pan: z.string().trim().transform((v) => v.toUpperCase()).refine((v) => !v || v.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
   aadhaar: z.string().trim().refine((v) => !v || /^\d{12}$/.test(v), "Aadhaar must be exactly 12 numeric digits").optional().or(z.literal("")),
@@ -37,7 +43,10 @@ export type OnboardingStep1FormData = z.infer<typeof onboardingStep1Schema>;
 
 export const familyMemberSchema = z.object({
   fullName: z.string().trim().min(2, "Full name must be 2-100 characters").max(100, "Max 100 characters"),
-  relationship: z.enum(["SPOUSE", "CHILD", "FATHER", "MOTHER", "SIBLING", "OTHER"], { message: "Relationship is required" }),
+  relationship: z.union([z.enum(["SPOUSE", "CHILD", "FATHER", "MOTHER", "SIBLING", "OTHER"]), z.literal("")]).refine(
+    (v): v is "SPOUSE" | "CHILD" | "FATHER" | "MOTHER" | "SIBLING" | "OTHER" | "" => v !== "",
+    { message: "Relationship is required" }
+  ),
   dateOfBirth: z.string().optional().or(z.literal("")),
   gender: z.string().optional().or(z.literal("")),
   isDependent: z.boolean(),
@@ -60,7 +69,10 @@ export const onboardingStep3Schema = z.object({
   ifscCode: z.string().trim().transform((v) => v.toUpperCase()).pipe(
     z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format (e.g. SBIN0001234)")
   ),
-  accountType: z.enum(["SAVINGS", "CURRENT", "SALARY"]),
+  accountType: z.union([z.enum(["SAVINGS", "CURRENT", "SALARY"]), z.literal("")]).refine(
+    (v): v is "SAVINGS" | "CURRENT" | "SALARY" | "" => v !== "",
+    { message: "Account type is required" }
+  ),
 });
 
 export type OnboardingStep3FormData = z.infer<typeof onboardingStep3Schema>;

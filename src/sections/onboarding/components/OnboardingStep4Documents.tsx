@@ -169,7 +169,6 @@ export default function OnboardingStep4Documents({
                     {doc.requiresNumber && (
                       <TextInput
                         label={`${doc.label} Number`}
-                        placeholder={doc.placeholder || `Enter ${doc.label} number`}
                         maxLength={doc.maxLength}
                         value={docNumbers[doc.code] || ""}
                         onChange={(e) =>
