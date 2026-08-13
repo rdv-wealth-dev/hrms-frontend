@@ -31,11 +31,11 @@ import {
 
 // Employee count options matching backend enum exactly
 const EMPLOYEE_COUNT_OPTIONS = [
-  { value: "1-10",    label: "1 – 10 employees" },
-  { value: "11-50",   label: "11 – 50 employees" },
-  { value: "51-200",  label: "51 – 200 employees" },
+  { value: "1-10", label: "1 – 10 employees" },
+  { value: "11-50", label: "11 – 50 employees" },
+  { value: "51-200", label: "51 – 200 employees" },
   { value: "201-500", label: "201 – 500 employees" },
-  { value: "500+",    label: "500+ employees" },
+  { value: "500+", label: "500+ employees" },
 ];
 
 // Sanitise company name → workspace slug suggestion
@@ -145,7 +145,7 @@ function SignupView() {
           {/* Row 1: Company Name | Team Size */}
           <TextInput
             label="Company Name"
-            placeholder="Acme Technologies"
+
             registration={register("companyName")}
             error={errors.companyName?.message}
             required
@@ -186,7 +186,7 @@ function SignupView() {
           {/* Row 3: First Name | Last Name */}
           <TextInput
             label="First Name"
-            placeholder="Rahul"
+
             registration={register("firstName")}
             error={errors.firstName?.message}
             required
@@ -194,7 +194,7 @@ function SignupView() {
 
           <TextInput
             label="Last Name"
-            placeholder="Sharma"
+
             registration={register("lastName")}
             error={errors.lastName?.message}
             required
@@ -204,7 +204,7 @@ function SignupView() {
           <Box sx={{ gridColumn: "1 / 3" }}>
             <TextInput
               label="Work Email"
-              placeholder="rahul@acme.com"
+
               registration={register("email")}
               error={errors.email?.message}
               required
@@ -220,7 +220,7 @@ function SignupView() {
 
           <TextInput
             label="Phone (optional)"
-            placeholder="9876543210"
+
             type="tel"
             maxLength={10}
             registration={register("phone")}
@@ -230,7 +230,7 @@ function SignupView() {
           {/* Row 6: Password | Confirm Password */}
           <TextInput
             label="Password"
-            placeholder="Min. 8 characters"
+
             type="password"
             registration={register("password")}
             error={errors.password?.message}
@@ -239,7 +239,7 @@ function SignupView() {
 
           <TextInput
             label="Confirm Password"
-            placeholder="Repeat password"
+
             type="password"
             registration={register("confirmPassword")}
             error={errors.confirmPassword?.message}

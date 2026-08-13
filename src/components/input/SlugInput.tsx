@@ -147,7 +147,6 @@ export default function SlugInput({
         <Box
           component="input"
           type="text"
-          placeholder="acme-corp"
           value={value}
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
