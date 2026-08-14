@@ -12,17 +12,17 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import SettingsIcon from "@mui/icons-material/Settings";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import PolicyIcon from "@mui/icons-material/Policy";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 
 import CollapsibleNavGroup, { type NavSubItem } from "./components/CollapsibleNavGroup";
 
@@ -44,12 +44,12 @@ interface NavItem {
 const topNavItems: NavItem[] = [
     {
         label: "Dashboard",
-        icon: <DashboardOutlinedIcon fontSize="small" />,
+        icon: <DashboardIcon fontSize="small" />,
         path: paths.dashboard,
     },
     {
         label: "Employees",
-        icon: <PeopleAltOutlinedIcon fontSize="small" />,
+        icon: <PeopleAltIcon fontSize="small" />,
         path: paths.employees.list,
         permission: "employee.read",
     },
@@ -58,29 +58,29 @@ const topNavItems: NavItem[] = [
 const timeAndLeaveNavItems: NavSubItem[] = [
     {
         label: "Attendance Report",
-        icon: <AssessmentOutlinedIcon fontSize="small" />,
+        icon: <AssessmentIcon fontSize="small" />,
         path: paths.reports,
         permission: "report.read",
     },
     {
         label: "Leave Management",
-        icon: <PolicyOutlinedIcon fontSize="small" />,
+        icon: <PolicyIcon fontSize="small" />,
         path: paths.leave,
         permission: "leave.approve",
     },
     {
         label: "Requests",
-        icon: <FactCheckOutlinedIcon fontSize="small" />,
+        icon: <FactCheckIcon fontSize="small" />,
         children: [
             {
                 label: "Regularization",
-                icon: <CalendarMonthOutlinedIcon fontSize="small" />,
+                icon: <CalendarMonthIcon fontSize="small" />,
                 path: paths.attendanceRegularizations,
                 permission: "attendance.approve",
             },
             {
                 label: "Leave Approval",
-                icon: <PolicyOutlinedIcon fontSize="small" />,
+                icon: <PolicyIcon fontSize="small" />,
                 path: paths.leaveApprovals,
                 permission: "leave.approve",
             },
@@ -88,7 +88,7 @@ const timeAndLeaveNavItems: NavSubItem[] = [
     },
     {
         label: "Holiday",
-        icon: <CalendarMonthOutlinedIcon fontSize="small" />,
+        icon: <CalendarMonthIcon fontSize="small" />,
         path: paths.holidays,
         permission: "leave.read",
     },
@@ -97,13 +97,13 @@ const timeAndLeaveNavItems: NavSubItem[] = [
 const bottomNavItems: NavItem[] = [
     {
         label: "Document Verification",
-        icon: <FactCheckOutlinedIcon fontSize="small" />,
+        icon: <FactCheckIcon fontSize="small" />,
         path: paths.documentVerification,
         permission: "document.read",
     },
     {
         label: "Settings",
-        icon: <SettingsOutlinedIcon fontSize="small" />,
+        icon: <SettingsIcon fontSize="small" />,
         path: paths.settings,
         permission: "settings.read",
     },
@@ -150,12 +150,12 @@ function DashboardLayout({ children }: Props) {
                         py: 1,
                         justify: isCollapsed ? "center" : "initial",
                         transition: "all 0.2s ease",
-                        backgroundColor: isActive ? "#EEF2FF" : "transparent",
-                        border: isActive ? "1px solid #C7D2FE" : "1px solid transparent",
-                        boxShadow: isActive ? "0 2px 8px rgba(99, 102, 241, 0.1)" : "none",
+                        backgroundColor: isActive ? "#4F46E5" : "transparent",
+                        border: "1px solid transparent",
+                        boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.2)" : "none",
                         "&:hover": {
-                            backgroundColor: isActive ? "#E0E7FF" : "#F1F5F9",
-                            border: isActive ? "1px solid #A5B4FC" : "1px solid transparent",
+                            backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
+                            border: "1px solid transparent",
                         },
                     }}
                 >
@@ -164,7 +164,7 @@ function DashboardLayout({ children }: Props) {
                             minWidth: isCollapsed ? 0 : 34,
                             mr: isCollapsed ? 0 : 0,
                             justifyContent: "center",
-                            color: isActive ? "#6D5DF6" : "#64748B",
+                            color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
                         }}
                     >
                         {item.icon}
@@ -176,7 +176,7 @@ function DashboardLayout({ children }: Props) {
                                     sx={{
                                         fontSize: 14,
                                         fontWeight: isActive ? 700 : 500,
-                                        color: isActive ? "#4F46E5" : "#334155",
+                                        color: isActive ? "#FFFFFF" : "#6B6699",
                                     }}
                                 >
                                     {item.label}
@@ -197,10 +197,10 @@ function DashboardLayout({ children }: Props) {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    backgroundColor: "#FFFFFF",
-                    color: "#1E293B",
+                    background: "#EBE9FC",
+                    color: "#312E81",
                     overflow: "hidden",
-                    borderRight: "1px solid #E5E7EB",
+                    borderRight: "1px solid #DAD7F2",
                 }}
             >
                 {/* Logo */}
@@ -234,20 +234,17 @@ function DashboardLayout({ children }: Props) {
                         </Box>
                     ) : (
                         <>
-                            <Typography
-                                variant="h6"
-                                sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.3px", lineHeight: 1.2 }}
-                            >
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#312E81", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
                                 NexusHR
                             </Typography>
-                            <Typography variant="caption" sx={{ color: "#64748B", fontSize: 11, mt: 0.5, fontWeight: 500 }}>
+                            <Typography variant="caption" sx={{ color: "#6366F1", fontSize: 11, mt: 0.5, fontWeight: 500 }}>
                                 AI-Powered HRMS
                             </Typography>
                         </>
                     )}
                 </Box>
 
-                <Divider sx={{ borderColor: "#E5E7EB" }} />
+                <Divider sx={{ borderColor: "#DAD7F2" }} />
 
                 {/* Nav Items with Premium Custom Light Scrollbar */}
                 <List
@@ -258,7 +255,7 @@ function DashboardLayout({ children }: Props) {
                         overflowY: "auto",
                         minHeight: 0,
                         scrollbarWidth: "thin",
-                        scrollbarColor: "rgba(100, 116, 139, 0.25) transparent",
+                        scrollbarColor: "rgba(99, 102, 241, 0.2) transparent",
                         "&::-webkit-scrollbar": {
                             width: "5px",
                         },
@@ -266,11 +263,11 @@ function DashboardLayout({ children }: Props) {
                             backgroundColor: "transparent",
                         },
                         "&::-webkit-scrollbar-thumb": {
-                            backgroundColor: "rgba(100, 116, 139, 0.25)",
+                            backgroundColor: "rgba(99, 102, 241, 0.2)",
                             borderRadius: "10px",
                             transition: "background-color 0.2s ease",
                             "&:hover": {
-                                backgroundColor: "rgba(100, 116, 139, 0.45)",
+                                backgroundColor: "rgba(99, 102, 241, 0.4)",
                             },
                         },
                         "&::-webkit-scrollbar-button": {
@@ -284,7 +281,7 @@ function DashboardLayout({ children }: Props) {
                     {/* TIME & LEAVE Collapsible Accordion Group */}
                     <CollapsibleNavGroup
                         title="TIME & LEAVE"
-                        icon={<CalendarMonthOutlinedIcon fontSize="small" />}
+                        icon={<CalendarMonthIcon fontSize="small" />}
                         items={timeAndLeaveNavItems}
                         isCollapsed={isCollapsed}
                         onNavigate={(path) => {
@@ -297,7 +294,7 @@ function DashboardLayout({ children }: Props) {
                     {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
                 </List>
 
-                <Divider sx={{ borderColor: "#E5E7EB" }} />
+                <Divider sx={{ borderColor: "#DAD7F2" }} />
 
                 {/* User Footer Container */}
                 <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2, flexShrink: 0 }}>
@@ -305,9 +302,9 @@ function DashboardLayout({ children }: Props) {
                         sx={{
                             p: isCollapsed ? 1 : 1.2,
                             borderRadius: 3,
-                            backgroundColor: "#F8FAFC",
-                            border: "1px solid #E2E8F0",
-                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
+                            backgroundColor: "rgba(79, 70, 229, 0.05)",
+                            border: "1px solid #DAD7F2",
+                            boxShadow: "none",
                         }}
                     >
                         <Box
@@ -323,7 +320,7 @@ function DashboardLayout({ children }: Props) {
                                 borderRadius: "8px",
                                 transition: "all 0.2s ease",
                                 "&:hover": {
-                                    backgroundColor: "#F1F5F9",
+                                    backgroundColor: "rgba(79, 70, 229, 0.08)",
                                 },
                             }}
                         >
@@ -332,7 +329,7 @@ function DashboardLayout({ children }: Props) {
                                     <Typography
                                         variant="body2"
                                         sx={{
-                                            color: "#0F172A",
+                                            color: "#312E81",
                                             fontWeight: 600,
                                             fontSize: 13,
                                             overflow: "hidden",
@@ -345,7 +342,7 @@ function DashboardLayout({ children }: Props) {
                                     <Typography
                                         variant="caption"
                                         sx={{
-                                            color: "#64748B",
+                                            color: "#6B6699",
                                             fontSize: 11,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
@@ -370,9 +367,6 @@ function DashboardLayout({ children }: Props) {
 
                         <ListItemButton
                             onClick={() => {
-                                localStorage.removeItem("accessToken");
-                                localStorage.removeItem("refreshToken");
-                                localStorage.removeItem("persistent");
                                 dispatch(logout());
                                 navigate(paths.auth.login, { replace: true });
                             }}
@@ -382,8 +376,9 @@ function DashboardLayout({ children }: Props) {
                                 py: 0.75,
                                 justifyContent: isCollapsed ? "center" : "initial",
                                 transition: "all 0.2s ease",
+                                color: "#6B6699",
                                 "&:hover": {
-                                    backgroundColor: "#FEF2F2",
+                                    backgroundColor: "rgba(239, 68, 68, 0.08)",
                                     color: "#EF4444",
                                 },
                             }}
@@ -391,22 +386,16 @@ function DashboardLayout({ children }: Props) {
                             <ListItemIcon
                                 sx={{
                                     minWidth: isCollapsed ? 0 : 30,
-                                    color: "#64748B",
+                                    color: "rgba(79, 70, 229, 0.7)",
                                     justifyContent: "center",
                                 }}
                             >
-                                <LogoutOutlinedIcon fontSize="small" />
+                                <LogoutIcon fontSize="small" />
                             </ListItemIcon>
                             {!isCollapsed && (
                                 <ListItemText
                                     primary={
-                                        <Typography
-                                            sx={{
-                                                fontSize: 13,
-                                                fontWeight: 500,
-                                                color: "#475569",
-                                            }}
-                                        >
+                                        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
                                             Logout
                                         </Typography>
                                     }
@@ -449,8 +438,8 @@ function DashboardLayout({ children }: Props) {
                     display: { xs: "block", md: "none" },
                     "& .MuiDrawer-paper": {
                         width: 240,
-                        borderRight: "1px solid #E5E7EB",
-                        backgroundColor: "#FFFFFF",
+                        borderRight: "1px solid #DAD7F2",
+                        background: "#EBE9FC",
                     },
                 }}
             >
@@ -497,8 +486,8 @@ function DashboardLayout({ children }: Props) {
                     display: { xs: "none", md: "block" },
                     "& .MuiDrawer-paper": {
                         width: sidebarWidth,
-                        borderRight: "1px solid #E5E7EB",
-                        backgroundColor: "#FFFFFF",
+                        borderRight: "1px solid #DAD7F2",
+                        background: "#EBE9FC",
                         boxSizing: "border-box",
                         transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         overflowX: "hidden",

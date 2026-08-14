@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Box from "@mui/material/Box";
@@ -46,6 +46,7 @@ import { useSnackbar } from "../../../../components/snackbar";
 import BranchFormDialog from "./BranchFormDialog";
 import BranchCalendarDialog from "./BranchCalendarDialog";
 import SeedBranchDialog from "./SeedBranchDialog";
+import { useActiveBranchId } from "../../../../hooks/useActiveBranchId";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
 
 function BranchListContent() {
@@ -58,6 +59,18 @@ function BranchListContent() {
   const { branches, headOffice, loading, submitting, success, error } = useSelector(
     (state: RootState) => state.branch
   );
+
+  const user = useSelector((state: RootState) => state.auth?.user);
+  const activeBranchId = useActiveBranchId();
+  const [currentBranchId, setCurrentBranchId] = useState<string>("");
+
+  useEffect(() => {
+    if (activeBranchId && !currentBranchId) {
+      setCurrentBranchId(activeBranchId);
+    }
+  }, [activeBranchId, currentBranchId]);
+
+  const selectedBranch = branches.find((b) => b._id === currentBranchId) || headOffice || branches[0];
 
   const { showSnackbar } = useSnackbar();
   const formDialog = useDialog<Branch>();
@@ -166,8 +179,8 @@ function BranchListContent() {
         )}
       </Box>
 
-      {/* Head Office Highlight Card */}
-      {headOffice && (
+      {/* Selected Active Branch Highlight Card */}
+      {selectedBranch && (
         <Paper
           sx={{
             p: 3,
@@ -183,7 +196,7 @@ function BranchListContent() {
           {canUpdate && (
             <IconButton
               size="small"
-              onClick={() => handleOpenEdit(headOffice)}
+              onClick={() => handleOpenEdit(selectedBranch)}
               sx={{
                 position: "absolute",
                 top: 16,
@@ -226,13 +239,15 @@ function BranchListContent() {
               <Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
                   <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff" }}>
-                    {headOffice.name}
+                    {selectedBranch.name}
                   </Typography>
                   <Chip
-                    label="Primary Headquarters"
+                    label={selectedBranch.isHeadOffice ? "Primary Headquarters" : "Assigned Branch"}
                     size="small"
                     sx={{
-                      backgroundColor: "rgba(165, 180, 252, 0.2)",
+                      backgroundColor: selectedBranch.isHeadOffice 
+                        ? "rgba(165, 180, 252, 0.2)"
+                        : "rgba(165, 180, 252, 0.15)",
                       color: "#E0E7FF",
                       fontWeight: 700,
                       fontSize: 10,
@@ -241,21 +256,21 @@ function BranchListContent() {
                   />
                 </Box>
                 <Typography variant="body2" sx={{ color: "#C7D2FE", mt: 0.5, fontWeight: 500 }}>
-                  HQ Code: {headOffice.code}
+                  {selectedBranch.isHeadOffice ? "HQ" : "Branch"} Code: {selectedBranch.code}
                 </Typography>
 
                 {/* Location address */}
-                {headOffice.address && (
+                {selectedBranch.address && (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 2 }}>
                     <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
                     <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
                       {[
-                        headOffice.address.addressLine1,
-                        headOffice.address.addressLine2,
-                        headOffice.address.city,
-                        headOffice.address.state,
-                        headOffice.address.zip,
-                        headOffice.address.countryCode,
+                        selectedBranch.address.addressLine1,
+                        selectedBranch.address.addressLine2,
+                        selectedBranch.address.city,
+                        selectedBranch.address.state,
+                        selectedBranch.address.zip,
+                        selectedBranch.address.countryCode,
                       ]
                         .filter(Boolean)
                         .join(", ")}
@@ -277,57 +292,57 @@ function BranchListContent() {
                 border: "1px solid rgba(255, 255, 255, 0.06)",
               }}
             >
-              {headOffice.workPolicy?.timezone && (
+              {selectedBranch.workPolicy?.timezone && (
                 <Box>
                   <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
                     Timezone
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
-                    {headOffice.workPolicy.timezone}
+                    {selectedBranch.workPolicy.timezone}
                   </Typography>
                 </Box>
               )}
 
-              {headOffice.workPolicy?.workingHoursPerDay !== undefined && (
+              {selectedBranch.workPolicy?.workingHoursPerDay !== undefined && (
                 <Box>
                   <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
                     Working Hours
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
-                    {headOffice.workPolicy.workingHoursPerDay} hrs / day
+                    {selectedBranch.workPolicy.workingHoursPerDay} hrs / day
                   </Typography>
                 </Box>
               )}
 
-              {headOffice.workPolicy?.weeklyOffDays && headOffice.workPolicy.weeklyOffDays.length > 0 && (
+              {selectedBranch.workPolicy?.weeklyOffDays && selectedBranch.workPolicy.weeklyOffDays.length > 0 && (
                 <Box>
                   <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
                     Weekly Offs
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
-                    {headOffice.workPolicy.weeklyOffDays.join(", ")}
+                    {selectedBranch.workPolicy.weeklyOffDays.join(", ")}
                   </Typography>
                 </Box>
               )}
 
-              {(headOffice.contact?.email || headOffice.contact?.phone) && (
+              {(selectedBranch.contact?.email || selectedBranch.contact?.phone) && (
                 <Box sx={{ width: "100%", height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)", my: 0.5 }} />
               )}
 
-              {headOffice.contact?.email && (
+              {selectedBranch.contact?.email && (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 2 }}>
                   <EmailOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
                   <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
-                    {headOffice.contact.email}
+                    {selectedBranch.contact.email}
                   </Typography>
                 </Box>
               )}
 
-              {headOffice.contact?.phone && (
+              {selectedBranch.contact?.phone && (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <PhoneOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
                   <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
-                    {headOffice.contact.phone}
+                    {selectedBranch.contact.phone}
                   </Typography>
                 </Box>
               )}
@@ -410,10 +425,29 @@ function BranchListContent() {
                   .filter(Boolean)
                   .join(", ");
 
+                const isSelected = branch._id === currentBranchId;
+
                 return (
-                  <TableRow key={branch._id} hover>
+                  <TableRow
+                    key={branch._id}
+                    hover
+                    sx={{
+                      transition: "all 0.2s ease",
+                      ...(isSelected && {
+                        backgroundColor: "rgba(109, 93, 246, 0.04) !important",
+                      }),
+                    }}
+                  >
                     {/* Branch Info */}
-                    <TableCell>
+                    <TableCell
+                      sx={{
+                        transition: "all 0.2s ease",
+                        ...(isSelected && {
+                          borderLeft: "4px solid #6D5DF6",
+                          pl: "12px !important",
+                        }),
+                      }}
+                    >
                       <Box>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>

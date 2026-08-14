@@ -66,10 +66,10 @@ function NestedSubGroupItem({
             px: 1.5,
             py: 0.75,
             transition: "all 0.2s ease",
-            backgroundColor: isChildActive && !open ? "#EEF2FF" : "transparent",
-            border: isChildActive ? "1px solid #C7D2FE" : "1px solid transparent",
+            backgroundColor: isChildActive && !open ? "#4F46E5" : "transparent",
+            border: "1px solid transparent",
             "&:hover": {
-              backgroundColor: "#F8FAFC",
+              backgroundColor: isChildActive && !open ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
             },
           }}
         >
@@ -77,7 +77,7 @@ function NestedSubGroupItem({
             sx={{
               minWidth: 0,
               mr: 1.5,
-              color: isChildActive ? "#4F46E5" : "#64748B",
+              color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
             }}
           >
             {item.icon}
@@ -88,14 +88,14 @@ function NestedSubGroupItem({
                 sx={{
                   fontSize: "0.8125rem",
                   fontWeight: isChildActive ? 700 : 500,
-                  color: isChildActive ? "#4338CA" : "#334155",
+                  color: isChildActive ? "#FFFFFF" : "#6B6699",
                 }}
               >
                 {item.label}
               </Typography>
             }
           />
-          <Box sx={{ color: "#94A3B8", display: "flex", alignItems: "center" }}>
+          <Box sx={{ color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
             {open ? (
               <ExpandMoreIcon sx={{ fontSize: 16 }} />
             ) : (
@@ -119,11 +119,11 @@ function NestedSubGroupItem({
                     px: 1.5,
                     py: 0.65,
                     transition: "all 0.2s ease",
-                    backgroundColor: isActive ? "#EEF2FF" : "transparent",
-                    border: isActive ? "1px solid #C7D2FE" : "1px solid transparent",
-                    boxShadow: isActive ? "0 2px 6px rgba(99, 102, 241, 0.1)" : "none",
+                    backgroundColor: isActive ? "#4F46E5" : "transparent",
+                    border: "1px solid transparent",
+                    boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.15)" : "none",
                     "&:hover": {
-                      backgroundColor: isActive ? "#E0E7FF" : "#F8FAFC",
+                      backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
                     },
                   }}
                 >
@@ -131,7 +131,7 @@ function NestedSubGroupItem({
                     sx={{
                       minWidth: 0,
                       mr: 1.25,
-                      color: isActive ? "#4F46E5" : "#64748B",
+                      color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
                     }}
                   >
                     {child.icon}
@@ -142,7 +142,7 @@ function NestedSubGroupItem({
                         sx={{
                           fontSize: "0.78rem",
                           fontWeight: isActive ? 700 : 500,
-                          color: isActive ? "#4338CA" : "#334155",
+                          color: isActive ? "#FFFFFF" : "#6B6699",
                         }}
                       >
                         {child.label}
@@ -215,9 +215,9 @@ export default function CollapsibleNavGroup({
             py: 1,
             justifyContent: isCollapsed ? "center" : "space-between",
             transition: "all 0.2s ease",
-            backgroundColor: isChildActive && !open ? "#EEF2FF" : "transparent",
+            backgroundColor: isChildActive && !open ? "rgba(79, 70, 229, 0.08)" : "transparent",
             "&:hover": {
-              backgroundColor: "#F1F5F9",
+              backgroundColor: "rgba(79, 70, 229, 0.06)",
             },
           }}
         >
@@ -225,7 +225,7 @@ export default function CollapsibleNavGroup({
             <ListItemIcon
               sx={{
                 minWidth: 0,
-                color: isChildActive ? "#4F46E5" : "#64748B",
+                color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.6)",
                 justifyContent: "center",
               }}
             >
@@ -238,7 +238,7 @@ export default function CollapsibleNavGroup({
                   fontWeight: 700,
                   fontSize: "0.75rem",
                   letterSpacing: "0.05em",
-                  color: isChildActive ? "#4F46E5" : "#475569",
+                  color: isChildActive ? "#4F46E5" : "#6B6699",
                   textTransform: "uppercase",
                 }}
               >
@@ -248,7 +248,7 @@ export default function CollapsibleNavGroup({
           </Box>
 
           {!isCollapsed && (
-            <Box sx={{ color: "#94A3B8", display: "flex", alignItems: "center" }}>
+            <Box sx={{ color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
               {open ? (
                 <ExpandMoreIcon sx={{ fontSize: 18 }} />
               ) : (
@@ -283,11 +283,11 @@ export default function CollapsibleNavGroup({
                     px: 1.5,
                     py: 0.75,
                     transition: "all 0.2s ease",
-                    backgroundColor: isActive ? "#EEF2FF" : "transparent",
-                    border: isActive ? "1px solid #C7D2FE" : "1px solid transparent",
-                    boxShadow: isActive ? "0 2px 6px rgba(99, 102, 241, 0.1)" : "none",
+                    backgroundColor: isActive ? "#4F46E5" : "transparent",
+                    border: "1px solid transparent",
+                    boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.15)" : "none",
                     "&:hover": {
-                      backgroundColor: isActive ? "#E0E7FF" : "#F8FAFC",
+                      backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
                     },
                   }}
                 >
@@ -295,7 +295,7 @@ export default function CollapsibleNavGroup({
                     sx={{
                       minWidth: 0,
                       mr: 1.5,
-                      color: isActive ? "#4F46E5" : "#64748B",
+                      color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
                     }}
                   >
                     {item.icon}
@@ -306,7 +306,7 @@ export default function CollapsibleNavGroup({
                         sx={{
                           fontSize: "0.8125rem",
                           fontWeight: isActive ? 700 : 500,
-                          color: isActive ? "#4338CA" : "#334155",
+                          color: isActive ? "#FFFFFF" : "#6B6699",
                         }}
                       >
                         {item.label}

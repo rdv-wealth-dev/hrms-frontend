@@ -280,13 +280,14 @@ function* handleActivateAccountRequest(action: {
 // ===========================================
 
 function* handleLogout(): SagaIterator {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("persistent");
   try {
     yield call(logoutUser);
   } catch {
     // Swallow — always clear local session regardless of API result
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("persistent");
   }
 }
 
