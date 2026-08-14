@@ -582,7 +582,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               icon: <AutoAwesomeIcon sx={{ fontSize: 18, color: "#6366F1" }} /> 
             },
           ].map((metric, i) => (
-            <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 3, xl: 1.5 }}>
+            <Grid key={i} size={{ xs: 6, sm: 6, md: 4, lg: 3, xl: 1.5 }}>
               <KpiCard
                 title={metric.label}
                 value={metric.title}

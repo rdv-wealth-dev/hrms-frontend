@@ -31,6 +31,7 @@ export function KpiCard({ title, value, subtext, icon, iconBg, trend }: KpiCardI
         flexDirection: "column",
         justifyContent: "space-between",
         minHeight: 120,
+        height: "100%",
         boxSizing: "border-box",
         transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
