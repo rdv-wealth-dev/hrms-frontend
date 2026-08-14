@@ -28,6 +28,7 @@ import CollapsibleNavGroup, { type NavSubItem } from "./components/CollapsibleNa
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
+import { logoutUser } from "../../api/auth.api";
 
 import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
@@ -366,9 +367,15 @@ function DashboardLayout({ children }: Props) {
                         </Box>
 
                         <ListItemButton
-                            onClick={() => {
-                                dispatch(logout());
-                                navigate(paths.auth.login, { replace: true });
+                            onClick={async () => {
+                                try {
+                                    await logoutUser();
+                                } catch {
+                                    // Swallow — always clear local session regardless of API result
+                                } finally {
+                                    dispatch(logout());
+                                    navigate(paths.auth.login, { replace: true });
+                                }
                             }}
                             sx={{
                                 borderRadius: 2,

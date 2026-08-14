@@ -11,7 +11,6 @@ import {
   getMe,
   activateAccount,
   checkEmail,
-  logoutUser,
 } from "../../api/auth.api";
 
 import {
@@ -280,15 +279,9 @@ function* handleActivateAccountRequest(action: {
 // ===========================================
 
 function* handleLogout(): SagaIterator {
-  try {
-    yield call(logoutUser);
-  } catch {
-    // Swallow — always clear local session regardless of API result
-  } finally {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("persistent");
-  }
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("persistent");
 }
 
 // ===========================================

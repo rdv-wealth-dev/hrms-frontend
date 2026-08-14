@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { getOnboardingStatus, type OnboardingStatusResponse } from "../api/onboarding.api";
 import { useRole } from "../auth/hooks/use-role";
+import type { RootState } from "../store/rootReducer";
 
 export type OnboardingPhase = "GRACE" | "NUDGE" | "RESTRICTED" | "COMPLETE";
 
 export function useOnboardingStatus() {
   const { role } = useRole();
   const isOrgAdmin = role === "ORG_ADMIN";
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth?.isAuthenticated ?? false
+  );
 
   const [statusData, setStatusData] = useState<OnboardingStatusResponse["data"] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,12 +39,12 @@ export function useOnboardingStatus() {
   }, [isOrgAdmin]);
 
   useEffect(() => {
-    if (!isOrgAdmin) {
+    if (isAuthenticated && !isOrgAdmin) {
       fetchStatus();
     } else {
       setLoading(false);
     }
-  }, [fetchStatus, isOrgAdmin]);
+  }, [fetchStatus, isOrgAdmin, isAuthenticated]);
 
   const isProfileComplete = isOrgAdmin ? true : (statusData?.isProfileComplete ?? statusData?.onboardingComplete ?? false);
   const phase: OnboardingPhase = isOrgAdmin ? "COMPLETE" : (statusData?.onboardingPhase ?? (isProfileComplete ? "COMPLETE" : "GRACE"));

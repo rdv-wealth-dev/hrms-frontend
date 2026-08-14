@@ -60,7 +60,6 @@ function BranchListContent() {
     (state: RootState) => state.branch
   );
 
-  const user = useSelector((state: RootState) => state.auth?.user);
   const activeBranchId = useActiveBranchId();
   const [currentBranchId, setCurrentBranchId] = useState<string>("");
 
