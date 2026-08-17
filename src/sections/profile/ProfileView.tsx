@@ -32,7 +32,6 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
-import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -507,22 +506,6 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               }}
             >
               <Button
-                startIcon={<EditOutlinedIcon />}
-                onClick={handleOpenEditProfile}
-                variant="outlined"
-                sx={{
-                  borderColor: "#CBD5E1",
-                  color: "#334155",
-                  px: 2,
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                  "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#6D5DF6", color: "#6D5DF6" },
-                  flexGrow: { xs: 1, sm: 0 },
-                }}
-              >
-                Edit
-              </Button>
-              <Button
                 startIcon={<AutoAwesomeIcon sx={{ fontSize: "18px !important" }} />}
                 variant="contained"
                 onClick={() => setActiveTab("ai-insights")}
@@ -550,17 +533,6 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               >
                 Export
               </Button>
-              <IconButton
-                sx={{
-                  border: "1px solid #E2E8F0",
-                  borderRadius: "10px",
-                  p: 1,
-                  color: "#64748B",
-                  flexGrow: { xs: 1, sm: 0 },
-                }}
-              >
-                <MoreHorizOutlinedIcon />
-              </IconButton>
             </Box>
           </Box>
         </Card>
@@ -706,8 +678,43 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             <AttendanceTab employeeId={employeeId || undefined} isViewingOther={isViewingOther} />
           </Box>
 
+          {/* AI Insights Coming Soon Tab */}
+          {activeTab === "ai-insights" && (
+            <Card
+              sx={{
+                p: 6,
+                textAlign: "center",
+                border: "1px solid #DDD6FE",
+                backgroundColor: "#FAF9FF",
+                boxShadow: "0 10px 30px rgba(139, 92, 246, 0.04)",
+                borderRadius: "16px",
+              }}
+            >
+              <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 48, mb: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mb: 1 }}>
+                AI Insights & Summary
+              </Typography>
+              <Chip
+                label="Coming Soon"
+                size="small"
+                sx={{
+                  mb: 3,
+                  backgroundColor: "#EDE9FE",
+                  color: "#7C3AED",
+                  fontWeight: 700,
+                  fontSize: "11px",
+                  px: 1.5,
+                  height: 24,
+                }}
+              />
+              <Typography variant="body1" sx={{ color: "#64748B", maxWidth: 500, mx: "auto", lineHeight: 1.6 }}>
+                Deep employee performance analysis, sentiment analytics, and automated retention recommendations are on their way.
+              </Typography>
+            </Card>
+          )}
+
           {/* Generic Content Fallback for remaining/placeholder tabs */}
-          {!["overview", "personal", "documents", "payroll", "leave", "attendance"].includes(activeTab) && (
+          {!["overview", "personal", "documents", "payroll", "leave", "attendance", "ai-insights"].includes(activeTab) && (
              <Card sx={{ p: 5, textAlign: "center" }}>
               <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
                 {activeTab} Section

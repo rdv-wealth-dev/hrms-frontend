@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import LinearProgress from "@mui/material/LinearProgress";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
@@ -101,11 +102,12 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
           }}
         >
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, flexWrap: "wrap" }}>
               <AutoAwesomeIcon sx={{ color: "#6366F1", fontSize: 18 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4338CA", fontSize: "0.825rem" }}>
                 AI Insight
               </Typography>
+              <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "#E0E7FF", color: "#4338CA" }} />
             </Box>
             <IconButton size="small" onClick={() => setShowAiInsight(false)} sx={{ p: 0.3, color: "#6366F1" }}>
               <CloseIcon sx={{ fontSize: 16 }} />
@@ -122,6 +124,7 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
               <Button
                 key={chipLabel}
                 onClick={chipLabel === "Dismiss" ? () => setShowAiInsight(false) : undefined}
+                disabled={chipLabel !== "Dismiss"}
                 size="small"
                 sx={{
                   borderRadius: 2,
@@ -136,6 +139,11 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
                   border: "1px solid #C7D2FE",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                   "&:hover": { backgroundColor: "#F5F3FF" },
+                  "&.Mui-disabled": {
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+                    color: "#9CA3AF",
+                    borderColor: "#E5E7EB",
+                  }
                 }}
               >
                 {chipLabel}

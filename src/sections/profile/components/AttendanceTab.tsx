@@ -28,7 +28,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
@@ -261,16 +260,6 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
 
   return (
     <Box sx={{ py: 1 }}>
-      {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-        <CalendarMonthOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
-            Attendance
-          </Typography>
-        </Box>
-      </Box>
-
       {/* Tab Selection */}
       {!isViewingOther && (
         <Tabs

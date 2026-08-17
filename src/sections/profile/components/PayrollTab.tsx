@@ -157,49 +157,6 @@ export default function PayrollTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* ── CARD 1: BANK ACCOUNTS ── */}
-      <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
-            <AccountBalanceOutlinedIcon sx={{ color: "#4F46E5" }} />
-            Bank Accounts
-          </Typography>
-          {!isViewingOther && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetBankForm(); setBankDialogOpen(true); }} sx={{ backgroundColor: "#4F46E5", borderRadius: "8px" }}>
-              Add Bank Account
-            </Button>
-          )}
-        </Box>
-
-        {bankAccountsLoading ? (
-          <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
-        ) : bankAccounts.length === 0 ? (
-          <Typography variant="body2" sx={{ color: "#64748B", textAlign: "center", py: 3 }}>No bank account added yet.</Typography>
-        ) : (
-          <Grid container spacing={2}>
-            {bankAccounts.map((acc, index) => (
-              <Grid key={acc.id || acc._id || index} size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{acc.bankName}</Typography>
-                    {!isViewingOther && (
-                      <IconButton size="small" onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}>
-                        <DeleteOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Box>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontFamily: "monospace", display: "block", mt: 0.5 }}>{acc.accountNumber}</Typography>
-                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                    <Chip label={acc.ifscCode} size="small" variant="outlined" sx={{ fontSize: "0.7rem", fontFamily: "monospace" }} />
-                    <Chip label={acc.accountType} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
-                  </Box>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Card>
-
       {/* ── CARD 2: SALARY STRUCTURE & CTC PLAN ── */}
       <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
@@ -295,6 +252,49 @@ export default function PayrollTab({
               </Grid>
             </Box>
           </Box>
+        )}
+      </Card>
+
+      {/* ── CARD 1: BANK ACCOUNTS ── */}
+      <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+            <AccountBalanceOutlinedIcon sx={{ color: "#4F46E5" }} />
+            Bank Accounts
+          </Typography>
+          {!isViewingOther && (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetBankForm(); setBankDialogOpen(true); }} sx={{ backgroundColor: "#4F46E5", borderRadius: "8px" }}>
+              Add Bank Account
+            </Button>
+          )}
+        </Box>
+
+        {bankAccountsLoading ? (
+          <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
+        ) : bankAccounts.length === 0 ? (
+          <Typography variant="body2" sx={{ color: "#64748B", textAlign: "center", py: 3 }}>No bank account added yet.</Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {bankAccounts.map((acc, index) => (
+              <Grid key={acc.id || acc._id || index} size={{ xs: 12, sm: 6 }}>
+                <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{acc.bankName}</Typography>
+                    {!isViewingOther && (
+                      <IconButton size="small" onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}>
+                        <DeleteOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontFamily: "monospace", display: "block", mt: 0.5 }}>{acc.accountNumber}</Typography>
+                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                    <Chip label={acc.ifscCode} size="small" variant="outlined" sx={{ fontSize: "0.7rem", fontFamily: "monospace" }} />
+                    <Chip label={acc.accountType} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                  </Box>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
         )}
       </Card>
 

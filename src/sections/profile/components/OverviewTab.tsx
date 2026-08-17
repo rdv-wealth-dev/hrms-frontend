@@ -17,11 +17,8 @@ import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
-import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import StarOutlinedIcon from "@mui/icons-material/StarOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -224,7 +221,7 @@ export default function OverviewTab({
             </Box>
           </Card>
 
-          {/* 3. Assigned Policies (2x3 Grid) */}
+          {/* 3. Assigned Policies (2x3 Grid) - Commented Out
           <Card sx={{ p: 3 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
               Assigned Policies
@@ -255,14 +252,32 @@ export default function OverviewTab({
               ))}
             </Grid>
           </Card>
+          */}
 
           {/* 4. Skills & Expertise */}
           <Card sx={{ p: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
-              Skills & Expertise
-            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", fontSize: "0.95rem" }}>
+                Skills & Expertise
+              </Typography>
+              <Chip
+                label="+ Add Skill"
+                onClick={() => setAddSkillOpen(true)}
+                sx={{
+                  backgroundColor: "#F1F5F9",
+                  color: "#475569",
+                  fontWeight: 600,
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  "&:hover": { backgroundColor: "#E2E8F0" },
+                }}
+              />
+            </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, flexWrap: "wrap" }}>
+              <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 600, fontSize: "0.85rem", mr: 0.5 }}>
+                For Example:
+              </Typography>
               {skills.map((skill, idx) => (
                 <Chip
                   key={idx}
@@ -276,23 +291,10 @@ export default function OverviewTab({
                   }}
                 />
               ))}
-              <Chip
-                icon={<AddIcon sx={{ fontSize: "16px !important" }} />}
-                label="+ Add Skill"
-                onClick={() => setAddSkillOpen(true)}
-                sx={{
-                  backgroundColor: "#F1F5F9",
-                  color: "#475569",
-                  fontWeight: 600,
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  "&:hover": { backgroundColor: "#E2E8F0" },
-                }}
-              />
             </Box>
           </Card>
 
-          {/* 5. Recent Activity Feed */}
+          {/* 5. Recent Activity Feed - Commented Out
           <Card sx={{ p: 3 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
               Recent Activity
@@ -321,6 +323,7 @@ export default function OverviewTab({
               ))}
             </Box>
           </Card>
+          */}
 
           {/* 6. Related Employees / Peers in Engineering */}
           <Card sx={{ p: 3 }}>
@@ -365,11 +368,12 @@ export default function OverviewTab({
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 20 }} />
                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "0.95rem" }}>
                   AI Insights
                 </Typography>
+                <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "#F3E8FF", color: "#7C3AED" }} />
               </Box>
               <IconButton size="small" onClick={() => setAiInsightsDismissed(true)} sx={{ color: "#94A3B8" }}>
                 <CloseIcon fontSize="small" />
@@ -405,21 +409,24 @@ export default function OverviewTab({
                   fullWidth
                   startIcon={btn.icon}
                   variant="outlined"
-                  onClick={() => showSnackbar(`AI Action "${btn.label}" initiated`, "info")}
+                  onClick={() => showSnackbar(`AI Action "${btn.label}" is coming soon!`, "warning")}
                   sx={{
                     justifyContent: "flex-start",
                     textTransform: "none",
                     fontWeight: 600,
                     fontSize: "0.825rem",
-                    color: "#475569",
+                    color: "#64748B",
                     borderColor: "#E2E8F0",
                     borderRadius: "10px",
                     py: 1,
                     backgroundColor: "#F8FAFC",
-                    "&:hover": { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE", color: "#4F46E5" }
+                    "&:hover": { backgroundColor: "#F1F5F9", borderColor: "#CBD5E1", color: "#64748B" }
                   }}
                 >
-                  {btn.label}
+                  <Box component="span" sx={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{btn.label}</span>
+                    <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "#E2E8F0", color: "#64748B" }} />
+                  </Box>
                 </Button>
               ))}
             </Box>
@@ -454,7 +461,7 @@ export default function OverviewTab({
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
           <TextInput
             label="Skill Name"
-            placeholder="e.g. Python, Docker, GraphQL"
+            placeholder="For example: React, TypeScript, Node.js"
             value={newSkillInput}
             onChange={(e) => setNewSkillInput(e.target.value)}
           />

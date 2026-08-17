@@ -23,7 +23,7 @@ export interface FilterOption {
 export interface FilterField {
   key: string;
   label: string;
-  type?: "select" | "date" | "text";
+  type?: "select" | "date" | "daterange" | "text";
   options?: FilterOption[];
   minWidth?: number;
   icon?: React.ReactNode;
@@ -152,6 +152,17 @@ function resolveFieldOptions(field: FilterField): FilterOption[] {
   return field.options || [];
 }
 
+const formatDateString = (dateStr?: string) => {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function FilterBar({
   searchPlaceholder = "Search employees...",
   searchValue = "",
@@ -231,6 +242,49 @@ export default function FilterBar({
           const isPanelOpen = activePanelKey === field.key;
           const currentVal = values[field.key];
           const hasValue = currentVal !== undefined && currentVal !== "" && currentVal !== "ALL";
+
+          if (field.type === "daterange") {
+            const hasFrom = Boolean(values.fromDate);
+            const hasTo = Boolean(values.toDate);
+            const hasVal = hasFrom || hasTo;
+
+            let btnLabel = field.label;
+            if (hasFrom && hasTo) {
+              btnLabel = `${formatDateString(values.fromDate)} - ${formatDateString(values.toDate)}`;
+            } else if (hasFrom) {
+              btnLabel = `From ${formatDateString(values.fromDate)}`;
+            } else if (hasTo) {
+              btnLabel = `To ${formatDateString(values.toDate)}`;
+            }
+
+            return (
+              <Button
+                key={field.key}
+                disableRipple
+                onClick={() => handlePillClick(field.key)}
+                endIcon={<CalendarMonthOutlinedIcon sx={{ fontSize: "18px !important" }} />}
+                sx={{
+                  height: 40,
+                  borderRadius: "10px",
+                  px: 2,
+                  textTransform: "none",
+                  fontSize: "14px",
+                  fontWeight: isPanelOpen || hasVal ? 600 : 500,
+                  backgroundColor: isPanelOpen ? "#F5F3FF" : "#FFFFFF",
+                  color: isPanelOpen || hasVal ? "#6D5DF6" : "#334155",
+                  border: isPanelOpen || hasVal ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                  boxShadow: isPanelOpen ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
+                  "&:hover": {
+                    backgroundColor: isPanelOpen ? "#F5F3FF" : "#F8FAFC",
+                    borderColor: isPanelOpen ? "#6D5DF6" : "#CBD5E1",
+                  },
+                  transition: "all 0.15s ease-in-out",
+                }}
+              >
+                {btnLabel}
+              </Button>
+            );
+          }
 
           if (field.type === "date") {
             return (
@@ -372,7 +426,48 @@ export default function FilterBar({
             </Box>
 
             {/* Sub-panel Content */}
-            {activeField.type === "date" ? (
+            {activeField.type === "daterange" ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, flexWrap: "wrap" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#475569" }}>From:</Typography>
+                  <TextField
+                    type="date"
+                    size="small"
+                    value={values.fromDate || ""}
+                    onChange={(e) => handleDateChange("fromDate", e.target.value)}
+                    sx={{
+                      width: 170,
+                      "& .MuiOutlinedInput-root": COMMON_INPUT_SX,
+                    }}
+                  />
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#475569" }}>To:</Typography>
+                  <TextField
+                    type="date"
+                    size="small"
+                    value={values.toDate || ""}
+                    onChange={(e) => handleDateChange("toDate", e.target.value)}
+                    sx={{
+                      width: 170,
+                      "& .MuiOutlinedInput-root": COMMON_INPUT_SX,
+                    }}
+                  />
+                </Box>
+                {(values.fromDate || values.toDate) && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      handleDateChange("fromDate", "");
+                      handleDateChange("toDate", "");
+                    }}
+                    sx={{ textTransform: "none", fontWeight: 600, color: "#EF4444", ml: 1 }}
+                  >
+                    Clear Range
+                  </Button>
+                )}
+              </Box>
+            ) : activeField.type === "date" ? (
               <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
                 <TextField
                   type="date"

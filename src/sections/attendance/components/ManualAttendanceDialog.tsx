@@ -10,12 +10,13 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 
 import TextInput from "../../../components/input/TextInput";
 import { formatToYYYYMMDD } from "../../../utils/format-date";
@@ -61,14 +62,7 @@ type ManualAttendanceDialogProps = {
   employee?: PresetEmployee | null;
 };
 
-const disabledMenuItemSx = {
-  color: "#94A3B8 !important",
-  fontWeight: 500,
-  "&.Mui-disabled": {
-    opacity: "1 !important",
-    color: "#94A3B8 !important",
-  },
-};
+
 
 export function ManualAttendanceDialog({
   open,
@@ -168,8 +162,8 @@ export function ManualAttendanceDialog({
       await createManualAttendance({
         employeeId: data.selectedEmployeeId,
         attendanceDate: data.attendanceDate,
-        checkIn: data.checkInTime ? `${data.attendanceDate}T${data.checkInTime}:00.000Z` : new Date().toISOString(),
-        checkOut: data.checkOutTime ? `${data.attendanceDate}T${data.checkOutTime}:00.000Z` : undefined,
+        checkIn: data.checkInTime ? new Date(`${data.attendanceDate}T${data.checkInTime}`).toISOString() : new Date().toISOString(),
+        checkOut: data.checkOutTime ? new Date(`${data.attendanceDate}T${data.checkOutTime}`).toISOString() : undefined,
         notes: data.notes,
       });
 
@@ -262,24 +256,79 @@ export function ManualAttendanceDialog({
             <Controller
               name="selectedEmployeeId"
               control={control}
-              render={({ field }) => (
-                <TextInput
-                  {...field}
-                  select
-                  label="Select Employee"
-                  disabled={loadingEmployees || submitting}
-                  error={errors.selectedEmployeeId?.message}
-                  slotProps={{ select: { displayEmpty: true } }}
-                >
-                  <MenuItem value="" disabled sx={disabledMenuItemSx}>
-                    {loadingEmployees ? "Loading employees list..." : "Choose an employee"}
-                  </MenuItem>
-                  {employeesList.map((emp) => (
-                    <MenuItem key={emp._id} value={emp._id}>
-                      {`${emp.firstName} ${emp.lastName} (${emp.employeeCode})`}
-                    </MenuItem>
-                  ))}
-                </TextInput>
+              render={({ field: { value, onChange, ref, ...fieldProps } }) => (
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "#334155",
+                      mb: 0.6,
+                      display: "block",
+                    }}
+                  >
+                    Select Employee
+                  </Typography>
+                  <Autocomplete
+                    {...fieldProps}
+                    size="small"
+                    options={employeesList || []}
+                    loading={loadingEmployees}
+                    getOptionLabel={(option) =>
+                      option ? `${option.firstName || ""} ${option.lastName || ""} (${option.employeeCode || ""})` : ""
+                    }
+                    isOptionEqualToValue={(option, val) => option?._id === val?._id}
+                    value={employeesList.find((emp) => emp?._id === value) || null}
+                    onChange={(_, newValue) => {
+                      onChange(newValue ? newValue._id : "");
+                    }}
+                    slotProps={{
+                      listbox: {
+                        sx: {
+                          maxHeight: 180,
+                        },
+                      },
+                    }}
+                    disabled={loadingEmployees || submitting}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        inputRef={ref}
+                        placeholder="Search employee by name or code..."
+                        error={Boolean(errors.selectedEmployeeId?.message)}
+                        helperText={errors.selectedEmployeeId?.message}
+                        slotProps={{
+                          ...params.slotProps,
+                          input: {
+                            ...params.slotProps?.input,
+                            endAdornment: (
+                              <>
+                                {loadingEmployees ? (
+                                  <CircularProgress color="inherit" size={20} />
+                                ) : null}
+                                {params.slotProps?.input?.endAdornment}
+                              </>
+                            ),
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "10px",
+                            backgroundColor: "#FFFFFF",
+                            "& fieldset": { borderColor: "#E2E8F0" },
+                            "&:hover fieldset": { borderColor: "#CBD5E1" },
+                            "&.Mui-focused fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+                          },
+                          "& .MuiFormHelperText-root": {
+                            mx: 0,
+                            mt: 0.5,
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                </Box>
               )}
             />
           )}

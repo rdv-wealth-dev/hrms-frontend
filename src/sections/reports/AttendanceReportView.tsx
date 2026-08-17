@@ -566,40 +566,13 @@ export default function AttendanceReportView() {
         {/* 1. Top KPI Summary Cards */}
         <AttendanceKpiCards data={kpiData} />
 
-        {/* 2. Middle Grid: Weekly Trend & Today Breakdown */}
-        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 4 }}>
-          <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 66.666%" } }}>
-            <LazyWeeklyTrendBarChart
-              data={trendData}
-              onRegularizeClick={() => setRegularizeOpen(true)}
-            />
-          </Box>
-          <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 33.333%" } }}>
-            <TodayStatusBreakdownCard data={breakdownData} />
-          </Box>
-        </Box>
-
         {/* Generic Horizontal Filter Bar with Real Backend Data */}
         <FilterBar
           searchPlaceholder="Search employees..."
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           fields={[
-            { key: "fromDate", label: "From Date", type: "date", minWidth: 160 },
-            { key: "toDate", label: "To Date", type: "date", minWidth: 160 },
-            {
-              key: "designationId",
-              label: "Designation",
-              type: "select",
-              options: [
-                { value: "ALL", label: "All Designations" },
-                ...(designations?.map((d: any) => ({
-                  value: d._id || d.title || d.name,
-                  label: d.title || d.name,
-                })) || []),
-              ],
-              minWidth: 150,
-            },
+            { key: "dateRange", label: "Date Range", type: "daterange" },
             {
               key: "branchId",
               label: "Branch",
@@ -622,6 +595,19 @@ export default function AttendanceReportView() {
                 ...(departments?.map((dep: any) => ({
                   value: dep._id || dep.name,
                   label: dep.name,
+                })) || []),
+              ],
+              minWidth: 150,
+            },
+            {
+              key: "designationId",
+              label: "Designation",
+              type: "select",
+              options: [
+                { value: "ALL", label: "All Designations" },
+                ...(designations?.map((d: any) => ({
+                  value: d._id || d.title || d.name,
+                  label: d.title || d.name,
                 })) || []),
               ],
               minWidth: 150,
@@ -659,6 +645,19 @@ export default function AttendanceReportView() {
             setPageNumber(1);
           }}
         />
+
+        {/* 2. Middle Grid: Weekly Trend & Today Breakdown */}
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 4, mt: 3.5 }}>
+          <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 66.666%" } }}>
+            <LazyWeeklyTrendBarChart
+              data={trendData}
+              onRegularizeClick={() => setRegularizeOpen(true)}
+            />
+          </Box>
+          <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 33.333%" } }}>
+            <TodayStatusBreakdownCard data={breakdownData} />
+          </Box>
+        </Box>
 
         {/* Error Alert */}
         {error && (

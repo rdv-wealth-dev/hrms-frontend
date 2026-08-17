@@ -14,8 +14,6 @@ import Stack from "@mui/material/Stack";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import Chip from "@mui/material/Chip";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
@@ -24,6 +22,7 @@ import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlin
 
 import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import TextInput from "../../../components/input/TextInput";
+import PhoneInput from "../../../components/input/PhoneInput";
 import CascadingSelect, { type SelectOption } from "../../../components/input/CascadingSelect";
 import { formatToYYYYMMDD } from "../../../utils/format-date";
 import { paths } from "../../../routes/paths";
@@ -61,14 +60,6 @@ const EMPLOYEE_TYPES = [
   { value: "FREELANCE", label: "Freelance" },
 ];
 
-const COUNTRIES = [
-  { code: "IN", name: "India" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "SG", name: "Singapore" },
-  { code: "AE", name: "United Arab Emirates" },
-];
-
 export default function EmployeeCreateView() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -90,7 +81,7 @@ export default function EmployeeCreateView() {
   const [designations, setDesignations] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
 
-  const [manageSalary, setManageSalary] = useState(false);
+  const manageSalary = true;
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
   const [formValidationError, setFormValidationError] = useState<string | null>(null);
@@ -405,7 +396,7 @@ export default function EmployeeCreateView() {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit, onInvalidForm)}>
+        <form onSubmit={handleSubmit(onSubmit, onInvalidForm)} autoComplete="off">
           <Stack spacing={3}>
 
             {/* ── CARD 1: CASCADING ORGANIZATIONAL PLACEMENT (STEPS 1 - 4) ── */}
@@ -497,57 +488,46 @@ export default function EmployeeCreateView() {
                 </Typography>
 
                 <Grid container spacing={2.5}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       label="First Name *"
                       placeholder="e.g. Rohan"
                       registration={register("firstName")}
                       error={errors.firstName?.message}
+                      slotProps={{ htmlInput: { autoComplete: "new-password" } }}
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       label="Last Name *"
                       placeholder="e.g. Sharma"
                       registration={register("lastName")}
                       error={errors.lastName?.message}
+                      slotProps={{ htmlInput: { autoComplete: "new-password" } }}
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       label="Work Email Address *"
                       placeholder="e.g. rohan.sharma@apexglobal.io"
                       registration={register("email")}
                       error={errors.email?.message}
+                      slotProps={{ htmlInput: { autoComplete: "new-password" } }}
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextInput
-                      label="Phone Number"
-                      type="tel"
-                      maxLength={10}
-                      placeholder="e.g. 9820112233"
-                      registration={register("phone")}
-                      error={errors.phone?.message}
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <PhoneInput
+                      label="Mobile Number"
+                      phoneRegistration={register("phone")}
+                      countryCodeRegistration={register("countryCode")}
+                      phoneError={errors.phone?.message}
+                      countryCodeError={errors.countryCode?.message}
+                      setValue={setValue}
+                      watch={watch}
                     />
-                  </Grid>
-
-                  <Grid size={{ xs: 12, sm: 2 }}>
-                    <TextInput
-                      select
-                      label="Country Code"
-                      registration={register("countryCode")}
-                      error={errors.countryCode?.message}
-                    >
-                      {COUNTRIES.map((c) => (
-                        <MenuItem key={c.code} value={c.code}>
-                          {c.code} ({c.name})
-                        </MenuItem>
-                      ))}
-                    </TextInput>
                   </Grid>
                 </Grid>
               </CardContent>
@@ -628,15 +608,6 @@ export default function EmployeeCreateView() {
                       Compensation & Salary Setup
                     </Typography>
                   </Box>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={manageSalary}
-                        onChange={(e) => setManageSalary(e.target.checked)}
-                      />
-                    }
-                    label="Manage Compensation & Salary Setup"
-                  />
                 </Box>
 
                 {manageSalary && (

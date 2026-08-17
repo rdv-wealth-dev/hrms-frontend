@@ -198,7 +198,7 @@ function DashboardLayout({ children }: Props) {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    background: "#EBE9FC",
+                    background: "#EDEBFC",
                     color: "#312E81",
                     overflow: "hidden",
                     borderRight: "1px solid #DAD7F2",
@@ -446,7 +446,7 @@ function DashboardLayout({ children }: Props) {
                     "& .MuiDrawer-paper": {
                         width: 240,
                         borderRight: "1px solid #DAD7F2",
-                        background: "#EBE9FC",
+                        background: "#EDEBFC",
                     },
                 }}
             >
@@ -494,7 +494,7 @@ function DashboardLayout({ children }: Props) {
                     "& .MuiDrawer-paper": {
                         width: sidebarWidth,
                         borderRight: "1px solid #DAD7F2",
-                        background: "#EBE9FC",
+                        background: "#EDEBFC",
                         boxSizing: "border-box",
                         transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         overflowX: "hidden",
