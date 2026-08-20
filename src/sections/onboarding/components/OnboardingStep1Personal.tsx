@@ -24,13 +24,6 @@ import { formatToYYYYMMDD } from "../../../utils/format-date";
 const GENDERS = ["MALE", "FEMALE", "OTHER"];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const MARITAL_STATUSES = ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"];
-const COUNTRIES = [
-  { code: "IN", name: "India" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "SG", name: "Singapore" },
-  { code: "AE", name: "United Arab Emirates" },
-];
 
 interface OnboardingStep1Props {
   initialValues?: Partial<OnboardingStep1FormData>;

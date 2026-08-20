@@ -11,7 +11,6 @@ import MenuItem from "@mui/material/MenuItem";
 
 import TextInput from "../../../components/input/TextInput";
 import SlugInput from "../../../components/input/SlugInput";
-import CountryCodeSelect from "../../../components/input/CountryCodeSelect";
 import PhoneInput from "../../../components/input/PhoneInput";
 import PrimaryButton from "../../../components/button/PrimaryButton";
 import AuthLayout from "../../../layouts/auth/AuthLayout";

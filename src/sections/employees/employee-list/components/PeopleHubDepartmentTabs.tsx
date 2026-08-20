@@ -6,20 +6,21 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import CloseIcon from "@mui/icons-material/Close";
 
+import { MultiSelect, type MultiSelectOption } from "../../../../components/input/MultiSelect";
+
 export interface FilterState {
-  designation?: string;
-  branch?: string;
-  team?: string;
+  designation?: string | string[];
+  branch?: string | string[];
+  team?: string | string[];
   dateOfJoining?: string;
   fromDate?: string;
   toDate?: string;
-  department?: string;
-  status?: string;
+  department?: string | string[];
+  status?: string | string[];
 }
 
 interface PeopleHubFilterTabsProps {
@@ -175,63 +176,63 @@ export function PeopleHubDepartmentTabs({
             }}
           >
             {CATEGORIES.map((cat) => {
-              const selectedValue = localFilters[cat.id as keyof FilterState];
-              const isSelected = Boolean(selectedValue);
-              const isOpen = activeCategory === cat.id;
+              if (cat.isDate) {
+                const selectedValue = localFilters[cat.id as keyof FilterState] as string;
+                const isSelected = Boolean(selectedValue);
+                const isOpen = activeCategory === cat.id;
+                return (
+                  <Button
+                    key={cat.id}
+                    onClick={() => handleToggleCategory(cat.id)}
+                    size="small"
+                    endIcon={<CalendarTodayOutlinedIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: isOpen ? "#6D5DF6" : "#64748B" }} />}
+                    sx={{
+                      height: { xs: 36, sm: 40 },
+                      borderRadius: "10px",
+                      px: { xs: 0.8, sm: 1.8 },
+                      fontSize: { xs: "11px", sm: "14px" },
+                      fontWeight: isSelected || isOpen ? 600 : 500,
+                      textTransform: "none",
+                      whiteSpace: "nowrap",
+                      backgroundColor: isOpen ? "#EEF2FF" : "#FFFFFF",
+                      color: isSelected || isOpen ? "#0F172A" : "#475569",
+                      border: isOpen ? "1.5px solid #6D5DF6" : isSelected ? "1px solid #6D5DF6" : "1px solid #CBD5E1",
+                      minWidth: { xs: "auto", sm: 145 },
+                    }}
+                  >
+                    <span>{selectedValue || cat.label}</span>
+                  </Button>
+                );
+              }
+
+              const rawVal = localFilters[cat.id as keyof FilterState];
+              const selectedArray = Array.isArray(rawVal)
+                ? rawVal
+                : typeof rawVal === "string" && rawVal && !rawVal.startsWith("All")
+                ? [rawVal]
+                : [];
+
+              const rawOptions = getCategoryOptions(cat.id);
+              const optionsObj: MultiSelectOption[] = rawOptions
+                .filter((opt) => !opt.startsWith("All"))
+                .map((opt) => ({ value: opt, label: opt }));
 
               return (
-                <Button
-                  key={cat.id}
-                  onClick={() => handleToggleCategory(cat.id)}
-                  size="small"
-                  endIcon={
-                    cat.isDate ? (
-                      <CalendarTodayOutlinedIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: isOpen ? "#6D5DF6" : "#64748B" }} />
-                    ) : (
-                      <KeyboardArrowDownIcon
-                        sx={{
-                          fontSize: { xs: 14, sm: 18 },
-                          color: isOpen ? "#6D5DF6" : "#64748B",
-                          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                        }}
-                      />
-                    )
-                  }
-                  sx={{
-                    height: { xs: 36, sm: 40 },
-                    borderRadius: "10px",
-                    px: { xs: 0.8, sm: 1.8 },
-                    fontSize: { xs: "11px", sm: "14px" },
-                    fontWeight: isSelected || isOpen ? 600 : 500,
-                    textTransform: "none",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    transition: "all 0.15s ease",
-                    backgroundColor: isOpen ? "#EEF2FF" : "#FFFFFF",
-                    color: isSelected || isOpen ? "#0F172A" : "#475569",
-                    border: isOpen
-                      ? "1.5px solid #6D5DF6"
-                      : isSelected
-                      ? "1px solid #6D5DF6"
-                      : "1px solid #CBD5E1",
-                    boxShadow: isOpen ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    minWidth: { xs: "auto", sm: cat.isDate ? 145 : 125 },
-                    "&:hover": {
-                      backgroundColor: isOpen ? "#E0E7FF" : "#F8FAFC",
-                      borderColor: isSelected || isOpen ? "#6D5DF6" : "#94A3B8",
-                      color: "#0F172A",
-                    },
-                  }}
-                >
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {selectedValue ? selectedValue : cat.label}
-                  </span>
-                </Button>
+                <Box key={cat.id} sx={{ minWidth: { xs: "100%", sm: 140 }, flexShrink: 0 }}>
+                  <MultiSelect
+                    placeholder={cat.label}
+                    options={optionsObj}
+                    value={selectedArray}
+                    onChange={(newVals) => {
+                      const updated = { ...localFilters, [cat.id]: newVals };
+                      setLocalFilters(updated);
+                      onFilterChange?.(updated);
+                      if (cat.id === "department") {
+                        onSelectDepartment?.(newVals[0] || "");
+                      }
+                    }}
+                  />
+                </Box>
               );
             })}
           </Box>

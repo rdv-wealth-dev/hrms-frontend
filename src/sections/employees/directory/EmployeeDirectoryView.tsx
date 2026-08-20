@@ -118,27 +118,36 @@ function EmployeeDirectoryView() {
     }
   }, [dispatch, departments.length, designations.length, branches.length]);
 
+  // Helper to extract scalar string from string | string[]
+  const getFilterString = (value: string | string[] | undefined): string =>
+    Array.isArray(value) ? value[0] ?? "" : value ?? "";
+
+  // Sync page state and fetch data safely
   useEffect(() => {
     let branchId: string | undefined = undefined;
     let departmentId: string | undefined = undefined;
     let designationId: string | undefined = undefined;
 
-    if (filters.branch && filters.branch !== "All Branches") {
-      const found = branches.find((b: any) => b.name === filters.branch || (b as any).branchName === filters.branch);
+    const branchStr = getFilterString(filters.branch);
+    if (branchStr && branchStr !== "All Branches") {
+      const found = branches.find((b: any) => b.name === branchStr || (b as any).branchName === branchStr);
       if (found) branchId = found._id;
     }
-    if (filters.department && filters.department !== "All Departments") {
-      const found = departments.find((d: any) => d.name === filters.department);
+    const deptStr = getFilterString(filters.department);
+    if (deptStr && deptStr !== "All Departments") {
+      const found = departments.find((d: any) => d.name === deptStr);
       if (found) departmentId = found._id;
     }
-    if (filters.designation && filters.designation !== "All Designations") {
-      const found = designations.find((d: any) => d.name === filters.designation);
+    const desigStr = getFilterString(filters.designation);
+    if (desigStr && desigStr !== "All Designations") {
+      const found = designations.find((d: any) => d.name === desigStr);
       if (found) designationId = found._id;
     }
 
     let backendStatus: string | undefined = undefined;
-    if (filters.status && filters.status !== "All Statuses") {
-      const upper = filters.status.toUpperCase();
+    const statusStr = getFilterString(filters.status);
+    if (statusStr && statusStr !== "All Statuses") {
+      const upper = statusStr.toUpperCase();
       if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
         backendStatus = upper;
       }
@@ -179,30 +188,38 @@ function EmployeeDirectoryView() {
   ]);
 
   const displayedEmployees = employees.filter((emp) => {
-    // Note: Department, Designation, and Branch filters are executed server-side.
-
-    // 4. Team Filter
-    if (filters.team) {
-      const empTeam = (emp as any).team || "";
+    // 4. Team Multi-Select Filter
+    const selectedTeams = Array.isArray(filters.team)
+      ? filters.team
+      : typeof filters.team === "string" && filters.team && filters.team !== "All Teams"
+      ? [filters.team]
+      : [];
+    if (selectedTeams.length > 0) {
+      const empTeam = ((emp as any).team || "").toLowerCase();
       const deptObj = typeof emp.departmentId === "object" ? (emp.departmentId as any) : null;
-      const deptName = deptObj?.name || "";
-      const matchesTeam =
-        empTeam.toLowerCase().includes(filters.team.toLowerCase()) ||
-        deptName.toLowerCase().includes(filters.team.toLowerCase());
-      if (!matchesTeam) {
-        return false;
-      }
+      const deptName = (deptObj?.name || "").toLowerCase();
+      const matchesTeam = selectedTeams.some(
+        (t) => empTeam.includes(t.toLowerCase()) || deptName.includes(t.toLowerCase())
+      );
+      if (!matchesTeam) return false;
     }
 
-    // 5. Status Filter
-    if (filters.status) {
-      const targetStatus = filters.status.toUpperCase();
+    // 5. Status Multi-Select Filter
+    const selectedStatuses = Array.isArray(filters.status)
+      ? filters.status
+      : typeof filters.status === "string" && filters.status && filters.status !== "All Statuses"
+      ? [filters.status]
+      : [];
+    if (selectedStatuses.length > 0) {
       const empStatus = (emp.status || "").toUpperCase();
-      if (targetStatus === "ACTIVE" && empStatus !== "ACTIVE") return false;
-      if (targetStatus === "PROBATION" && !empStatus.includes("PROBATION")) return false;
-      if (targetStatus === "NOTICE" && !empStatus.includes("NOTICE")) return false;
-      if (targetStatus === "INACTIVE" && empStatus !== "INACTIVE") return false;
-      if (targetStatus === "ON_LEAVE" && empStatus !== "ON_LEAVE") return false;
+      const matchesStatus = selectedStatuses.some((st) => {
+        const target = st.toUpperCase().replace(/\s+/g, "_");
+        if (target === "ACTIVE") return empStatus === "ACTIVE";
+        if (target === "INACTIVE") return empStatus === "INACTIVE";
+        if (target === "ON_LEAVE" || target === "ON LEAVE") return empStatus === "ON_LEAVE";
+        return empStatus.includes(target);
+      });
+      if (!matchesStatus) return false;
     }
 
     // 6. Date of Joining Filter
@@ -365,7 +382,7 @@ function EmployeeDirectoryView() {
           onFilterChange={(newFilters) => {
             setFilters(newFilters);
             if (newFilters.department !== undefined) {
-              setSelectedDeptFilter(newFilters.department);
+              setSelectedDeptFilter(getFilterString(newFilters.department));
             }
           }}
         />

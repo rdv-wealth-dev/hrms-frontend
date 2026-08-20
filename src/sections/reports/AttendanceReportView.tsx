@@ -482,11 +482,48 @@ export default function AttendanceReportView() {
     setClientPage(0);
   };
 
+  // Multi-select filtered table rows
+  const filteredTableRows = useMemo(() => {
+    return tableRows.filter((row) => {
+      // 1. Status Multi-select
+      const selectedStatuses = Array.isArray(filterValues?.status) ? filterValues.status : [];
+      if (selectedStatuses.length > 0) {
+        const rowStatus = String(row.status || "").toUpperCase();
+        const matchesStatus = selectedStatuses.some(
+          (s) => s.toUpperCase() === rowStatus || (s === "HALF_DAY" && rowStatus === "HALF_DAY")
+        );
+        if (!matchesStatus) return false;
+      }
+
+      // 2. Department Multi-select
+      const selectedDepts = Array.isArray(filterValues?.departmentId) ? filterValues.departmentId : [];
+      if (selectedDepts.length > 0) {
+        const deptName = String((row as any).department || (row as any).departmentName || "");
+        const matchesDept = selectedDepts.some(
+          (d) => d === deptName || departments?.find((dep: any) => dep._id === d)?.name === deptName
+        );
+        if (!matchesDept) return false;
+      }
+
+      // 3. Designation Multi-select
+      const selectedDesigs = Array.isArray(filterValues?.designationId) ? filterValues.designationId : [];
+      if (selectedDesigs.length > 0) {
+        const desigName = String((row as any).role || (row as any).designation || "");
+        const matchesDesig = selectedDesigs.some(
+          (d) => d === desigName || designations?.find((des: any) => des._id === d)?.name === desigName
+        );
+        if (!matchesDesig) return false;
+      }
+
+      return true;
+    });
+  }, [tableRows, filterValues, departments, designations]);
+
   // Paginated slice of client-filtered rows
   const paginatedRows = useMemo(() => {
     const start = clientPage * clientRowsPerPage;
-    return tableRows.slice(start, start + clientRowsPerPage);
-  }, [tableRows, clientPage, clientRowsPerPage]);
+    return filteredTableRows.slice(start, start + clientRowsPerPage);
+  }, [filteredTableRows, clientPage, clientRowsPerPage]);
 
   // Compute dynamic Weekly Trend Chart Data for the last 7 days leading up to today
   const trendData: TrendBarData[] = useMemo(() => {
@@ -584,47 +621,38 @@ export default function AttendanceReportView() {
             {
               key: "branchId",
               label: "Branch",
-              type: "select",
-              options: [
-                { value: "ALL", label: "All Branches" },
-                ...(branches?.map((b: any) => ({
-                  value: b._id || b.name,
-                  label: b.name,
-                })) || []),
-              ],
+              type: "multiselect",
+              options: branches?.map((b: any) => ({
+                value: b._id || b.name,
+                label: b.name,
+              })) || [],
               minWidth: 140,
             },
             {
               key: "departmentId",
               label: "Departments",
-              type: "select",
-              options: [
-                { value: "ALL", label: "All Departments" },
-                ...(departments?.map((dep: any) => ({
-                  value: dep._id || dep.name,
-                  label: dep.name,
-                })) || []),
-              ],
+              type: "multiselect",
+              options: departments?.map((dep: any) => ({
+                value: dep._id || dep.name,
+                label: dep.name,
+              })) || [],
               minWidth: 150,
             },
             {
               key: "designationId",
               label: "Designation",
-              type: "select",
-              options: [
-                { value: "ALL", label: "All Designations" },
-                ...(designations?.map((d: any) => ({
-                  value: d._id || d.title || d.name,
-                  label: d.title || d.name,
-                })) || []),
-              ],
+              type: "multiselect",
+              options: designations?.map((d: any) => ({
+                value: d._id || d.title || d.name,
+                label: d.title || d.name,
+              })) || [],
               minWidth: 150,
             },
             {
               key: "status",
               label: "Status",
-              type: "select",
-              options: STATUS_OPTIONS,
+              type: "multiselect",
+              options: STATUS_OPTIONS.filter((opt) => opt.value !== "ALL"),
               minWidth: 150,
             },
           ]}
