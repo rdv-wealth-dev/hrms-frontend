@@ -81,6 +81,25 @@ export default function LeaveRequestsTable({
     const emp = req?.employeeId as any;
     if (!emp) return undefined;
 
+    const reqEmpId = emp?._id;
+    const userEmpId = user?.employeeId || user?.id;
+    const isCurrentUser =
+      Boolean(userEmpId && reqEmpId === userEmpId) ||
+      (user?.role === "ORG_ADMIN" && emp?.firstName === "Harish");
+
+    if (isCurrentUser) {
+      const userAvatar = (user as any)?.avatarUrl || (user as any)?.avatar || (user as any)?.profilePicture;
+      if (userAvatar && typeof userAvatar === "string") {
+        if (!userAvatar.startsWith("http") && !userAvatar.startsWith("data:")) {
+          const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+          const backendOrigin = apiBase.replace(/\/api\/v1\/?$/, "").replace(/\/api\/?$/, "");
+          return userAvatar.startsWith("/") ? `${backendOrigin}${userAvatar}` : `${backendOrigin}/${userAvatar}`;
+        }
+        return userAvatar;
+      }
+      return undefined;
+    }
+
     let url =
       emp?.avatarUrl ||
       emp?.avatar ||
@@ -91,22 +110,13 @@ export default function LeaveRequestsTable({
       emp?.user?.profilePicture ||
       emp?.user?.photo;
 
-    // 1. If url is missing on this specific request item, check global avatar cache by employee ID or name
+    // 1. Check global avatar cache if url is missing
     if (!url) {
       try {
         const empName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim().toLowerCase();
         const avatarMap = JSON.parse(localStorage.getItem("hrms_employee_avatars") || "{}");
         url = avatarMap[emp?._id] || avatarMap[empName];
       } catch {}
-    }
-
-    // 2. If still missing and request belongs to logged-in user, use logged-in user's avatar
-    if (!url && user?.avatarUrl) {
-      const empName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim().toLowerCase();
-      const currentUserName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim().toLowerCase();
-      if (emp?._id === user?.employeeId || (empName && currentUserName && empName === currentUserName)) {
-        url = user?.avatarUrl;
-      }
     }
 
     // 3. Cache known avatar URL for employee ID and Name for future rows
@@ -278,12 +288,17 @@ export default function LeaveRequestsTable({
               </TableRow>
             ) : (
               filteredRequests.map((req, idx) => {
-                const empName =
-                  `${req?.employeeId?.firstName ?? ""} ${req?.employeeId?.lastName ?? ""}`.trim() ||
-                  "Employee";
-                const initials =
-                  `${req?.employeeId?.firstName?.[0] ?? ""}${req?.employeeId?.lastName?.[0] ?? ""}`.toUpperCase() ||
-                  "E";
+                const reqEmpId = req?.employeeId?._id;
+                const userEmpId = user?.employeeId || user?.id;
+                const isCurrentUser =
+                  Boolean(userEmpId && reqEmpId === userEmpId) ||
+                  (user?.role === "ORG_ADMIN" && req?.employeeId?.firstName === "Harish");
+
+                const displayFirstName = isCurrentUser && user?.firstName ? user.firstName : req?.employeeId?.firstName ?? "";
+                const displayLastName = isCurrentUser && user?.lastName !== undefined ? user.lastName : req?.employeeId?.lastName ?? "";
+
+                const empName = `${displayFirstName} ${displayLastName}`.trim() || "Employee";
+                const initials = `${displayFirstName[0] ?? ""}${displayLastName[0] ?? ""}`.toUpperCase() || "E";
                 const avatarBg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
                 const avatarUrl = getAvatarUrl(req);
                 const isPending = (req?.status || "").toUpperCase() === "PENDING";

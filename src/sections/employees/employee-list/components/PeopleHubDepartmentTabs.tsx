@@ -7,10 +7,9 @@ import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import CloseIcon from "@mui/icons-material/Close";
-
-import { MultiSelect, type MultiSelectOption } from "../../../../components/input/MultiSelect";
 
 export interface FilterState {
   designation?: string | string[];
@@ -76,25 +75,6 @@ export function PeopleHubDepartmentTabs({
 
   const handleCloseMenu = () => {
     setActiveCategory(null);
-  };
-
-  const handleSelectOption = (categoryId: string, option: string) => {
-    const isAll = option.startsWith("All");
-    const value = isAll ? "" : option;
-
-    const updated = {
-      ...localFilters,
-      [categoryId]: value,
-    };
-
-    setLocalFilters(updated);
-    onFilterChange?.(updated);
-
-    if (categoryId === "department") {
-      onSelectDepartment?.(value);
-    }
-
-    handleCloseMenu();
   };
 
   const handleResetFilters = () => {
@@ -176,35 +156,6 @@ export function PeopleHubDepartmentTabs({
             }}
           >
             {CATEGORIES.map((cat) => {
-              if (cat.isDate) {
-                const selectedValue = localFilters[cat.id as keyof FilterState] as string;
-                const isSelected = Boolean(selectedValue);
-                const isOpen = activeCategory === cat.id;
-                return (
-                  <Button
-                    key={cat.id}
-                    onClick={() => handleToggleCategory(cat.id)}
-                    size="small"
-                    endIcon={<CalendarTodayOutlinedIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: isOpen ? "#6D5DF6" : "#64748B" }} />}
-                    sx={{
-                      height: { xs: 36, sm: 40 },
-                      borderRadius: "10px",
-                      px: { xs: 0.8, sm: 1.8 },
-                      fontSize: { xs: "11px", sm: "14px" },
-                      fontWeight: isSelected || isOpen ? 600 : 500,
-                      textTransform: "none",
-                      whiteSpace: "nowrap",
-                      backgroundColor: isOpen ? "#EEF2FF" : "#FFFFFF",
-                      color: isSelected || isOpen ? "#0F172A" : "#475569",
-                      border: isOpen ? "1.5px solid #6D5DF6" : isSelected ? "1px solid #6D5DF6" : "1px solid #CBD5E1",
-                      minWidth: { xs: "auto", sm: 145 },
-                    }}
-                  >
-                    <span>{selectedValue || cat.label}</span>
-                  </Button>
-                );
-              }
-
               const rawVal = localFilters[cat.id as keyof FilterState];
               const selectedArray = Array.isArray(rawVal)
                 ? rawVal
@@ -212,27 +163,68 @@ export function PeopleHubDepartmentTabs({
                 ? [rawVal]
                 : [];
 
-              const rawOptions = getCategoryOptions(cat.id);
-              const optionsObj: MultiSelectOption[] = rawOptions
-                .filter((opt) => !opt.startsWith("All"))
-                .map((opt) => ({ value: opt, label: opt }));
+              const count = cat.isDate
+                ? (localFilters.dateOfJoining ? 1 : 0)
+                : selectedArray.length;
+
+              const isSelected = count > 0;
+              const isOpen = activeCategory === cat.id;
+
+              let labelText = cat.label;
+              if (cat.isDate) {
+                labelText = localFilters.dateOfJoining || cat.label;
+              } else if (count === 1) {
+                labelText = `${cat.label}: ${selectedArray[0]}`;
+              } else if (count > 1) {
+                labelText = `${cat.label} (${count})`;
+              }
 
               return (
-                <Box key={cat.id} sx={{ minWidth: { xs: "100%", sm: 140 }, flexShrink: 0 }}>
-                  <MultiSelect
-                    placeholder={cat.label}
-                    options={optionsObj}
-                    value={selectedArray}
-                    onChange={(newVals) => {
-                      const updated = { ...localFilters, [cat.id]: newVals };
-                      setLocalFilters(updated);
-                      onFilterChange?.(updated);
-                      if (cat.id === "department") {
-                        onSelectDepartment?.(newVals[0] || "");
-                      }
-                    }}
-                  />
-                </Box>
+                <Button
+                  key={cat.id}
+                  onClick={() => handleToggleCategory(cat.id)}
+                  size="small"
+                  endIcon={
+                    cat.isDate ? (
+                      <CalendarTodayOutlinedIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: isOpen ? "#6D5DF6" : "#64748B" }} />
+                    ) : (
+                      <KeyboardArrowDownIcon
+                        sx={{
+                          fontSize: { xs: 14, sm: 18 },
+                          color: isOpen ? "#6D5DF6" : "#64748B",
+                          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                        }}
+                      />
+                    )
+                  }
+                  sx={{
+                    height: { xs: 36, sm: 40 },
+                    borderRadius: "10px",
+                    px: { xs: 0.8, sm: 1.8 },
+                    fontSize: { xs: "11px", sm: "14px" },
+                    fontWeight: isSelected || isOpen ? 600 : 500,
+                    textTransform: "none",
+                    whiteSpace: "nowrap",
+                    backgroundColor: isOpen ? "#EEF2FF" : isSelected ? "#F5F3FF" : "#FFFFFF",
+                    color: isSelected || isOpen ? "#4F46E5" : "#475569",
+                    border: isOpen || isSelected ? "1.5px solid #6D5DF6" : "1px solid #CBD5E1",
+                    boxShadow: isOpen ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    minWidth: { xs: "auto", sm: cat.isDate ? 145 : 125 },
+                    "&:hover": {
+                      backgroundColor: isOpen || isSelected ? "#EEF2FF" : "#F8FAFC",
+                      borderColor: "#6D5DF6",
+                      color: "#4F46E5",
+                    },
+                  }}
+                >
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {labelText}
+                  </span>
+                </Button>
               );
             })}
           </Box>
@@ -281,17 +273,50 @@ export function PeopleHubDepartmentTabs({
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Typography
-              sx={{
-                fontSize: "12px",
-                fontWeight: 700,
-                color: "#64748B",
-                textTransform: "uppercase",
-                letterSpacing: "0.6px",
-              }}
-            >
-              Filter by {activeCategoryObj?.label}
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                sx={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                }}
+              >
+                Filter by {activeCategoryObj?.label}
+              </Typography>
+
+              {activeCategoryObj && !activeCategoryObj.isDate && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      const allOpts = activeOptions.filter((o) => !o.startsWith("All"));
+                      const updated = { ...localFilters, [activeCategoryObj.id]: allOpts };
+                      setLocalFilters(updated);
+                      onFilterChange?.(updated);
+                      if (activeCategoryObj.id === "department") onSelectDepartment?.(allOpts[0] || "");
+                    }}
+                    sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", py: 0.2, px: 0.8, color: "#6D5DF6" }}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      const updated = { ...localFilters, [activeCategoryObj.id]: [] };
+                      setLocalFilters(updated);
+                      onFilterChange?.(updated);
+                      if (activeCategoryObj.id === "department") onSelectDepartment?.("");
+                    }}
+                    sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", color: "#EF4444", py: 0.2, px: 0.8 }}
+                  >
+                    Clear
+                  </Button>
+                </Box>
+              )}
+            </Box>
+
             <IconButton
               size="small"
               onClick={handleCloseMenu}
@@ -308,31 +333,81 @@ export function PeopleHubDepartmentTabs({
 
           <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
             {activeOptions.map((option) => {
-              const currentVal = localFilters[activeCategoryObj?.id as keyof FilterState];
-              const isSelected =
-                (option.startsWith("All") && !currentVal) || currentVal === option;
+              if (!activeCategoryObj) return null;
+
+              if (activeCategoryObj.id === "dateOfJoining") {
+                const currentVal = localFilters.dateOfJoining;
+                const isSelected = (option.startsWith("All") && !currentVal) || currentVal === option;
+                return (
+                  <Chip
+                    key={option}
+                    label={option}
+                    onClick={() => {
+                      const updated = {
+                        ...localFilters,
+                        dateOfJoining: option.startsWith("All") ? "" : option,
+                        fromDate: "",
+                        toDate: "",
+                      };
+                      setLocalFilters(updated);
+                      onFilterChange?.(updated);
+                      handleCloseMenu();
+                    }}
+                    clickable
+                    sx={{
+                      height: 32,
+                      borderRadius: "8px",
+                      px: 1,
+                      fontSize: "13px",
+                      fontWeight: isSelected ? 600 : 500,
+                      backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
+                      color: isSelected ? "#FFFFFF" : "#334155",
+                      border: isSelected ? "1px solid #6D5DF6" : "1px solid #CBD5E1",
+                      boxShadow: isSelected ? "0 2px 5px rgba(109, 93, 246, 0.25)" : "none",
+                      "&:hover": {
+                        backgroundColor: isSelected ? "#5B4EB3" : "#F1F5F9",
+                        borderColor: isSelected ? "#5B4EB3" : "#94A3B8",
+                      },
+                    }}
+                  />
+                );
+              }
+
+              // Multi-select categories
+              const rawVal = localFilters[activeCategoryObj.id as keyof FilterState];
+              const selectedArray = Array.isArray(rawVal)
+                ? rawVal
+                : typeof rawVal === "string" && rawVal && !rawVal.startsWith("All")
+                ? [rawVal]
+                : [];
+
+              const isAll = option.startsWith("All");
+              const isSelected = isAll ? selectedArray.length === 0 : selectedArray.includes(option);
+
+              const handleChipClick = () => {
+                let updatedArray: string[] = [];
+                if (isAll) {
+                  updatedArray = [];
+                } else {
+                  if (selectedArray.includes(option)) {
+                    updatedArray = selectedArray.filter((o) => o !== option);
+                  } else {
+                    updatedArray = [...selectedArray, option];
+                  }
+                }
+                const updated = { ...localFilters, [activeCategoryObj.id]: updatedArray };
+                setLocalFilters(updated);
+                onFilterChange?.(updated);
+                if (activeCategoryObj.id === "department") {
+                  onSelectDepartment?.(updatedArray[0] || "");
+                }
+              };
 
               return (
                 <Chip
                   key={option}
-                  label={option}
-                  onClick={() => {
-                    if (activeCategoryObj) {
-                      if (activeCategoryObj.id === "dateOfJoining") {
-                        const updated = {
-                          ...localFilters,
-                          dateOfJoining: option.startsWith("All") ? "" : option,
-                          fromDate: "",
-                          toDate: "",
-                        };
-                        setLocalFilters(updated);
-                        onFilterChange?.(updated);
-                        handleCloseMenu();
-                      } else {
-                        handleSelectOption(activeCategoryObj.id, option);
-                      }
-                    }
-                  }}
+                  label={isSelected && !isAll ? `✓ ${option}` : option}
+                  onClick={handleChipClick}
                   clickable
                   sx={{
                     height: 32,
@@ -342,8 +417,8 @@ export function PeopleHubDepartmentTabs({
                     fontWeight: isSelected ? 600 : 500,
                     backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
                     color: isSelected ? "#FFFFFF" : "#334155",
-                    border: isSelected ? "1px solid #6D5DF6" : "1px solid #CBD5E1",
-                    boxShadow: isSelected ? "0 2px 5px rgba(109, 93, 246, 0.25)" : "none",
+                    border: isSelected ? "1.5px solid #6D5DF6" : "1px solid #CBD5E1",
+                    boxShadow: isSelected ? "0 2px 6px rgba(109, 93, 246, 0.2)" : "none",
                     transition: "all 0.15s ease",
                     "&:hover": {
                       backgroundColor: isSelected ? "#5B4EB3" : "#F1F5F9",

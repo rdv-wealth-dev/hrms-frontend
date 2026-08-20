@@ -10,12 +10,9 @@ import Paper from "@mui/material/Paper";
 
 import SearchIcon from "@mui/icons-material/Search";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CloseIcon from "@mui/icons-material/Close";
-
-import { MultiSelect } from "../input/MultiSelect";
 
 export interface FilterOption {
   value: string;
@@ -154,17 +151,6 @@ function resolveFieldOptions(field: FilterField): FilterOption[] {
   return field.options || [];
 }
 
-const formatDateString = (dateStr?: string) => {
-  if (!dateStr) return "";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-  } catch {
-    return dateStr;
-  }
-};
-
 export default function FilterBar({
   searchPlaceholder = "Search employees...",
   searchValue = "",
@@ -245,96 +231,23 @@ export default function FilterBar({
           const currentVal = values[field.key];
           const hasValue = currentVal !== undefined && currentVal !== "" && currentVal !== "ALL";
 
-          if (field.type === "multiselect") {
-            const currentArray = Array.isArray(values[field.key]) ? values[field.key] : [];
-            return (
-              <Box key={field.key} sx={{ minWidth: field.minWidth || 160 }}>
-                <MultiSelect
-                  placeholder={field.label}
-                  options={field.options}
-                  value={currentArray}
-                  onChange={(newVals) => {
-                    if (onFilterChange) onFilterChange(field.key, newVals);
-                  }}
-                />
-              </Box>
-            );
+          // Select / MultiSelect Pills
+          const selectedArray = Array.isArray(currentVal)
+            ? currentVal
+            : typeof currentVal === "string" && currentVal && currentVal !== "ALL"
+            ? [currentVal]
+            : [];
+          const count = field.type === "multiselect" ? selectedArray.length : (hasValue ? 1 : 0);
+          const isSelected = count > 0;
+
+          let btnLabel = field.label;
+          if (count === 1) {
+            const foundOpt = field.options?.find((o) => o.value === selectedArray[0]);
+            btnLabel = foundOpt ? `${field.label}: ${foundOpt.label}` : `${field.label}: ${selectedArray[0]}`;
+          } else if (count > 1) {
+            btnLabel = `${field.label} (${count})`;
           }
 
-          if (field.type === "daterange") {
-            const hasFrom = Boolean(values.fromDate);
-            const hasTo = Boolean(values.toDate);
-            const hasVal = hasFrom || hasTo;
-
-            let btnLabel = field.label;
-            if (hasFrom && hasTo) {
-              btnLabel = `${formatDateString(values.fromDate)} - ${formatDateString(values.toDate)}`;
-            } else if (hasFrom) {
-              btnLabel = `From ${formatDateString(values.fromDate)}`;
-            } else if (hasTo) {
-              btnLabel = `To ${formatDateString(values.toDate)}`;
-            }
-
-            return (
-              <Button
-                key={field.key}
-                disableRipple
-                onClick={() => handlePillClick(field.key)}
-                endIcon={<CalendarMonthOutlinedIcon sx={{ fontSize: "18px !important" }} />}
-                sx={{
-                  height: 40,
-                  borderRadius: "10px",
-                  px: 2,
-                  textTransform: "none",
-                  fontSize: "14px",
-                  fontWeight: isPanelOpen || hasVal ? 600 : 500,
-                  backgroundColor: isPanelOpen ? "#F5F3FF" : "#FFFFFF",
-                  color: isPanelOpen || hasVal ? "#6D5DF6" : "#334155",
-                  border: isPanelOpen || hasVal ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
-                  boxShadow: isPanelOpen ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
-                  "&:hover": {
-                    backgroundColor: isPanelOpen ? "#F5F3FF" : "#F8FAFC",
-                    borderColor: isPanelOpen ? "#6D5DF6" : "#CBD5E1",
-                  },
-                  transition: "all 0.15s ease-in-out",
-                }}
-              >
-                {btnLabel}
-              </Button>
-            );
-          }
-
-          if (field.type === "date") {
-            return (
-              <Button
-                key={field.key}
-                disableRipple
-                onClick={() => handlePillClick(field.key)}
-                endIcon={<CalendarMonthOutlinedIcon sx={{ fontSize: "18px !important" }} />}
-                sx={{
-                  height: 40,
-                  borderRadius: "10px",
-                  px: 2,
-                  textTransform: "none",
-                  fontSize: "14px",
-                  fontWeight: isPanelOpen || hasValue ? 600 : 500,
-                  backgroundColor: isPanelOpen ? "#F5F3FF" : "#FFFFFF",
-                  color: isPanelOpen || hasValue ? "#6D5DF6" : "#334155",
-                  border: isPanelOpen || hasValue ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
-                  boxShadow: isPanelOpen ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
-                  "&:hover": {
-                    backgroundColor: isPanelOpen ? "#F5F3FF" : "#F8FAFC",
-                    borderColor: isPanelOpen ? "#6D5DF6" : "#CBD5E1",
-                  },
-                  transition: "all 0.15s ease-in-out",
-                }}
-              >
-                {field.label}
-              </Button>
-            );
-          }
-
-          // Select Pills
           return (
             <Button
               key={field.key}
@@ -353,19 +266,19 @@ export default function FilterBar({
                 px: 2,
                 textTransform: "none",
                 fontSize: "14px",
-                fontWeight: isPanelOpen || hasValue ? 600 : 500,
-                backgroundColor: isPanelOpen ? "#F5F3FF" : "#FFFFFF",
-                color: isPanelOpen || hasValue ? "#6D5DF6" : "#334155",
-                border: isPanelOpen || hasValue ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                fontWeight: isPanelOpen || isSelected ? 600 : 500,
+                backgroundColor: isPanelOpen || isSelected ? "#F5F3FF" : "#FFFFFF",
+                color: isPanelOpen || isSelected ? "#6D5DF6" : "#334155",
+                border: isPanelOpen || isSelected ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
                 boxShadow: isPanelOpen ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
                 "&:hover": {
-                  backgroundColor: isPanelOpen ? "#F5F3FF" : "#F8FAFC",
-                  borderColor: isPanelOpen ? "#6D5DF6" : "#CBD5E1",
+                  backgroundColor: isPanelOpen || isSelected ? "#F5F3FF" : "#F8FAFC",
+                  borderColor: "#6D5DF6",
                 },
                 transition: "all 0.15s ease-in-out",
               }}
             >
-              {field.label}
+              {btnLabel}
             </Button>
           );
         })}
@@ -418,18 +331,44 @@ export default function FilterBar({
                 mb: 2,
               }}
             >
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: "11px",
-                  letterSpacing: "0.06em",
-                  color: "#64748B",
-                  textTransform: "uppercase",
-                }}
-              >
-                FILTER BY {activeField.label}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "11px",
+                    letterSpacing: "0.06em",
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  FILTER BY {activeField.label}
+                </Typography>
+
+                {activeField.type === "multiselect" && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        const allVals = (activeField.options || []).map((o) => o.value).filter((v) => v !== "ALL");
+                        if (onFilterChange) onFilterChange(activeField.key, allVals);
+                      }}
+                      sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", py: 0.2, px: 0.8, color: "#6D5DF6" }}
+                    >
+                      Select All
+                    </Button>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        if (onFilterChange) onFilterChange(activeField.key, []);
+                      }}
+                      sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", color: "#EF4444", py: 0.2, px: 0.8 }}
+                    >
+                      Clear
+                    </Button>
+                  </Box>
+                )}
+              </Box>
 
               <IconButton
                 size="small"
@@ -512,6 +451,88 @@ export default function FilterBar({
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.25 }}>
                 {(() => {
                   const resolvedOpts = resolveFieldOptions(activeField);
+                  const isMulti = activeField.type === "multiselect";
+                  const rawVal = values[activeField.key];
+                  const selectedArray = Array.isArray(rawVal)
+                    ? rawVal
+                    : typeof rawVal === "string" && rawVal && rawVal !== "ALL"
+                    ? [rawVal]
+                    : [];
+
+                  if (isMulti) {
+                    const optsToRender = resolvedOpts.filter((o) => o.value !== "ALL");
+                    const isAllSelected = selectedArray.length === 0;
+
+                    return (
+                      <>
+                        <Button
+                          key="ALL"
+                          disableRipple
+                          onClick={() => {
+                            if (onFilterChange) onFilterChange(activeField.key, []);
+                          }}
+                          sx={{
+                            height: 36,
+                            borderRadius: "10px",
+                            px: 2,
+                            textTransform: "none",
+                            fontSize: "13.5px",
+                            fontWeight: isAllSelected ? 600 : 500,
+                            backgroundColor: isAllSelected ? "#6D5DF6" : "#FFFFFF",
+                            color: isAllSelected ? "#FFFFFF" : "#334155",
+                            border: isAllSelected ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                            boxShadow: isAllSelected ? "0 2px 8px rgba(109, 93, 246, 0.25)" : "none",
+                            "&:hover": {
+                              backgroundColor: isAllSelected ? "#5B4BEA" : "#F8FAFC",
+                              borderColor: "#6D5DF6",
+                            },
+                          }}
+                        >
+                          All {activeField.label}
+                        </Button>
+
+                        {optsToRender.map((opt) => {
+                          const isSelected = selectedArray.includes(opt.value);
+                          const handleChipToggle = () => {
+                            let updated: string[] = [];
+                            if (isSelected) {
+                              updated = selectedArray.filter((v) => v !== opt.value);
+                            } else {
+                              updated = [...selectedArray, opt.value];
+                            }
+                            if (onFilterChange) onFilterChange(activeField.key, updated);
+                          };
+
+                          return (
+                            <Button
+                              key={opt.value}
+                              disableRipple
+                              onClick={handleChipToggle}
+                              sx={{
+                                height: 36,
+                                borderRadius: "10px",
+                                px: 2,
+                                textTransform: "none",
+                                fontSize: "13.5px",
+                                fontWeight: isSelected ? 600 : 500,
+                                backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
+                                color: isSelected ? "#FFFFFF" : "#334155",
+                                border: isSelected ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                                boxShadow: isSelected ? "0 2px 8px rgba(109, 93, 246, 0.25)" : "none",
+                                "&:hover": {
+                                  backgroundColor: isSelected ? "#5B4BEA" : "#F8FAFC",
+                                  borderColor: "#6D5DF6",
+                                },
+                              }}
+                            >
+                              {isSelected ? `✓ ${opt.label}` : opt.label}
+                            </Button>
+                          );
+                        })}
+                      </>
+                    );
+                  }
+
                   const hasAllOpt = resolvedOpts.some((o) => o.value === "ALL");
                   const baseLabel = activeField.label.trim();
                   const defaultAllLabel = baseLabel.toLowerCase().startsWith("all")

@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Popover from "@mui/material/Popover";
-import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import InputAdornment from "@mui/material/InputAdornment";
 import Chip from "@mui/material/Chip";
@@ -281,15 +280,17 @@ export function MultiSelect({
             filteredOptions.map((opt) => {
               const isChecked = safeValue.includes(opt.value);
               return (
-                <MenuItem
+                <Box
                   key={opt.value}
                   onClick={() => handleToggleOption(opt.value)}
                   sx={{
+                    display: "flex",
+                    alignItems: "center",
                     py: 0.8,
                     px: 1.5,
-                    fontSize: "13.5px",
-                    fontWeight: isChecked ? 600 : 400,
-                    color: isChecked ? "#4F46E5" : "#0F172A",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    transition: "background-color 0.15s ease",
                     backgroundColor: isChecked ? "#F5F3FF" : "transparent",
                     "&:hover": { backgroundColor: "#F1F5F9" },
                   }}
@@ -299,10 +300,10 @@ export function MultiSelect({
                     checked={isChecked}
                     sx={{ p: 0.5, mr: 1, color: "#94A3B8", "&.Mui-checked": { color: "#6D5DF6" } }}
                   />
-                  <Typography noWrap sx={{ fontSize: "13.5px" }}>
+                  <Typography noWrap sx={{ fontSize: "13.5px", fontWeight: isChecked ? 600 : 400, color: isChecked ? "#4F46E5" : "#0F172A" }}>
                     {opt.label}
                   </Typography>
-                </MenuItem>
+                </Box>
               );
             })
           )}
