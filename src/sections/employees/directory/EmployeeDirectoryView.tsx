@@ -12,7 +12,6 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -236,7 +235,7 @@ function EmployeeDirectoryView() {
   });
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Top Header */}
         <Box
@@ -383,7 +382,7 @@ function EmployeeDirectoryView() {
           />
         )}
       </Box>
-    </DashboardLayout>
+    </>
   );
 }
 

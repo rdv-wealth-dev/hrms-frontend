@@ -14,6 +14,7 @@ import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Alert from "@mui/material/Alert";
+import Avatar from "@mui/material/Avatar";
 import { useSnackbar } from "../../../components/snackbar";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -21,15 +22,13 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextInput from "../../../components/input/TextInput";
 import { formatDate } from "../../../utils/format-date";
-import { StatusChip } from "../../../components/common/StatusChip";
 import Tooltip from "@mui/material/Tooltip";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import {
   getPendingDocuments,
   verifyDocument,
@@ -70,9 +69,23 @@ export function DocumentVerificationView() {
 
   const getEmployeeName = (doc: EmployeeDocument): string => {
     if (typeof doc.employeeId === "object" && doc.employeeId) {
-      return `${doc.employeeId.firstName ?? ""} ${doc.employeeId.lastName ?? ""}`.trim() || "—";
+      return `${doc.employeeId.firstName ?? ""} ${doc.employeeId.lastName ?? ""}`.trim() || "Employee";
+    }
+    return "Employee";
+  };
+
+  const getEmployeeCode = (doc: EmployeeDocument): string => {
+    if (typeof doc.employeeId === "object" && doc.employeeId) {
+      return doc.employeeId.employeeCode || "—";
     }
     return "—";
+  };
+
+  const getEmployeeAvatar = (doc: EmployeeDocument): string | undefined => {
+    if (typeof doc.employeeId === "object" && doc.employeeId) {
+      return (doc.employeeId as any).avatarUrl || (doc.employeeId as any).profilePicture || undefined;
+    }
+    return undefined;
   };
 
   const getEmployeeId = (doc: EmployeeDocument): string => {
@@ -142,8 +155,8 @@ export function DocumentVerificationView() {
   };
 
   return (
-    <DashboardLayout>
-      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: "1200px", margin: "0 auto" }}>
+    <>
+      <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 2 }}>
           <Box>
@@ -159,10 +172,10 @@ export function DocumentVerificationView() {
 
         {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setError(null)}>{error}</Alert>}
 
-        <Card sx={{ borderRadius: 4, boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.04)" }}>
+        <Card sx={{ borderRadius: 4, boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.04)", border: "1px solid #F1F5F9" }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-              <CircularProgress size={32} sx={{ color: "#9CA3AF" }} />
+              <CircularProgress size={32} sx={{ color: "#6D5DF6" }} />
             </Box>
           ) : documents.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 8 }}>
@@ -175,76 +188,131 @@ export function DocumentVerificationView() {
               </Typography>
             </Box>
           ) : (
-            <TableContainer component={Paper} sx={{ boxShadow: "none", borderRadius: 4 }}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
-                    <TableCell sx={{ fontWeight: 600, color: "#6B7280", fontSize: "0.8rem" }}>Employee</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#6B7280", fontSize: "0.8rem" }}>Document Type</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#6B7280", fontSize: "0.8rem" }}>File Name</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#6B7280", fontSize: "0.8rem" }}>Uploaded</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#6B7280", fontSize: "0.8rem" }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#6B7280", fontSize: "0.8rem" }} align="right">Actions</TableCell>
+            <TableContainer component={Paper} elevation={0} sx={{ boxShadow: "none", borderRadius: 4, overflow: "hidden" }}>
+              <Table sx={{ minWidth: 800 }}>
+                <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700, color: "#64748B", fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Employee</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#64748B", fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Document Type</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#64748B", fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>File Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#64748B", fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Uploaded On</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#64748B", fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#64748B", fontSize: "11px", letterSpacing: "0.5px", textTransform: "uppercase" }} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {documents.map((doc) => (
-                    <TableRow key={doc._id} sx={{ "&:hover": { backgroundColor: "#F9FAFB" } }}>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
-                          {getEmployeeName(doc)}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
-                          {doc.employeeId && typeof doc.employeeId === "object" ? doc.employeeId.employeeCode ?? "" : ""}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip label={doc.documentType} size="small" variant="outlined" sx={{ fontSize: "0.75rem", fontWeight: 500 }} />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ color: "#374151", fontFamily: "monospace", fontSize: "0.8rem" }}>
+                  {documents.map((doc) => {
+                    const empName = getEmployeeName(doc);
+                    const empCode = getEmployeeCode(doc);
+                    const empAvatar = getEmployeeAvatar(doc);
+                    const initials = empName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "E";
+                    const statusVal = ((doc as any).status || "PENDING").toUpperCase();
+
+                    return (
+                      <TableRow key={doc._id} hover sx={{ "&:last-child td": { border: 0 } }}>
+                        <TableCell>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                            <Avatar
+                              src={empAvatar}
+                              sx={{
+                                width: 34,
+                                height: 34,
+                                backgroundColor: "#6D5DF6",
+                                color: "#FFFFFF",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {initials}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1E293B", lineHeight: 1.2 }}>
+                                {empName}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: "#64748B" }}>
+                                {empCode}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>
+                          {doc.documentType}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13, color: "#475569" }}>
                           {doc.fileName}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ color: "#6B7280", fontSize: "0.8rem" }}>
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13, color: "#0F172A", fontWeight: 700, whiteSpace: "nowrap" }}>
                           {formatDate(doc.createdAt)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <StatusChip status={(doc as any).status || "PENDING"} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>
-                          <Tooltip title="View document">
-                            <IconButton size="small" onClick={() => handleView(doc)} sx={{ color: "#6D5DF6" }}>
-                              <VisibilityOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Approve">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleApprove(doc)}
-                              disabled={actionLoading === doc._id}
-                              sx={{ color: "#059669" }}
-                            >
-                              <CheckCircleOutlineOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Reject">
-                            <IconButton
-                              size="small"
-                              onClick={() => openRejectDialog(doc)}
-                              disabled={actionLoading === doc._id}
-                              sx={{ color: "#DC2626" }}
-                            >
-                              <CancelOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={statusVal === "VERIFIED" ? "Verified" : statusVal === "REJECTED" ? "Rejected" : "Pending"}
+                            size="small"
+                            sx={{
+                              backgroundColor: statusVal === "VERIFIED" ? "#DCFCE7" : statusVal === "REJECTED" ? "#FEE2E2" : "#FEF3C7",
+                              color: statusVal === "VERIFIED" ? "#166534" : statusVal === "REJECTED" ? "#991B1B" : "#D97706",
+                              fontWeight: 600,
+                              fontSize: 11,
+                              borderRadius: "12px",
+                              height: 24,
+                              px: 0.5,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: "flex", gap: 1, justifyContent: "center", alignItems: "center" }}>
+                            <Tooltip title="View Document">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleView(doc)}
+                                sx={{
+                                  backgroundColor: "#F1F5F9",
+                                  color: "#6D5DF6",
+                                  width: 28,
+                                  height: 28,
+                                  "&:hover": { backgroundColor: "#E2E8F0" },
+                                }}
+                              >
+                                <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Approve">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleApprove(doc)}
+                                disabled={actionLoading === doc._id}
+                                sx={{
+                                  backgroundColor: "#DCFCE7",
+                                  color: "#16A34A",
+                                  width: 28,
+                                  height: 28,
+                                  "&:hover": { backgroundColor: "#BBF7D0" },
+                                }}
+                              >
+                                <CheckIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Reject">
+                              <IconButton
+                                size="small"
+                                onClick={() => openRejectDialog(doc)}
+                                disabled={actionLoading === doc._id}
+                                sx={{
+                                  backgroundColor: "#FEE2E2",
+                                  color: "#DC2626",
+                                  width: 28,
+                                  height: 28,
+                                  "&:hover": { backgroundColor: "#FECACA" },
+                                }}
+                              >
+                                <CloseIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -288,7 +356,7 @@ export function DocumentVerificationView() {
           </Button>
         </DialogActions>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 }
 

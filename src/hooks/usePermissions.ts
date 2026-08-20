@@ -3,6 +3,11 @@ import type { RootState } from "../store/rootReducer";
 import { useRole } from "../auth/hooks/use-role";
 import { ROLE_PERMISSIONS } from "../utils/permissions";
 
+export const canAccess = (userPermissions: string[], permission: string): boolean => {
+  if (!Array.isArray(userPermissions)) return false;
+  return userPermissions.includes(permission);
+};
+
 export function usePermissions() {
   const { role, permissions: userPermissions, hasRole } = useRole();
   const user = useSelector((state: RootState) => state.auth?.user);
@@ -38,5 +43,11 @@ export function usePermissions() {
     hasAnyPermission,
     hasAllPermissions,
     hasRole,
+    canCreateEmployee: hasPermission("employee.create"),
+    canUpdateEmployee: hasPermission("employee.update"),
+    canDeleteEmployee: hasPermission("employee.delete"),
+    canApproveLeave: hasPermission("leave.approve"),
+    canCreateLeave: hasPermission("leave.create"),
+    canApproveAttendance: hasPermission("attendance.approve"),
   };
 }

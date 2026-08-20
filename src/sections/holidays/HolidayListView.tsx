@@ -36,7 +36,6 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../components/input/TextInput";
 import ConfirmDialog from "../../components/modal/ConfirmDialog";
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { formatDate } from "../../utils/format-date";
 import type { AppDispatch } from "../../store/store";
 import type { RootState } from "../../store/rootReducer";
@@ -629,7 +628,7 @@ export default function HolidayListView() {
   const selectedBranchObj = branchesList.find((b) => b._id === selectedBranchId);
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box
@@ -1009,6 +1008,6 @@ export default function HolidayListView() {
           <ListItemText primary={<Typography variant="body2" sx={{ fontWeight: 500 }}>Delete</Typography>} />
         </MenuItem>
       </Menu>
-    </DashboardLayout>
+    </>
   );
 }

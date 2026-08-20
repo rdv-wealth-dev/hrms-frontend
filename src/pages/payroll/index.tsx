@@ -1,6 +1,5 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import SoftGateLockCard from "../../components/common/SoftGateLockCard";
 import { useOnboardingStatus } from "../../hooks/useOnboardingStatus";
 
@@ -8,7 +7,7 @@ export function PayrollPage() {
   const { phase, completionPct, isProfileComplete } = useOnboardingStatus();
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: "auto" }}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
@@ -36,7 +35,7 @@ export function PayrollPage() {
           </Box>
         )}
       </Box>
-    </DashboardLayout>
+    </>
   );
 }
 

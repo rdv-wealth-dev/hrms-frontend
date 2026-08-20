@@ -37,7 +37,6 @@ import { usePermissions } from "../../../hooks/usePermissions";
 import ManualAttendanceDialog from "../components/ManualAttendanceDialog";
 import RegularizeRequestDialog from "../components/RegularizeRequestDialog";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { getMyAttendanceHistory, getMyRegularizationRequests } from "../../../api/attendance.api";
 import { listCompanyEvents, type CompanyEvent } from "../../../api/event.api";
 import CreateEventDialog from "../components/CreateEventDialog";
@@ -295,7 +294,7 @@ export default function MyAttendanceView() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
@@ -1032,6 +1031,6 @@ export default function MyAttendanceView() {
           </DialogActions>
         </Dialog>
       </Box>
-    </DashboardLayout>
+    </>
   );
 }

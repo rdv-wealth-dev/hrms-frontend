@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import Box from "@mui/material/Box";
@@ -12,6 +12,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -23,8 +24,10 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PolicyIcon from "@mui/icons-material/Policy";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import PersonIcon from "@mui/icons-material/Person";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-import CollapsibleNavGroup, { type NavSubItem } from "./components/CollapsibleNavGroup";
+// CollapsibleNavGroup import removed (flattened menu)
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -34,6 +37,9 @@ import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
 import { OnboardingBanner } from "../../components/common/OnboardingBanner";
+
+import { getPendingLeaveRequests } from "../../api/leave.api";
+import { getPendingRegularizationRequests } from "../../api/attendance.api";
 
 interface NavItem {
     label: string;
@@ -54,9 +60,6 @@ const topNavItems: NavItem[] = [
         path: paths.employees.list,
         permission: "employee.read",
     },
-];
-
-const timeAndLeaveNavItems: NavSubItem[] = [
     {
         label: "Attendance Report",
         icon: <AssessmentIcon fontSize="small" />,
@@ -67,25 +70,19 @@ const timeAndLeaveNavItems: NavSubItem[] = [
         label: "Leave Management",
         icon: <PolicyIcon fontSize="small" />,
         path: paths.leave,
-        permission: "leave.approve",
+        permission: "leave.read",
     },
     {
-        label: "Requests",
-        icon: <FactCheckIcon fontSize="small" />,
-        children: [
-            {
-                label: "Regularization",
-                icon: <CalendarMonthIcon fontSize="small" />,
-                path: paths.attendanceRegularizations,
-                permission: "attendance.approve",
-            },
-            {
-                label: "Leave Approval",
-                icon: <PolicyIcon fontSize="small" />,
-                path: paths.leaveApprovals,
-                permission: "leave.approve",
-            },
-        ],
+        label: "Regularization",
+        icon: <CalendarMonthIcon fontSize="small" />,
+        path: paths.attendanceRegularizations,
+        permission: "leave.read",
+    },
+    {
+        label: "Leave Approval",
+        icon: <PolicyIcon fontSize="small" />,
+        path: paths.leaveApprovals,
+        permission: "leave.approve",
     },
     {
         label: "Holiday",
@@ -108,22 +105,65 @@ const bottomNavItems: NavItem[] = [
         path: paths.settings,
         permission: "settings.read",
     },
+    {
+        label: "My Profile",
+        icon: <PersonIcon fontSize="small" />,
+        path: paths.profile,
+    },
 ];
 
-type Props = {
-    children: React.ReactNode;
-};
-
-function DashboardLayout({ children }: Props) {
+function DashboardLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    const showBackButton = location.pathname !== paths.dashboard;
     const dispatch = useDispatch<AppDispatch>();
 
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
+    const [pendingLeaveCount, setPendingLeaveCount] = useState<number>(0);
+    const [pendingRegCount, setPendingRegCount] = useState<number>(0);
+
     const user = useSelector((state: RootState) => state.auth?.user);
-    const { hasPermission } = usePermissions();
+    const { role, hasPermission } = usePermissions();
+
+    const extractArrayCount = (res: any): number => {
+        if (!res) return 0;
+        let list: any[] = [];
+        if (Array.isArray(res)) list = res;
+        else if (Array.isArray(res.data)) list = res.data;
+        else if (Array.isArray(res.items)) list = res.items;
+        else if (Array.isArray(res.data?.items)) list = res.data.items;
+        else if (Array.isArray(res.requests)) list = res.requests;
+        else if (Array.isArray(res.regularizations)) list = res.regularizations;
+
+        if (list.length > 0) {
+            const pendingList = list.filter((item) => {
+                if (!item || typeof item !== "object") return false;
+                const status = String(item.status || item.approvalStatus || item.requestStatus || "").toUpperCase();
+                return status === "PENDING" || status === "SUBMITTED" || status === "REQUESTED";
+            });
+            return pendingList.length;
+        }
+
+        return 0;
+    };
+
+    useEffect(() => {
+        if (role && role !== "EMPLOYEE") {
+            getPendingLeaveRequests(1, 100)
+                .then((res) => {
+                    setPendingLeaveCount(extractArrayCount(res));
+                })
+                .catch(() => {});
+
+            getPendingRegularizationRequests()
+                .then((res) => {
+                    setPendingRegCount(extractArrayCount(res));
+                })
+                .catch(() => {});
+        }
+    }, [role]);
 
     const filterNavItems = (items: NavItem[]) =>
         items.filter((item) => {
@@ -136,8 +176,25 @@ function DashboardLayout({ children }: Props) {
 
     const sidebarWidth = collapsed ? 76 : 240;
 
+    const getItemLabel = (item: NavItem) => {
+        if (role === "EMPLOYEE") {
+            if (item.path === paths.reports) return "My Attendance";
+            if (item.path === paths.leave) return "My Leaves";
+        }
+        return item.label;
+    };
+
+    const getBadgeCount = (item: NavItem) => {
+        if (role === "EMPLOYEE") return 0;
+        if (item.path === paths.leaveApprovals || item.path === paths.leave) return pendingLeaveCount;
+        if (item.path === paths.attendanceRegularizations) return pendingRegCount;
+        return 0;
+    };
+
     const renderNavListItem = (item: NavItem, isCollapsed = false) => {
         const isActive = location.pathname === item.path;
+        const badgeCount = getBadgeCount(item);
+
         return (
             <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
                 <ListItemButton
@@ -171,19 +228,30 @@ function DashboardLayout({ children }: Props) {
                         {item.icon}
                     </ListItemIcon>
                     {!isCollapsed && (
-                        <ListItemText
-                            primary={
-                                <Typography
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                            <Typography
+                                sx={{
+                                    fontSize: 14,
+                                    fontWeight: isActive ? 700 : 500,
+                                    color: isActive ? "#FFFFFF" : "#6B6699",
+                                }}
+                            >
+                                {getItemLabel(item)}
+                            </Typography>
+                            {badgeCount > 0 && (
+                                <Box
                                     sx={{
-                                        fontSize: 14,
-                                        fontWeight: isActive ? 700 : 500,
-                                        color: isActive ? "#FFFFFF" : "#6B6699",
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: "50%",
+                                        backgroundColor: "#EF4444",
+                                        boxShadow: "0 0 6px rgba(239, 68, 68, 0.6)",
+                                        flexShrink: 0,
+                                        ml: 1,
                                     }}
-                                >
-                                    {item.label}
-                                </Typography>
-                            }
-                        />
+                                />
+                            )}
+                        </Box>
                     )}
                 </ListItemButton>
             </ListItem>
@@ -279,17 +347,7 @@ function DashboardLayout({ children }: Props) {
                     {/* Top Standalone Nav Items */}
                     {visibleTopItems.map((item) => renderNavListItem(item, isCollapsed))}
 
-                    {/* TIME & LEAVE Collapsible Accordion Group */}
-                    <CollapsibleNavGroup
-                        title="TIME & LEAVE"
-                        icon={<CalendarMonthIcon fontSize="small" />}
-                        items={timeAndLeaveNavItems}
-                        isCollapsed={isCollapsed}
-                        onNavigate={(path) => {
-                            navigate(path);
-                            setMobileOpen(false);
-                        }}
-                    />
+                    {/* TIME & LEAVE categories are flattened into topNavItems */}
 
                     {/* Bottom Standalone Nav Items */}
                     {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
@@ -417,24 +475,6 @@ function DashboardLayout({ children }: Props) {
 
     return (
         <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#F5F6FA", width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
-            {/* Mobile hamburger */}
-            <Box
-                sx={{
-                    display: { xs: mobileOpen ? "none" : "flex", md: "none" },
-                    position: "fixed",
-                    top: 12,
-                    left: 12,
-                    zIndex: 1300,
-                }}
-            >
-                <IconButton
-                    onClick={() => setMobileOpen(true)}
-                    sx={{ backgroundColor: "#FFFFFF", color: "#0F172A", border: "1px solid #E2E8F0", borderRadius: 2, boxShadow: "0px 2px 8px rgba(0,0,0,0.06)" }}
-                >
-                    <MenuIcon />
-                </IconButton>
-            </Box>
-
             {/* Mobile Drawer */}
             <Drawer
                 variant="temporary"
@@ -520,8 +560,73 @@ function DashboardLayout({ children }: Props) {
                     overflowX: "hidden",
                 }}
             >
+                {/* Top Navbar */}
+                <Box
+                    component="header"
+                    sx={{
+                        height: { xs: 56, sm: 64 },
+                        backgroundColor: "rgba(255, 255, 255, 0.8)",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
+                        borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+                        position: "fixed",
+                        top: 0,
+                        right: 0,
+                        left: { xs: 0, md: `${sidebarWidth}px` },
+                        zIndex: 1200,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        px: { xs: 2, sm: 3, md: 4 },
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
+                        transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}
+                >
+                    {/* Left: Mobile hamburger menu trigger */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <IconButton
+                            onClick={() => setMobileOpen(true)}
+                            sx={{
+                                display: { xs: "inline-flex", md: "none" },
+                                color: "#475569",
+                                p: 1,
+                                borderRadius: "8px",
+                                "&:hover": { backgroundColor: "#F1F5F9" },
+                            }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    </Box>
+
+                    {/* Right: Back Button */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        {showBackButton && (
+                            <Button
+                                variant="text"
+                                startIcon={<ArrowBackIcon />}
+                                onClick={() => navigate(-1)}
+                                sx={{
+                                    textTransform: "none",
+                                    color: "#64748B",
+                                    fontWeight: 600,
+                                    fontSize: "14px",
+                                    px: 1.5,
+                                    py: 0.75,
+                                    borderRadius: "8px",
+                                    "&:hover": { color: "#6D5DF6", backgroundColor: "rgba(109, 93, 246, 0.06)" },
+                                }}
+                            >
+                                Back
+                            </Button>
+                        )}
+                    </Box>
+                </Box>
+
+                {/* Navbar Fixed Offset Spacer */}
+                <Box sx={{ height: { xs: 56, sm: 64 } }} />
+
                 <OnboardingBanner />
-                {children}
+                <Outlet />
             </Box>
         </Box>
     );

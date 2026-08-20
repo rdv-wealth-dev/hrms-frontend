@@ -11,7 +11,6 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import SettingsContentPanel from "../../components/settings/SettingsContentPanel";
 import DepartmentContent from "../departments/components/DepartmentContent";
 import DesignationContent from "../designations/components/DesignationContent";
@@ -136,7 +135,7 @@ function SettingsView() {
   );
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
 
         {/* Page Title Row */}
@@ -284,7 +283,7 @@ function SettingsView() {
         )}
 
       </Box>
-    </DashboardLayout>
+    </>
   );
 }
 

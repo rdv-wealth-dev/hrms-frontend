@@ -15,6 +15,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 import { getMyTodayAttendance, recordPunch, listShifts } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
@@ -379,21 +380,35 @@ export default function DailyPunchCard() {
             Daily Attendance
           </Typography>
         </Box>
-        {loading ? (
-          <CircularProgress size={16} />
-        ) : (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Chip
-            label={chipLabel}
+            icon={<LocationOnIcon sx={{ fontSize: "14px !important", color: "#166534 !important" }} />}
+            label="Geofence Verified"
             size="small"
             sx={{
               fontWeight: 600,
-              fontSize: "0.75rem",
-              backgroundColor: chipColorBg,
-              color: chipColorText,
-              border: chipBorder,
+              fontSize: "0.72rem",
+              backgroundColor: "#DCFCE7",
+              color: "#166534",
+              border: "1px solid #BBF7D0",
             }}
           />
-        )}
+          {loading ? (
+            <CircularProgress size={16} />
+          ) : (
+            <Chip
+              label={chipLabel}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                backgroundColor: chipColorBg,
+                color: chipColorText,
+                border: chipBorder,
+              }}
+            />
+          )}
+        </Box>
       </Box>
 
       {/* Localized Digital Clock Display */}

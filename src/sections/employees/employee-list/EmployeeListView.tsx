@@ -29,7 +29,6 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
 import { formatDate } from "../../../utils/format-date";
 import { StatusChip } from "../../../components/common/StatusChip";
@@ -615,7 +614,7 @@ function EmployeeListView() {
   });
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Top Page Header (Icon + All Employees Title + Record Count Subtitle & Employee Directory Button) */}
         <Box
@@ -1301,7 +1300,7 @@ function EmployeeListView() {
           }}
         />
       )}
-    </DashboardLayout>
+    </>
   );
 }
 

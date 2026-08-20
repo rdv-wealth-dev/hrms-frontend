@@ -20,9 +20,7 @@ import AddIcon from "@mui/icons-material/Add";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import { useSnackbar } from "../../../components/snackbar";
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { usePermissions } from "../../../hooks/usePermissions";
-import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -43,6 +41,7 @@ import {
 import { reviewLeaveRequest, type CreateLeaveRequest, type LeaveRequest } from "../../../api/leave.api";
 import ApplyLeaveDialog from "../leave-apply/ApplyLeaveDialog";
 import LeaveBalancesGrid from "../leave-balance/LeaveBalancesGrid";
+import LeaveTab from "../../profile/components/LeaveTab";
 
 // Custom Sub-components for Redesign
 import LeaveKpiCards from "../components/LeaveKpiCards";
@@ -162,6 +161,7 @@ export default function LeaveDashboardView() {
 
   const { role, isSuperAdmin, hasPermission } = usePermissions();
   const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("leave.approve"));
+  const user = useSelector((state: RootState) => state.auth?.user);
 
   const { isBlocked: isProfileBlocked, pendingSections, detectBlock, reset } = useProfileBlockDetect();
 
@@ -303,7 +303,7 @@ export default function LeaveDashboardView() {
   const pendingCount = displayRequests.filter((r) => (r?.status || "").toUpperCase() === "PENDING").length;
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Page Header Section */}
         <Box
@@ -349,64 +349,7 @@ export default function LeaveDashboardView() {
         </Box>
 
         {isEmployeeRole ? (
-          <Paper
-            sx={{
-              p: 5,
-              borderRadius: "20px",
-              border: "1px solid #E2E8F0",
-              backgroundColor: "#FFFFFF",
-              textAlign: "center",
-              maxWidth: 550,
-              mx: "auto",
-              mt: 4,
-              boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2.5,
-            }}
-          >
-            <Box
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: "16px",
-                backgroundColor: "#EEF2FF",
-                color: "#4F46E5",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <PolicyOutlinedIcon sx={{ fontSize: 32 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", mb: 1 }}>
-                Leave Management Portal
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748B", lineHeight: 1.6 }}>
-                The central Leave Management portal is restricted to HR and Managers for organization team approvals. You can apply for leaves and view your leave balances directly in your Profile → Leave section.
-              </Typography>
-            </Box>
-
-            <Button
-              variant="contained"
-              onClick={() => navigate(paths.profile)}
-              sx={{
-                backgroundColor: "#4F46E5",
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: "14px",
-                borderRadius: "12px",
-                px: 4,
-                py: 1.2,
-                boxShadow: "0 2px 8px rgba(79, 70, 229, 0.25)",
-                "&:hover": { backgroundColor: "#4338CA" },
-              }}
-            >
-              Go to My Profile → Leave Section
-            </Button>
-          </Paper>
+          <LeaveTab isViewingOther={false} user={user} />
         ) : isProfileBlocked ? (
           <Paper
             sx={{
@@ -570,6 +513,6 @@ export default function LeaveDashboardView() {
           onClose={detailDialog.close}
         />
       </Box>
-    </DashboardLayout>
+    </>
   );
 }

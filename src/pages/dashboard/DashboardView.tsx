@@ -8,7 +8,6 @@ import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import FormatListBulletedOutlinedIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../routes/paths";
 import PermissionGuard from "../../components/auth/PermissionGuard";
 import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard";
@@ -73,7 +72,7 @@ function DashboardView() {
   }, [lastLoginAt, lastLoginIp, lastLoginDevice]);
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
         <Typography
           variant="h4"
@@ -246,7 +245,7 @@ function DashboardView() {
           </PermissionGuard>
         </Box>
       </Box>
-    </DashboardLayout>
+    </>
   );
 }
 

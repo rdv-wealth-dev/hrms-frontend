@@ -145,8 +145,8 @@ export const getPendingRegularizationRequests = async (): Promise<any> => {
     );
     if (response.data) {
       const d = response.data;
-      if (Array.isArray(d) && d.length > 0) return d;
-      if (d.succeeded && Array.isArray(d.data) && d.data.length > 0) return d;
+      if (Array.isArray(d)) return d;
+      if (d.succeeded && Array.isArray(d.data)) return d.data;
     }
     return response.data;
   } catch {

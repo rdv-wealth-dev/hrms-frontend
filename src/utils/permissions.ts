@@ -66,5 +66,6 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   EMPLOYEE: [
     "leave.read", "leave.create",
     "payroll.read",
+    "report.read",
   ],
 };

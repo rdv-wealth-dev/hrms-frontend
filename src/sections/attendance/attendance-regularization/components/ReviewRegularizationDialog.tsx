@@ -15,6 +15,7 @@ import Grid from "@mui/material/Grid";
 
 import type { RegularizationRequest } from "../../../../store/attendance/attendance.types";
 import { reviewRegularizationRequest } from "../../../../api/attendance.api";
+import TextInput from "../../../../components/input/TextInput";
 
 type Props = {
   open: boolean;
@@ -198,30 +199,14 @@ function ReviewRegularizationDialog({
 
         {/* Review Input */}
         <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 600, color: "#334155" }}
-          >
-            Reviewer Comments
-          </Typography>
-          <TextField
+          <TextInput
+            label="Reviewer Comments"
             multiline
             rows={3}
-            fullWidth
             placeholder="Provide comments for approval or rejection..."
             value={reviewComments}
             onChange={(e) => setReviewComments(e.target.value)}
             disabled={submitting}
-            slotProps={{
-              input: {
-                sx: {
-                  borderRadius: "10px",
-                  fontSize: "14px",
-                  "&:hover fieldset": { borderColor: "#6D5DF6" },
-                  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
-                },
-              },
-            }}
           />
         </Box>
       </DialogContent>

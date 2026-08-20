@@ -8,6 +8,7 @@ import GuestGuard from "../../src/auth/guards/GuestGuard";
 import RoleGuard from "../../src/auth/guards/RoleGuard";
 
 import PageLoader from "../components/loader/PageLoader";
+import DashboardLayout from "../layouts/dashboard/DashboardLayout";
 
 const SignUpPage = lazy(() => import("../pages/auth/SignUp"));
 const LoginPage = lazy(() => import("../pages/auth/Login"));
@@ -69,166 +70,124 @@ function AppRoutes() {
           element={<AuthGuard><ChangePasswordPage /></AuthGuard>}
         />
 
-        {/* Protected — require a valid session */}
+        {/* Protected Dashboard Routes — wrapped globally with AuthGuard and DashboardLayout */}
         <Route
-          path={paths.dashboard}
-          element={<AuthGuard><DashboardPage /></AuthGuard>}
-        />
-        <Route
-          path={paths.onboarding}
-          element={<AuthGuard><OnboardingPage /></AuthGuard>}
-        />
-        <Route
-          path={paths.departments}
           element={
             <AuthGuard>
+              <DashboardLayout />
+            </AuthGuard>
+          }
+        >
+          <Route path={paths.dashboard} element={<DashboardPage />} />
+          <Route path={paths.onboarding} element={<OnboardingPage />} />
+          <Route
+            path={paths.departments}
+            element={
               <RoleGuard permission="department.read">
                 <DepartmentsPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.designations}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.designations}
+            element={
               <RoleGuard permission="designation.read">
                 <DesignationsPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.branches}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.branches}
+            element={
               <RoleGuard permission="branch.read">
                 <BranchesPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.employees.directory}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.employees.directory}
+            element={
               <RoleGuard permission="employee.read">
                 <EmployeeDirectoryPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.employees.create}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.employees.create}
+            element={
               <RoleGuard permission="employee.create">
                 <EmployeeCreatePage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.employees.list}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.employees.list}
+            element={
               <RoleGuard permission="employee.read">
                 <EmployeeListPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.employees.detail}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.employees.detail}
+            element={
               <RoleGuard permission="employee.read">
                 <EmployeeDetailPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.settings}
-          element={
-            <AuthGuard>
+            }
+          />
+          <Route
+            path={paths.settings}
+            element={
               <RoleGuard permission="settings.read">
                 <SettingsPage />
               </RoleGuard>
-            </AuthGuard>
-          }
-        />
+            }
+          />
+          <Route path={paths.leave} element={<MyLeavePage />} />
+          <Route path={paths.profile} element={<ProfilePage />} />
+          <Route
+            path={paths.leaveApprovals}
+            element={
+              <RoleGuard permission="leave.approve">
+                <LeaveApprovalsPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path={paths.holidays}
+            element={
+              <RoleGuard permission="leave.read">
+                <HolidaysPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path={paths.attendanceRegularizations}
+            element={<RegularizationListPage />}
+          />
+          <Route
+            path={paths.reports}
+            element={
+              <RoleGuard permission="report.read">
+                <ReportsPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path={paths.documentVerification}
+            element={
+              <RoleGuard permission="document.read">
+                <DocumentVerificationPage />
+              </RoleGuard>
+            }
+          />
+        </Route>
+
         <Route
           path={paths.attendance}
           element={
             <Navigate to={`${paths.profile}?tab=attendance`} replace />
-          }
-        />
-        <Route
-          path={paths.leave}
-          element={
-            <AuthGuard>
-              <MyLeavePage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.profile}
-          element={
-            <AuthGuard>
-              <ProfilePage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.leaveApprovals}
-          element={
-            <AuthGuard>
-              <RoleGuard permission="leave.approve">
-                <LeaveApprovalsPage />
-              </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.holidays}
-          element={
-            <AuthGuard>
-              <RoleGuard permission="leave.read">
-                <HolidaysPage />
-              </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.attendanceRegularizations}
-          element={
-            <AuthGuard>
-              <RoleGuard permission="attendance.approve">
-                <RegularizationListPage />
-              </RoleGuard>
-            </AuthGuard>
-          }
-        />
-        <Route
-          path={paths.reports}
-          element={
-            <AuthGuard>
-              <RoleGuard permission="report.read">
-                <ReportsPage />
-              </RoleGuard>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path={paths.documentVerification}
-          element={
-            <AuthGuard>
-              <RoleGuard permission="document.read">
-                <DocumentVerificationPage />
-              </RoleGuard>
-            </AuthGuard>
           }
         />
         <Route path="*" element={<Navigate to={paths.auth.login} replace />} />

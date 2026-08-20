@@ -20,12 +20,12 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
+import TextInput from "../../../components/input/TextInput";
 
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import { usePagination } from "../../../hooks/usePagination";
@@ -133,7 +133,7 @@ export default function LeaveApprovalsView() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -338,12 +338,10 @@ export default function LeaveApprovalsView() {
           <Typography variant="body2" color="text.secondary">
             Are you sure you want to {reviewDialog.target?.status === "APPROVED" ? "approve" : "reject"} this leave request? You can add review comments below.
           </Typography>
-          <TextField
+          <TextInput
             label="Review Comments"
             value={reviewComments}
             onChange={(e) => setReviewComments(e.target.value)}
-            fullWidth
-            size="small"
             multiline
             rows={3}
             placeholder="Add comments or notes..."
@@ -373,6 +371,6 @@ export default function LeaveApprovalsView() {
           </Button>
         </DialogActions>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 }

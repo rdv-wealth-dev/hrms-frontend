@@ -15,6 +15,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../components/input/TextInput";
+import PhoneInput from "../../../components/input/PhoneInput";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -319,22 +320,13 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             />
           </Grid>
 
-          {/* Country Code */}
+          {/* Phone Number */}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Country Code"
-              value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
-              slotProps={{ select: { displayEmpty: true } }}
-            >
-              <MenuItem value="" disabled sx={disabledMenuItemSx}>
-                Select country code
-              </MenuItem>
-              <MenuItem value="IN">IN (India)</MenuItem>
-              <MenuItem value="US">US (United States)</MenuItem>
-              <MenuItem value="RU">RU (Russia)</MenuItem>
-            </TextInput>
+            <PhoneInput
+              label="Phone Number"
+              countryCodeValue={countryCode}
+              onCountryCodeChange={(code) => setCountryCode(code)}
+            />
           </Grid>
         </Grid>
       </DialogContent>

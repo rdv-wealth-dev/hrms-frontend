@@ -15,6 +15,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CloseIcon from "@mui/icons-material/Close";
 
+import { MultiSelect } from "../input/MultiSelect";
+
 export interface FilterOption {
   value: string;
   label: string;
@@ -23,7 +25,7 @@ export interface FilterOption {
 export interface FilterField {
   key: string;
   label: string;
-  type?: "select" | "date" | "daterange" | "text";
+  type?: "select" | "multiselect" | "date" | "daterange" | "text";
   options?: FilterOption[];
   minWidth?: number;
   icon?: React.ReactNode;
@@ -242,6 +244,22 @@ export default function FilterBar({
           const isPanelOpen = activePanelKey === field.key;
           const currentVal = values[field.key];
           const hasValue = currentVal !== undefined && currentVal !== "" && currentVal !== "ALL";
+
+          if (field.type === "multiselect") {
+            const currentArray = Array.isArray(values[field.key]) ? values[field.key] : [];
+            return (
+              <Box key={field.key} sx={{ minWidth: field.minWidth || 160 }}>
+                <MultiSelect
+                  placeholder={field.label}
+                  options={field.options}
+                  value={currentArray}
+                  onChange={(newVals) => {
+                    if (onFilterChange) onFilterChange(field.key, newVals);
+                  }}
+                />
+              </Box>
+            );
+          }
 
           if (field.type === "daterange") {
             const hasFrom = Boolean(values.fromDate);

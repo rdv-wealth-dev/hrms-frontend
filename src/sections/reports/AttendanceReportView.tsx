@@ -13,7 +13,6 @@ import TablePagination from "@mui/material/TablePagination";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { getAttendanceReport, listShifts } from "../../api/attendance.api";
 import type { AttendanceRecord } from "../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../utils/time";
@@ -22,6 +21,7 @@ import { StatusChip } from "../../components/common/StatusChip";
 import { usePagination } from "../../hooks/usePagination";
 import { useDialog } from "../../hooks/useDialog";
 import { usePermissions } from "../../hooks/usePermissions";
+import AttendanceTab from "../profile/components/AttendanceTab";
 
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store/rootReducer";
@@ -128,7 +128,7 @@ export default function AttendanceReportView() {
   const [manualOpen, setManualOpen] = useState(false);
   const [regularizeOpen, setRegularizeOpen] = useState(false);
 
-  const { hasPermission } = usePermissions();
+  const { role, hasPermission } = usePermissions();
   const canMarkAttendance = hasPermission("attendance.create");
 
   const dispatch = useDispatch<AppDispatch>();
@@ -526,8 +526,16 @@ export default function AttendanceReportView() {
     return days;
   }, [records]);
 
+  if (role === "EMPLOYEE") {
+    return (
+      <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+        <AttendanceTab hideTabs={true} />
+      </Box>
+    );
+  }
+
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
         
         {/* Top Header */}
@@ -764,6 +772,6 @@ export default function AttendanceReportView() {
         />
 
       </Box>
-    </DashboardLayout>
+    </>
   );
 }

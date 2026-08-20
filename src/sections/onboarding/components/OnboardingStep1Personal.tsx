@@ -18,6 +18,7 @@ import {
   type OnboardingStep1FormData,
 } from "../../../validations/onboarding/onboarding.schema";
 import TextInput from "../../../components/input/TextInput";
+import PhoneInput from "../../../components/input/PhoneInput";
 import { formatToYYYYMMDD } from "../../../utils/format-date";
 
 const GENDERS = ["MALE", "FEMALE", "OTHER"];
@@ -249,22 +250,19 @@ export default function OnboardingStep1Personal({
               error={errors.currentAddress?.state?.message}
             />
           </Grid>
+
           <Grid size={{ xs: 12, sm: 6 }}>
             <Controller
               name="currentAddress.countryCode"
               control={control}
               render={({ field }) => (
-                <TextInput
-                  {...field}
-                  select
+                <PhoneInput
+                  label="Country Code"
+                  countryCodeValue={field.value}
+                  onCountryCodeChange={field.onChange}
+                  countryCodeError={errors.currentAddress?.countryCode?.message}
                   required
-                  label="Country"
-                  error={errors.currentAddress?.countryCode?.message}
-                >
-                  {COUNTRIES.map((c) => (
-                    <MenuItem key={c.code} value={c.code}>{c.name} ({c.code})</MenuItem>
-                  ))}
-                </TextInput>
+                />
               )}
             />
           </Grid>

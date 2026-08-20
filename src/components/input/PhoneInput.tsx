@@ -32,8 +32,12 @@ type PhoneInputProps = {
   countryCodeRegistration?: UseFormRegisterReturn;
   phoneError?: string;
   countryCodeError?: string;
-  setValue: UseFormSetValue<any>;
-  watch: UseFormWatch<any>;
+  setValue?: UseFormSetValue<any>;
+  watch?: UseFormWatch<any>;
+  phoneValue?: string;
+  countryCodeValue?: string;
+  onPhoneChange?: (val: string) => void;
+  onCountryCodeChange?: (code: string) => void;
   disabled?: boolean;
   required?: boolean;
 };
@@ -46,6 +50,10 @@ export default function PhoneInput({
   countryCodeError,
   setValue,
   watch,
+  phoneValue,
+  countryCodeValue,
+  onPhoneChange,
+  onCountryCodeChange,
   disabled = false,
   required = false,
 }: PhoneInputProps) {
@@ -54,9 +62,9 @@ export default function PhoneInput({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Watch countryCode form state to dynamically update UI flag
-  const currentCountryCode = countryCodeRegistration?.name
-    ? watch(countryCodeRegistration.name)
-    : "IN";
+  const currentCountryCode = countryCodeValue !== undefined
+    ? countryCodeValue
+    : (countryCodeRegistration?.name && watch ? watch(countryCodeRegistration.name) : "IN");
 
   // Resolve current active country object with fallbacks
   const activeCountry = useMemo(() => {
@@ -79,6 +87,9 @@ export default function PhoneInput({
   };
 
   const handleSelectCountry = (country: CountryData) => {
+    if (onCountryCodeChange) {
+      onCountryCodeChange(country.code);
+    }
     if (countryCodeRegistration?.name && setValue) {
       setValue(countryCodeRegistration.name, country.code, {
         shouldValidate: true,
@@ -121,6 +132,8 @@ export default function PhoneInput({
 
       <TextField
         {...phoneRegistration}
+        {...(phoneValue !== undefined ? { value: phoneValue } : {})}
+        {...(onPhoneChange ? { onChange: (e) => onPhoneChange(e.target.value) } : {})}
         error={hasError}
         helperText={displayErrorMessage}
         fullWidth

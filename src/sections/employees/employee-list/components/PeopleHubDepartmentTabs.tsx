@@ -39,10 +39,10 @@ interface PeopleHubFilterTabsProps {
 
 const CATEGORIES = [
   { id: "dateOfJoining", label: "Date of Joining", isDate: true, options: ["All Dates", "This Month", "Last 3 Months", "Last 6 Months", "Last Year"] },
-  { id: "designation", label: "Designation", options: ["All Designations", "Senior Software Engineer", "Product Manager", "HR Business Partner", "UX Lead", "Account Executive", "Engineering Director"] },
   { id: "branch", label: "Branch", options: ["All Branches", "Head Office", "Bangalore Branch", "Mumbai Branch", "Hyderabad Branch", "Delhi Branch"] },
-  { id: "team", label: "Team", options: ["All Teams", "Core Platform", "Product Design", "Talent Acquisition", "Enterprise Sales", "DevOps"] },
   { id: "department", label: "Departments", options: ["All Departments", "Engineering", "Product", "HR", "Sales", "Design", "Finance", "Marketing", "Operations"] },
+  { id: "team", label: "Team", options: ["All Teams", "Core Platform", "Product Design", "Talent Acquisition", "Enterprise Sales", "DevOps"] },
+  { id: "designation", label: "Designation", options: ["All Designations", "Senior Software Engineer", "Product Manager", "HR Business Partner", "UX Lead", "Account Executive", "Engineering Director"] },
   { id: "status", label: "Status", options: ["All Statuses", "Active", "Inactive", "On Leave", "Terminated", "Resigned"] },
 ];
 

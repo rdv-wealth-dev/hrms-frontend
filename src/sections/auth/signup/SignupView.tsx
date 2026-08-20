@@ -12,6 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import TextInput from "../../../components/input/TextInput";
 import SlugInput from "../../../components/input/SlugInput";
 import CountryCodeSelect from "../../../components/input/CountryCodeSelect";
+import PhoneInput from "../../../components/input/PhoneInput";
 import PrimaryButton from "../../../components/button/PrimaryButton";
 import AuthLayout from "../../../layouts/auth/AuthLayout";
 import AuthFooter from "../../../components/auth/AuthFooter";
@@ -211,23 +212,7 @@ function SignupView() {
             />
           </Box>
 
-          {/* Row 5: Country Code | Phone */}
-          <CountryCodeSelect
-            label="Country"
-            registration={register("countryCode")}
-            error={errors.countryCode?.message}
-          />
-
-          <TextInput
-            label="Phone (optional)"
-
-            type="tel"
-            maxLength={10}
-            registration={register("phone")}
-            error={errors.phone?.message}
-          />
-
-          {/* Row 6: Password | Confirm Password */}
+          {/* Row 5: Password | Confirm Password */}
           <TextInput
             label="Password"
 
@@ -245,6 +230,19 @@ function SignupView() {
             error={errors.confirmPassword?.message}
             required
           />
+
+          {/* Row 6: Phone Number (full width, same as Work Email) */}
+          <Box sx={{ gridColumn: "1 / 3" }}>
+            <PhoneInput
+              label="Phone Number (optional)"
+              phoneRegistration={register("phone")}
+              countryCodeRegistration={register("countryCode")}
+              phoneError={errors.phone?.message}
+              countryCodeError={errors.countryCode?.message}
+              setValue={setValue}
+              watch={watch}
+            />
+          </Box>
 
           {/* API Error */}
           {error && (

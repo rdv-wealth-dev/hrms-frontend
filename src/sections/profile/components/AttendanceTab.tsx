@@ -49,9 +49,10 @@ import MonthlyAttendanceSummaryCard from "./MonthlyAttendanceSummaryCard";
 interface AttendanceTabProps {
   employeeId?: string;
   isViewingOther?: boolean;
+  hideTabs?: boolean;
 }
 
-export default function AttendanceTab({ employeeId, isViewingOther = false }: AttendanceTabProps) {
+export default function AttendanceTab({ employeeId, isViewingOther = false, hideTabs = false }: AttendanceTabProps) {
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("attendance.create");
   const [manualOpen, setManualOpen] = useState(false);
@@ -261,7 +262,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false }: At
   return (
     <Box sx={{ py: 1 }}>
       {/* Tab Selection */}
-      {!isViewingOther && (
+      {!isViewingOther && !hideTabs && (
         <Tabs
           value={tabValue}
           onChange={(_, newValue) => setTabValue(newValue)}

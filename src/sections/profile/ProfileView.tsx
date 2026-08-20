@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserAvatar } from "../../store/auth";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -23,7 +23,6 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
@@ -39,7 +38,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
 import type { RootState } from "../../store/rootReducer";
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import { useProfileSelfUpdate } from "../../hooks/useProfileSelfUpdate";
 import { usePermissions } from "../../hooks/usePermissions";
 import { loadOrganizationRequest } from "../../store/organization/organization.actions";
@@ -73,7 +71,6 @@ interface ProfileViewProps {
 }
 
 export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
-  const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const { showSnackbar } = useSnackbar();
   const routeParams = useParams<{ id: string }>();
@@ -320,29 +317,10 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const displayRole = isViewingOther ? (empProfile?.designationId?.name || "Employee") : getRoleLabel(user?.role || "");
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflowX: "hidden", backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
         
-        {/* Top Back Button Bar */}
-        <Box sx={{ mb: 2.5, display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            startIcon={<ArrowBackOutlinedIcon sx={{ fontSize: "18px !important" }} />}
-            onClick={() => navigate(-1)}
-            sx={{
-              color: "#475569",
-              backgroundColor: "#FFFFFF",
-              border: "1px solid #E2E8F0",
-              px: 2,
-              py: 0.8,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-              flexShrink: 0,
-              whiteSpace: "nowrap",
-              "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" }
-            }}
-          >
-            Back
-          </Button>
-        </Box>
+
 
         {/* Hero Profile Header Card */}
         <Card
@@ -889,6 +867,6 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           </DialogActions>
         </Box>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 }

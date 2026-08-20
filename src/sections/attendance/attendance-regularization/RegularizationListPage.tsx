@@ -19,14 +19,20 @@ import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
-import { getPendingRegularizationRequests } from "../../../api/attendance.api";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/rootReducer";
+import { usePermissions } from "../../../hooks/usePermissions";
+import { getPendingRegularizationRequests, getMyRegularizationRequests } from "../../../api/attendance.api";
 import { listEmployees } from "../../../api/employee.api";
 import type { RegularizationRequest } from "../../../store/attendance/attendance.types";
 import type { EmployeeListItem } from "../../../store/employee/employee.types";
 import ReviewRegularizationDialog from "./components/ReviewRegularizationDialog";
 
 function RegularizationListPage() {
+  const { role } = usePermissions();
+  const isEmployee = role === "EMPLOYEE";
+  const user = useSelector((state: RootState) => state.auth?.user);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -37,37 +43,58 @@ function RegularizationListPage() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RegularizationRequest | null>(null);
 
+  const getStatusChipStyles = (status: string) => {
+    const s = (status || "").toUpperCase();
+    if (s === "APPROVED") {
+      return { label: "Approved", bg: "#D1FAE5", text: "#047857" };
+    }
+    if (s === "REJECTED") {
+      return { label: "Rejected", bg: "#FEE2E2", text: "#B91C1C" };
+    }
+    return { label: "Pending", bg: "#FEF3C7", text: "#D97706" };
+  };
+
   const loadData = useCallback(async (isInitial = true) => {
     if (isInitial) setLoading(true);
     setError(null);
     try {
-      // Load both pending regularizations and employees in parallel
-      const [regRes, empRes] = await Promise.all([
-        getPendingRegularizationRequests(),
-        listEmployees(1, 1000), // Get first 1000 employees for mapping
-      ]);
-
       let fetchedRequests: RegularizationRequest[] = [];
 
-      if (Array.isArray(regRes)) {
-        fetchedRequests = regRes;
-      } else if (regRes && Array.isArray((regRes as any).data)) {
-        fetchedRequests = (regRes as any).data;
-      } else if (regRes && Array.isArray((regRes as any).items)) {
-        fetchedRequests = (regRes as any).items;
-      } else if (regRes && Array.isArray((regRes as any).data?.items)) {
-        fetchedRequests = (regRes as any).data.items;
-      } else if (regRes && Array.isArray((regRes as any).regularizations)) {
-        fetchedRequests = (regRes as any).regularizations;
-      } else if (regRes && Array.isArray((regRes as any).requests)) {
-        fetchedRequests = (regRes as any).requests;
+      if (isEmployee) {
+        // Load personal regularization requests
+        const regRes = await getMyRegularizationRequests();
+        if (regRes.succeeded && regRes.data) {
+          fetchedRequests = regRes.data;
+        } else {
+          setError(regRes.message || "Failed to fetch regularization requests");
+        }
+      } else {
+        // Load both pending regularizations and employees in parallel
+        const [regRes, empRes] = await Promise.all([
+          getPendingRegularizationRequests(),
+          listEmployees(1, 1000), // Get first 1000 employees for mapping
+        ]);
+
+        if (Array.isArray(regRes)) {
+          fetchedRequests = regRes;
+        } else if (regRes && Array.isArray((regRes as any).data)) {
+          fetchedRequests = (regRes as any).data;
+        } else if (regRes && Array.isArray((regRes as any).items)) {
+          fetchedRequests = (regRes as any).items;
+        } else if (regRes && Array.isArray((regRes as any).data?.items)) {
+          fetchedRequests = (regRes as any).data.items;
+        } else if (regRes && Array.isArray((regRes as any).regularizations)) {
+          fetchedRequests = (regRes as any).regularizations;
+        } else if (regRes && Array.isArray((regRes as any).requests)) {
+          fetchedRequests = (regRes as any).requests;
+        }
+
+        if (empRes.succeeded && empRes.data) {
+          setEmployeesList(empRes.data);
+        }
       }
 
       setRequests(fetchedRequests);
-
-      if (empRes.succeeded && empRes.data) {
-        setEmployeesList(empRes.data);
-      }
     } catch (err: any) {
       if (isInitial) {
         setError(
@@ -77,7 +104,7 @@ function RegularizationListPage() {
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, []);
+  }, [isEmployee]);
 
   useEffect(() => {
     loadData(true);
@@ -135,7 +162,7 @@ function RegularizationListPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: "1200px", margin: "0 auto" }}>
         {/* Page Header */}
         <Box
@@ -153,7 +180,9 @@ function RegularizationListPage() {
               Attendance Regularizations
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Review and approve daily punch corrections submitted by employees.
+              {isEmployee
+                ? "View and track your daily punch correction requests."
+                : "Review and approve daily punch corrections submitted by employees."}
             </Typography>
           </Box>
 
@@ -204,10 +233,12 @@ function RegularizationListPage() {
           >
             <HistoryEduOutlinedIcon sx={{ fontSize: 56, color: "#D1D5DB", mb: 2 }} />
             <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#374151" }}>
-              All Caught Up!
+              {isEmployee ? "No Regularization Requests" : "All Caught Up!"}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, maxWidth: 300, textAlign: "center" }}>
-              There are no pending regularization requests requiring your review.
+              {isEmployee
+                ? "You have not submitted any attendance regularization requests."
+                : "There are no pending regularization requests requiring your review."}
             </Typography>
           </Box>
         ) : (
@@ -215,10 +246,21 @@ function RegularizationListPage() {
             {/* Mobile Card View (xs < 600px) */}
             <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 2 }}>
               {requests.map((request) => {
-                const empName = getEmployeeName(request.employeeId);
-                const empCode = getEmployeeCode(request.employeeId);
-                const empAvatar = getEmployeeAvatar(request.employeeId);
-                const initials = empName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "E";
+                const empName = isEmployee
+                  ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "My Profile"
+                  : getEmployeeName(request.employeeId);
+                const empCode = isEmployee
+                  ? (user as any)?.employeeCode || user?.employeeId || "—"
+                  : getEmployeeCode(request.employeeId);
+                const empAvatar = isEmployee
+                  ? user?.avatarUrl || (user as any)?.profilePicture || undefined
+                  : getEmployeeAvatar(request.employeeId);
+                const initials = empName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase() || "E";
 
                 return (
                   <Card
@@ -260,11 +302,11 @@ function RegularizationListPage() {
                         </Box>
                       </Box>
                       <Chip
-                        label="Pending"
+                        label={getStatusChipStyles(request.status).label}
                         size="small"
                         sx={{
-                          backgroundColor: "#FEF3C7",
-                          color: "#D97706",
+                          backgroundColor: getStatusChipStyles(request.status).bg,
+                          color: getStatusChipStyles(request.status).text,
                           fontWeight: 700,
                           fontSize: 10,
                           height: 22,
@@ -313,29 +355,40 @@ function RegularizationListPage() {
                       </Box>
                     )}
 
-                    {/* Review Button Action */}
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      size="small"
-                      startIcon={<RateReviewOutlinedIcon />}
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setReviewOpen(true);
-                      }}
-                      sx={{
-                        mt: 0.5,
-                        backgroundColor: "#6D5DF6",
-                        color: "#FFFFFF",
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        boxShadow: "none",
-                        "&:hover": { backgroundColor: "#5B4EB3", boxShadow: "none" },
-                      }}
-                    >
-                      Review Request
-                    </Button>
+                    {/* Review Button Action / Requested On details */}
+                      {isEmployee ? (
+                        <Box sx={{ mt: 1, display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #F1F5F9", pt: 1.5 }}>
+                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                            Requested On
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
+                            {formatDate(request.createdAt)}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          size="small"
+                          startIcon={<RateReviewOutlinedIcon />}
+                          onClick={() => {
+                            setSelectedRequest(request);
+                            setReviewOpen(true);
+                          }}
+                          sx={{
+                            mt: 0.5,
+                            backgroundColor: "#6D5DF6",
+                            color: "#FFFFFF",
+                            textTransform: "none",
+                            fontWeight: 600,
+                            borderRadius: "8px",
+                            boxShadow: "none",
+                            "&:hover": { backgroundColor: "#5B4EB3", boxShadow: "none" },
+                          }}
+                        >
+                          Review Request
+                        </Button>
+                      )}
                   </Card>
                 );
               })}
@@ -367,79 +420,102 @@ function RegularizationListPage() {
                     <TableCell sx={{ fontWeight: 600, fontSize: 13, minWidth: 140 }}>Requested Check Out</TableCell>
                     <TableCell sx={{ fontWeight: 600, fontSize: 13, minWidth: 160 }}>Reason</TableCell>
                     <TableCell sx={{ fontWeight: 600, fontSize: 13, minWidth: 100 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13, minWidth: 100 }} align="center">Action</TableCell>
+                    {isEmployee ? (
+                        <TableCell sx={{ fontWeight: 600, fontSize: 13, minWidth: 120 }}>Requested On</TableCell>
+                      ) : (
+                        <TableCell sx={{ fontWeight: 600, fontSize: 13, minWidth: 100 }} align="center">Action</TableCell>
+                      )}
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {requests.map((request) => (
-                    <TableRow key={request._id} hover sx={{ "&:last-child td": { border: 0 } }}>
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Avatar
-                            src={getEmployeeAvatar(request.employeeId)}
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              backgroundColor: "#6D5DF6",
-                              color: "#FFFFFF",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            {getEmployeeName(request.employeeId).split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "E"}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827", lineHeight: 1.2 }}>
-                              {getEmployeeName(request.employeeId)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {getEmployeeCode(request.employeeId)}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ fontSize: 13, whiteSpace: "nowrap" }}>{formatDate(request.attendanceDate)}</TableCell>
-                      <TableCell sx={{ fontSize: 13, color: "#059669", fontWeight: 500, whiteSpace: "nowrap" }}>
-                        {formatTime(request.requestedCheckIn)}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: 13, color: "#059669", fontWeight: 500, whiteSpace: "nowrap" }}>
-                        {formatTime(request.requestedCheckOut)}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: 13, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={request.reason}>
-                        {request.reason}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label="Pending"
-                          size="small"
-                          sx={{
-                            backgroundColor: "#FEF3C7",
-                            color: "#D97706",
-                            fontWeight: 600,
-                            fontSize: 11,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Button
-                          size="small"
-                          startIcon={<RateReviewOutlinedIcon />}
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setReviewOpen(true);
-                          }}
-                          sx={{
-                            color: "#6D5DF6",
-                            textTransform: "none",
-                            fontWeight: 600,
-                            "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.04)" },
-                          }}
-                        >
-                          Review
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {requests.map((request) => {
+                      const empName = isEmployee
+                        ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "My Profile"
+                        : getEmployeeName(request.employeeId);
+                      const empCode = isEmployee
+                        ? (user as any)?.employeeCode || user?.employeeId || "—"
+                        : getEmployeeCode(request.employeeId);
+                      const empAvatar = isEmployee
+                        ? user?.avatarUrl || (user as any)?.profilePicture || undefined
+                        : getEmployeeAvatar(request.employeeId);
+                      const initials = empName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "E";
+
+                      return (
+                        <TableRow key={request._id} hover sx={{ "&:last-child td": { border: 0 } }}>
+                          <TableCell>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                              <Avatar
+                                src={empAvatar}
+                                sx={{
+                                  width: 32,
+                                  height: 32,
+                                  backgroundColor: "#6D5DF6",
+                                  color: "#FFFFFF",
+                                  fontSize: "11px",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {initials}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827", lineHeight: 1.2 }}>
+                                  {empName}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {empCode}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ fontSize: 13, whiteSpace: "nowrap" }}>{formatDate(request.attendanceDate)}</TableCell>
+                          <TableCell sx={{ fontSize: 13, color: "#059669", fontWeight: 500, whiteSpace: "nowrap" }}>
+                            {formatTime(request.requestedCheckIn)}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: 13, color: "#059669", fontWeight: 500, whiteSpace: "nowrap" }}>
+                            {formatTime(request.requestedCheckOut)}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: 13, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={request.reason}>
+                            {request.reason}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={getStatusChipStyles(request.status).label}
+                              size="small"
+                              sx={{
+                                backgroundColor: getStatusChipStyles(request.status).bg,
+                                color: getStatusChipStyles(request.status).text,
+                                fontWeight: 600,
+                                fontSize: 11,
+                              }}
+                            />
+                          </TableCell>
+                          {isEmployee ? (
+                            <TableCell sx={{ fontSize: 13, whiteSpace: "nowrap" }}>
+                              {formatDate(request.createdAt)}
+                            </TableCell>
+                          ) : (
+                            <TableCell align="center">
+                              <Button
+                                size="small"
+                                startIcon={<RateReviewOutlinedIcon />}
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setReviewOpen(true);
+                                }}
+                                sx={{
+                                  color: "#6D5DF6",
+                                  textTransform: "none",
+                                  fontWeight: 600,
+                                  "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.04)" },
+                                }}
+                              >
+                                Review
+                              </Button>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -459,7 +535,7 @@ function RegularizationListPage() {
           onSuccess={loadData}
         />
       </Box>
-    </DashboardLayout>
+    </>
   );
 }
 

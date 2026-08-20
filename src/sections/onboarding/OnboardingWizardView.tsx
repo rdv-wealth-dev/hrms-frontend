@@ -10,7 +10,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 
-import DashboardLayout from "../../layouts/dashboard/DashboardLayout";
 import PageWrapper from "../../components/common/PageWrapper";
 import { useSnackbar } from "../../components/snackbar";
 import { paths } from "../../routes/paths";
@@ -199,18 +198,18 @@ export default function OnboardingWizardView() {
 
   if (loadingStatus) {
     return (
-      <DashboardLayout>
+      <>
         <PageWrapper>
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}>
             <CircularProgress size={40} sx={{ color: "#6366F1" }} />
           </Box>
         </PageWrapper>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <PageWrapper>
         {/* Header */}
         <Box sx={{ mb: 3 }}>
@@ -320,6 +319,6 @@ export default function OnboardingWizardView() {
           />
         )}
       </PageWrapper>
-    </DashboardLayout>
+    </>
   );
 }

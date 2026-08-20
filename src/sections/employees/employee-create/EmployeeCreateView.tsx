@@ -20,7 +20,6 @@ import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
 import CascadingSelect, { type SelectOption } from "../../../components/input/CascadingSelect";
@@ -356,7 +355,7 @@ export default function EmployeeCreateView() {
   })) ?? [];
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1400, mx: "auto" }}>
         
         {/* Header Title with Profile Completion Badge */}
@@ -700,6 +699,6 @@ export default function EmployeeCreateView() {
           </Stack>
         </form>
       </Box>
-    </DashboardLayout>
+    </>
   );
 }

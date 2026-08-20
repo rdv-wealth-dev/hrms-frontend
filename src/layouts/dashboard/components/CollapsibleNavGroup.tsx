@@ -28,92 +28,133 @@ interface CollapsibleNavGroupProps {
   items: NavSubItem[];
   isCollapsed?: boolean;
   onNavigate: (path: string) => void;
+  permanentOpen?: boolean;
 }
 
 function NestedSubGroupItem({
   item,
   onNavigate,
+  permanentOpen,
 }: {
   item: NavSubItem;
   onNavigate: (path: string) => void;
+  permanentOpen?: boolean;
 }) {
   const location = useLocation();
   const { hasPermission } = usePermissions();
 
-  const visibleChildren = (item.children || []).filter((child) => {
-    if (!child.permission) return true;
+  const visibleChildren = (item?.children || []).filter((child) => {
+    if (!child?.permission) return true;
     return hasPermission(child.permission);
   });
 
-  const isChildActive = visibleChildren.some((child) => child.path && location.pathname === child.path);
-  const [open, setOpen] = useState(isChildActive);
+  const isChildActive = visibleChildren.some((child) => child?.path && location.pathname === child.path);
+  const [open, setOpen] = useState(permanentOpen || isChildActive);
 
   useEffect(() => {
-    if (isChildActive) {
+    if (permanentOpen) {
+      setOpen(true);
+    } else if (isChildActive) {
       setOpen(true);
     }
-  }, [isChildActive]);
+  }, [isChildActive, permanentOpen]);
 
   if (visibleChildren.length === 0) return null;
 
   return (
     <Box sx={{ mb: 0.5 }}>
       <ListItem disablePadding sx={{ mb: 0.5 }}>
-        <ListItemButton
-          onClick={() => setOpen((prev) => !prev)}
-          sx={{
-            borderRadius: 2,
-            px: 1.5,
-            py: 0.75,
-            transition: "all 0.2s ease",
-            backgroundColor: isChildActive && !open ? "#4F46E5" : "transparent",
-            border: "1px solid transparent",
-            "&:hover": {
-              backgroundColor: isChildActive && !open ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
-            },
-          }}
-        >
-          <ListItemIcon
+        {permanentOpen ? (
+          <Box
             sx={{
-              minWidth: 0,
-              mr: 1.5,
-              color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 2,
             }}
           >
-            {item.icon}
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                sx={{
-                  fontSize: "0.8125rem",
-                  fontWeight: isChildActive ? 700 : 500,
-                  color: isChildActive ? "#FFFFFF" : "#6B6699",
-                }}
-              >
-                {item.label}
-              </Typography>
-            }
-          />
-          <Box sx={{ color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
-            {open ? (
-              <ExpandMoreIcon sx={{ fontSize: 16 }} />
-            ) : (
-              <ChevronRightIcon sx={{ fontSize: 16 }} />
-            )}
+            <ListItemIcon
+              sx={{
+                minWidth: permanentOpen ? 34 : 0,
+                mr: permanentOpen ? 0 : 1.5,
+                color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.7)",
+              }}
+            >
+              {item?.icon}
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography
+                  sx={{
+                    fontSize: "0.8125rem",
+                    fontWeight: 600,
+                    color: isChildActive ? "#4F46E5" : "#6B6699",
+                  }}
+                >
+                  {item?.label}
+                </Typography>
+              }
+            />
           </Box>
-        </ListItemButton>
+        ) : (
+          <ListItemButton
+            onClick={() => setOpen((prev) => !prev)}
+            sx={{
+              borderRadius: 2,
+              px: 1.5,
+              py: 0.75,
+              transition: "all 0.2s ease",
+              backgroundColor: isChildActive && !open ? "#4F46E5" : "transparent",
+              border: "1px solid transparent",
+              "&:hover": {
+                backgroundColor: isChildActive && !open ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: 1.5,
+                color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+              }}
+            >
+              {item?.icon}
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography
+                  sx={{
+                    fontSize: "0.8125rem",
+                    fontWeight: isChildActive ? 700 : 500,
+                    color: isChildActive ? "#FFFFFF" : "#6B6699",
+                  }}
+                >
+                  {item?.label}
+                </Typography>
+              }
+            />
+            <Box sx={{ color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
+              {open ? (
+                <ExpandMoreIcon sx={{ fontSize: 16 }} />
+              ) : (
+                <ChevronRightIcon sx={{ fontSize: 16 }} />
+              )}
+            </Box>
+          </ListItemButton>
+        )}
       </ListItem>
 
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding sx={{ pl: 2, mt: 0.25 }}>
+      <Collapse in={permanentOpen || open} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 2, mt: 0.25 }}>
           {visibleChildren.map((child) => {
-            const isActive = child.path ? location.pathname === child.path : false;
+            const isActive = child?.path ? location.pathname === child.path : false;
 
             return (
-              <ListItem key={child.label} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem key={child?.label} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
-                  onClick={() => child.path && onNavigate(child.path)}
+                  onClick={() => child?.path && onNavigate(child.path)}
                   sx={{
                     borderRadius: 2,
                     px: 1.5,
@@ -129,12 +170,12 @@ function NestedSubGroupItem({
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: 0,
-                      mr: 1.25,
+                      minWidth: permanentOpen ? 34 : 0,
+                      mr: permanentOpen ? 0 : 1.25,
                       color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
                     }}
                   >
-                    {child.icon}
+                    {child?.icon}
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -145,7 +186,7 @@ function NestedSubGroupItem({
                           color: isActive ? "#FFFFFF" : "#6B6699",
                         }}
                       >
-                        {child.label}
+                        {child?.label}
                       </Typography>
                     }
                   />
@@ -165,34 +206,37 @@ export default function CollapsibleNavGroup({
   items,
   isCollapsed = false,
   onNavigate,
+  permanentOpen,
 }: CollapsibleNavGroupProps) {
   const location = useLocation();
   const { hasPermission } = usePermissions();
 
   // Filter items according to permissions & role rules
   const visibleItems = items.filter((item) => {
-    if (item.children && item.children.length > 0) {
-      return item.children.some((child) => !child.permission || hasPermission(child.permission));
+    if (item?.children && item.children.length > 0) {
+      return item.children.some((child) => !child?.permission || hasPermission(child.permission));
     }
-    if (!item.permission) return true;
+    if (!item?.permission) return true;
     return hasPermission(item.permission);
   });
 
   const isChildActive = visibleItems.some((item) => {
-    if (item.children && item.children.length > 0) {
-      return item.children.some((child) => child.path && location.pathname === child.path);
+    if (item?.children && item.children.length > 0) {
+      return item.children.some((child) => child?.path && location.pathname === child.path);
     }
-    return item.path && location.pathname === item.path;
+    return item?.path && location.pathname === item.path;
   });
 
-  const [open, setOpen] = useState(isChildActive);
+  const [open, setOpen] = useState(permanentOpen || isChildActive);
 
   // Auto-expand if active route changes to one of the child items
   useEffect(() => {
-    if (isChildActive) {
+    if (permanentOpen) {
+      setOpen(true);
+    } else if (isChildActive) {
       setOpen(true);
     }
-  }, [isChildActive]);
+  }, [isChildActive, permanentOpen]);
 
   // If no sub-items are permitted for this user, do not render the group
   if (visibleItems.length === 0) {
@@ -200,31 +244,30 @@ export default function CollapsibleNavGroup({
   }
 
   const handleToggle = () => {
-    setOpen((prev) => !prev);
+    if (!permanentOpen) {
+      setOpen((prev) => !prev);
+    }
   };
 
   return (
     <Box sx={{ mb: 1 }}>
       {/* Group Header Button */}
       <ListItem disablePadding>
-        <ListItemButton
-          onClick={handleToggle}
-          sx={{
-            borderRadius: 2.5,
-            px: 1.5,
-            py: 1,
-            justifyContent: isCollapsed ? "center" : "space-between",
-            transition: "all 0.2s ease",
-            backgroundColor: isChildActive && !open ? "rgba(79, 70, 229, 0.08)" : "transparent",
-            "&:hover": {
-              backgroundColor: "rgba(79, 70, 229, 0.06)",
-            },
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        {permanentOpen ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              px: 1.5,
+              py: 1,
+              justifyContent: isCollapsed ? "center" : "initial",
+            }}
+          >
             <ListItemIcon
               sx={{
-                minWidth: 0,
+                minWidth: isCollapsed ? 0 : 34,
+                mr: 0,
                 color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.6)",
                 justifyContent: "center",
               }}
@@ -246,38 +289,80 @@ export default function CollapsibleNavGroup({
               </Typography>
             )}
           </Box>
-
-          {!isCollapsed && (
-            <Box sx={{ color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
-              {open ? (
-                <ExpandMoreIcon sx={{ fontSize: 18 }} />
-              ) : (
-                <ChevronRightIcon sx={{ fontSize: 18 }} />
+        ) : (
+          <ListItemButton
+            onClick={handleToggle}
+            sx={{
+              borderRadius: 2.5,
+              px: 1.5,
+              py: 1,
+              justifyContent: isCollapsed ? "center" : "space-between",
+              transition: "all 0.2s ease",
+              backgroundColor: isChildActive && !open ? "rgba(79, 70, 229, 0.08)" : "transparent",
+              "&:hover": {
+                backgroundColor: "rgba(79, 70, 229, 0.06)",
+              },
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.6)",
+                  justifyContent: "center",
+                }}
+              >
+                {icon}
+              </ListItemIcon>
+              {!isCollapsed && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.05em",
+                    color: isChildActive ? "#4F46E5" : "#6B6699",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {title}
+                </Typography>
               )}
             </Box>
-          )}
-        </ListItemButton>
+
+            {!isCollapsed && (
+              <Box sx={{ color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
+                {open ? (
+                  <ExpandMoreIcon sx={{ fontSize: 18 }} />
+                ) : (
+                  <ChevronRightIcon sx={{ fontSize: 18 }} />
+                )}
+              </Box>
+            )}
+          </ListItemButton>
+        )}
       </ListItem>
 
       {/* Sub-Items List */}
-      <Collapse in={open && !isCollapsed} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding sx={{ pl: 1.5, mt: 0.5 }}>
+      <Collapse in={permanentOpen ? !isCollapsed : open && !isCollapsed} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 1.5, mt: 0.5 }}>
           {visibleItems.map((item) => {
-            if (item.children && item.children.length > 0) {
+            if (item?.children && item.children.length > 0) {
               return (
                 <NestedSubGroupItem
-                  key={item.label}
+                  key={item?.label}
                   item={item}
                   onNavigate={onNavigate}
+                  permanentOpen={permanentOpen}
                 />
               );
             }
 
-            const isActive = item.path ? location.pathname === item.path : false;
+            const isActive = item?.path ? location.pathname === item.path : false;
             return (
-              <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem key={item?.label} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
-                  onClick={() => item.path && onNavigate(item.path)}
+                  onClick={() => item?.path && onNavigate(item.path)}
                   sx={{
                     borderRadius: 2,
                     px: 1.5,
@@ -293,12 +378,12 @@ export default function CollapsibleNavGroup({
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: 0,
-                      mr: 1.5,
+                      minWidth: permanentOpen ? 34 : 0,
+                      mr: permanentOpen ? 0 : 1.5,
                       color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
                     }}
                   >
-                    {item.icon}
+                    {item?.icon}
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -309,7 +394,7 @@ export default function CollapsibleNavGroup({
                           color: isActive ? "#FFFFFF" : "#6B6699",
                         }}
                       >
-                        {item.label}
+                        {item?.label}
                       </Typography>
                     }
                   />
