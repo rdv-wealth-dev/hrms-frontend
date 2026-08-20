@@ -79,12 +79,6 @@ const topNavItems: NavItem[] = [
         permission: "leave.read",
     },
     {
-        label: "Leave Approval",
-        icon: <PolicyIcon fontSize="small" />,
-        path: paths.leaveApprovals,
-        permission: "leave.approve",
-    },
-    {
         label: "Holiday",
         icon: <CalendarMonthIcon fontSize="small" />,
         path: paths.holidays,
