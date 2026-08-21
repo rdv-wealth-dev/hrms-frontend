@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -38,7 +38,7 @@ import {
   getPendingLeaveRequestsRequest,
   getMyCompOffBalancesRequest,
 } from "../../../store/leave";
-import { reviewLeaveRequest, type CreateLeaveRequest, type LeaveRequest } from "../../../api/leave.api";
+import { reviewLeaveRequest, getLeaveReport, type CreateLeaveRequest, type LeaveRequest } from "../../../api/leave.api";
 import ApplyLeaveDialog from "../leave-apply/ApplyLeaveDialog";
 import LeaveBalancesGrid from "../leave-balance/LeaveBalancesGrid";
 import LeaveTab from "../../profile/components/LeaveTab";
@@ -119,6 +119,8 @@ export default function LeaveDashboardView() {
   const [actionLoading, setActionLoading] = useState(false);
   const [orgEmployees, setOrgEmployees] = useState<EmployeeListItem[]>([]);
   const [loadingOrgEmployees, setLoadingOrgEmployees] = useState(true);
+  const [orgLeaveRequests, setOrgLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [loadingOrgRequests, setLoadingOrgRequests] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -161,7 +163,30 @@ export default function LeaveDashboardView() {
 
   const { role, isSuperAdmin, hasPermission } = usePermissions();
   const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("leave.approve"));
+  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
   const user = useSelector((state: RootState) => state.auth?.user);
+
+  const fetchOrgLeaves = useCallback(() => {
+    if (isOrgAdmin || hasPermission("leave.read")) {
+      setLoadingOrgRequests(true);
+      getLeaveReport({ pageNumber: 1, pageSize: 50 })
+        .then((res) => {
+          if (res?.data && Array.isArray(res.data)) {
+            setOrgLeaveRequests(res.data);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed fetching organization leave report", err);
+        })
+        .finally(() => {
+          setLoadingOrgRequests(false);
+        });
+    }
+  }, [isOrgAdmin, hasPermission]);
+
+  useEffect(() => {
+    fetchOrgLeaves();
+  }, [fetchOrgLeaves]);
 
   const { isBlocked: isProfileBlocked, pendingSections, detectBlock, reset } = useProfileBlockDetect();
 
@@ -195,6 +220,7 @@ export default function LeaveDashboardView() {
     onSuccess: () => {
       applyDialog.close();
       cancelDialog.close();
+      fetchOrgLeaves();
       dispatch(getMyLeaveBalancesRequest(selectedYear));
       dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
       dispatch(getMyCompOffBalancesRequest());
@@ -245,6 +271,7 @@ export default function LeaveDashboardView() {
       setActionLoading(true);
       try {
         await reviewLeaveRequest(req._id, "APPROVED", "Approved via Quick Action");
+        fetchOrgLeaves();
         dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
         dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
         dispatch(getMyLeaveBalancesRequest(selectedYear));
@@ -268,6 +295,7 @@ export default function LeaveDashboardView() {
       setActionLoading(true);
       try {
         await reviewLeaveRequest(req._id, "REJECTED", "Rejected via Quick Action");
+        fetchOrgLeaves();
         dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
         dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
         dispatch(getMyLeaveBalancesRequest(selectedYear));
@@ -283,7 +311,10 @@ export default function LeaveDashboardView() {
     detailDialog.open(req);
   };
 
-  const liveReqs = [...pendingRequests, ...myRequests];
+  const liveReqs = isOrgAdmin
+    ? (orgLeaveRequests.length > 0 ? orgLeaveRequests : [...pendingRequests, ...myRequests])
+    : [...pendingRequests, ...myRequests];
+
   const mergedReqs = Array.from(
     new Map(liveReqs.map((r) => [r._id || r.reason, r])).values()
   );
@@ -325,7 +356,7 @@ export default function LeaveDashboardView() {
             </Typography>
           </Box>
 
-          {!isProfileBlocked && (
+          {role !== "ORG_ADMIN" && !isProfileBlocked && (
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -468,7 +499,7 @@ export default function LeaveDashboardView() {
             {tabValue === 0 && (
               <LeaveRequestsTable
                 requests={displayRequests}
-                loading={loading || actionLoading}
+                loading={loading || actionLoading || loadingOrgRequests}
                 onApprove={handleQuickApprove}
                 onReject={handleQuickReject}
                 onPreview={handlePreviewDetails}

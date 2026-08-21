@@ -465,4 +465,25 @@ export const creditCompOff = async (
   return response.data;
 };
 
+export interface LeaveReportQueryParams {
+  fromDate?: string;
+  toDate?: string;
+  employeeId?: string;
+  leaveTypeId?: string;
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export const getLeaveReport = async (
+  params?: LeaveReportQueryParams
+): Promise<LeaveRequestsPaginatedResponse> => {
+  const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
+    "/leave/report",
+    { params }
+  );
+  return response.data;
+};
+
+
 

@@ -17,7 +17,6 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../components/input/TextInput";
 
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 
@@ -123,17 +122,21 @@ export default function DocumentsTab({
   return (
     <Box>
       <Card sx={{ p: 3.5 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
-            <DescriptionOutlinedIcon sx={{ color: "#4F46E5" }} />
-            Documents Management
-          </Typography>
-          {!isViewingOther && (
-            <Button variant="contained" startIcon={<CloudUploadOutlinedIcon />} onClick={() => { resetDocUploadForm(); setDocUploadDialogOpen(true); }} sx={{ backgroundColor: "#4F46E5" }}>
+        {!isViewingOther && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+            <Button
+              variant="contained"
+              startIcon={<CloudUploadOutlinedIcon />}
+              onClick={() => {
+                resetDocUploadForm();
+                setDocUploadDialogOpen(true);
+              }}
+              sx={{ backgroundColor: "#4F46E5" }}
+            >
               Upload Document
             </Button>
-          )}
-        </Box>
+          </Box>
+        )}
         {(missingDocTypes || []).length > 0 && (
           <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
             Missing required verification documents: <strong>{(missingDocTypes || []).join(", ")}</strong>

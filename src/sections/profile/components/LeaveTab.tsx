@@ -17,6 +17,7 @@ import { applyLeaveRequest, getMyLeaveRequestsRequest, getMyLeaveBalancesRequest
 import type { RootState } from "../../../store/rootReducer";
 import { useSnackbar } from "../../../components/snackbar";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
+import { usePermissions } from "../../../hooks/usePermissions";
 import SoftGateLockCard from "../../../components/common/SoftGateLockCard";
 
 interface LeaveTabProps {
@@ -37,6 +38,9 @@ export default function LeaveTab({
   const dispatch = useDispatch<any>();
   const { showSnackbar } = useSnackbar();
   const { phase, completionPct } = useOnboardingStatus();
+  const { role } = usePermissions();
+
+  const isOrgAdmin = role === "ORG_ADMIN";
 
   const [applyLeaveDialogOpen, setApplyLeaveDialogOpen] = useState(false);
   const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
@@ -98,59 +102,63 @@ export default function LeaveTab({
       try {
         localStorage.setItem("hrms_local_user_leaves", JSON.stringify(updatedLocal));
       } catch (e) {
-        console.error("Failed to save local leave request", e);
+        console.error("Failed saving local leave request", e);
       }
       return updatedLocal;
     });
 
+    showSnackbar("Leave application submitted successfully!", "success");
     setApplyLeaveDialogOpen(false);
-    showSnackbar(`Successfully applied for ${typeName}`, "success");
-    dispatch(getMyLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
   }, [dispatch, leaveTypes, user, showSnackbar]);
+
+  const cardGridSize = isOrgAdmin ? { xs: 12, sm: 6, md: 4 } : { xs: 12, sm: 6, md: 3 };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {/* Soft Gate Notice for Incomplete Profile */}
       {phase === "RESTRICTED" && !isViewingOther && (
         <SoftGateLockCard
-          featureTitle="Leave Applications Locked"
-          message="Your onboarding profile is incomplete. Complete your onboarding steps to apply for leave and view balances."
+          featureTitle="Leave Applications Soft-Gated"
+          message="Complete your pending onboarding profile tasks to remove restrictions on leave encashment and balance tracking."
           completionPct={completionPct}
         />
       )}
 
-      {/* 4 Summary Stat Cards Row */}
+      {/* Summary Stat Cards Row */}
       <Grid container spacing={2.5}>
-        {/* Card 1: Apply Leave Quick Action */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
-          <Card
-            onClick={() => !isViewingOther && setApplyLeaveDialogOpen(true)}
-            sx={{
-              p: 2.5,
-              cursor: isViewingOther ? "default" : "pointer",
-              transition: "all 0.15s ease",
-              width: "100%",
-              "&:hover": { borderColor: "#C7D2FE", transform: "translateY(-2px)" },
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                QUICK APPLY
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <AddIcon fontSize="small" />
+        {/* Card 1: Apply Leave Quick Action (Hidden for ORG_ADMIN) */}
+        {!isOrgAdmin && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
+            <Card
+              onClick={() => !isViewingOther && setApplyLeaveDialogOpen(true)}
+              sx={{
+                p: 2.5,
+                cursor: isViewingOther ? "default" : "pointer",
+                transition: "all 0.15s ease",
+                width: "100%",
+                "&:hover": { borderColor: "#C7D2FE", transform: "translateY(-2px)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+                <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  QUICK APPLY
+                </Typography>
+                <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <AddIcon fontSize="small" />
+                </Box>
               </Box>
-            </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#4F46E5", mb: 0.5 }}>
-              Apply Leave
-            </Typography>
-            <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-              Submit new leave request
-            </Typography>
-          </Card>
-        </Grid>
+              <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#4F46E5", mb: 0.5 }}>
+                Apply Leave
+              </Typography>
+              <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
+                Submit new leave request
+              </Typography>
+            </Card>
+          </Grid>
+        )}
 
         {/* Card 2: Pending Requests */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
+        <Grid size={cardGridSize} sx={{ display: "flex" }}>
           <Card sx={{ p: 2.5, width: "100%" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
               <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
@@ -170,7 +178,7 @@ export default function LeaveTab({
         </Grid>
 
         {/* Card 3: Leave Balances */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
+        <Grid size={cardGridSize} sx={{ display: "flex" }}>
           <Card
             onClick={() => setBalanceDialogOpen(true)}
             sx={{
@@ -208,7 +216,7 @@ export default function LeaveTab({
         </Grid>
 
         {/* Card 4: Comp-Off Balance */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
+        <Grid size={cardGridSize} sx={{ display: "flex" }}>
           <Card sx={{ p: 2.5, width: "100%" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
               <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>

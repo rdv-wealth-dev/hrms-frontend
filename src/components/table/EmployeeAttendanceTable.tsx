@@ -1,16 +1,18 @@
+import { useRef } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Chip from "@mui/material/Chip";
 
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { CustomAvatar } from "../avatar";
+import VirtualizedTableBody from "./VirtualizedTableBody";
 
 export interface AttendanceRecordRow {
   id: string;
@@ -28,15 +30,22 @@ interface EmployeeAttendanceTableProps {
   records: AttendanceRecordRow[];
   onExport?: () => void;
   onRowClick?: (record: AttendanceRecordRow) => void;
+  loading?: boolean;
+  maxHeight?: number | string;
 }
 
 export default function EmployeeAttendanceTable({
-  records,
+  records = [],
   onExport,
   onRowClick,
+  loading = false,
+  maxHeight = 480,
 }: EmployeeAttendanceTableProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const safeRecords = Array.isArray(records) ? records : [];
+
   const getStatusChipProps = (status: string) => {
-    const s = status.toLowerCase();
+    const s = (status || "").toLowerCase();
     if (s.includes("present")) {
       return { label: "Present", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0" };
     }
@@ -55,7 +64,7 @@ export default function EmployeeAttendanceTable({
     if (s.includes("absent")) {
       return { label: "Absent", color: "#DC2626", bg: "#FEF2F2", border: "#FCA5A5" };
     }
-    return { label: status.replace(/_/g, " "), color: "#4B5563", bg: "#F3F4F6", border: "#E5E7EB" };
+    return { label: (status || "Unknown").replace(/_/g, " "), color: "#4B5563", bg: "#F3F4F6", border: "#E5E7EB" };
   };
 
   const handleCsvExport = () => {
@@ -63,10 +72,10 @@ export default function EmployeeAttendanceTable({
       onExport();
       return;
     }
-    if (records.length === 0) return;
+    if (safeRecords.length === 0) return;
 
     const headers = ["Employee", "Check In", "Check Out", "Hours", "Status"];
-    const rows = records.map((r) => [r.employeeName, r.checkIn, r.checkOut, r.hours, r.status]);
+    const rows = safeRecords.map((r) => [r?.employeeName ?? "", r?.checkIn ?? "", r?.checkOut ?? "", r?.hours ?? "", r?.status ?? ""]);
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
@@ -93,8 +102,8 @@ export default function EmployeeAttendanceTable({
       {/* Table Card Header */}
       <Box
         sx={{
-          px: { xs: 2.5, sm: 3 },
-          py: 2.5,
+          px: { xs: 2, sm: 3 },
+          py: 2,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -125,11 +134,22 @@ export default function EmployeeAttendanceTable({
         </Button>
       </Box>
 
-      {/* Table Body */}
-      <Box sx={{ overflowX: "auto" }}>
-        <Table sx={{ minWidth: 650 }}>
+      {/* Virtualized Table Container */}
+      <TableContainer
+        ref={containerRef}
+        sx={{
+          maxHeight,
+          overflowY: "auto",
+          overflowX: "auto",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#CBD5E1 transparent",
+          "&::-webkit-scrollbar": { width: "6px", height: "6px" },
+          "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "6px" },
+        }}
+      >
+        <Table stickyHeader sx={{ minWidth: 650 }}>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
+            <TableRow sx={{ "& th": { backgroundColor: "#F9FAFB", zIndex: 3 } }}>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem", color: "#6B7280", letterSpacing: "0.05em" }}>
                 EMPLOYEE
               </TableCell>
@@ -148,14 +168,20 @@ export default function EmployeeAttendanceTable({
             </TableRow>
           </TableHead>
 
-          <TableBody>
-            {records.map((row) => {
-              const chip = getStatusChipProps(row.status);
+          <VirtualizedTableBody
+            items={safeRecords}
+            containerRef={containerRef}
+            estimateRowHeight={56}
+            columnsCount={5}
+            loading={loading}
+            renderRow={(row) => {
+              const chip = getStatusChipProps(row?.status);
               return (
                 <TableRow
-                  key={row.id}
+                  key={row?.id}
                   onClick={() => onRowClick && onRowClick(row)}
                   sx={{
+                    height: 56,
                     cursor: onRowClick ? "pointer" : "default",
                     "&:hover": { backgroundColor: "#F9FAFB" },
                     transition: "background-color 0.15s ease",
@@ -165,12 +191,12 @@ export default function EmployeeAttendanceTable({
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                       <CustomAvatar
-                        name={row.employeeName}
-                        src={row.avatarUrl}
+                        name={row?.employeeName ?? ""}
+                        src={row?.avatarUrl}
                         size={34}
                       />
                       <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                        {row.employeeName}
+                        {row?.employeeName ?? "N/A"}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -178,21 +204,21 @@ export default function EmployeeAttendanceTable({
                   {/* CHECK IN column */}
                   <TableCell>
                     <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", fontWeight: 500 }}>
-                      {row.checkIn}
+                      {row?.checkIn ?? "--"}
                     </Typography>
                   </TableCell>
 
                   {/* CHECK OUT column */}
                   <TableCell>
                     <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", fontWeight: 500 }}>
-                      {row.checkOut}
+                      {row?.checkOut ?? "--"}
                     </Typography>
                   </TableCell>
 
                   {/* HOURS column */}
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                      {row.hours}
+                      {row?.hours ?? "--"}
                     </Typography>
                   </TableCell>
 
@@ -215,10 +241,10 @@ export default function EmployeeAttendanceTable({
                   </TableCell>
                 </TableRow>
               );
-            })}
-          </TableBody>
+            }}
+          />
         </Table>
-      </Box>
+      </TableContainer>
     </Card>
   );
 }

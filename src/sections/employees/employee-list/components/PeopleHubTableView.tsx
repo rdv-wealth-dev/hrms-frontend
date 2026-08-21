@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
@@ -27,6 +26,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import type { EmployeeListItem } from "../../../../store/employee/employee.types";
+import { VirtualizedTableBody } from "../../../../components/table";
 
 interface PeopleHubTableViewProps {
   employees: EmployeeListItem[];
@@ -126,7 +126,8 @@ function getEmployeeStatusStyle(status?: string, employeeType?: string, isActive
 }
 
 export function PeopleHubTableView({
-  employees,
+  employees = [],
+  loading = false,
   canUpdate = true,
   canDelete = true,
   canManageRoles = true,
@@ -138,8 +139,11 @@ export function PeopleHubTableView({
   onSelectEmployee,
 }: PeopleHubTableViewProps) {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedEmp, setSelectedEmp] = useState<EmployeeListItem | null>(null);
+
+  const safeEmployees = Array.isArray(employees) ? employees : [];
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, emp: EmployeeListItem) => {
     event.stopPropagation();
@@ -156,17 +160,17 @@ export function PeopleHubTableView({
     <Box sx={{ width: "100%" }}>
       {/* Mobile Card View (xs < 600px) */}
       <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 2 }}>
-        {employees.map((emp, index) => {
-          const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
-          const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
+        {safeEmployees.map((emp, index) => {
+          const fullName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim() || "Employee";
+          const initials = `${emp?.firstName?.[0] ?? ""}${emp?.lastName?.[0] ?? ""}`.toUpperCase() || "E";
           const meta = getPeopleHubMeta(index, emp);
-          const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
-          const desigName = typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Software Developer" : emp.designationId || "Software Developer";
-          const deptName = typeof emp.departmentId === "object" ? (emp.departmentId as any)?.name || "Engineering" : "Engineering";
+          const statusStyle = getEmployeeStatusStyle(emp?.status, emp?.employeeType, emp?.isActive);
+          const desigName = typeof emp?.designationId === "object" ? (emp?.designationId as any)?.name || "Software Developer" : emp?.designationId || "Software Developer";
+          const deptName = typeof emp?.departmentId === "object" ? (emp?.departmentId as any)?.name || "Engineering" : "Engineering";
 
           return (
             <Card
-              key={emp._id}
+              key={emp?._id || `mobile-emp-${index}`}
               sx={{
                 p: 2,
                 borderRadius: 3,
@@ -180,14 +184,14 @@ export function PeopleHubTableView({
                   onClick={() => {
                     if (onSelectEmployee) {
                       onSelectEmployee(emp);
-                    } else {
+                    } else if (emp?._id) {
                       navigate(`/employees/${emp._id}`);
                     }
                   }}
                   sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }}
                 >
                   <Avatar
-                    src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
+                    src={(emp as any)?.avatarUrl || (emp as any)?.avatar || (emp as any)?.profilePicture}
                     sx={{
                       width: 40,
                       height: 40,
@@ -237,8 +241,9 @@ export function PeopleHubTableView({
         })}
       </Box>
 
-      {/* Responsive Table View (sm+) with Sticky Quick Action Column */}
+      {/* Responsive Table View (sm+) with Virtualization & Sticky Header */}
       <TableContainer
+        ref={containerRef}
         component={Paper}
         elevation={0}
         sx={{
@@ -248,16 +253,18 @@ export function PeopleHubTableView({
           boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
           backgroundColor: "#FFFFFF",
           overflowX: "auto",
+          overflowY: "auto",
+          maxHeight: 620,
           maxWidth: "100%",
           scrollbarWidth: "thin",
           scrollbarColor: "#CBD5E1 transparent",
-          "&::-webkit-scrollbar": { height: "6px" },
+          "&::-webkit-scrollbar": { width: "6px", height: "6px" },
           "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "10px" },
         }}
       >
-        <Table sx={{ minWidth: 1080, tableLayout: "auto" }}>
-          <TableHead sx={{ backgroundColor: "#FAFAFA" }}>
-            <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8 } }}>
+        <Table stickyHeader sx={{ minWidth: 1080, tableLayout: "auto" }}>
+          <TableHead>
+            <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8, backgroundColor: "#FAFAFA", zIndex: 3 } }}>
               <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 180 }}>
                 EMPLOYEE
               </TableCell>
@@ -298,7 +305,7 @@ export function PeopleHubTableView({
                   position: "sticky",
                   right: 0,
                   backgroundColor: "#FAFAFA",
-                  zIndex: 2,
+                  zIndex: 4,
                   px: 1.5,
                 }}
                 width={100}
@@ -308,22 +315,25 @@ export function PeopleHubTableView({
             </TableRow>
           </TableHead>
 
-          <TableBody>
-            {employees.map((emp, index) => {
-              const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || "Employee";
-              const initials = `${emp.firstName?.[0] ?? ""}${emp.lastName?.[0] ?? ""}`.toUpperCase() || "E";
+          <VirtualizedTableBody
+            items={safeEmployees}
+            containerRef={containerRef}
+            estimateRowHeight={64}
+            columnsCount={8}
+            loading={loading}
+            renderRow={(emp, index) => {
+              const fullName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim() || "Employee";
+              const initials = `${emp?.firstName?.[0] ?? ""}${emp?.lastName?.[0] ?? ""}`.toUpperCase() || "E";
               const meta = getPeopleHubMeta(index, emp);
-
-              const statusStyle = getEmployeeStatusStyle(emp.status, emp.employeeType, emp.isActive);
+              const statusStyle = getEmployeeStatusStyle(emp?.status, emp?.employeeType, emp?.isActive);
 
               return (
                 <TableRow
-                  key={emp._id}
+                  key={emp?._id || `emp-${index}`}
                   hover
                   sx={{
                     transition: "background-color 0.15s ease",
                     height: 64,
-                    "&:last-child td": { borderBottom: 0 },
                     "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
                     "&:hover td:last-child": { backgroundColor: "#F8FAFC" },
                   }}
@@ -334,7 +344,7 @@ export function PeopleHubTableView({
                       onClick={() => {
                         if (onSelectEmployee) {
                           onSelectEmployee(emp);
-                        } else {
+                        } else if (emp?._id) {
                           navigate(`/employees/${emp._id}`);
                         }
                       }}
@@ -348,7 +358,7 @@ export function PeopleHubTableView({
                       }}
                     >
                       <Avatar
-                        src={(emp as any).avatarUrl || (emp as any).avatar || (emp as any).profilePicture}
+                        src={(emp as any)?.avatarUrl || (emp as any)?.avatar || (emp as any)?.profilePicture}
                         sx={{
                           width: 36,
                           height: 36,
@@ -379,14 +389,14 @@ export function PeopleHubTableView({
                   {/* Designation */}
                   <TableCell sx={{ minWidth: 150, whiteSpace: "nowrap" }}>
                     <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap" }}>
-                      {typeof emp.designationId === "object" ? (emp.designationId as any)?.name || "Software Developer" : emp.designationId || "Software Developer"}
+                      {typeof emp?.designationId === "object" ? (emp?.designationId as any)?.name || "Software Developer" : emp?.designationId || "Software Developer"}
                     </Typography>
                   </TableCell>
 
                   {/* Department */}
                   <TableCell sx={{ minWidth: 130, whiteSpace: "nowrap" }}>
                     <Typography variant="body2" sx={{ color: "#334155", fontWeight: 500, fontSize: "13px", whiteSpace: "nowrap" }}>
-                      {typeof emp.departmentId === "object" ? (emp.departmentId as any)?.name || "Engineering" : "Engineering"}
+                      {typeof emp?.departmentId === "object" ? (emp?.departmentId as any)?.name || "Engineering" : "Engineering"}
                     </Typography>
                   </TableCell>
 
@@ -439,7 +449,7 @@ export function PeopleHubTableView({
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {emp.joiningDate
+                        {emp?.joiningDate
                           ? new Date(emp.joiningDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
                           : ["15 Jan 2023", "01 Jun 2022", "10 Mar 2024", "20 Aug 2021", "05 Nov 2023"][index % 5]}
                       </Typography>
@@ -471,7 +481,7 @@ export function PeopleHubTableView({
                       position: "sticky",
                       right: 0,
                       backgroundColor: "#FFFFFF",
-                      zIndex: 1,
+                      zIndex: 2,
                       px: 1.5,
                     }}
                   >
@@ -485,31 +495,8 @@ export function PeopleHubTableView({
                   </TableCell>
                 </TableRow>
               );
-            })}
-            {Math.max(0, 10 - employees.length) > 0 &&
-              Array.from({ length: Math.max(0, 10 - employees.length) }).map((_, index) => {
-                const isLast = index === Math.max(0, 10 - employees.length) - 1;
-                return (
-                  <TableRow
-                    key={`empty-${index}`}
-                    sx={{
-                      height: 64,
-                      "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
-                    }}
-                  >
-                    <TableCell colSpan={7} />
-                    <TableCell
-                      sx={{
-                        position: "sticky",
-                        right: 0,
-                        backgroundColor: "#FFFFFF",
-                        zIndex: 1,
-                      }}
-                    />
-                  </TableRow>
-                );
-              })}
-          </TableBody>
+            }}
+          />
         </Table>
       </TableContainer>
 
