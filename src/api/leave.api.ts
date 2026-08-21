@@ -1,15 +1,5 @@
 import axiosInstance from "./axios";
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    throw new Error("No access token found. Please log in again.");
-  }
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
-
 export interface CreateLeaveTypeRequest {
   name: string;
   code: string;
@@ -77,27 +67,30 @@ export const createLeaveType = async (
 ): Promise<CreateLeaveTypeResponse> => {
   const response = await axiosInstance.post<CreateLeaveTypeResponse>(
     "/leave/types",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
 
 export const listLeaveTypes = async (): Promise<LeaveTypesPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveTypesPaginatedResponse>(
-    "/leave/types?pageNumber=1&pageSize=50",
-    { headers: getAuthHeader() }
+    "/leave/types?pageNumber=1&pageSize=50"
   );
   return response.data;
 };
+
+export type HolidayScope = "GLOBAL" | "COUNTRY" | "STATE" | "BRANCH";
 
 export interface CreateHolidayRequest {
   name: string;
   date: string;
   type?: "NATIONAL" | "RESTRICTED" | "REGIONAL";
+  scope?: HolidayScope;
   isOptional?: boolean;
-  description?: string;
   branchId?: string;
+  countryCode?: string;
+  stateCode?: string;
+  description?: string;
 }
 
 export interface Holiday {
@@ -106,9 +99,12 @@ export interface Holiday {
   name: string;
   date: string;
   type: "NATIONAL" | "RESTRICTED" | "REGIONAL";
+  scope?: HolidayScope;
   isOptional: boolean;
   description?: string;
   branchId?: string;
+  countryCode?: string;
+  stateCode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -132,8 +128,68 @@ export const createHoliday = async (
 ): Promise<CreateHolidayResponse> => {
   const response = await axiosInstance.post<CreateHolidayResponse>(
     "/leave/holidays",
-    payload,
-    { headers: getAuthHeader() }
+    payload
+  );
+  return response.data;
+};
+
+export interface UpdateHolidayRequest {
+  name?: string;
+  date?: string;
+  type?: "NATIONAL" | "RESTRICTED" | "REGIONAL";
+  scope?: HolidayScope;
+  isOptional?: boolean;
+  branchId?: string;
+  countryCode?: string;
+  stateCode?: string;
+  description?: string;
+}
+
+export const updateHoliday = async (
+  id: string,
+  payload: UpdateHolidayRequest
+): Promise<CreateHolidayResponse> => {
+  const response = await axiosInstance.patch<CreateHolidayResponse>(
+    `/leave/holidays/${id}`,
+    payload
+  );
+  return response.data;
+};
+
+export interface DeleteHolidayResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+}
+
+export const deleteHoliday = async (id: string): Promise<DeleteHolidayResponse> => {
+  const response = await axiosInstance.delete<DeleteHolidayResponse>(
+    `/leave/holidays/${id}`
+  );
+  return response.data;
+};
+
+export interface SeedDefaultHolidaysResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message: string;
+  data?: Holiday[];
+}
+
+export const seedDefaultHolidays = async (
+  _countryCode?: string,
+  stateCode?: string
+): Promise<SeedDefaultHolidaysResponse> => {
+  const params: Record<string, string> = {};
+  // Note: countryCode is ignored (always derived from organization locale on the backend)
+  if (stateCode) params.stateCode = stateCode;
+
+  const response = await axiosInstance.post<SeedDefaultHolidaysResponse>(
+    "/leave/holidays/seed-default",
+    {},
+    {
+      params,
+    }
   );
   return response.data;
 };
@@ -143,7 +199,25 @@ export const listHolidays = async (year?: number): Promise<HolidayListResponse> 
     "/leave/holidays",
     {
       params: year ? { year } : undefined,
-      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+export interface ResolveHolidaysResponse {
+  success: boolean;
+  message: string;
+  data: Holiday[];
+}
+
+export const resolveBranchHolidays = async (
+  branchId: string,
+  year?: number
+): Promise<ResolveHolidaysResponse> => {
+  const response = await axiosInstance.get<ResolveHolidaysResponse>(
+    "/leave/holidays/resolve",
+    {
+      params: { branchId, year: year || new Date().getFullYear() },
     }
   );
   return response.data;
@@ -179,7 +253,6 @@ export const getMyLeaveBalances = async (
     "/leave/balances/me",
     {
       params: year ? { year } : undefined,
-      headers: getAuthHeader(),
     }
   );
   return response.data;
@@ -224,8 +297,7 @@ export const applyForLeave = async (
 ): Promise<CreateLeaveRequestResponse> => {
   const response = await axiosInstance.post<CreateLeaveRequestResponse>(
     "/leave/requests",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -239,6 +311,8 @@ export interface LeaveRequest {
     employeeCode: string;
     firstName: string;
     lastName: string;
+    avatarUrl?: string;
+    profilePicture?: string;
   };
   leaveTypeId: {
     _id: string;
@@ -291,8 +365,7 @@ export const getPendingLeaveRequests = async (
   pageSize = 20
 ): Promise<LeaveRequestsPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
-    `/leave/requests/pending?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    { headers: getAuthHeader() }
+    `/leave/requests/pending?pageNumber=${pageNumber}&pageSize=${pageSize}`
   );
   return response.data;
 };
@@ -304,8 +377,7 @@ export const reviewLeaveRequest = async (
 ): Promise<ReviewLeaveRequestResponse> => {
   const response = await axiosInstance.patch<ReviewLeaveRequestResponse>(
     `/leave/requests/${id}/review`,
-    { status, reviewComments },
-    { headers: getAuthHeader() }
+    { status, reviewComments }
   );
   return response.data;
 };
@@ -315,8 +387,7 @@ export const getMyLeaveRequests = async (
   pageSize = 10
 ): Promise<LeaveRequestsPaginatedResponse> => {
   const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
-    `/leave/requests/me?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    { headers: getAuthHeader() }
+    `/leave/requests/me?pageNumber=${pageNumber}&pageSize=${pageSize}`
   );
   return response.data;
 };
@@ -334,8 +405,7 @@ export const cancelLeaveRequest = async (
 ): Promise<CancelLeaveRequestResponse> => {
   const response = await axiosInstance.patch<CancelLeaveRequestResponse>(
     `/leave/requests/${id}/cancel`,
-    { cancelReason },
-    { headers: getAuthHeader() }
+    { cancelReason }
   );
   return response.data;
 };
@@ -367,8 +437,7 @@ export interface CompOffBalanceResponse {
 
 export const getMyCompOffBalances = async (): Promise<CompOffBalanceResponse> => {
   const response = await axiosInstance.get<CompOffBalanceResponse>(
-    "/leave/comp-off/me",
-    { headers: getAuthHeader() }
+    "/leave/comp-off/me"
   );
   return response.data;
 };
@@ -391,10 +460,30 @@ export const creditCompOff = async (
 ): Promise<CreditCompOffResponse> => {
   const response = await axiosInstance.post<CreditCompOffResponse>(
     "/leave/comp-off",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
+
+export interface LeaveReportQueryParams {
+  fromDate?: string;
+  toDate?: string;
+  employeeId?: string;
+  leaveTypeId?: string;
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export const getLeaveReport = async (
+  params?: LeaveReportQueryParams
+): Promise<LeaveRequestsPaginatedResponse> => {
+  const response = await axiosInstance.get<LeaveRequestsPaginatedResponse>(
+    "/leave/report",
+    { params }
+  );
+  return response.data;
+};
+
 
 

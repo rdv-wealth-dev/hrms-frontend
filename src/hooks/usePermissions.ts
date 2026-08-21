@@ -3,11 +3,16 @@ import type { RootState } from "../store/rootReducer";
 import { useRole } from "../auth/hooks/use-role";
 import { ROLE_PERMISSIONS } from "../utils/permissions";
 
+export const canAccess = (userPermissions: string[], permission: string): boolean => {
+  if (!Array.isArray(userPermissions)) return false;
+  return userPermissions.includes(permission);
+};
+
 export function usePermissions() {
   const { role, permissions: userPermissions, hasRole } = useRole();
   const user = useSelector((state: RootState) => state.auth?.user);
 
-  const isSuperAdmin = role === "ORG_ADMIN" || user?.isSuperAdmin === true;
+  const isSuperAdmin = role === "ORG_ADMIN" || role === "HR_ADMIN" || (role as string) === "HR" || user?.isSuperAdmin === true;
 
   // Resolve permissions from either user payload or fallback role mapping
   const permissions = userPermissions.length > 0
@@ -16,6 +21,7 @@ export function usePermissions() {
 
   const hasPermission = (perm: string): boolean => {
     if (isSuperAdmin) return true;
+    if ((role === "MANAGER" || role === "PRODUCT_MANAGER") && (perm === "attendance.approve" || perm === "leave.approve" || perm === "attendance.read")) return true;
     return permissions.includes(perm);
   };
 
@@ -37,5 +43,11 @@ export function usePermissions() {
     hasAnyPermission,
     hasAllPermissions,
     hasRole,
+    canCreateEmployee: hasPermission("employee.create"),
+    canUpdateEmployee: hasPermission("employee.update"),
+    canDeleteEmployee: hasPermission("employee.delete"),
+    canApproveLeave: hasPermission("leave.approve"),
+    canCreateLeave: hasPermission("leave.create"),
+    canApproveAttendance: hasPermission("attendance.approve"),
   };
 }

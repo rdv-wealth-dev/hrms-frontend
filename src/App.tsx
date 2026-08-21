@@ -26,11 +26,10 @@ function App() {
     dispatch(restoreSessionRequest());
   }, [dispatch]);
 
-  // Monitor access token deletion
+  // Monitor access token deletion from other tabs/windows
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Listen to token deletion from other tabs/windows
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "accessToken" && !event.newValue) {
         dispatch(logout());
@@ -38,17 +37,8 @@ function App() {
     };
     window.addEventListener("storage", handleStorageChange);
 
-    // Poll to detect token deletion in the current tab (e.g. via DevTools)
-    const intervalId = setInterval(() => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        dispatch(logout());
-      }
-    }, 1000);
-
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      clearInterval(intervalId);
     };
   }, [isAuthenticated, dispatch]);
 

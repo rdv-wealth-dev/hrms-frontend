@@ -1,0 +1,26 @@
+import { useTheme, useMediaQuery } from "@mui/material";
+
+export function useResponsive() {
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+
+  const currentBreakpoint = isMobile
+    ? "xs"
+    : isTablet
+    ? "sm"
+    : isDesktop
+    ? "md"
+    : "lg";
+
+  return {
+    isMobile,
+    isTablet,
+    isDesktop,
+    currentBreakpoint,
+  };
+}
+
+export default useResponsive;

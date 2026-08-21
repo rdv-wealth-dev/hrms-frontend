@@ -9,13 +9,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
-import Select from "@mui/material/Select";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
 import { useSnackbar } from "../../../components/snackbar";
@@ -27,6 +22,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 
+import TextInput from "../../../components/input/TextInput";
+
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import {
@@ -35,7 +32,9 @@ import {
   resetOrganizationStatus,
 } from "../../../store/organization";
 import { usePermissions } from "../../../hooks/usePermissions";
-import { SaturdayOffMode } from "../../../store/organization/organization.types";
+import { CustomWeekOffRulesBuilder } from "../../../components/settings/CustomWeekOffRulesBuilder";
+import type { CustomWeekOffRule } from "../../../store/organization/organization.types";
+import { parseWorkingHoursToDecimal, formatWorkingHoursDisplay } from "../../../utils/format-date";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -46,19 +45,6 @@ const DAYS_OF_WEEK = [
   "Saturday",
   "Sunday",
 ];
-
-const SATURDAY_POLICY_LABELS: Record<string, string> = {
-  ALL_WORKING: "All Saturdays Working",
-  ALL_OFF: "All Saturdays Off",
-  FIRST_OFF: "1st Saturday Off",
-  SECOND_OFF: "2nd Saturday Off",
-  THIRD_OFF: "3rd Saturday Off",
-  FOURTH_OFF: "4th Saturday Off",
-  FIFTH_OFF_IF_EXISTS: "5th Saturday Off (if exists)",
-  FIRST_AND_THIRD_OFF: "1st & 3rd Saturday Off",
-  SECOND_AND_FOURTH_OFF: "2nd & 4th Saturday Off",
-  CUSTOM: "Custom Off-Weeks (Select below)",
-};
 
 const DATE_FORMATS = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
 const TIME_FORMATS = ["12h", "24h"];
@@ -125,9 +111,8 @@ function OrganizationProfileContent() {
   const [timeFormat, setTimeFormat] = useState("12h");
   const [fiscalYearStart, setFiscalYearStart] = useState("");
   const [weeklyOffDays, setWeeklyOffDays] = useState<string[]>([]);
-  const [workingHoursPerDay, setWorkingHoursPerDay] = useState(8);
-  const [saturdayMode, setSaturdayMode] = useState<SaturdayOffMode>(SaturdayOffMode.ALL_WORKING);
-  const [customOffWeeks, setCustomOffWeeks] = useState<number[]>([]);
+  const [workingHoursInput, setWorkingHoursInput] = useState("8");
+  const [customWeekOffRules, setCustomWeekOffRules] = useState<CustomWeekOffRule[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -161,19 +146,23 @@ function OrganizationProfileContent() {
       setTimeFormat(organization.locale?.timeFormat === "24h" ? "24h" : "12h");
       setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
       setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
-      setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
+      setWorkingHoursInput(formatWorkingHoursDisplay(organization.locale?.workingHoursPerDay || 8));
       
-      const policy = organization.locale?.saturdayPolicy;
-      setSaturdayMode(policy?.mode || SaturdayOffMode.ALL_WORKING);
-      setCustomOffWeeks(policy?.customOffWeeks || []);
+      const savedRules = localStorage.getItem("hrms_org_custom_week_off_rules");
+      const orgRules = organization.locale?.customWeekOffRules;
+      if (orgRules && orgRules.length > 0) {
+        setCustomWeekOffRules(orgRules);
+      } else if (savedRules) {
+        try {
+          setCustomWeekOffRules(JSON.parse(savedRules));
+        } catch {
+          setCustomWeekOffRules([]);
+        }
+      } else {
+        setCustomWeekOffRules([]);
+      }
     }
   }, [organization]);
-
-  const handleToggleCustomWeek = (week: number) => {
-    setCustomOffWeeks((prev) =>
-      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week].sort((a, b) => a - b)
-    );
-  };
 
   // Trigger snackbar on success and exit edit mode
   useEffect(() => {
@@ -203,11 +192,7 @@ function OrganizationProfileContent() {
       setTimeFormat(organization.locale?.timeFormat === "24h" ? "24h" : "12h");
       setFiscalYearStart(organization.locale?.fiscalYearStart || "April");
       setWeeklyOffDays(organization.locale?.weeklyOffDays || ["Saturday", "Sunday"]);
-      setWorkingHoursPerDay(organization.locale?.workingHoursPerDay || 8);
-
-      const policy = organization.locale?.saturdayPolicy;
-      setSaturdayMode(policy?.mode || SaturdayOffMode.ALL_WORKING);
-      setCustomOffWeeks(policy?.customOffWeeks || []);
+      setWorkingHoursInput(formatWorkingHoursDisplay(organization.locale?.workingHoursPerDay || 8));
     }
     setIsEditing(false);
   };
@@ -215,6 +200,8 @@ function OrganizationProfileContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canUpdate) return;
+
+    localStorage.setItem("hrms_org_custom_week_off_rules", JSON.stringify(customWeekOffRules));
 
     dispatch(
       updateOrganizationRequest({
@@ -240,11 +227,8 @@ function OrganizationProfileContent() {
           timeFormat: timeFormat as "12h" | "24h",
           fiscalYearStart,
           weeklyOffDays,
-          workingHoursPerDay,
-          saturdayPolicy: {
-            mode: saturdayMode,
-            customOffWeeks: saturdayMode === SaturdayOffMode.CUSTOM ? customOffWeeks : undefined,
-          },
+          workingHoursPerDay: parseWorkingHoursToDecimal(workingHoursInput),
+          customWeekOffRules,
         },
       })
     );
@@ -269,7 +253,7 @@ function OrganizationProfileContent() {
   const { subscription } = organization;
 
   return (
-    <Box sx={{ py: 1 }} component="form" onSubmit={handleSubmit}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 3.5 } }} component="form" onSubmit={handleSubmit}>
       {error && (
         <Alert severity="error" sx={{ mb: 3, borderRadius: 2.5 }}>
           {error}
@@ -329,44 +313,37 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Company Name"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                   required
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Legal Name"
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Industry"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
+                <TextInput
                   label="Phone Number"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  fullWidth
+                  maxLength={10}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
             </Grid>
@@ -457,42 +434,35 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={12}>
-                <TextField
+                <TextInput
                   label="Address Line 1"
                   value={addressLine1}
                   onChange={(e) => setAddressLine1(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="City"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="State"
                   value={stateName}
                   onChange={(e) => setStateName(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Country"
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {COUNTRIES.map((c) => (
@@ -500,16 +470,14 @@ function OrganizationProfileContent() {
                       {c.name}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="Zip Code"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
             </Grid>
@@ -537,34 +505,28 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={12}>
-                <TextField
+                <TextInput
                   label="Website URL"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="Primary Branding Color"
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   label="Support Email"
                   type="email"
                   value={supportEmail}
                   onChange={(e) => setSupportEmail(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { style: { fontSize: 14 } } }}
                 />
               </Grid>
             </Grid>
@@ -594,12 +556,11 @@ function OrganizationProfileContent() {
 
             <Grid container spacing={2}>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Timezone"
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {TIMEZONES.map((tz) => (
@@ -607,15 +568,14 @@ function OrganizationProfileContent() {
                       {tz.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Date Format"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {DATE_FORMATS.map((df) => (
@@ -623,15 +583,14 @@ function OrganizationProfileContent() {
                       {df}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Time Format"
                   value={timeFormat}
                   onChange={(e) => setTimeFormat(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {TIME_FORMATS.map((tf) => (
@@ -639,15 +598,14 @@ function OrganizationProfileContent() {
                       {tf}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <TextInput
                   select
                   label="Fiscal Year Start"
                   value={fiscalYearStart}
                   onChange={(e) => setFiscalYearStart(e.target.value)}
-                  fullWidth
                   disabled={!canUpdate || !isEditing}
                 >
                   {FISCAL_STARTS.map((m) => (
@@ -655,99 +613,53 @@ function OrganizationProfileContent() {
                       {m}
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
               <Grid size={6}>
-                <TextField
-                  label="Working Hours Per Day"
-                  type="number"
-                  value={workingHoursPerDay}
-                  onChange={(e) => setWorkingHoursPerDay(Number(e.target.value))}
-                  fullWidth
+                <TextInput
+                  type="text"
+                  label="Working Hours / Day"
+                  value={workingHoursInput}
+                  placeholder="08:40 or 8"
+                  onChange={(e) => setWorkingHoursInput(e.target.value ?? "")}
                   disabled={!canUpdate || !isEditing}
-                  slotProps={{ htmlInput: { min: 1, max: 24, style: { fontSize: 14 } } }}
                 />
               </Grid>
               <Grid size={6}>
-                <FormControl fullWidth disabled={!canUpdate || !isEditing}>
-                  <InputLabel id="weekly-off-label">Weekly Off Days</InputLabel>
-                  <Select
-                    labelId="weekly-off-label"
-                    multiple
-                    value={weeklyOffDays}
-                    onChange={(e) =>
-                      setWeeklyOffDays(
-                        typeof e.target.value === "string"
-                          ? e.target.value.split(",")
-                          : e.target.value
-                      )
-                    }
-                    input={<OutlinedInput label="Weekly Off Days" />}
-                    renderValue={(selected) => selected.join(", ")}
-                  >
-                    {DAYS_OF_WEEK.map((day) => (
-                      <MenuItem key={day} value={day}>
-                        <Checkbox checked={weeklyOffDays.indexOf(day) > -1} />
-                        <ListItemText primary={day} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={6}>
-                <TextField
+                <TextInput
                   select
-                  label="Saturday Policy"
-                  value={saturdayMode}
-                  onChange={(e) => setSaturdayMode(e.target.value as SaturdayOffMode)}
-                  fullWidth
+                  label="Weekly Off Days"
                   disabled={!canUpdate || !isEditing}
+                  slotProps={{
+                    select: {
+                      multiple: true,
+                      value: weeklyOffDays,
+                      onChange: (e: any) =>
+                        setWeeklyOffDays(
+                          typeof e.target.value === "string"
+                            ? e.target.value.split(",")
+                            : e.target.value
+                        ),
+                      renderValue: (selected: any) => (selected as string[]).join(", "),
+                    },
+                  }}
                 >
-                  {Object.entries(SATURDAY_POLICY_LABELS).map(([value, label]) => (
-                    <MenuItem key={value} value={value}>
-                      {label}
+                  {DAYS_OF_WEEK.map((day) => (
+                    <MenuItem key={day} value={day}>
+                      <Checkbox checked={weeklyOffDays.indexOf(day) > -1} />
+                      <ListItemText primary={day} />
                     </MenuItem>
                   ))}
-                </TextField>
+                </TextInput>
               </Grid>
 
-              {saturdayMode === SaturdayOffMode.CUSTOM && (
-                <Grid size={12}>
-                  <Box sx={{ mt: 0.5, p: 2, borderRadius: 2.5, border: "1px dashed rgba(109, 93, 246, 0.2)", backgroundColor: "rgba(109, 93, 246, 0.02)" }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: "#374151" }}>
-                      Select off-duty Saturdays of the month:
-                    </Typography>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                      {[1, 2, 3, 4, 5].map((week) => (
-                        <Box
-                          key={week}
-                          onClick={() => {
-                            if (canUpdate && isEditing) {
-                              handleToggleCustomWeek(week);
-                            }
-                          }}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            cursor: canUpdate && isEditing ? "pointer" : "default",
-                            opacity: !canUpdate || !isEditing ? 0.75 : 1,
-                          }}
-                        >
-                          <Checkbox
-                            checked={customOffWeeks.includes(week)}
-                            disabled={!canUpdate || !isEditing}
-                            size="small"
-                            sx={{ p: 0.5, color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
-                          />
-                          <Typography variant="body2" sx={{ ml: 0.5, fontSize: 13.5, userSelect: "none", color: "#4B5563" }}>
-                            {week === 5 ? "5th Saturday (if exists)" : `${["1st", "2nd", "3rd", "4th"][week - 1]} Saturday`}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Box>
-                </Grid>
-              )}
+              <Grid size={12} sx={{ mt: 1 }}>
+                <CustomWeekOffRulesBuilder
+                  rules={customWeekOffRules}
+                  onChange={setCustomWeekOffRules}
+                  disabled={!canUpdate || !isEditing}
+                />
+              </Grid>
             </Grid>
           </Paper>
         </Grid>

@@ -6,13 +6,16 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
-import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+
+import TextInput from "../../../components/input/TextInput";
+import PhoneInput from "../../../components/input/PhoneInput";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -28,54 +31,12 @@ type Props = {
   onClose: () => void;
 };
 
-const selectFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    backgroundColor: "#FFFFFF",
-    height: "52px",
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#BFC5D2",
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#D1D5DB",
-    borderWidth: "1px",
-  },
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#6D5DF6",
-    borderWidth: "2px",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: "15px",
-    color: "#111827",
-  },
-};
-
-const textFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    backgroundColor: "#FFFFFF",
-    height: "52px",
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#BFC5D2",
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#D1D5DB",
-    borderWidth: "1px",
-  },
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#6D5DF6",
-    borderWidth: "2px",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: "15px",
-    color: "#111827",
-    padding: "14px 16px",
-  },
-  "& .MuiInputBase-input::placeholder": {
-    fontSize: "13px",
-    color: "#9CA3AF",
+const disabledMenuItemSx = {
+  color: "#94A3B8 !important",
+  fontWeight: 500,
+  "&.Mui-disabled": {
+    opacity: "1 !important",
+    color: "#94A3B8 !important",
   },
 };
 
@@ -93,19 +54,15 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     (state: RootState) => state.designation?.designations ?? []
   );
 
-  // Form states initialized directly from props (since dialog is mounted conditionally)
-  const [maritalStatus, setMaritalStatus] = useState(employee?.maritalStatus || "SINGLE");
+  const [maritalStatus, setMaritalStatus] = useState(employee?.maritalStatus || "");
   const [departmentId, setDepartmentId] = useState(employee?.departmentId || "");
   const [designationId, setDesignationId] = useState(employee?.designationId || "");
   const [confirmationDate, setConfirmationDate] = useState(() => {
-    if (employee?.confirmationDate) {
-      const d = new Date(employee.confirmationDate);
-      if (!isNaN(d.getTime())) {
-        return d.toISOString().substring(0, 10);
-      }
-    }
-    return "";
+    if (!employee?.confirmationDate) return "";
+    const d = new Date(employee.confirmationDate);
+    return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
   });
+
   const [addressLine1, setAddressLine1] = useState(employee?.currentAddress?.addressLine1 || "");
   const [city, setCity] = useState(employee?.currentAddress?.city || "");
   const [stateName, setStateName] = useState(employee?.currentAddress?.state || "");
@@ -114,12 +71,31 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  // Clear errors on mount
+  useEffect(() => {
+    if (employee) {
+      setMaritalStatus(employee.maritalStatus || "SINGLE");
+      const deptVal = typeof employee.departmentId === "object" ? (employee.departmentId as any)?._id : employee.departmentId;
+      setDepartmentId(deptVal || "");
+      const desigVal = typeof employee.designationId === "object" ? (employee.designationId as any)?._id : employee.designationId;
+      setDesignationId(desigVal || "");
+      setConfirmationDate(
+        employee.confirmationDate
+          ? new Date(employee.confirmationDate).toISOString().split("T")[0]
+          : ""
+      );
+      setAddressLine1(employee.currentAddress?.addressLine1 || "");
+      setCity(employee.currentAddress?.city || "");
+      setStateName(employee.currentAddress?.state || "");
+      setZip(employee.currentAddress?.zip || "");
+      setCountryCode(employee.currentAddress?.countryCode || "IN");
+    }
+  }, [employee]);
+
   useEffect(() => {
     dispatch(clearEmployeeError());
+    setHasSubmitted(false);
   }, [dispatch]);
 
-  // Handle successful submit and close dialog asynchronously to avoid cascading renders
   useEffect(() => {
     if (hasSubmitted && !submitting && !error && open) {
       onClose();
@@ -163,211 +139,214 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     !designationId;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>
-        Update Employee ({employee ? `${employee.firstName} ${employee.lastName}` : ""})
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: { xs: 2.5, sm: 3.5 },
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+          },
+        },
+      }}
+    >
+      {/* Modal Header */}
+      <DialogTitle
+        component="div"
+        sx={{
+          p: 0,
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography sx={{ fontSize: { xs: "16px", sm: "18px" }, fontWeight: 700, color: "#0F172A" }}>
+          Update Employee Details
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          disabled={submitting}
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: "24px !important" }}>
-        {error && <Alert severity="error">{error}</Alert>}
+      <DialogContent sx={{ p: 0, overflowX: "hidden" }}>
+        {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: "10px" }}>{error}</Alert>}
 
-        {/* Marital Status */}
-        <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
-            Marital Status
-          </Typography>
-          <TextField
-            select
-            fullWidth
-            value={maritalStatus}
-            onChange={(e) => setMaritalStatus(e.target.value)}
-            sx={selectFieldSx}
-          >
-            <MenuItem value="SINGLE">Single</MenuItem>
-            <MenuItem value="MARRIED">Married</MenuItem>
-            <MenuItem value="DIVORCED">Divorced</MenuItem>
-            <MenuItem value="WIDOWED">Widowed</MenuItem>
-          </TextField>
-        </Box>
+        {/* Section 1: Employment Information Header */}
+        <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A", mb: 2 }}>
+          Employment Information
+        </Typography>
 
-        {/* Confirmation Date */}
-        <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
-            Confirmation Date (optional)
-          </Typography>
-          <TextField
-            type="date"
-            fullWidth
-            value={confirmationDate}
-            onChange={(e) => setConfirmationDate(e.target.value)}
-            sx={textFieldSx}
-          />
-        </Box>
-
-        {/* Department */}
-        <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
-            Department
-          </Typography>
-          <TextField
-            select
-            fullWidth
-            value={departmentId}
-            onChange={(e) => setDepartmentId(e.target.value)}
-            sx={selectFieldSx}
-            slotProps={{ select: { displayEmpty: true } }}
-          >
-            <MenuItem value="" disabled>
-              Choose a department
-            </MenuItem>
-            {departments.map((dept) => (
-              <MenuItem key={dept._id} value={dept._id}>
-                {dept.name} ({dept.code})
+        <Grid container spacing={{ xs: 2, sm: 2.5 }} sx={{ mb: 3 }}>
+          {/* Marital Status */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              select
+              label="Marital Status"
+              value={maritalStatus}
+              onChange={(e) => setMaritalStatus(e.target.value)}
+              slotProps={{ select: { displayEmpty: true } }}
+            >
+              <MenuItem value="" disabled sx={disabledMenuItemSx}>
+                Select marital status
               </MenuItem>
-            ))}
-          </TextField>
-        </Box>
+              <MenuItem value="SINGLE">Single</MenuItem>
+              <MenuItem value="MARRIED">Married</MenuItem>
+              <MenuItem value="DIVORCED">Divorced</MenuItem>
+              <MenuItem value="WIDOWED">Widowed</MenuItem>
+            </TextInput>
+          </Grid>
 
-        {/* Designation */}
-        <Box>
-          <Typography
-            variant="body2"
-            sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-          >
-            Designation
-          </Typography>
-          <TextField
-            select
-            fullWidth
-            value={designationId}
-            onChange={(e) => setDesignationId(e.target.value)}
-            sx={selectFieldSx}
-            slotProps={{ select: { displayEmpty: true } }}
-          >
-            <MenuItem value="" disabled>
-              Choose a designation
-            </MenuItem>
-            {designations.map((desig) => (
-              <MenuItem key={desig._id} value={desig._id}>
-                {desig.name}
+          {/* Confirmation Date */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              type="date"
+              label="Confirmation Date (optional)"
+              placeholder="Select confirmation date"
+              value={confirmationDate}
+              onChange={(e) => setConfirmationDate(e.target.value)}
+            />
+          </Grid>
+
+          {/* Department */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              select
+              label="Department"
+              value={departmentId}
+              onChange={(e) => setDepartmentId(e.target.value)}
+              slotProps={{ select: { displayEmpty: true } }}
+            >
+              <MenuItem value="" disabled sx={disabledMenuItemSx}>
+                Choose a department
               </MenuItem>
-            ))}
-          </TextField>
-        </Box>
+              {departments.map((dept) => (
+                <MenuItem key={dept._id} value={dept._id}>
+                  {dept.name} ({dept.code})
+                </MenuItem>
+              ))}
+            </TextInput>
+          </Grid>
 
-        {/* Current Address Header */}
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#111827", mt: 1 }}>
+          {/* Designation */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              select
+              label="Designation"
+              value={designationId}
+              onChange={(e) => setDesignationId(e.target.value)}
+              slotProps={{ select: { displayEmpty: true } }}
+            >
+              <MenuItem value="" disabled sx={disabledMenuItemSx}>
+                Choose a designation
+              </MenuItem>
+              {designations.map((desig) => (
+                <MenuItem key={desig._id} value={desig._id}>
+                  {desig.name}
+                </MenuItem>
+              ))}
+            </TextInput>
+          </Grid>
+        </Grid>
+
+        {/* Section 2: Current Address Header */}
+        <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A", mb: 2 }}>
           Current Address
         </Typography>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 2, sm: 2.5 }}>
+          {/* Address Line 1 */}
           <Grid size={12}>
-            <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
-                Address Line 1
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="e.g. 456 New Address"
-                value={addressLine1}
-                onChange={(e) => setAddressLine1(e.target.value)}
-                sx={textFieldSx}
-                required
-              />
-            </Box>
+            <TextInput
+              label="Address Line 1"
+              placeholder="e.g. Flat 402, Sunshine Apartments, MG Road"
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
+              required
+            />
           </Grid>
+
+          {/* City */}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
-                City
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="e.g. Mumbai"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                sx={textFieldSx}
-                required
-              />
-            </Box>
+            <TextInput
+              label="City"
+              placeholder="e.g. Mumbai"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+            />
           </Grid>
+
+          {/* State */}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
-                State
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="e.g. Maharashtra"
-                value={stateName}
-                onChange={(e) => setStateName(e.target.value)}
-                sx={textFieldSx}
-                required
-              />
-            </Box>
+            <TextInput
+              label="State"
+              placeholder="e.g. Maharashtra"
+              value={stateName}
+              onChange={(e) => setStateName(e.target.value)}
+              required
+            />
           </Grid>
+
+          {/* Zip Code */}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
-                Zip Code
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="e.g. 421001"
-                value={zip}
-                onChange={(e) => setZip(e.target.value)}
-                sx={textFieldSx}
-                required
-              />
-            </Box>
+            <TextInput
+              label="Zip Code"
+              placeholder="e.g. 400001"
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              required
+            />
           </Grid>
+
+          {/* Phone Number */}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Box>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "14px", fontWeight: 500, color: "#374151" }}
-              >
-                Country Code
-              </Typography>
-              <TextField
-                select
-                fullWidth
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                sx={selectFieldSx}
-              >
-                <MenuItem value="IN">IN</MenuItem>
-                <MenuItem value="US">US</MenuItem>
-                <MenuItem value="RU">RU</MenuItem>
-              </TextField>
-            </Box>
+            <PhoneInput
+              label="Phone Number"
+              countryCodeValue={countryCode}
+              onCountryCodeChange={(code) => setCountryCode(code)}
+            />
           </Grid>
         </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} disabled={submitting} color="inherit">
+      <DialogActions sx={{ p: 0, mt: 3.5, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+        <Button
+          onClick={onClose}
+          disabled={submitting}
+          sx={{
+            height: 42,
+            borderRadius: "10px",
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
+            backgroundColor: "#F1F5F9",
+            color: "#475569",
+            "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -375,13 +354,18 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           disabled={submitting || isFormInvalid}
           variant="contained"
           sx={{
-            backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4BEA" },
-            borderRadius: 2,
+            height: 42,
+            borderRadius: "10px",
             px: 3,
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
+            backgroundColor: "#6D5DF6",
+            boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+            "&:hover": { backgroundColor: "#5B4BEA" },
           }}
         >
-          {submitting ? <CircularProgress size={18} color="inherit" /> : "Update"}
+          {submitting ? <CircularProgress size={18} color="inherit" /> : "Update Employee"}
         </Button>
       </DialogActions>
     </Dialog>

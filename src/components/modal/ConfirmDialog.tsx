@@ -37,7 +37,7 @@ export default function ConfirmDialog({
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5, pb: 1 }}>
         <WarningAmberRoundedIcon sx={{ color: "#EF4444" }} />
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography component="span" variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
           {title}
         </Typography>
       </DialogTitle>

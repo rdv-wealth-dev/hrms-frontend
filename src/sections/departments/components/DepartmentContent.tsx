@@ -18,17 +18,18 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import TextInput from "../../../components/input/TextInput";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import type { Department } from "../../../auth/types";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 
 import {
     listDepartmentsRequest,
@@ -36,6 +37,7 @@ import {
     updateDepartmentRequest,
     clearDepartmentError,
 } from "../../../store/department";
+import { listBranchesRequest, getHeadOfficeRequest } from "../../../store/branch";
 
 // ============================================================
 // Create / Update Form Dialog
@@ -90,30 +92,53 @@ function DeptFormDialog({
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ fontWeight: 700 }}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            slotProps={{
+                backdrop: {
+                    sx: {
+                        backdropFilter: "blur(6px)",
+                        backgroundColor: "rgba(15, 23, 42, 0.45)",
+                    },
+                },
+                paper: {
+                    sx: {
+                        borderRadius: "20px",
+                        p: { xs: 2.5, sm: 3.5 },
+                        backgroundColor: "#FFFFFF",
+                        boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+                        border: "1px solid #E2E8F0",
+                        mx: { xs: 2, sm: "auto" },
+                        width: { xs: "calc(100% - 32px)", sm: "100%" },
+                    },
+                },
+            }}
+        >
+            <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
                 {mode === "create" ? "Create Department" : "Update Department"}
             </DialogTitle>
 
-            <DialogContent sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                pt: "24px !important",
-            }}
+            <DialogContent
+                sx={{
+                    p: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2.5,
+                }}
             >
                 {error && (
-                    <Alert severity="error" sx={{ mb: 1 }}>
+                    <Alert severity="error" sx={{ borderRadius: 2 }}>
                         {error}
                     </Alert>
                 )}
 
-                <TextField
+                <TextInput
                     label="Department Name"
                     value={name}
                     onChange={(e) => setName(e.target.value ?? "")}
-                    fullWidth
-                    size="small"
                     placeholder="e.g. Engineering"
                     required
                     slotProps={{
@@ -123,12 +148,10 @@ function DeptFormDialog({
                     }}
                 />
 
-                <TextField
+                <TextInput
                     label="Code"
                     value={code}
                     onChange={(e) => setCode((e.target.value ?? "").toUpperCase())}
-                    fullWidth
-                    size="small"
                     placeholder="e.g. ENG"
                     required
                     slotProps={{
@@ -138,27 +161,49 @@ function DeptFormDialog({
                     }}
                 />
 
-                <TextField
+                <TextInput
+                    multiline
+                    rows={3}
                     label="Description (optional)"
                     value={description}
                     onChange={(e) => setDescription(e.target.value ?? "")}
-                    fullWidth
-                    size="small"
-                    multiline
-                    rows={2}
                     placeholder="Brief description of this department"
                 />
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} disabled={submitting} color="inherit">
+            <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+                <Button
+                    onClick={onClose}
+                    disabled={submitting}
+                    sx={{
+                        height: 42,
+                        borderRadius: "10px",
+                        px: 2.5,
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        backgroundColor: "#F1F5F9",
+                        color: "#475569",
+                        "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+                    }}
+                >
                     Cancel
                 </Button>
                 <Button
                     onClick={handleSubmit}
                     disabled={submitting || !name?.trim() || !code?.trim()}
                     variant="contained"
-                    sx={{ backgroundColor: "#6D5DF6", "&:hover": { backgroundColor: "#5B4BEA" } }}
+                    sx={{
+                        height: 42,
+                        borderRadius: "10px",
+                        px: 3,
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        backgroundColor: "#6D5DF6",
+                        boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                        "&:hover": { backgroundColor: "#5B4BEA" },
+                    }}
                 >
                     {submitting ? <CircularProgress size={18} color="inherit" /> : mode === "create" ? "Create" : "Update"}
                 </Button>
@@ -183,8 +228,8 @@ function DepartmentContent() {
             total: 0,
         });
 
-    const user = useSelector((state: RootState) => state.auth?.user);
-    const branchId = user?.branchIds?.[0] ?? "";
+    const branchId = useActiveBranchId();
+    const [selectedBranchId, setSelectedBranchId] = useState<string>(branchId || "");
     
     const { hasPermission } = usePermissions();
     const canCreate = hasPermission("department.create");
@@ -192,36 +237,32 @@ function DepartmentContent() {
 
     const [createOpen, setCreateOpen] = useState(false);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
-    const [createHROpen, setCreateHROpen] = useState(false);
-    const [hasSubmittedCreateHR, setHasSubmittedCreateHR] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
     const [editTarget, setEditTarget] = useState<Department | null>(null);
 
-    // Load on mount
     useEffect(() => {
-        dispatch(listDepartmentsRequest());
-    }, [dispatch]);
+        if (branchId && !selectedBranchId) {
+            setSelectedBranchId(branchId);
+        }
+    }, [branchId, selectedBranchId]);
+
+    // Load departments filtered by selected branch
+    useEffect(() => {
+        dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
+        dispatch(getHeadOfficeRequest());
+        dispatch(listBranchesRequest());
+    }, [dispatch, selectedBranchId]);
 
     // Only close "Create" dialog after an actual submit succeeded
     useEffect(() => {
         if (hasSubmittedCreate && !submitting && !error && createOpen) {
             setCreateOpen(false);
             setHasSubmittedCreate(false);
-            dispatch(listDepartmentsRequest());
+            dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submitting, error, hasSubmittedCreate]);
-
-    // Only close "Create Dept (HR)" dialog after an actual submit succeeded
-    useEffect(() => {
-        if (hasSubmittedCreateHR && !submitting && !error && createHROpen) {
-            setCreateHROpen(false);
-            setHasSubmittedCreateHR(false);
-            dispatch(listDepartmentsRequest());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submitting, error, hasSubmittedCreateHR]);
+    }, [submitting, error, hasSubmittedCreate, selectedBranchId]);
 
     // Only close "Update" dialog after an actual submit succeeded
     useEffect(() => {
@@ -240,17 +281,10 @@ function DepartmentContent() {
         branchId: string;
     }) => {
         setHasSubmittedCreate(true);
-        dispatch(createDepartmentRequest({ ...data, branchId }));
-    };
-
-    const handleCreateHR = (data: {
-        name: string;
-        code: string;
-        description: string;
-        branchId: string;
-    }) => {
-        setHasSubmittedCreateHR(true);
-        dispatch(createDepartmentRequest({ ...data, branchId }));
+        dispatch(createDepartmentRequest({
+            ...data,
+            branchId: data.branchId || selectedBranchId || branchId,
+        }));
     };
 
     const handleUpdate = (data: {
@@ -286,8 +320,9 @@ function DepartmentContent() {
                 <Box
                     sx={{
                         display: "flex",
-                        alignItems: "center",
+                        alignItems: { xs: "stretch", sm: "center" },
                         justifyContent: "space-between",
+                        flexDirection: { xs: "column", sm: "row" },
                         flexWrap: "wrap",
                         gap: 2,
                         mb: 3,
@@ -307,47 +342,31 @@ function DepartmentContent() {
                         </Box>
                     </Box>
 
-                    {/* Action Buttons — only for HR/SUPER_ADMIN */}
+                    {/* + Add Department Button */}
                     {canCreate && (
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setHasSubmittedCreateHR(false);
-                                    dispatch(clearDepartmentError());
-                                    setCreateHROpen(true);
-                                }}
-                                sx={{ borderRadius: 2, textTransform: "none" }}
-                            >
-                                Create Dept (HR)
-                            </Button>
-
-                            <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setHasSubmittedCreate(false);
-                                    dispatch(clearDepartmentError());
-                                    setCreateOpen(true);
-                                }}
-                                sx={{
-                                    borderRadius: 2,
-                                    textTransform: "none",
-                                    backgroundColor: "#6D5DF6",
-                                    "&:hover": { backgroundColor: "#5B4BEA" },
-                                }}
-                            >
-                                Create Department
-                            </Button>
-                        </Box>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => setCreateOpen(true)}
+                            sx={{
+                                height: 40,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: "10px",
+                                px: 2.5,
+                                backgroundColor: "#6D5DF6",
+                                boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                                "&:hover": { backgroundColor: "#5B4BEA" },
+                                width: { xs: "100%", sm: "auto" },
+                            }}
+                        >
+                            Add Department
+                        </Button>
                     )}
                 </Box>
 
                 {/* Error Banner */}
-                {error && !createOpen && !createHROpen && !updateOpen && (
+                {error && !createOpen && !updateOpen && (
                     <Alert
                         severity="error"
                         onClose={() => dispatch(clearDepartmentError())}
@@ -356,6 +375,7 @@ function DepartmentContent() {
                         {error}
                     </Alert>
                 )}
+
 
                 {/* Department Table */}
                 {loading ? (
@@ -384,14 +404,34 @@ function DepartmentContent() {
                                 {(departments ?? []).length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={canUpdate ? 5 : 4} align="center">
-                                            <Box sx={{ py: 6 }}>
+                                            <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
                                                 <ApartmentOutlinedIcon
-                                                    sx={{ fontSize: 48, color: "#D1D5DB", mb: 1 }}
+                                                    sx={{ fontSize: 54, color: "#9CA3AF" }}
                                                 />
-                                                <Typography variant="body2" color="text.secondary">
-                                                    No departments yet.
-                                                    {canCreate ? " Click \"Create Department\" to add one." : ""}
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
+                                                    No Departments Configured Yet
                                                 </Typography>
+                                                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
+                                                    Click "Create Department" to set up your organization's first department.
+                                                </Typography>
+                                                {canCreate && (
+                                                    <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => setCreateOpen(true)}
+                                                            startIcon={<AddIcon />}
+                                                            sx={{
+                                                                borderRadius: 2,
+                                                                textTransform: "none",
+                                                                fontWeight: 600,
+                                                                backgroundColor: "#6D5DF6",
+                                                                "&:hover": { backgroundColor: "#5B4BEA" },
+                                                            }}
+                                                        >
+                                                            Create Department
+                                                        </Button>
+                                                    </Box>
+                                                )}
                                             </Box>
                                         </TableCell>
                                     </TableRow>
@@ -452,7 +492,7 @@ function DepartmentContent() {
             <DeptFormDialog
                 open={createOpen}
                 mode="create"
-                branchId={branchId}
+                branchId={selectedBranchId || branchId}
                 submitting={submitting}
                 error={createOpen ? (error ?? null) : null}
                 onClose={() => {
@@ -463,23 +503,8 @@ function DepartmentContent() {
                 onSubmit={handleCreate}
             />
 
-            {/* Create Department HR Dialog */}
-            <DeptFormDialog
-                open={createHROpen}
-                mode="create"
-                initial={{ name: "Human Resources", code: "HR", description: "HR department" }}
-                branchId={branchId}
-                submitting={submitting}
-                error={createHROpen ? (error ?? null) : null}
-                onClose={() => {
-                    setCreateHROpen(false);
-                    setHasSubmittedCreateHR(false);
-                    dispatch(clearDepartmentError());
-                }}
-                onSubmit={handleCreateHR}
-            />
-
             {/* Update Department Dialog */}
+
             <DeptFormDialog
                 open={updateOpen}
                 mode="update"

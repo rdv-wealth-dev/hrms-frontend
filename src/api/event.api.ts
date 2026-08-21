@@ -1,10 +1,5 @@
 import axiosInstance from "./axios";
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem("accessToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export interface CompanyEvent {
   _id: string;
   title: string;
@@ -41,8 +36,7 @@ export const createCompanyEvent = async (
 ): Promise<CreateEventResponse> => {
   const response = await axiosInstance.post<CreateEventResponse>(
     "/events",
-    payload,
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };
@@ -55,7 +49,6 @@ export const listCompanyEvents = async (
     "/events",
     {
       params: { pageNumber, pageSize },
-      headers: getAuthHeader(),
     }
   );
   return response.data;

@@ -1,13 +1,15 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 function AuthLogo() {
   return (
-    <div className="flex items-center gap-2">
-      <div className="h-10 w-10 rounded-xl bg-[#6D5DF6]" />
-
-      <span className="text-xl font-bold">
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ width: 40, height: 40, borderRadius: "12px", backgroundColor: "#6D5DF6" }} />
+      <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
         HRMS
-      </span>
-    </div>
-  )
+      </Typography>
+    </Box>
+  );
 }
 
-export default AuthLogo
+export default AuthLogo;

@@ -11,6 +11,10 @@ const initialState: AuthState = {
   organization: null,
 
   accessToken: storedToken ?? null,
+  refreshToken: localStorage.getItem("refreshToken") ?? null,
+  requiresPasswordReset: false,
+  onboardingCompleted: true,
+  branch: null,
 
   isRegisterSuccess: false,
   registerMessage: null,
@@ -31,9 +35,15 @@ const initialState: AuthState = {
   isRestoringSession: false,
   sessionChecked: false,
 
+  checkEmailLoading: false,
+  checkEmailResult: null,
+
+  loginCooldownSeconds: null,
+
   isAuthenticated: !!storedToken,
   loading: false,
   error: null,
+  checkEmailError: null,
 };
 
 export function authReducer(state = initialState, action: AuthAction): AuthState {
@@ -86,7 +96,7 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
     // ==========================
 
     case AUTH_ACTIONS.LOGIN_REQUEST:
-      return { ...state, loading: true, error: null };
+      return { ...state, loading: true, error: null, checkEmailError: null, loginCooldownSeconds: null };
 
     case AUTH_ACTIONS.LOGIN_SUCCESS:
       return {
@@ -95,6 +105,11 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
         isAuthenticated: true,
         user: action.payload.user,
         accessToken: action.payload.accessToken,
+        refreshToken: action.payload.refreshToken ?? null,
+        requiresPasswordReset: action.payload.requiresPasswordReset,
+        onboardingCompleted: action.payload.onboardingCompleted,
+        organization: action.payload.organization ?? state.organization,
+        branch: action.payload.branch ?? null,
         error: null,
       };
 
@@ -186,6 +201,26 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
       };
 
     // ==========================
+    // Check Email
+    // ==========================
+
+    case AUTH_ACTIONS.CHECK_EMAIL_REQUEST:
+      return { ...state, checkEmailLoading: true, checkEmailResult: null, checkEmailError: null };
+
+    case AUTH_ACTIONS.CHECK_EMAIL_SUCCESS:
+      return { ...state, checkEmailLoading: false, checkEmailResult: action.payload, checkEmailError: null };
+
+    case AUTH_ACTIONS.CHECK_EMAIL_FAILURE:
+      return { ...state, checkEmailLoading: false, checkEmailResult: null, checkEmailError: action.payload };
+
+    // ==========================
+    // Login Cooldown
+    // ==========================
+
+    case AUTH_ACTIONS.SET_LOGIN_COOLDOWN:
+      return { ...state, loginCooldownSeconds: action.payload };
+
+    // ==========================
     // Activate Account
     // ==========================
 
@@ -205,6 +240,20 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
     case AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE:
       return { ...state, loading: false, error: action.payload };
 
+    case AUTH_ACTIONS.UPDATE_USER_AVATAR: {
+      if (!state.user) return state;
+      const updatedUser = { ...state.user, avatarUrl: action.payload };
+      try {
+        localStorage.setItem("persistent", JSON.stringify(updatedUser));
+      } catch (err) {
+        // ignore storage quota errors
+      }
+      return {
+        ...state,
+        user: updatedUser,
+      };
+    }
+
     // ==========================
     // Logout
     // ==========================
@@ -214,8 +263,9 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
         ...initialState,
         user: null,
         accessToken: null,
+        refreshToken: null,
         isAuthenticated: false,
-        sessionChecked: true, // ✅ stay "checked" — don't show the loading spinner again after logout
+        sessionChecked: true,
       };
 
     default:

@@ -12,11 +12,29 @@ const getAuthHeader = () => ({
 });
 
 export const listDepartments = async (
-  page = 1,
-  pageSize = 10
+  pageOrParams?: number | { page?: number; limit?: number; pageNumber?: number; pageSize?: number; branchId?: string },
+  pageSize = 100,
+  branchId?: string
 ): Promise<DepartmentListResponse> => {
+  let page = 1;
+  let limit = 100;
+  let bId = branchId;
+
+  if (typeof pageOrParams === "object" && pageOrParams !== null) {
+    page = pageOrParams.pageNumber ?? pageOrParams.page ?? 1;
+    limit = pageOrParams.pageSize ?? pageOrParams.limit ?? 100;
+    bId = pageOrParams.branchId ?? branchId;
+  } else if (typeof pageOrParams === "number") {
+    page = pageOrParams;
+    limit = pageSize;
+  }
+
+  let url = `/departments?pageNumber=${page}&pageSize=${limit}`;
+  if (bId) {
+    url += `&branchId=${encodeURIComponent(bId)}`;
+  }
   const response = await axiosInstance.get<DepartmentListResponse>(
-    `/departments?pageNumber=${page}&pageSize=${pageSize}`,
+    url,
     { headers: getAuthHeader() }
   );
   return response.data;
@@ -53,4 +71,29 @@ export const updateDepartment = async (
     { headers: getAuthHeader() }
   );
   return response.data;
+};
+
+export const DEFAULT_STARTER_DEPARTMENTS = [
+  { name: "Human Resources", code: "HR", description: "People management, payroll, and talent acquisition" },
+  { name: "Information Technology", code: "IT", description: "IT infrastructure, software, and tech support" },
+  { name: "Engineering", code: "ENG", description: "Product design and software development" },
+  { name: "Sales & Marketing", code: "SALES", description: "Business growth, marketing, and client relations" },
+  { name: "Operations", code: "OPS", description: "Day-to-day business operations and logistics" },
+];
+
+export const seedDefaultDepartments = async (branchId: string): Promise<string[]> => {
+  const createdDepartmentIds: string[] = [];
+  
+  for (const dept of DEFAULT_STARTER_DEPARTMENTS) {
+    try {
+      const response = await createDepartment({ ...dept, branchId });
+      if (response.succeeded && response.data?._id) {
+        createdDepartmentIds.push(response.data._id);
+      }
+    } catch {
+      // Ignore if individual department code already exists
+    }
+  }
+  
+  return createdDepartmentIds;
 };

@@ -1,10 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -28,6 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 import type { AppDispatch } from "../../../../store/store";
 import type { RootState } from "../../../../store/rootReducer";
@@ -42,8 +42,11 @@ import {
 import { usePermissions } from "../../../../hooks/usePermissions";
 import { useDialog } from "../../../../hooks/useDialog";
 import { useSubmitSuccess } from "../../../../hooks/useSubmitSuccess";
+import { useSnackbar } from "../../../../components/snackbar";
 import BranchFormDialog from "./BranchFormDialog";
 import BranchCalendarDialog from "./BranchCalendarDialog";
+import SeedBranchDialog from "./SeedBranchDialog";
+import { useActiveBranchId } from "../../../../hooks/useActiveBranchId";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
 
 function BranchListContent() {
@@ -57,14 +60,33 @@ function BranchListContent() {
     (state: RootState) => state.branch
   );
 
+  const activeBranchId = useActiveBranchId();
+  const [currentBranchId, setCurrentBranchId] = useState<string>("");
+
+  useEffect(() => {
+    if (activeBranchId && !currentBranchId) {
+      setCurrentBranchId(activeBranchId);
+    }
+  }, [activeBranchId, currentBranchId]);
+
+  const selectedBranch = branches.find((b) => b._id === currentBranchId) || headOffice || branches[0];
+
+  const { showSnackbar } = useSnackbar();
   const formDialog = useDialog<Branch>();
   const deleteDialog = useDialog<Branch>();
   const calendarDialog = useDialog<Branch>();
+  const seedDialog = useDialog<Branch>();
 
   useEffect(() => {
     dispatch(listBranchesRequest());
     dispatch(getHeadOfficeRequest());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (error && error !== "Head office not found") {
+      showSnackbar(error, "error");
+    }
+  }, [error, showSnackbar]);
 
   useSubmitSuccess({
     submitting,
@@ -156,8 +178,8 @@ function BranchListContent() {
         )}
       </Box>
 
-      {/* Head Office Highlight Card */}
-      {headOffice && (
+      {/* Selected Active Branch Highlight Card */}
+      {selectedBranch && (
         <Paper
           sx={{
             p: 3,
@@ -173,7 +195,7 @@ function BranchListContent() {
           {canUpdate && (
             <IconButton
               size="small"
-              onClick={() => handleOpenEdit(headOffice)}
+              onClick={() => handleOpenEdit(selectedBranch)}
               sx={{
                 position: "absolute",
                 top: 16,
@@ -216,13 +238,15 @@ function BranchListContent() {
               <Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
                   <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff" }}>
-                    {headOffice.name}
+                    {selectedBranch.name}
                   </Typography>
                   <Chip
-                    label="Primary Headquarters"
+                    label={selectedBranch.isHeadOffice ? "Primary Headquarters" : "Assigned Branch"}
                     size="small"
                     sx={{
-                      backgroundColor: "rgba(165, 180, 252, 0.2)",
+                      backgroundColor: selectedBranch.isHeadOffice 
+                        ? "rgba(165, 180, 252, 0.2)"
+                        : "rgba(165, 180, 252, 0.15)",
                       color: "#E0E7FF",
                       fontWeight: 700,
                       fontSize: 10,
@@ -231,21 +255,21 @@ function BranchListContent() {
                   />
                 </Box>
                 <Typography variant="body2" sx={{ color: "#C7D2FE", mt: 0.5, fontWeight: 500 }}>
-                  HQ Code: {headOffice.code}
+                  {selectedBranch.isHeadOffice ? "HQ" : "Branch"} Code: {selectedBranch.code}
                 </Typography>
 
                 {/* Location address */}
-                {headOffice.address && (
+                {selectedBranch.address && (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 2 }}>
                     <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
                     <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
                       {[
-                        headOffice.address.addressLine1,
-                        headOffice.address.addressLine2,
-                        headOffice.address.city,
-                        headOffice.address.state,
-                        headOffice.address.zip,
-                        headOffice.address.countryCode,
+                        selectedBranch.address.addressLine1,
+                        selectedBranch.address.addressLine2,
+                        selectedBranch.address.city,
+                        selectedBranch.address.state,
+                        selectedBranch.address.zip,
+                        selectedBranch.address.countryCode,
                       ]
                         .filter(Boolean)
                         .join(", ")}
@@ -267,57 +291,57 @@ function BranchListContent() {
                 border: "1px solid rgba(255, 255, 255, 0.06)",
               }}
             >
-              {headOffice.workPolicy?.timezone && (
+              {selectedBranch.workPolicy?.timezone && (
                 <Box>
                   <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
                     Timezone
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
-                    {headOffice.workPolicy.timezone}
+                    {selectedBranch.workPolicy.timezone}
                   </Typography>
                 </Box>
               )}
 
-              {headOffice.workPolicy?.workingHoursPerDay !== undefined && (
+              {selectedBranch.workPolicy?.workingHoursPerDay !== undefined && (
                 <Box>
                   <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
                     Working Hours
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
-                    {headOffice.workPolicy.workingHoursPerDay} hrs / day
+                    {selectedBranch.workPolicy.workingHoursPerDay} hrs / day
                   </Typography>
                 </Box>
               )}
 
-              {headOffice.workPolicy?.weeklyOffDays && headOffice.workPolicy.weeklyOffDays.length > 0 && (
+              {selectedBranch.workPolicy?.weeklyOffDays && selectedBranch.workPolicy.weeklyOffDays.length > 0 && (
                 <Box>
                   <Typography variant="caption" sx={{ color: "#818CF8", display: "block", fontWeight: 700, textTransform: "uppercase" }}>
                     Weekly Offs
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff", mt: 0.5 }}>
-                    {headOffice.workPolicy.weeklyOffDays.join(", ")}
+                    {selectedBranch.workPolicy.weeklyOffDays.join(", ")}
                   </Typography>
                 </Box>
               )}
 
-              {(headOffice.contact?.email || headOffice.contact?.phone) && (
+              {(selectedBranch.contact?.email || selectedBranch.contact?.phone) && (
                 <Box sx={{ width: "100%", height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)", my: 0.5 }} />
               )}
 
-              {headOffice.contact?.email && (
+              {selectedBranch.contact?.email && (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 2 }}>
                   <EmailOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
                   <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
-                    {headOffice.contact.email}
+                    {selectedBranch.contact.email}
                   </Typography>
                 </Box>
               )}
 
-              {headOffice.contact?.phone && (
+              {selectedBranch.contact?.phone && (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <PhoneOutlinedIcon sx={{ fontSize: 16, color: "#A5B4FC" }} />
                   <Typography variant="body2" sx={{ color: "#E0E7FF", fontSize: 13 }}>
-                    {headOffice.contact.phone}
+                    {selectedBranch.contact.phone}
                   </Typography>
                 </Box>
               )}
@@ -333,13 +357,7 @@ function BranchListContent() {
         </Box>
       )}
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!loading && !error && branches.length === 0 && (
+      {!loading && branches.length === 0 && (
         <Paper
           sx={{
             p: 5,
@@ -370,23 +388,22 @@ function BranchListContent() {
             borderRadius: 3,
             boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
             border: "1px solid rgba(0,0,0,0.06)",
-            overflow: "hidden",
+            width: "100%",
+            maxWidth: "100%",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
-          <Table>
+          <Table sx={{ minWidth: { xs: 900, sm: 1000, md: 1100 } }}>
             <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 650 }}>Branch Info</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Location</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Contact Details</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Work Policy</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>Statutory Details</TableCell>
-                <TableCell sx={{ fontWeight: 650 }} align="center">
-                  Status
-                </TableCell>
-                <TableCell sx={{ fontWeight: 650 }} align="right">
-                  Actions
-                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Branch Info</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 220 }}>Location</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Contact Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Work Policy</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 130, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 90, whiteSpace: "nowrap" }}>Status</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -407,10 +424,29 @@ function BranchListContent() {
                   .filter(Boolean)
                   .join(", ");
 
+                const isSelected = branch._id === currentBranchId;
+
                 return (
-                  <TableRow key={branch._id} hover>
+                  <TableRow
+                    key={branch._id}
+                    hover
+                    sx={{
+                      transition: "all 0.2s ease",
+                      ...(isSelected && {
+                        backgroundColor: "rgba(109, 93, 246, 0.04) !important",
+                      }),
+                    }}
+                  >
                     {/* Branch Info */}
-                    <TableCell>
+                    <TableCell
+                      sx={{
+                        transition: "all 0.2s ease",
+                        ...(isSelected && {
+                          borderLeft: "4px solid #6D5DF6",
+                          pl: "12px !important",
+                        }),
+                      }}
+                    >
                       <Box>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
@@ -437,11 +473,11 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Location */}
-                    <TableCell>
+                    <TableCell sx={{ maxWidth: 260, wordBreak: "break-word" }}>
                       {addressString ? (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled" }} />
-                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.8 }}>
+                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled", mt: 0.2, flexShrink: 0 }} />
+                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13, wordBreak: "break-word" }}>
                             {addressString}
                           </Typography>
                         </Box>
@@ -480,8 +516,8 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Work Policy */}
-                    <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                    <TableCell align="center">
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center", textAlign: "center" }}>
                         {workPolicy?.timezone && (
                           <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
                             <strong>TZ:</strong> {workPolicy.timezone}
@@ -497,12 +533,20 @@ function BranchListContent() {
                             <strong>Weekly Offs:</strong> {workPolicy.weeklyOffDays.join(", ")}
                           </Typography>
                         )}
+                        {workPolicy?.customWeekOffRules && workPolicy.customWeekOffRules.length > 0 && (
+                          <Typography variant="body2" sx={{ fontSize: 12, color: "#4F46E5", fontWeight: 600 }}>
+                            <strong>Custom Offs:</strong>{" "}
+                            {workPolicy.customWeekOffRules
+                              .map((r) => `${r.dayOfWeek.slice(0, 3)} (${r.weeks.join(", ")})`)
+                              .join("; ")}
+                          </Typography>
+                        )}
                       </Box>
                     </TableCell>
 
                     {/* Statutory Details */}
-                    <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                    <TableCell align="center">
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center", textAlign: "center" }}>
                         <Typography variant="body2" sx={{ fontSize: 12, color: "text.secondary" }}>
                           <strong>PF:</strong> {statutory?.pfApplicable ? "Yes" : "No"}
                         </Typography>
@@ -539,14 +583,25 @@ function BranchListContent() {
                         </IconButton>
 
                         {canUpdate && (
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenEdit(branch)}
-                            sx={{ color: "#6D5DF6" }}
-                            title="Edit Branch"
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={() => seedDialog.open(branch)}
+                              sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                              title="Seed Master Data (Leave Types & Shifts)"
+                            >
+                              <AutoAwesomeIcon fontSize="small" />
+                            </IconButton>
+
+                            <IconButton
+                              size="small"
+                              onClick={() => handleOpenEdit(branch)}
+                              sx={{ color: "#6D5DF6" }}
+                              title="Edit Branch"
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </>
                         )}
                         {canDelete && (
                           <IconButton
@@ -567,6 +622,17 @@ function BranchListContent() {
           </Table>
         </TableContainer>
       )}
+
+      {/* Seed Branch Master Data Dialog */}
+      <SeedBranchDialog
+        open={seedDialog.isOpen}
+        branch={seedDialog.target}
+        onClose={seedDialog.close}
+        onSuccess={() => {
+          dispatch(listBranchesRequest());
+          dispatch(getHeadOfficeRequest());
+        }}
+      />
 
       {/* Branch Calendar Dialog */}
       <BranchCalendarDialog

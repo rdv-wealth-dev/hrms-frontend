@@ -4,7 +4,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
@@ -15,6 +14,7 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import TextInput from "../../../components/input/TextInput";
 
 import type {
   Shift,
@@ -136,15 +136,39 @@ export default function RotationPlanFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: { xs: 2.5, sm: 3.5 },
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+            mx: { xs: 2, sm: "auto" },
+            width: { xs: "calc(100% - 32px)", sm: "100%" },
+          },
+        },
+      }}
+    >
       <Box component="form" onSubmit={handleFormSubmit}>
-        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
           Create Rotation Plan
         </DialogTitle>
 
-        <DialogContent dividers sx={{ pt: 2, pb: 2 }}>
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
           {(error || validationError) && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Alert severity="error" sx={{ mb: 1, borderRadius: 2 }}>
               {error || validationError}
             </Alert>
           )}
@@ -152,50 +176,44 @@ export default function RotationPlanFormDialog({
           <Grid container spacing={2.5}>
             {/* Plan Details */}
             <Grid size={12}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 0.5 }}>
                 Plan Details
               </Typography>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <TextInput
                 required
-                fullWidth
                 label="Plan Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. IT 24x7 Support Rotation"
-                size="small"
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <TextInput
                 select
-                fullWidth
                 label="Cycle Duration"
                 value={cycleDuration}
                 onChange={(e) => setCycleDuration(e.target.value as CycleDuration)}
-                size="small"
               >
                 {CYCLE_DURATIONS.map((dur) => (
                   <MenuItem key={dur} value={dur}>
                     {dur === "WEEKLY" ? "Weekly (Every 7 days)" : dur === "BIWEEKLY" ? "Bi-Weekly (Every 14 days)" : "Monthly (Every 30 days)"}
                   </MenuItem>
                 ))}
-              </TextField>
+              </TextInput>
             </Grid>
 
             <Grid size={12}>
-              <TextField
-                fullWidth
+              <TextInput
+                multiline
+                rows={2}
                 label="Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Briefly describe the purpose of this rotation..."
-                size="small"
-                multiline
-                rows={2}
               />
             </Grid>
 
@@ -256,14 +274,12 @@ export default function RotationPlanFormDialog({
 
                       {/* Shift Choice Selector */}
                       <Grid size={{ xs: 12, sm: 4 }}>
-                        <TextField
+                        <TextInput
                           select
                           required
-                          fullWidth
                           label="Assigned Shift"
                           value={slot.shiftId}
                           onChange={(e) => handleSlotShiftChange(index, e.target.value)}
-                          size="small"
                         >
                           <MenuItem value="" disabled>
                             Select Shift
@@ -273,7 +289,7 @@ export default function RotationPlanFormDialog({
                               {shift.name} ({shift.startTime} - {shift.endTime})
                             </MenuItem>
                           ))}
-                        </TextField>
+                        </TextInput>
                       </Grid>
 
                       {/* Rest Days Checklist */}

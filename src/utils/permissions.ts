@@ -36,6 +36,16 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "settings.read", "settings.update",
     "document.read", "document.verify",
   ],
+  BRANCH_ADMIN: [
+    "employee.read", "employee.create", "employee.update",
+    "attendance.read", "attendance.create", "attendance.update", "attendance.approve",
+    "leave.read", "leave.create", "leave.update", "leave.approve",
+    "holiday.create",
+    "branch.read",
+    "department.read", "designation.read",
+    "report.read", "settings.read",
+    "document.read", "document.verify",
+  ],
   LEADERSHIP: [
     "employee.read", "attendance.read",
     "leave.read", "payroll.read",
@@ -43,18 +53,19 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     "designation.read", "report.read",
   ],
   MANAGER: [
-    "employee.read", "attendance.read",
+    "employee.read", "attendance.read", "attendance.approve",
     "leave.read", "leave.approve",
     "department.read", "designation.read",
     "report.read",
   ],
   PRODUCT_MANAGER: [
-    "employee.read", "attendance.read",
+    "employee.read", "attendance.read", "attendance.approve",
     "leave.read", "leave.approve",
     "department.read", "designation.read",
   ],
   EMPLOYEE: [
     "leave.read", "leave.create",
     "payroll.read",
+    "report.read",
   ],
 };

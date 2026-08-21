@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
 import { getLoggedInEmployeeProfile } from "../api/employee.api";
-import type { CompleteProfileCompletion } from "../api/employee.api";
 
-const SECTION_LABELS: Record<keyof CompleteProfileCompletion, string> = {
+type ProfileSectionKey = "personalDetails" | "address" | "emergencyContact" | "bankDetails" | "mandatoryDocs";
+
+const SECTION_LABELS: Record<ProfileSectionKey, string> = {
   personalDetails:  "Personal Details",
   address:          "Address",
   emergencyContact: "Emergency Contact",
@@ -56,7 +57,7 @@ export function useProfileBlockDetect() {
       const res = await getLoggedInEmployeeProfile();
       if (res.succeeded && res.data?.profileCompletion) {
         const completion = res.data.profileCompletion;
-        const pending = (Object.keys(SECTION_LABELS) as Array<keyof CompleteProfileCompletion>)
+        const pending = (Object.keys(SECTION_LABELS) as Array<ProfileSectionKey>)
           .filter((key) => !completion[key])
           .map((key) => SECTION_LABELS[key]);
 

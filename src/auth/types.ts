@@ -1,18 +1,66 @@
+// ===========================================
+// Check Slug
+// ===========================================
+
+export interface CheckSlugResponseData {
+  available: boolean;
+  slug: string;
+  suggestions?: string[];
+}
+
+export interface CheckSlugResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: CheckSlugResponseData | null;
+}
+
 export interface SignupRequest {
   companyName: string;
-  industry: string;
+  workspaceSlug: string;       // required — unique workspace URL
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-  phone: string;
   countryCode: string;
   timezone: string;
+  employeeCountRange: string;  // required — "1-10" | "11-50" | "51-200" | "201-500" | "500+"
+  industry?: string;
+  phone?: string;
+  adminJobTitle?: string;      // optional
 }
+
+// ===========================================
+// Check Email (SSO Detection)
+// ===========================================
+
+export interface CheckEmailRequest {
+  email: string;
+}
+
+export interface CheckEmailResponseData {
+  exists: boolean;
+  ssoEnabled: boolean;
+  provider: string | null;
+  companyName: string | null;
+  logoUrl: string | null;
+}
+
+export interface CheckEmailResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: CheckEmailResponseData | null;
+}
+
+// ===========================================
+// Login
+// ===========================================
 
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberDevice?: boolean;  // optional — issues 30-day device trust token when true
 }
 
 export interface User {
@@ -22,6 +70,7 @@ export interface User {
   lastName: string;
   fullName?: string;
   phone?: string;
+  avatarUrl?: string;
   role: string;
   isSuperAdmin: boolean;
   isActive?: boolean;
@@ -33,12 +82,20 @@ export interface User {
   isOrgAdmin?: boolean;
   createdAt?: string;
   lastLoginAt?: string;
+  lastLoginIp?: string;
+  lastLoginDevice?: string;
+}
+
+export interface OrganizationBranding {
+  logoUrl?: string;
+  primaryColor?: string;
 }
 
 export interface Organization {
   id: string;
   companyName: string;
   slug: string;
+  branding?: OrganizationBranding;
   subscription?: {
     plan: string;
     status: string;
@@ -54,6 +111,12 @@ export interface Organization {
     recruitment: boolean;
     assets: boolean;
   };
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  code: string;
 }
 
 export interface Branch {
@@ -84,7 +147,12 @@ export interface SignupResponse {
 
 export interface LoginResponseData {
   accessToken: string;
+  refreshToken?: string;
+  requiresPasswordReset: boolean;
+  onboardingCompleted: boolean;
   user: User;
+  organization?: Organization;
+  branch?: Branch;
 }
 
 export interface LoginResponse {
@@ -112,6 +180,28 @@ export interface VerifyEmailResponse {
   errors: string[];
   data: VerifyEmailResponseData | null;
 }
+
+// ===========================================
+// Resend Verification Email
+// ===========================================
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
+export interface ResendVerificationResponseData {
+  message?: string;
+}
+
+export interface ResendVerificationResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message: string;
+  errorCode?: string | null;
+  errors?: string[];
+  data?: ResendVerificationResponseData | null;
+}
+
 
 // ===========================================
 // Forgot Password
@@ -172,7 +262,7 @@ export interface CreateDepartmentRequest {
   name: string;
   code: string;
   description?: string;
-  branchId: string;
+  branchId?: string;
   parentId?: string;
 }
 
@@ -227,9 +317,9 @@ export interface CreateDesignationRequest {
   name: string;
   code: string;
   description?: string;
-  departmentId: string;
-  branchId: string;
-  level: number;
+  departmentId?: string;
+  branchId?: string;
+  level?: number;
 }
 
 export interface UpdateDesignationRequest {
@@ -289,6 +379,17 @@ export interface MeResponse {
   message: string;
   errors: string[];
   data: MeResponseData | null;
+}
+
+// ===========================================
+// Logout
+// ===========================================
+
+export interface LogoutResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: null;
 }
 
 // ===========================================

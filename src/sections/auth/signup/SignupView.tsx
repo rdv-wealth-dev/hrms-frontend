@@ -1,14 +1,17 @@
-import { useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import MenuItem from "@mui/material/MenuItem";
 
 import TextInput from "../../../components/input/TextInput";
-import CountryCodeSelect from "../../../components/input/CountryCodeSelect"; // ✅ added
+import SlugInput from "../../../components/input/SlugInput";
+import PhoneInput from "../../../components/input/PhoneInput";
 import PrimaryButton from "../../../components/button/PrimaryButton";
 import AuthLayout from "../../../layouts/auth/AuthLayout";
 import AuthFooter from "../../../components/auth/AuthFooter";
@@ -26,6 +29,26 @@ import {
   type SignupFormData,
 } from "../../../validations/auth/signup.schema";
 
+// Employee count options matching backend enum exactly
+const EMPLOYEE_COUNT_OPTIONS = [
+  { value: "1-10", label: "1 – 10 employees" },
+  { value: "11-50", label: "11 – 50 employees" },
+  { value: "51-200", label: "51 – 200 employees" },
+  { value: "201-500", label: "201 – 500 employees" },
+  { value: "500+", label: "500+ employees" },
+];
+
+// Sanitise company name → workspace slug suggestion
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function SignupView() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -34,21 +57,32 @@ function SignupView() {
     (state: RootState) => state.auth
   );
 
+  const [submittedEmail, setSubmittedEmail] = useState<string>("");
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  // Track whether the user has manually edited the slug field
+  // If true, stop auto-generating from company name
+  const isSlugManuallyEdited = useRef(false);
+
   useEffect(() => {
     if (isRegisterSuccess) {
       dispatch(resetAuthState());
-      navigate(paths.auth.checkEmail);
+      navigate(paths.auth.checkEmail, { state: { email: submittedEmail } });
     }
-  }, [isRegisterSuccess, dispatch, navigate]);
+  }, [isRegisterSuccess, dispatch, navigate, submittedEmail]);
 
   const {
     register,
     handleSubmit,
+    control,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       companyName: "",
+      workspaceSlug: "",
+      employeeCountRange: undefined,
       industry: "",
       firstName: "",
       lastName: "",
@@ -60,14 +94,25 @@ function SignupView() {
     },
   });
 
+  // Auto-generate slug from company name as user types
+  // Stops auto-updating once the user manually edits the slug field
+  const companyName = watch("companyName");
+
+  useEffect(() => {
+    if (isSlugManuallyEdited.current) return;
+    const generated = toSlug(companyName);
+    setValue("workspaceSlug", generated);
+  }, [companyName]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const onSubmit = (data: SignupFormData) => {
+    // Block submit if slug is confirmed taken
+    if (slugAvailable === false) return;
+
     const { confirmPassword, ...rest } = data;
+    setSubmittedEmail(rest.email);
 
-    // ✅ Auto-detect timezone — never shown to the user, never typed by them
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    // Strip all non-digit characters — API expects subscriber digits only (no +, spaces, dashes)
-    const phone = rest.phone.replace(/\D/g, "");
+    const phone = rest.phone ? rest.phone.replace(/\D/g, "") : undefined;
 
     dispatch(
       registerRequest({
@@ -80,8 +125,13 @@ function SignupView() {
 
   return (
     <AuthLayout>
-      <Box sx={{ width: "100%", maxWidth: "32rem" }}>
-        <AuthHeading title="Sign up" subtitle="Join the community today!" />
+      <Box sx={{ width: "100%", maxWidth: "36rem" }}>
+        <Box sx={{ mt: -1 }}>
+          <AuthHeading
+            title="Create your workspace"
+            subtitle="Set up your company HRMS in minutes"
+          />
+        </Box>
 
         <Box
           component="form"
@@ -89,101 +139,147 @@ function SignupView() {
           sx={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: 1.5,
+            gap: { xs: 1, sm: 1.2 },
           }}
         >
-          {/* Row 1: Company Name | Industry */}
+          {/* Row 1: Company Name | Team Size */}
           <TextInput
             label="Company Name"
-            placeholder="Enter Company Name"
+
             registration={register("companyName")}
             error={errors.companyName?.message}
+            required
           />
 
           <TextInput
-            label="Industry"
-            placeholder="Enter Industry"
-            registration={register("industry")}
-            error={errors.industry?.message}
-          />
+            label="Team Size"
+            select
+            registration={register("employeeCountRange")}
+            error={errors.employeeCountRange?.message}
+            required
+          >
+            <MenuItem value="" disabled>Select team size</MenuItem>
+            {EMPLOYEE_COUNT_OPTIONS.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </TextInput>
 
-          {/* Row 2: First Name | Last Name */}
+          {/* Row 2: Workspace Slug (full width) */}
+          <Box sx={{ gridColumn: "1 / 3" }}>
+            <Controller
+              name="workspaceSlug"
+              control={control}
+              render={({ field }) => (
+                <SlugInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.workspaceSlug?.message}
+                  onAvailabilityChange={setSlugAvailable}
+                  onManualEdit={() => { isSlugManuallyEdited.current = true; }}
+                />
+              )}
+            />
+          </Box>
+
+          {/* Row 3: First Name | Last Name */}
           <TextInput
             label="First Name"
-            placeholder="Enter First Name"
+
             registration={register("firstName")}
             error={errors.firstName?.message}
+            required
           />
 
           <TextInput
             label="Last Name"
-            placeholder="Enter Last Name"
+
             registration={register("lastName")}
             error={errors.lastName?.message}
+            required
           />
 
-          {/* Row 3: Email — full width */}
+          {/* Row 4: Email (full width) */}
           <Box sx={{ gridColumn: "1 / 3" }}>
             <TextInput
-              label="Email"
-              placeholder="Enter Email"
+              label="Work Email"
+
               registration={register("email")}
               error={errors.email?.message}
+              required
             />
           </Box>
-
-          {/* Row 4: Country Code dropdown | Phone */}
-          <CountryCodeSelect
-            label="Country Code"
-            registration={register("countryCode")}
-            error={errors.countryCode?.message}
-          />
-
-          <TextInput
-            label="Phone Number"
-            placeholder="e.g. 9876543210"
-            type="tel"
-            registration={register("phone")}
-            error={errors.phone?.message}
-          />
-
-          {/* ✅ Time Zone field removed entirely — auto-detected on submit */}
 
           {/* Row 5: Password | Confirm Password */}
           <TextInput
             label="Password"
-            placeholder="Enter Password"
+
             type="password"
             registration={register("password")}
             error={errors.password?.message}
+            required
           />
 
           <TextInput
             label="Confirm Password"
-            placeholder="Enter Confirm Password"
+
             type="password"
             registration={register("confirmPassword")}
             error={errors.confirmPassword?.message}
+            required
           />
 
-          {/* API Error — full width */}
+          {/* Row 6: Phone Number (full width, same as Work Email) */}
+          <Box sx={{ gridColumn: "1 / 3" }}>
+            <PhoneInput
+              label="Phone Number (optional)"
+              phoneRegistration={register("phone")}
+              countryCodeRegistration={register("countryCode")}
+              phoneError={errors.phone?.message}
+              countryCodeError={errors.countryCode?.message}
+              setValue={setValue}
+              watch={watch}
+            />
+          </Box>
+
+          {/* API Error */}
           {error && (
             <Box sx={{ gridColumn: "1 / 3" }}>
-              <Typography color="error" variant="body2">
+              <Typography
+                color="error"
+                variant="body2"
+                sx={{ textAlign: "center", fontSize: { xs: "11px", sm: "13px" } }}
+              >
                 {error}
               </Typography>
             </Box>
           )}
 
-          {/* Submit — full width */}
-          <Box sx={{ gridColumn: "1 / 3", mt: 2 }}>
-            <PrimaryButton type="submit" loading={loading} disabled={loading}>
+          {/* Slug taken warning */}
+          {slugAvailable === false && !errors.workspaceSlug && (
+            <Box sx={{ gridColumn: "1 / 3" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "#EF4444", fontSize: "12px" }}
+              >
+                Please choose an available workspace URL before continuing.
+              </Typography>
+            </Box>
+          )}
+
+          {/* Submit */}
+          <Box sx={{ gridColumn: "1 / 3", mt: { xs: 0.3, sm: 0.6 } }}>
+            <PrimaryButton
+              type="submit"
+              loading={loading}
+              disabled={loading || slugAvailable === false}
+            >
               Create Account
             </PrimaryButton>
           </Box>
         </Box>
 
-        
         <AuthFooter
           text="Already have an account?"
           linkText="Sign In"

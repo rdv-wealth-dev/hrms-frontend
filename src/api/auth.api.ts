@@ -7,13 +7,19 @@ import type {
   LoginResponse,
   VerifyEmailRequest,
   VerifyEmailResponse,
+  ResendVerificationRequest,
+  ResendVerificationResponse,
   ForgotPasswordRequest,
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
-  MeResponse, // ✅ new
+  MeResponse,
   ActivateAccountRequest,
   ActivateAccountResponse,
+  CheckSlugResponse,
+  CheckEmailRequest,
+  CheckEmailResponse,
+  LogoutResponse,
 } from "../auth/types";
 
 export const registerCompany = async (
@@ -44,6 +50,43 @@ export const verifyEmail = async (
     payload
   );
   return response.data;
+};
+
+export const resendVerificationEmail = async (
+  payload: ResendVerificationRequest
+): Promise<ResendVerificationResponse> => {
+  const response = await axiosInstance.post<ResendVerificationResponse>(
+    "/auth/resend-verification",
+    payload
+  );
+  return response.data;
+};
+
+// Real-time workspace slug availability check (GET — no auth required)
+export const checkSlug = async (slug: string): Promise<CheckSlugResponse> => {
+  const response = await axiosInstance.get<CheckSlugResponse>(
+    `/auth/check-slug?slug=${encodeURIComponent(slug)}`
+  );
+  return response.data;
+};
+
+export const checkEmail = async (
+  payload: CheckEmailRequest
+): Promise<CheckEmailResponse> => {
+  const response = await axiosInstance.post<CheckEmailResponse>(
+    "/auth/check-email",
+    payload
+  );
+  return response.data;
+};
+
+export const logoutUser = async (): Promise<LogoutResponse> => {
+  try {
+    const response = await axiosInstance.post<LogoutResponse>("/auth/logout");
+    return response.data;
+  } catch (_err) {
+    return { succeeded: true, message: "Logged out locally", errors: [], data: null };
+  }
 };
 
 // ✅ New
@@ -84,6 +127,34 @@ export const activateAccount = async (
 ): Promise<ActivateAccountResponse> => {
   const response = await axiosInstance.post<ActivateAccountResponse>(
     "/auth/activate-account",
+    payload
+  );
+  return response.data;
+};
+
+export interface CompleteOnboardingRequest {
+  countryCode: string;
+  timezone: string;
+  employeeCountRange: string;
+  industry: string;
+  phone: string;
+  baseCurrency: string;
+  fiscalYearStart: string;
+  adminJobTitle: string;
+}
+
+export interface CompleteOnboardingResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data?: any;
+}
+
+export const completeOnboarding = async (
+  payload: CompleteOnboardingRequest
+): Promise<CompleteOnboardingResponse> => {
+  const response = await axiosInstance.post<CompleteOnboardingResponse>(
+    "/auth/complete-onboarding",
     payload
   );
   return response.data;

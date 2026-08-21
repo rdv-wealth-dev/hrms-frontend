@@ -1,3 +1,3 @@
 export * from "./EventChip";
-export * from "./BranchCalendarGrid";
+export { default as BranchCalendarGrid, LazyBranchCalendarGrid } from "./LazyBranchCalendarGrid";
 export * from "./EventDetailPanel";

@@ -150,6 +150,29 @@ export function branchReducer(
       return {
         ...state,
         loadingHeadOffice: false,
+      };
+
+    case BRANCH_ACTIONS.SEED_REQUEST:
+      return {
+        ...state,
+        submitting: true,
+        success: false,
+        error: null,
+      };
+
+    case BRANCH_ACTIONS.SEED_SUCCESS:
+      return {
+        ...state,
+        submitting: false,
+        success: true,
+        error: null,
+      };
+
+    case BRANCH_ACTIONS.SEED_FAILURE:
+      return {
+        ...state,
+        submitting: false,
+        success: false,
         error: action.payload,
       };
 

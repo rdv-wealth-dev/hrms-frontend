@@ -25,7 +25,7 @@ function PrimaryButton({
       disabled={loading || disabled}
       onClick={onClick} // ✅ added
       sx={{
-        height: "48px",
+        height: { xs: "42px", sm: "46px" },
         borderRadius: "12px",
         backgroundColor: "#6D5DF6",
         fontWeight: 600,

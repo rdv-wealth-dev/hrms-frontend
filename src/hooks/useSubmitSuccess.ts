@@ -8,16 +8,16 @@ interface SubmitStatusOptions {
 }
 
 export function useSubmitSuccess({ submitting, success, error, onSuccess }: SubmitStatusOptions) {
-  const isSubmitting = useRef(false);
+  const prevSubmitting = useRef(false);
 
   useEffect(() => {
-    if (submitting) {
-      isSubmitting.current = true;
-    }
-
-    if (isSubmitting.current && !submitting && !error && success) {
-      isSubmitting.current = false;
+    // Detect transition from submitting (true) to not submitting (false)
+    // AND ensure it was successful (success=true, error=null)
+    if (prevSubmitting.current && !submitting && success && !error) {
       onSuccess();
     }
+    
+    // Update the previous state
+    prevSubmitting.current = submitting;
   }, [submitting, success, error, onSuccess]);
 }

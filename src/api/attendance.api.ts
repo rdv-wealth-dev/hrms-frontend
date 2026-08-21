@@ -1,6 +1,7 @@
 import axiosInstance from "./axios";
 import type { 
-    CreateShiftRequest, 
+    CreateShiftRequest,
+    UpdateShiftRequest, 
     ShiftResponse, 
     ShiftListResponse, 
     AttendanceRecordResponse, 
@@ -8,7 +9,6 @@ import type {
     ManualAttendanceRequest,
     CreateRegularizationRequest,
     RegularizationListResponse,
-    RegularizationRequest,
     AttendanceReportResponse,
     ShiftAssignmentsResponse,
     CreateRotationPlanRequest,
@@ -33,6 +33,18 @@ export const createShift = async (
 ): Promise<ShiftResponse> => {
     const response = await axiosInstance.post<ShiftResponse>(
         "/attendance/shifts",
+        payload,
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export const updateShift = async (
+    id: string,
+    payload: UpdateShiftRequest
+): Promise<ShiftResponse> => {
+    const response = await axiosInstance.patch<ShiftResponse>(
+        `/attendance/shifts/${id}`,
         payload,
         { headers: getAuthHeader() }
     );
@@ -125,12 +137,25 @@ export interface ReviewRegularizationResponse {
   data: any;
 }
 
-export const getPendingRegularizationRequests = async (): Promise<RegularizationListResponse | RegularizationRequest[]> => {
-  const response = await axiosInstance.get<RegularizationListResponse | RegularizationRequest[]>(
-    "/attendance/regularizations/pending",
-    { headers: getAuthHeader() }
-  );
-  return response.data;
+export const getPendingRegularizationRequests = async (): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(
+      "/attendance/regularizations/pending",
+      { headers: getAuthHeader() }
+    );
+    if (response.data) {
+      const d = response.data;
+      if (Array.isArray(d)) return d;
+      if (d.succeeded && Array.isArray(d.data)) return d.data;
+    }
+    return response.data;
+  } catch {
+    const fallbackResponse = await axiosInstance.get(
+      "/attendance/regularizations",
+      { params: { status: "PENDING" }, headers: getAuthHeader() }
+    );
+    return fallbackResponse.data;
+  }
 };
 
 export const reviewRegularizationRequest = async (
@@ -150,12 +175,28 @@ export const getAttendanceReport = async (
   toDate: string,
   pageNumber = 1,
   pageSize = 20,
-  status?: string
+  status?: string,
+  employeeId?: string,
+  designationId?: string,
+  branchId?: string,
+  departmentId?: string,
+  search?: string
 ): Promise<AttendanceReportResponse> => {
   const response = await axiosInstance.get<AttendanceReportResponse>(
     "/attendance/report",
     {
-      params: { fromDate, toDate, pageNumber, pageSize, status },
+      params: { 
+        fromDate, 
+        toDate, 
+        pageNumber, 
+        pageSize, 
+        status, 
+        employeeId,
+        designationId,
+        branchId,
+        departmentId,
+        search
+      },
       headers: getAuthHeader(),
     }
   );
@@ -199,3 +240,63 @@ export const assignRotationPlan = async (
     );
     return response.data;
 };
+
+export const deleteShift = async (
+    id: string
+): Promise<{ succeeded?: boolean; message?: string; data?: any }> => {
+    const response = await axiosInstance.delete<{ succeeded?: boolean; message?: string; data?: any }>(
+        `/attendance/shifts/${id}`,
+        { headers: getAuthHeader() }
+    );
+    return response.data;
+};
+
+export interface MonthlyAttendanceSummaryData {
+  totalDays: number;
+  present: number;
+  late: number;
+  halfDay: number;
+  halfDayValue: number;
+  absent: number;
+  onLeave: number;
+  holiday: number;
+  weekOff: number;
+  totalWorkedMinutes: number;
+  regularizedDays: number;
+  totalWorkedHours: number;
+  attendancePercentage: number;
+}
+
+export interface MonthlyAttendanceSummaryResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message?: string;
+  data: MonthlyAttendanceSummaryData;
+}
+
+export const getMonthlyAttendanceSummary = async (
+  employeeId?: string | null,
+  year?: number,
+  month?: number
+): Promise<MonthlyAttendanceSummaryResponse> => {
+  const currentYear = year || new Date().getFullYear();
+  const currentMonth = month || new Date().getMonth() + 1;
+
+  let url = `/attendance/summary/me/${currentYear}/${currentMonth}`;
+  let params: any = {};
+
+  if (employeeId) {
+    url = `/attendance/summary/${employeeId}`;
+    params = { year: currentYear, month: currentMonth };
+  }
+
+  const response = await axiosInstance.get<MonthlyAttendanceSummaryResponse>(
+    url,
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+

@@ -30,9 +30,9 @@ import {
 // List
 // ==========================
 
-function* handleListDepartments(): SagaIterator {
+function* handleListDepartments(action: { type: string; payload?: any }): SagaIterator {
   try {
-    const response = yield call(listDepartments);
+    const response = yield call(listDepartments, action.payload);
 
     if (!response?.data) {
       yield put(listDepartmentsFailure(response?.message ?? "Failed to load departments"));

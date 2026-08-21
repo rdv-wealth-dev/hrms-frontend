@@ -22,16 +22,6 @@ export interface UserResponse {
   };
 }
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    throw new Error("No access token found. Please log in again.");
-  }
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
-
 export interface ListUsersResponse {
   succeeded: boolean;
   message: string;
@@ -40,20 +30,22 @@ export interface ListUsersResponse {
 }
 
 export const listUsers = async (): Promise<UserAccountData[]> => {
-  const response = await axiosInstance.get<ListUsersResponse>("/users", {
-    headers: getAuthHeader(),
-  });
+  const response = await axiosInstance.get<ListUsersResponse>("/users");
   return response.data.data;
 };
 
 export const updateUserRole = async (
   userId: string,
-  role: string
+  role: string,
+  branchIds: string[] = []
 ): Promise<UserResponse> => {
+  const payload = {
+    role,
+    branchIds: role === "BRANCH_ADMIN" ? branchIds : [],
+  };
   const response = await axiosInstance.patch<UserResponse>(
     `/users/${userId}/role`,
-    { role },
-    { headers: getAuthHeader() }
+    payload
   );
   return response.data;
 };

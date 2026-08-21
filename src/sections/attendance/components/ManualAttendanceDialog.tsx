@@ -10,27 +10,26 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+
+import TextInput from "../../../components/input/TextInput";
+import { formatToYYYYMMDD } from "../../../utils/format-date";
 
 import { createManualAttendance } from "../../../api/attendance.api";
 import { listEmployees } from "../../../api/employee.api";
 import type { EmployeeListItem } from "../../../store/employee/employee.types";
 
-// ── Constants ────────────────────────────────────────────────
 const SUCCESS_CLOSE_DELAY_MS = 1200;
 const DEFAULT_CHECK_IN_TIME = "09:00";
 const DEFAULT_CHECK_OUT_TIME = "18:00";
 const EMPLOYEE_PAGE_SIZE = 100;
-const ACCENT_COLOR = "#6D5DF6";
-const ACCENT_COLOR_HOVER = "#5B4BEA";
 
-// ── Validation schema ───────────────────────────────────────
 const manualAttendanceSchema = z
   .object({
     selectedEmployeeId: z.string().min(1, "Please select an employee"),
@@ -63,108 +62,96 @@ type ManualAttendanceDialogProps = {
   employee?: PresetEmployee | null;
 };
 
-const combineDateAndTime = (datePart: string, timePart: string, fieldLabel: string): Date => {
-  const combined = new Date(`${datePart}T${timePart}:00`);
-  if (Number.isNaN(combined.getTime())) {
-    throw new Error(`Invalid ${fieldLabel} time format`);
-  }
-  return combined;
-};
 
-export default function ManualAttendanceDialog({
+
+export function ManualAttendanceDialog({
   open,
   onClose,
   onSuccess,
-  employee,
+  employee = null,
 }: ManualAttendanceDialogProps) {
   const [employeesList, setEmployeesList] = useState<EmployeeListItem[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [employeesError, setEmployeesError] = useState<string | null>(null);
-
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Cancels a pending "close after success" timer if the component
-  // unmounts first, avoiding setState-after-unmount warnings.
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const todayIsoDate = formatToYYYYMMDD(new Date());
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ManualAttendanceFormData>({
     resolver: zodResolver(manualAttendanceSchema),
     defaultValues: {
-      selectedEmployeeId: employee?._id ?? "",
-      attendanceDate: new Date().toISOString().split("T")[0],
+      selectedEmployeeId: employee?._id || "",
+      attendanceDate: todayIsoDate,
       checkInTime: DEFAULT_CHECK_IN_TIME,
       checkOutTime: DEFAULT_CHECK_OUT_TIME,
       notes: "",
     },
   });
 
-  // Reset the form whenever the dialog opens or the preset employee changes.
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setApiError(null);
+      setSuccessMessage(null);
+      setSubmitting(false);
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+      return;
+    }
+
+    setApiError(null);
+    setSuccessMessage(null);
+
+    const initialEmployeeId = employee?._id || "";
     reset({
-      selectedEmployeeId: employee?._id ?? "",
-      attendanceDate: new Date().toISOString().split("T")[0],
+      selectedEmployeeId: initialEmployeeId,
+      attendanceDate: todayIsoDate,
       checkInTime: DEFAULT_CHECK_IN_TIME,
       checkOutTime: DEFAULT_CHECK_OUT_TIME,
       notes: "",
     });
-    setApiError(null);
-    setSuccessMessage(null);
-  }, [open, employee, reset]);
 
-  // Fetch the employee list only when needed (no preset employee) and
-  // guard against a stale response overwriting state after the dialog
-  // has since closed or been reopened with a different employee.
-  useEffect(() => {
-    if (!open || employee) return;
-
-    let cancelled = false;
-
-    const fetchEmployees = async () => {
+    if (!employee) {
+      let isMounted = true;
       setLoadingEmployees(true);
       setEmployeesError(null);
-      try {
-        const response = await listEmployees(1, EMPLOYEE_PAGE_SIZE, "", "ACTIVE");
-        if (cancelled) return;
 
-        if (response.succeeded && response.data) {
-          setEmployeesList(response.data);
-        } else {
-          setEmployeesError(response.message || "Failed to load employees list");
-        }
-      } catch (err: unknown) {
-        if (cancelled) return;
-        const message = isAxiosError<{ message?: string }>(err)
-          ? err.response?.data?.message ?? err.message
-          : err instanceof Error
-            ? err.message
-            : "Failed to load employees list";
-        setEmployeesError(message);
-      } finally {
-        if (!cancelled) setLoadingEmployees(false);
-      }
-    };
+      listEmployees(1, EMPLOYEE_PAGE_SIZE)
+        .then((res: any) => {
+          if (!isMounted) return;
+          const items = res?.data || res?.employees || [];
+          setEmployeesList(items);
+        })
+        .catch((err) => {
+          if (!isMounted) return;
+          const msg = err?.response?.data?.message || "Failed to load employees list";
+          setEmployeesError(msg);
+        })
+        .finally(() => {
+          if (isMounted) setLoadingEmployees(false);
+        });
 
-    fetchEmployees();
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [open, employee, reset, todayIsoDate]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [open, employee]);
-
-  // Clear any pending "close after success" timer on unmount.
   useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
-  }, []);
+    if (employee?._id) {
+      setValue("selectedEmployeeId", employee._id, { shouldValidate: true });
+    }
+  }, [employee, setValue]);
 
   const onSubmit = async (data: ManualAttendanceFormData) => {
     setSubmitting(true);
@@ -172,122 +159,176 @@ export default function ManualAttendanceDialog({
     setSuccessMessage(null);
 
     try {
-      const checkInDate = combineDateAndTime(data.attendanceDate, data.checkInTime, "check-in");
-      const checkIn = checkInDate.toISOString();
-
-      let checkOut: string | undefined;
-      if (data.checkOutTime) {
-        const checkOutDate = combineDateAndTime(data.attendanceDate, data.checkOutTime, "check-out");
-        checkOut = checkOutDate.toISOString();
-      }
-
-      const response = await createManualAttendance({
+      await createManualAttendance({
         employeeId: data.selectedEmployeeId,
         attendanceDate: data.attendanceDate,
-        checkIn,
-        checkOut,
-        notes: data.notes || undefined,
+        checkIn: data.checkInTime ? new Date(`${data.attendanceDate}T${data.checkInTime}`).toISOString() : new Date().toISOString(),
+        checkOut: data.checkOutTime ? new Date(`${data.attendanceDate}T${data.checkOutTime}`).toISOString() : undefined,
+        notes: data.notes,
       });
 
-      if (response.succeeded) {
-        setSuccessMessage("Attendance recorded manually successfully!");
-        closeTimeoutRef.current = setTimeout(() => {
-          onSuccess?.();
-          onClose();
-        }, SUCCESS_CLOSE_DELAY_MS);
-      } else {
-        setApiError(response.message || "Failed to record manual attendance");
-      }
+      setSuccessMessage("Manual attendance recorded successfully.");
+      onSuccess?.();
+
+      closeTimerRef.current = setTimeout(() => {
+        onClose();
+      }, SUCCESS_CLOSE_DELAY_MS);
     } catch (err: unknown) {
-      const message = isAxiosError<{ message?: string }>(err)
-        ? err.response?.data?.message ?? err.message
-        : err instanceof Error
-          ? err.message
-          : "Something went wrong while recording manual attendance";
-      setApiError(message);
+      if (isAxiosError(err)) {
+        const msg = err.response?.data?.message || "Failed to record manual attendance.";
+        setApiError(msg);
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDialogClose = () => {
-    if (submitting) return;
-    onClose();
-  };
-
   return (
-    <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth="sm" aria-labelledby="manual-attendance-title">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: 3,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+          },
+        },
+      }}
+    >
       <DialogTitle
-        id="manual-attendance-title"
         component="div"
         sx={{
+          p: 0,
+          mb: 2.5,
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          pb: 1,
+          justifyContent: "space-between",
         }}
       >
-        <Typography variant="h6" component="h2" sx={{ fontWeight: 700, color: "#111827" }}>
-          Record Manual Attendance (HR)
+        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "#0F172A" }}>
+          Record Manual Attendance
         </Typography>
-        <IconButton onClick={onClose} size="small" disabled={submitting} aria-label="Close dialog" sx={{ color: "#9CA3AF" }}>
-          <CloseIcon />
+        <IconButton
+          onClick={onClose}
+          size="small"
+          disabled={submitting}
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 18 }} />
         </IconButton>
       </DialogTitle>
 
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 3 }}>
-          <Box role="status" aria-live="polite">
-            {(apiError || employeesError) && (
-              <Alert severity="error" sx={{ borderRadius: 2 }}>
-                {apiError || employeesError}
-              </Alert>
-            )}
-            {successMessage && (
-              <Alert severity="success" sx={{ borderRadius: 2 }}>
-                {successMessage}
-              </Alert>
-            )}
-          </Box>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {apiError && <Alert severity="error" sx={{ borderRadius: "10px" }}>{apiError}</Alert>}
+          {employeesError && <Alert severity="warning" sx={{ borderRadius: "10px" }}>{employeesError}</Alert>}
+          {successMessage && <Alert severity="success" sx={{ borderRadius: "10px" }}>{successMessage}</Alert>}
 
-          {/* 1. Employee Dropdown or Static Display */}
+          {/* 1. Employee Field */}
           {employee ? (
-            <TextField
-              label="Employee"
-              value={`${employee.firstName} ${employee.lastName} (${employee.employeeCode})`}
-              disabled
-              fullWidth
-              size="small"
-            />
+            <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
+                Employee Profile
+              </Typography>
+              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+                {employee.firstName} {employee.lastName} ({employee.employeeCode})
+              </Typography>
+            </Box>
           ) : (
             <Controller
               name="selectedEmployeeId"
               control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="Select Employee"
-                  fullWidth
-                  size="small"
-                  required
-                  disabled={loadingEmployees || submitting}
-                  error={!!errors.selectedEmployeeId}
-                  helperText={errors.selectedEmployeeId?.message}
-                  slotProps={{
-                    select: { displayEmpty: true },
-                    inputLabel: { shrink: true },
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    {loadingEmployees ? "Loading employees list..." : "Choose an employee"}
-                  </MenuItem>
-                  {employeesList.map((emp) => (
-                    <MenuItem key={emp._id} value={emp._id}>
-                      {`${emp.firstName} ${emp.lastName} (${emp.employeeCode})`}
-                    </MenuItem>
-                  ))}
-                </TextField>
+              render={({ field: { value, onChange, ref, ...fieldProps } }) => (
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "#334155",
+                      mb: 0.6,
+                      display: "block",
+                    }}
+                  >
+                    Select Employee
+                  </Typography>
+                  <Autocomplete
+                    {...fieldProps}
+                    size="small"
+                    options={employeesList || []}
+                    loading={loadingEmployees}
+                    getOptionLabel={(option) =>
+                      option ? `${option.firstName || ""} ${option.lastName || ""} (${option.employeeCode || ""})` : ""
+                    }
+                    isOptionEqualToValue={(option, val) => option?._id === val?._id}
+                    value={employeesList.find((emp) => emp?._id === value) || null}
+                    onChange={(_, newValue) => {
+                      onChange(newValue ? newValue._id : "");
+                    }}
+                    slotProps={{
+                      listbox: {
+                        sx: {
+                          maxHeight: 180,
+                        },
+                      },
+                    }}
+                    disabled={loadingEmployees || submitting}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        inputRef={ref}
+                        placeholder="Search employee by name or code..."
+                        error={Boolean(errors.selectedEmployeeId?.message)}
+                        helperText={errors.selectedEmployeeId?.message}
+                        slotProps={{
+                          ...params.slotProps,
+                          input: {
+                            ...params.slotProps?.input,
+                            endAdornment: (
+                              <>
+                                {loadingEmployees ? (
+                                  <CircularProgress color="inherit" size={20} />
+                                ) : null}
+                                {params.slotProps?.input?.endAdornment}
+                              </>
+                            ),
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "10px",
+                            backgroundColor: "#FFFFFF",
+                            "& fieldset": { borderColor: "#E2E8F0" },
+                            "&:hover fieldset": { borderColor: "#CBD5E1" },
+                            "&.Mui-focused fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+                          },
+                          "& .MuiFormHelperText-root": {
+                            mx: 0,
+                            mt: 0.5,
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                </Box>
               )}
             />
           )}
@@ -297,58 +338,48 @@ export default function ManualAttendanceDialog({
             name="attendanceDate"
             control={control}
             render={({ field }) => (
-              <TextField
+              <TextInput
                 {...field}
-                label="Attendance Date"
                 type="date"
-                fullWidth
-                size="small"
-                required
+                label="Attendance Date"
                 disabled={submitting}
-                error={!!errors.attendanceDate}
-                helperText={errors.attendanceDate?.message}
-                slotProps={{ inputLabel: { shrink: true } }}
+                error={errors.attendanceDate?.message}
               />
             )}
           />
 
           {/* 3. Timings Row */}
           <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
-            <Controller
-              name="checkInTime"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Check-In Time"
-                  type="time"
-                  fullWidth
-                  size="small"
-                  required
-                  disabled={submitting}
-                  error={!!errors.checkInTime}
-                  helperText={errors.checkInTime?.message}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                />
-              )}
-            />
-            <Controller
-              name="checkOutTime"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Check-Out Time"
-                  type="time"
-                  fullWidth
-                  size="small"
-                  disabled={submitting}
-                  error={!!errors.checkOutTime}
-                  helperText={errors.checkOutTime?.message}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                />
-              )}
-            />
+            <Box sx={{ flex: 1 }}>
+              <Controller
+                name="checkInTime"
+                control={control}
+                render={({ field }) => (
+                  <TextInput
+                    {...field}
+                    type="time"
+                    label="Check-In Time"
+                    disabled={submitting}
+                    error={errors.checkInTime?.message}
+                  />
+                )}
+              />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Controller
+                name="checkOutTime"
+                control={control}
+                render={({ field }) => (
+                  <TextInput
+                    {...field}
+                    type="time"
+                    label="Check-Out Time (optional)"
+                    disabled={submitting}
+                    error={errors.checkOutTime?.message}
+                  />
+                )}
+              />
+            </Box>
           </Box>
 
           {/* 4. Notes */}
@@ -356,25 +387,35 @@ export default function ManualAttendanceDialog({
             name="notes"
             control={control}
             render={({ field }) => (
-              <TextField
+              <TextInput
                 {...field}
-                label="Reason / Notes"
                 multiline
                 rows={3}
-                fullWidth
-                size="small"
-                required
-                disabled={submitting}
+                label="Reason / Remark"
                 placeholder="e.g. Biometric machine error, manually logged by HR"
-                error={!!errors.notes}
-                helperText={errors.notes?.message}
+                disabled={submitting}
+                error={errors.notes?.message}
               />
             )}
           />
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={onClose} disabled={submitting} color="inherit">
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -382,17 +423,23 @@ export default function ManualAttendanceDialog({
             disabled={submitting || (loadingEmployees && !employee)}
             variant="contained"
             sx={{
-              backgroundColor: ACCENT_COLOR,
-              "&:hover": { backgroundColor: ACCENT_COLOR_HOVER },
-              textTransform: "none",
-              fontWeight: 600,
+              height: 42,
+              borderRadius: "10px",
               px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4BEA" },
             }}
           >
-            {submitting ? <CircularProgress size={20} color="inherit" /> : "Record Attendance"}
+            {submitting ? <CircularProgress size={18} color="inherit" /> : "Record Attendance"}
           </Button>
         </DialogActions>
       </Box>
     </Dialog>
   );
 }
+
+export default ManualAttendanceDialog;

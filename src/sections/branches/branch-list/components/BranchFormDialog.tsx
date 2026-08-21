@@ -4,7 +4,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -13,9 +12,19 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
+import TextInput from "../../../../components/input/TextInput";
 import type { Branch, CreateBranchRequest } from "../../../../store/branch/branch.types";
-import { SaturdayOffMode } from "../../../../store/organization/organization.types";
+import { CustomWeekOffRulesBuilder } from "../../../../components/settings/CustomWeekOffRulesBuilder";
+import type { CustomWeekOffRule } from "../../../../store/organization/organization.types";
+import { syncBranchDataToOrganization } from "../../../../utils/org-sync-helper";
+import {
+  calculateWorkingHoursFromTimes,
+  parseWorkingHoursToDecimal,
+  formatWorkingHoursDisplay,
+} from "../../../../utils/format-date";
 
 type Props = {
   open: boolean;
@@ -36,19 +45,6 @@ const WEEKDAYS = [
   "Saturday",
   "Sunday",
 ];
-
-const SATURDAY_POLICY_LABELS: Record<string, string> = {
-  ALL_WORKING: "All Saturdays Working",
-  ALL_OFF: "All Saturdays Off",
-  FIRST_OFF: "1st Saturday Off",
-  SECOND_OFF: "2nd Saturday Off",
-  THIRD_OFF: "3rd Saturday Off",
-  FOURTH_OFF: "4th Saturday Off",
-  FIFTH_OFF_IF_EXISTS: "5th Saturday Off (if exists)",
-  FIRST_AND_THIRD_OFF: "1st & 3rd Saturday Off",
-  SECOND_AND_FOURTH_OFF: "2nd & 4th Saturday Off",
-  CUSTOM: "Custom Off-Weeks (Select below)",
-};
 
 const TIMEZONES = [
   { value: "Asia/Kolkata", label: "Asia/Kolkata (India)" },
@@ -80,9 +76,8 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
   const [weeklyOffDays, setWeeklyOffDays] = useState<string[]>(["Saturday", "Sunday"]);
   const [shiftStartTime, setShiftStartTime] = useState("09:00");
   const [shiftEndTime, setShiftEndTime] = useState("18:00");
-  const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(9);
-  const [saturdayMode, setSaturdayMode] = useState<SaturdayOffMode>(SaturdayOffMode.ALL_WORKING);
-  const [customOffWeeks, setCustomOffWeeks] = useState<number[]>([]);
+  const [workingHoursInput, setWorkingHoursInput] = useState("9");
+  const [customWeekOffRules, setCustomWeekOffRules] = useState<CustomWeekOffRule[]>([]);
 
   // Statutory
   const [pfApplicable, setPfApplicable] = useState(false);
@@ -107,15 +102,12 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         setWeeklyOffDays(initialValues.workPolicy?.weeklyOffDays ?? []);
         setShiftStartTime(initialValues.workPolicy?.shiftStartTime ?? "09:00");
         setShiftEndTime(initialValues.workPolicy?.shiftEndTime ?? "18:00");
-        setWorkingHoursPerDay(initialValues.workPolicy?.workingHoursPerDay ?? 9);
+        setWorkingHoursInput(formatWorkingHoursDisplay(initialValues.workPolicy?.workingHoursPerDay ?? 9));
+        setCustomWeekOffRules(initialValues.workPolicy?.customWeekOffRules ?? []);
         setPfApplicable(initialValues.statutory?.pfApplicable ?? false);
         setEsiApplicable(initialValues.statutory?.esiApplicable ?? false);
         setPtApplicable(initialValues.statutory?.ptApplicable ?? false);
         setPtStateCode(initialValues.statutory?.ptStateCode ?? "");
-        
-        const policy = initialValues.workPolicy?.saturdayPolicy;
-        setSaturdayMode(policy?.mode ?? SaturdayOffMode.ALL_WORKING);
-        setCustomOffWeeks(policy?.customOffWeeks ?? []);
       } else {
         // Reset fields
         setName("");
@@ -132,16 +124,23 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         setWeeklyOffDays(["Saturday", "Sunday"]);
         setShiftStartTime("09:00");
         setShiftEndTime("18:00");
-        setWorkingHoursPerDay(9);
+        setWorkingHoursInput("9");
+        setCustomWeekOffRules([]);
         setPfApplicable(false);
         setEsiApplicable(false);
         setPtApplicable(false);
         setPtStateCode("");
-        setSaturdayMode(SaturdayOffMode.ALL_WORKING);
-        setCustomOffWeeks([]);
       }
     }
   }, [open, mode, initialValues]);
+
+  // Auto-calculate working hours whenever shiftStartTime or shiftEndTime changes
+  useEffect(() => {
+    if (shiftStartTime && shiftEndTime) {
+      const calculatedDisplay = calculateWorkingHoursFromTimes(shiftStartTime, shiftEndTime);
+      setWorkingHoursInput(calculatedDisplay);
+    }
+  }, [shiftStartTime, shiftEndTime]);
 
   const handleWeeklyOffToggle = (day: string) => {
     if (weeklyOffDays.includes(day)) {
@@ -149,12 +148,6 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
     } else {
       setWeeklyOffDays([...weeklyOffDays, day]);
     }
-  };
-
-  const handleToggleCustomWeek = (week: number) => {
-    setCustomOffWeeks((prev) =>
-      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week].sort((a, b) => a - b)
-    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -181,11 +174,8 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
         weeklyOffDays,
         shiftStartTime: shiftStartTime || undefined,
         shiftEndTime: shiftEndTime || undefined,
-        workingHoursPerDay: Number(workingHoursPerDay) || undefined,
-        saturdayPolicy: {
-          mode: saturdayMode,
-          customOffWeeks: saturdayMode === SaturdayOffMode.CUSTOM ? customOffWeeks : undefined,
-        },
+        workingHoursPerDay: parseWorkingHoursToDecimal(workingHoursInput),
+        customWeekOffRules,
       },
       statutory: {
         pfApplicable,
@@ -196,206 +186,268 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
       geo: { geofenceEnabled: true },
     };
 
+    // Sync Branch data to Organization Profile
+    syncBranchDataToOrganization(payload);
+
     onSubmit(payload);
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <Box component="form" onSubmit={handleSubmit}>
-        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+    <Dialog
+      open={open}
+      onClose={submitting ? undefined : onClose}
+      maxWidth="md"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: "none !important",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: { xs: "16px", sm: "20px" },
+            p: 0,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+            mx: { xs: 1.5, sm: "auto" },
+            width: { xs: "calc(100% - 24px)", sm: "100%" },
+            height: { xs: "90vh", sm: "84vh" },
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          },
+        },
+      }}
+    >
+      {/* Pinned Modal Header */}
+      <DialogTitle
+        component="div"
+        sx={{
+          py: { xs: 1.5, sm: 2 },
+          px: { xs: 2, sm: 3 },
+          fontWeight: 800,
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          color: "#0F172A",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid #F1F5F9",
+          flexShrink: 0,
+        }}
+      >
+        <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.1rem", sm: "1.25rem" }, color: "#0F172A" }}>
           {mode === "create" ? "Create Branch" : "Update Branch"}
-        </DialogTitle>
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          disabled={submitting}
+          size="small"
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+      </DialogTitle>
 
-        <DialogContent dividers sx={{ pt: 2, pb: 2 }}>
+      {/* Form Container */}
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: "1 1 auto",
+          height: "calc(100% - 60px)",
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
+        {/* Scrollable Dialog Content */}
+        <DialogContent
+          sx={{
+            p: { xs: 2, sm: 3 },
+            pb: { xs: 5, sm: 6 },
+            flex: "1 1 auto",
+            overflowY: "auto",
+            minHeight: 0,
+            "&::-webkit-scrollbar": {
+              width: "6px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#CBD5E1",
+              borderRadius: "4px",
+              "&:hover": { backgroundColor: "#94A3B8" },
+            },
+          }}
+        >
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert severity="error" sx={{ borderRadius: 2 }}>
               {error}
             </Alert>
           )}
 
-          <Grid container spacing={2.5}>
-            {/* Section 1: Basic Details */}
+          <Grid container spacing={{ xs: 1.25, sm: 1.5, md: 1.75 }}>
+            {/* Basic Details */}
             <Grid size={12}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 1 }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Basic Details
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                required
-                fullWidth
+              <TextInput
                 label="Branch Name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value ?? "")}
                 placeholder="e.g. Bangalore Office"
-                size="small"
+                required
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                required
-                fullWidth
+              <TextInput
                 label="Branch Code"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => setCode(e.target.value ?? "")}
+                onBlur={() => setCode((prev) => prev.toUpperCase())}
                 placeholder="e.g. BLR-01"
-                size="small"
+                required
                 slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
               />
             </Grid>
 
-            {/* Section 2: Address */}
+            {/* Address Details */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 1 }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Address Details
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
+              <TextInput
                 label="Address Line 1"
                 value={addressLine1}
-                onChange={(e) => setAddressLine1(e.target.value)}
+                onChange={(e) => setAddressLine1(e.target.value ?? "")}
                 placeholder="e.g. 456 Tech Hub"
-                size="small"
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
+              <TextInput
                 label="Address Line 2"
                 value={addressLine2}
-                onChange={(e) => setAddressLine2(e.target.value)}
+                onChange={(e) => setAddressLine2(e.target.value ?? "")}
                 placeholder="e.g. Phase 1"
-                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                fullWidth
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <TextInput
                 label="City"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => setCity(e.target.value ?? "")}
                 placeholder="e.g. Bangalore"
-                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                fullWidth
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <TextInput
                 label="State"
                 value={state}
-                onChange={(e) => setState(e.target.value)}
+                onChange={(e) => setState(e.target.value ?? "")}
                 placeholder="e.g. Karnataka"
-                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 2 }}>
-              <TextField
-                required
-                fullWidth
+            <Grid size={{ xs: 6, sm: 6, md: 2 }}>
+              <TextInput
                 label="Country Code"
                 value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
+                onChange={(e) => setCountryCode(e.target.value ?? "")}
                 placeholder="IN"
-                size="small"
+                required
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 2 }}>
-              <TextField
-                fullWidth
+            <Grid size={{ xs: 6, sm: 6, md: 2 }}>
+              <TextInput
                 label="Zip"
                 value={zip}
-                onChange={(e) => setZip(e.target.value)}
+                onChange={(e) => setZip(e.target.value ?? "")}
                 placeholder="560001"
-                size="small"
               />
             </Grid>
 
-            {/* Section 3: Contact */}
+            {/* Contact Details */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 1 }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Contact Details
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
+              <TextInput
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value ?? "")}
                 placeholder="blr1@abctech.com"
-                size="small"
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
+              <TextInput
                 label="Phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+918765432109"
-                size="small"
+                onChange={(e) => setPhone((e.target.value ?? "").replace(/\D/g, "").slice(0, 10))}
+                placeholder="9876543210"
+                maxLength={10}
               />
             </Grid>
 
-            {/* Section 4: Work Policy */}
+            {/* Work Policy */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 1 }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Work Policy
               </Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextInput
                 select
-                fullWidth
                 label="Timezone"
                 value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                size="small"
+                onChange={(e) => setTimezone(e.target.value ?? "")}
               >
                 {TIMEZONES.map((tz) => (
                   <MenuItem key={tz.value} value={tz.value}>
                     {tz.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </TextInput>
             </Grid>
-            <Grid size={{ xs: 6, sm: 2 }}>
-              <TextField
-                fullWidth
-                label="Start Time"
-                type="text"
-                value={shiftStartTime}
-                onChange={(e) => setShiftStartTime(e.target.value)}
-                placeholder="09:00"
-                size="small"
-              />
-            </Grid>
-            <Grid size={{ xs: 6, sm: 2 }}>
-              <TextField
-                fullWidth
-                label="End Time"
-                type="text"
-                value={shiftEndTime}
-                onChange={(e) => setShiftEndTime(e.target.value)}
-                placeholder="18:00"
-                size="small"
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                fullWidth
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextInput
                 label="Working Hours Per Day"
-                type="number"
-                value={workingHoursPerDay}
-                onChange={(e) => setWorkingHoursPerDay(Number(e.target.value))}
-                size="small"
+                type="text"
+                value={workingHoursInput}
+                onChange={(e) => setWorkingHoursInput(e.target.value ?? "")}
+                placeholder="08:40 or 8"
+              />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 6 }}>
+              <TextInput
+                label="Start Time"
+                value={shiftStartTime}
+                onChange={(e) => setShiftStartTime(e.target.value ?? "")}
+                placeholder="09:00"
+              />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 6 }}>
+              <TextInput
+                label="End Time"
+                value={shiftEndTime}
+                onChange={(e) => setShiftEndTime(e.target.value ?? "")}
+                placeholder="18:00"
               />
             </Grid>
             <Grid size={12}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155", mb: 0.5 }}>
                 Weekly Off Days
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
@@ -419,62 +471,20 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
               </Box>
             </Grid>
 
-            <Grid size={12}>
-              <TextField
-                select
-                fullWidth
-                label="Saturday Policy"
-                value={saturdayMode}
-                onChange={(e) => setSaturdayMode(e.target.value as SaturdayOffMode)}
-                size="small"
-              >
-                {Object.entries(SATURDAY_POLICY_LABELS).map(([value, label]) => (
-                  <MenuItem key={value} value={value}>
-                    {label}
-                  </MenuItem>
-                ))}
-              </TextField>
+            <Grid size={12} sx={{ mt: 1 }}>
+              <CustomWeekOffRulesBuilder
+                rules={customWeekOffRules}
+                onChange={setCustomWeekOffRules}
+              />
             </Grid>
 
-            {saturdayMode === SaturdayOffMode.CUSTOM && (
-              <Grid size={12}>
-                <Box sx={{ p: 2, borderRadius: 2.5, border: "1px dashed rgba(109, 93, 246, 0.2)", backgroundColor: "rgba(109, 93, 246, 0.02)" }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: "#374151" }}>
-                    Select off-duty Saturdays of the month:
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                    {[1, 2, 3, 4, 5].map((week) => (
-                      <Box
-                        key={week}
-                        onClick={() => handleToggleCustomWeek(week)}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Checkbox
-                          checked={customOffWeeks.includes(week)}
-                          size="small"
-                          sx={{ p: 0.5, color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
-                        />
-                        <Typography variant="body2" sx={{ ml: 0.5, fontSize: 13.5, userSelect: "none", color: "#4B5563" }}>
-                          {week === 5 ? "5th Saturday (if exists)" : `${["1st", "2nd", "3rd", "4th"][week - 1]} Saturday`}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              </Grid>
-            )}
-
-            {/* Section 5: Statutory */}
+            {/* Statutory Configurations */}
             <Grid size={12} sx={{ mt: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 1 }}>
+              <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 Statutory Configurations
               </Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid size={{ xs: 6, sm: 4, md: 3 }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -486,7 +496,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 label={<Typography variant="body2">PF Applicable</Typography>}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid size={{ xs: 6, sm: 4, md: 3 }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -498,7 +508,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 label={<Typography variant="body2">ESI Applicable</Typography>}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid size={{ xs: 6, sm: 4, md: 3 }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -510,37 +520,70 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                 label={<Typography variant="body2">PT Applicable</Typography>}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
-                fullWidth
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextInput
                 label="PT State Code"
                 value={ptStateCode}
-                onChange={(e) => setPtStateCode(e.target.value)}
+                onChange={(e) => setPtStateCode(e.target.value ?? "")}
                 placeholder="e.g. KA"
-                size="small"
                 disabled={!ptApplicable}
               />
-              </Grid>
+            </Grid>
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={onClose} disabled={submitting} variant="outlined" color="inherit">
+        {/* Pinned Dialog Footer Actions */}
+        <DialogActions
+          sx={{
+            py: 1.5,
+            px: { xs: 2, sm: 3 },
+            borderTop: "1px solid #F1F5F9",
+            backgroundColor: "#FAFAFA",
+            display: "flex",
+            flexDirection: { xs: "column-reverse", sm: "row" },
+            justifyContent: "flex-end",
+            gap: 1.5,
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              color: "#475569",
+              backgroundColor: "#F1F5F9",
+              width: { xs: "100%", sm: "auto" },
+              "&:hover": { backgroundColor: "#E2E8F0" },
+            }}
+          >
             Cancel
           </Button>
           <Button
             type="submit"
-            variant="contained"
             disabled={submitting}
             sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
               backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4EE4" },
+              color: "#FFFFFF",
+              width: { xs: "100%", sm: "auto" },
+              "&:hover": { backgroundColor: "#5B4BEA" },
             }}
           >
             {submitting ? (
               <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
             ) : null}
-            {mode === "create" ? "Create" : "Save"}
+            {mode === "create" ? "Create Branch" : "Save Changes"}
           </Button>
         </DialogActions>
       </Box>

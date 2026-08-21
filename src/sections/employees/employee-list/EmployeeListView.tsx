@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -18,19 +18,20 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import { paths } from "../../../routes/paths";
+import { formatDate } from "../../../utils/format-date";
+import { StatusChip } from "../../../components/common/StatusChip";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import CreditCompOffDialog from "../../leave/components/CreditCompOffDialog";
@@ -42,6 +43,7 @@ import {
 import type { EmployeeListItem } from "../../../store/employee/employee.types";
 import { listDepartmentsRequest } from "../../../store/department";
 import { listDesignationsRequest } from "../../../store/designation";
+import { listBranchesRequest } from "../../../store/branch";
 import EmployeeEditDialog from "../employee-edit/EmployeeEditDialog";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useDebounce } from "../../../hooks/useDebounce";
@@ -50,13 +52,41 @@ import ManualAttendanceDialog from "../../attendance/components/ManualAttendance
 import ManageRoleDialog from "./components/ManageRoleDialog";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { listUsers, type UserAccountData } from "../../../api/user.api";
-import { deleteEmployee } from "../../../api/employee.api";
+import { deleteEmployee, bulkExportEmployees } from "../../../api/employee.api";
 import { ConfirmDialog } from "../../../components/modal";
 import CustomTablePagination from "../../../components/pagination";
+import UploadOutlinedIcon from "@mui/icons-material/UploadOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import BulkImportDialog from "./components/BulkImportDialog";
+
+// People Hub Dual Design Components
+import { ViewModeSwitcher, type ViewMode } from "./components/ViewModeSwitcher";
+import { PeopleHubKpiCards } from "./components/PeopleHubKpiCards";
+import { PeopleHubDepartmentTabs, type FilterState } from "./components/PeopleHubDepartmentTabs";
+import { PeopleHubTableView } from "./components/PeopleHubTableView";
+
+const getFilterString = (val: string | string[] | undefined): string =>
+  Array.isArray(val) ? val[0] ?? "" : val ?? "";
 
 function EmployeeListView() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    return (localStorage.getItem("employee_view_mode") as ViewMode) || "people_hub";
+  });
+
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>("");
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    if (mode === "directory") {
+      navigate(paths.employees.directory);
+      return;
+    }
+    setViewMode(mode);
+    localStorage.setItem("employee_view_mode", mode);
+  };
 
   const { 
     employees = [], 
@@ -111,6 +141,88 @@ function EmployeeListView() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+
+  const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  // Extract org/tenant slug
+  const orgSlug = useSelector((state: RootState) => state.organization?.organization?.slug);
+  const tenantSlug = orgSlug || window.location.hostname.split(".")[0];
+
+  const handleExport = async (format: "csv" | "xlsx") => {
+    setExportAnchorEl(null);
+    setExportLoading(true);
+    try {
+      // Find database ObjectIDs of selected filter names if they are loaded
+      let branchId: string | undefined = undefined;
+      let departmentId: string | undefined = undefined;
+
+      // Map filter names to database IDs
+      if (filters.branch && filters.branch !== "All Branches") {
+        const found = branches.find((b: any) => b.name === filters.branch || (b as any).branchName === filters.branch);
+        if (found) branchId = found._id;
+      }
+      if (filters.department && filters.department !== "All Departments") {
+        const found = departments.find((d: any) => d.name === filters.department);
+        if (found) departmentId = found._id;
+      }
+
+      const activeStatus = getFilterString(filters.status) || statusVal;
+      let backendStatus: string | undefined = undefined;
+      if (activeStatus && activeStatus !== "All Statuses") {
+        const upper = activeStatus.toUpperCase();
+        if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
+          backendStatus = upper;
+        }
+      }
+
+      const response = await bulkExportEmployees(
+        {
+          format,
+          branchId,
+          departmentId,
+          status: backendStatus,
+        },
+        tenantSlug
+      );
+
+      if (response?.succeeded && response?.data) {
+        const { fileName, mimeType, fileData } = response.data;
+        if (!fileData) {
+          throw new Error("No file data received from server.");
+        }
+
+        // 1. Convert base64 data to binary bytes
+        const byteCharacters = atob(fileData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+
+        // 2. Create a blob object
+        const blob = new Blob([byteArray], { type: mimeType });
+
+        // 3. Create dynamic link element and trigger download
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+      } else {
+        alert(response?.message || "Failed to generate export file.");
+      }
+    } catch (err: any) {
+      console.error("Export failed", err);
+      alert(err?.message || "Failed to export employee records. Please try again.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const [usersList, setUsersList] = useState<UserAccountData[]>([]);
 
@@ -210,18 +322,6 @@ function EmployeeListView() {
     }
   };
 
-  const getStatusChipProps = (statusStr: string) => {
-    switch (statusStr) {
-      case "ACTIVE":
-        return { label: "Active", color: "success" as const, variant: "outlined" as const };
-      case "ON_LEAVE":
-        return { label: "On Leave", color: "warning" as const, variant: "outlined" as const };
-      case "INACTIVE":
-      default:
-        return { label: "Inactive", color: "default" as const, variant: "outlined" as const };
-    }
-  };
-
   const handleStatusChange = (newStatus: string) => {
     if (statusMenuTarget?._id) {
       dispatch(updateEmployeeStatusRequest(statusMenuTarget._id, newStatus));
@@ -236,6 +336,9 @@ function EmployeeListView() {
   const designations = useSelector(
     (state: RootState) => state.designation?.designations ?? []
   );
+  const branches = useSelector(
+    (state: RootState) => (state as any).branch?.branches ?? []
+  );
 
   // Fetch initial setup data
   useEffect(() => {
@@ -245,8 +348,81 @@ function EmployeeListView() {
     if (designations.length === 0) {
       dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 50 }));
     }
+    if (branches.length === 0) {
+      dispatch(listBranchesRequest());
+    }
     dispatch(clearEmployeeError());
-  }, [dispatch, departments.length, designations.length]);
+  }, [dispatch, departments.length, designations.length, branches.length]);
+
+  const departmentsList = useMemo(() => {
+    const names = new Set<string>();
+    departments.forEach((d) => d?.name && names.add(d.name));
+    employees.forEach((e) => {
+      const deptObj = typeof e.departmentId === "object" ? (e.departmentId as any) : null;
+      if (deptObj?.name) names.add(deptObj.name);
+    });
+    return ["All Departments", ...Array.from(names)];
+  }, [departments, employees]);
+
+  const designationsList = useMemo(() => {
+    const names = new Set<string>();
+    designations.forEach((d) => d?.name && names.add(d.name));
+    employees.forEach((e) => {
+      const desigObj = typeof e.designationId === "object" ? (e.designationId as any) : null;
+      if (desigObj?.name) names.add(desigObj.name);
+    });
+    return ["All Designations", ...Array.from(names)];
+  }, [designations, employees]);
+
+  const branchesList = useMemo(() => {
+    const names = new Set<string>();
+    branches.forEach((b: any) => b?.name && names.add(b.name));
+    employees.forEach((e) => {
+      const branchObj = typeof (e as any).branchId === "object" ? ((e as any).branchId as any) : null;
+      if (branchObj?.name) names.add(branchObj.name);
+    });
+    return ["All Branches", ...Array.from(names)];
+  }, [branches, employees]);
+
+  const teamsList = useMemo(() => {
+    const names = new Set<string>();
+    employees.forEach((e) => {
+      const t = (e as any).team;
+      if (t) names.add(t);
+    });
+    if (names.size === 0) {
+      return ["All Teams", "Core Platform", "Product Design", "Talent Acquisition", "Enterprise Sales", "DevOps"];
+    }
+    return ["All Teams", ...Array.from(names)];
+  }, [employees]);
+
+  const statusesList = [
+    "All Statuses",
+    "Active",
+    "Inactive",
+    "On Leave",
+    "Terminated",
+    "Resigned",
+  ];
+
+  const [filters, setFilters] = useState<FilterState>({});
+
+  const mapJoiningPeriodToBackend = (label?: string): string | undefined => {
+    if (!label) return undefined;
+    switch (label) {
+      case "This Month":
+        return "this_month";
+      case "Last 3 Months":
+        return "last_3_months";
+      case "Last 6 Months":
+        return "last_6_months";
+      case "Last Year":
+      case "This Year":
+        return "last_year";
+      default:
+        return undefined;
+    }
+  };
 
   // Fetch users list for system roles if permitted
   useEffect(() => {
@@ -255,22 +431,77 @@ function EmployeeListView() {
     }
   }, [canReadRoles]);
 
-  // Sync page state and fetch data
+  // Sync page state and fetch data safely with Zod enum validation mapping
   useEffect(() => {
+    let backendStatus: string | undefined = undefined;
+    const effectiveStatus = getFilterString(filters.status) || statusVal;
+    if (effectiveStatus) {
+      const upper = effectiveStatus.toUpperCase();
+      if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
+        backendStatus = upper;
+      }
+    }
+
+    const joiningPeriod = mapJoiningPeriodToBackend(filters.dateOfJoining);
+
+    let branchId: string | undefined = undefined;
+    let departmentId: string | undefined = undefined;
+    let designationId: string | undefined = undefined;
+
+    if (filters.branch && filters.branch !== "All Branches") {
+      const found = branches.find((b: any) => b.name === filters.branch || (b as any).branchName === filters.branch);
+      if (found) branchId = found._id;
+    }
+    if (filters.department && filters.department !== "All Departments") {
+      const found = departments.find((d: any) => d.name === filters.department);
+      if (found) departmentId = found._id;
+    }
+    if (filters.designation && filters.designation !== "All Designations") {
+      const found = designations.find((d: any) => d.name === filters.designation);
+      if (found) designationId = found._id;
+    }
+
     dispatch(
       listEmployeesRequest({
         pageNumber,
         pageSize,
         search: debouncedSearchVal,
-        status: statusVal || undefined,
+        status: backendStatus,
+        joiningPeriod,
+        branchId,
+        departmentId,
+        designationId,
       })
     );
-  }, [dispatch, pageNumber, pageSize, debouncedSearchVal, statusVal]);
+  }, [
+    dispatch,
+    pageNumber,
+    pageSize,
+    debouncedSearchVal,
+    statusVal,
+    filters.status,
+    filters.dateOfJoining,
+    filters.branch,
+    filters.department,
+    filters.designation,
+    branches,
+    departments,
+    designations,
+  ]);
 
   // Reset to first page when search filter or status changes
   useEffect(() => {
     setPageNumber(1);
-  }, [debouncedSearchVal, statusVal, setPageNumber]);
+  }, [
+    debouncedSearchVal,
+    statusVal,
+    filters.status,
+    filters.dateOfJoining,
+    filters.branch,
+    filters.department,
+    filters.designation,
+    setPageNumber,
+  ]);
 
   // Helper mapping IDs to human-readable names
   const getDepartmentName = (id: any) => {
@@ -307,25 +538,141 @@ function EmployeeListView() {
       .join(" ");
   };
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "—";
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return "—";
-      return d.toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return "—";
+  const displayedEmployees = employees.filter((emp) => {
+    // 1. Branch Multi-Select Filter
+    const selectedBranches = Array.isArray(filters.branch)
+      ? filters.branch
+      : typeof filters.branch === "string" && filters.branch && filters.branch !== "All Branches"
+      ? [filters.branch]
+      : [];
+    if (selectedBranches.length > 0) {
+      const empBranchObj = typeof (emp as any).branchId === "object" ? ((emp as any).branchId as any) : null;
+      const empBranchName = empBranchObj?.name || "";
+      const matchesBranch = selectedBranches.some(
+        (b) => b === empBranchName || (branches.find((bObj: any) => bObj.name === b)?._id === (emp.branchId as any))
+      );
+      if (!matchesBranch) return false;
     }
-  };
+
+    // 2. Department Multi-Select Filter
+    const selectedDepts = Array.isArray(filters.department)
+      ? filters.department
+      : typeof filters.department === "string" && filters.department && filters.department !== "All Departments"
+      ? [filters.department]
+      : [];
+    if (selectedDepts.length > 0) {
+      const empDeptObj = typeof emp.departmentId === "object" ? (emp.departmentId as any) : null;
+      const empDeptName = empDeptObj?.name || "";
+      const matchesDept = selectedDepts.some(
+        (d) => d === empDeptName || (departments.find((dObj: any) => dObj.name === d)?._id === (emp.departmentId as any))
+      );
+      if (!matchesDept) return false;
+    }
+
+    // 3. Designation Multi-Select Filter
+    const selectedDesigs = Array.isArray(filters.designation)
+      ? filters.designation
+      : typeof filters.designation === "string" && filters.designation && filters.designation !== "All Designations"
+      ? [filters.designation]
+      : [];
+    if (selectedDesigs.length > 0) {
+      const empDesigObj = typeof emp.designationId === "object" ? (emp.designationId as any) : null;
+      const empDesigName = empDesigObj?.name || "";
+      const matchesDesig = selectedDesigs.some(
+        (d) => d === empDesigName || (designations.find((dObj: any) => dObj.name === d)?._id === (emp.designationId as any))
+      );
+      if (!matchesDesig) return false;
+    }
+
+    // 4. Team Multi-Select Filter
+    const selectedTeams = Array.isArray(filters.team)
+      ? filters.team
+      : typeof filters.team === "string" && filters.team && filters.team !== "All Teams"
+      ? [filters.team]
+      : [];
+    if (selectedTeams.length > 0) {
+      const empTeam = ((emp as any).team || "").toLowerCase();
+      const deptObj = typeof emp.departmentId === "object" ? (emp.departmentId as any) : null;
+      const deptName = (deptObj?.name || "").toLowerCase();
+      const matchesTeam = selectedTeams.some(
+        (t) => empTeam.includes(t.toLowerCase()) || deptName.includes(t.toLowerCase())
+      );
+      if (!matchesTeam) return false;
+    }
+
+    // 5. Status Multi-Select Filter
+    const rawStatus = filters.status || statusVal;
+    const selectedStatuses = Array.isArray(rawStatus)
+      ? rawStatus
+      : typeof rawStatus === "string" && rawStatus && rawStatus !== "All Statuses"
+      ? [rawStatus]
+      : [];
+    if (selectedStatuses.length > 0) {
+      const empStatus = (emp.status || "").toUpperCase();
+      const matchesStatus = selectedStatuses.some((st) => {
+        const target = st.toUpperCase().replace(/\s+/g, "_");
+        if (target === "ACTIVE") return empStatus === "ACTIVE";
+        if (target === "INACTIVE") return empStatus === "INACTIVE";
+        if (target === "ON_LEAVE" || target === "ON LEAVE") return empStatus === "ON_LEAVE";
+        return empStatus.includes(target);
+      });
+      if (!matchesStatus) return false;
+    }
+
+    // 6. Date of Joining Filter (Presets & Custom Date Range)
+    if (filters.fromDate || filters.toDate) {
+      const rawJoinDate = emp.joiningDate || (emp as any).dateOfJoining || emp.createdAt;
+      if (rawJoinDate) {
+        const joinDate = new Date(rawJoinDate);
+        if (!isNaN(joinDate.getTime())) {
+          if (filters.fromDate) {
+            const fromD = new Date(filters.fromDate);
+            fromD.setHours(0, 0, 0, 0);
+            if (joinDate < fromD) return false;
+          }
+          if (filters.toDate) {
+            const toD = new Date(filters.toDate);
+            toD.setHours(23, 59, 59, 999);
+            if (joinDate > toD) return false;
+          }
+        }
+      }
+    } else if (filters.dateOfJoining) {
+      const rawJoinDate = emp.joiningDate || (emp as any).dateOfJoining || emp.createdAt;
+      if (rawJoinDate) {
+        const joinDate = new Date(rawJoinDate);
+        const now = new Date();
+        if (!isNaN(joinDate.getTime())) {
+          const filterVal = filters.dateOfJoining.trim();
+          if (filterVal === "This Month") {
+            const sameMonth =
+              joinDate.getFullYear() === now.getFullYear() &&
+              joinDate.getMonth() === now.getMonth();
+            if (!sameMonth) return false;
+          } else if (filterVal === "Last 3 Months") {
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(now.getMonth() - 3);
+            if (joinDate < threeMonthsAgo) return false;
+          } else if (filterVal === "Last 6 Months") {
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(now.getMonth() - 6);
+            if (joinDate < sixMonthsAgo) return false;
+          } else if (filterVal === "Last Year" || filterVal === "This Year") {
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(now.getFullYear() - 1);
+            if (joinDate < oneYearAgo) return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  });
 
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        {/* Page Header */}
+        {/* Top Page Header (Icon + All Employees Title + Record Count Subtitle & Employee Directory Button) */}
         <Box
           sx={{
             display: "flex",
@@ -333,7 +680,7 @@ function EmployeeListView() {
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: 2,
-            mb: 3,
+            mb: 2.5,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -344,21 +691,138 @@ function EmployeeListView() {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {total > 0
-                  ? `Showing ${employees.length} of ${total} employee records`
+                  ? `Showing ${displayedEmployees.length} of ${total} employee records`
                   : "Manage employee accounts, details, and assignments"}
               </Typography>
             </Box>
           </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              flexWrap: "wrap",
-              width: { xs: "100%", sm: "auto" },
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            {/* Design View Switcher (Design 1: Classic vs Design 2: People Hub) */}
+            <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
+
+            {/* Export Button */}
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={exportLoading}
+              startIcon={exportLoading ? <CircularProgress size={16} color="inherit" /> : <DownloadOutlinedIcon sx={{ fontSize: 20 }} />}
+              endIcon={<KeyboardArrowDownIcon />}
+              onClick={(e) => setExportAnchorEl(e.currentTarget)}
+              sx={{
+                height: 40,
+                borderRadius: "10px",
+                textTransform: "none",
+                borderColor: "#E2E8F0",
+                color: "#475569",
+                fontWeight: 600,
+                fontSize: "14px",
+                px: 2.5,
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                "&:hover": {
+                  borderColor: "#CBD5E1",
+                  backgroundColor: "#F8FAFC",
+                },
+              }}
+            >
+              {exportLoading ? "Exporting..." : "Export"}
+            </Button>
+
+            {/* Export Format Popover Menu */}
+            <Menu
+              anchorEl={exportAnchorEl}
+              open={Boolean(exportAnchorEl)}
+              onClose={() => setExportAnchorEl(null)}
+              slotProps={{
+                paper: {
+                  elevation: 3,
+                  sx: { borderRadius: "12px", minWidth: 160, p: 0.5, mt: 0.5 },
+                },
+              }}
+            >
+              <MenuItem onClick={() => handleExport("csv")} sx={{ fontSize: "14px", fontWeight: 500 }}>
+                Export as CSV (.csv)
+              </MenuItem>
+              <MenuItem onClick={() => handleExport("xlsx")} sx={{ fontSize: "14px", fontWeight: 500 }}>
+                Export as Excel (.xlsx)
+              </MenuItem>
+            </Menu>
+
+            {/* Import Button */}
+            {canCreate && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<UploadOutlinedIcon sx={{ fontSize: 20 }} />}
+                onClick={() => setImportOpen(true)}
+                sx={{
+                  height: 40,
+                  borderRadius: "10px",
+                  textTransform: "none",
+                  borderColor: "#6D5DF6",
+                  color: "#6D5DF6",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  px: 2.5,
+                  boxSizing: "border-box",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  "&:hover": {
+                    borderColor: "#5B4BEA",
+                    backgroundColor: "#F5F3FF",
+                  },
+                }}
+              >
+                Import
+              </Button>
+            )}
+
+            {/* Add Employee Button */}
+            {canCreate && (
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon sx={{ fontSize: 20 }} />}
+                onClick={() => navigate(paths.employees.create)}
+                sx={{
+                  height: 40,
+                  borderRadius: "10px",
+                  textTransform: "none",
+                  backgroundColor: "#6D5DF6",
+                  color: "#FFFFFF",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  px: 2.5,
+                  boxSizing: "border-box",
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  "&:hover": {
+                    backgroundColor: "#5B4BEA",
+                    boxShadow: "0 4px 12px rgba(109, 93, 246, 0.35)",
+                  },
+                }}
+              >
+                Add Employee
+              </Button>
+            )}
+          </Box>
+        </Box>
+
+        {/* Top KPI Metric Summary Cards (People Hub View) */}
+        {viewMode === "people_hub" && (
+          <PeopleHubKpiCards
+            employees={employees}
+            totalEmployees={total || employees.length}
+          />
+        )}
+
+        {/* Single Line Unified Toolbar (Search + Category Filters) Directly Above Cards */}
+        <PeopleHubDepartmentTabs
+          filters={filters}
+          searchElement={
             <TextField
               size="small"
               placeholder="Search employees..."
@@ -367,92 +831,56 @@ function EmployeeListView() {
               slotProps={{
                 input: {
                   startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                    <InputAdornment position="start" sx={{ mr: 1 }}>
+                      <SearchIcon sx={{ color: "#94A3B8", fontSize: 20 }} />
                     </InputAdornment>
                   ),
                 },
               }}
               sx={{
-                width: { xs: "100%", sm: 220 },
+                width: { xs: 180, sm: 210 },
+                flexShrink: 0,
                 "& .MuiOutlinedInput-root": {
+                  height: 40,
                   borderRadius: "10px",
                   backgroundColor: "#FFFFFF",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#BFC5D2",
+                  fontSize: "14px",
+                  color: "#0F172A",
+                  "& fieldset": { borderColor: "#E2E8F0" },
+                  "&:hover fieldset": { borderColor: "#CBD5E1" },
+                  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
+                },
+                "& .MuiOutlinedInput-input": {
+                  py: 0,
+                  height: 40,
+                  fontSize: "14px",
+                  boxSizing: "border-box",
+                  color: "#0F172A",
+                  "&::placeholder": {
+                    color: "#94A3B8",
+                    opacity: 1,
                   },
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#D1D5DB",
-                },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#6D5DF6",
                 },
               }}
             />
-
-            <TextField
-              select
-              size="small"
-              value={statusVal}
-              onChange={(e) => setStatusVal(e.target.value)}
-              slotProps={{
-                select: {
-                  displayEmpty: true,
-                  renderValue: (value: unknown) => {
-                    const val = value as string;
-                    if (!val) return <span style={{ color: "#9CA3AF", fontSize: "14px" }}>All Statuses</span>;
-                    if (val === "ACTIVE") return "Active";
-                    if (val === "INACTIVE") return "Inactive";
-                    if (val === "ON_LEAVE") return "On Leave";
-                    return val;
-                  },
-                },
-              }}
-              sx={{
-                width: { xs: "100%", sm: 150 },
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
-                  height: 40,
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#BFC5D2",
-                  },
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#D1D5DB",
-                },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#6D5DF6",
-                },
-              }}
-            >
-              <MenuItem value="">All Statuses</MenuItem>
-              <MenuItem value="ACTIVE">Active</MenuItem>
-              <MenuItem value="INACTIVE">Inactive</MenuItem>
-              <MenuItem value="ON_LEAVE">On Leave</MenuItem>
-            </TextField>
-
-            {canCreate && (
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => navigate(paths.employees.create)}
-                sx={{
-                  borderRadius: 2,
-                  textTransform: "none",
-                  backgroundColor: "#6D5DF6",
-                  height: 40,
-                  px: 2.5,
-                  "&:hover": { backgroundColor: "#5B4BEA" },
-                }}
-              >
-                Add Employee
-              </Button>
-            )}
-          </Box>
-        </Box>
+          }
+          departmentsList={departmentsList}
+          designationsList={designationsList}
+          branchesList={branchesList}
+          teamsList={teamsList}
+          statusesList={statusesList}
+          selectedDepartment={selectedDeptFilter}
+          onSelectDepartment={setSelectedDeptFilter}
+          onFilterChange={(newFilters) => {
+            setFilters(newFilters);
+            if (newFilters.department !== undefined) {
+              setSelectedDeptFilter(getFilterString(newFilters.department));
+            }
+            if (newFilters.status !== undefined) {
+              setStatusVal(getFilterString(newFilters.status));
+            }
+          }}
+        />
 
         {/* Error Alert */}
         {error && (
@@ -495,214 +923,301 @@ function EmployeeListView() {
           </Alert>
         )}
 
-        {/* Table List Card */}
-        <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-          {loading && employees.length === 0 ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-              <CircularProgress sx={{ color: "#6D5DF6" }} />
-            </Box>
-          ) : (
-            <>
-              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Employee Name</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Phone</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Department</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Designation</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                      {canReadRoles && (
-                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
-                      )}
-                      {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
-                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
-                      )}
-                    </TableRow>
-                  </TableHead>
-
-                  <TableBody>
-                    {employees.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)}
-                          align="center"
-                        >
-                          <Box sx={{ py: 8 }}>
-                            <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
-                            <Typography variant="body2" color="text.secondary">
-                              No employees found. {canCreate && 'Click "Add Employee" to create one.'}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      employees.map((emp, index) => (
-                        <TableRow
-                          key={emp._id || index}
-                          hover
-                          sx={{ "&:last-child td": { border: 0 } }}
-                        >
-                          <TableCell>
-                            <Chip
-                              label={emp.employeeCode || "—"}
-                              size="small"
-                              sx={{
-                                backgroundColor: "#EEF2FF",
-                                color: "#6D5DF6",
-                                fontWeight: 600,
-                                fontSize: 12,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
-                            onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
-                          >
-                            {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>{emp.email || "—"}</TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>{emp.phone || "—"}</TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>
-                            {getDepartmentName(emp.departmentId)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>
-                            {getDesignationName(emp.designationId)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
-                            {formatEmployeeType(emp.employeeType)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: 13 }}>
-                            {formatDate(emp.joiningDate)}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              {...getStatusChipProps(emp.status)}
-                              size="small"
-                              onClick={
-                                canUpdate
-                                  ? (e) => {
-                                      setStatusMenuAnchor(e.currentTarget);
-                                      setStatusMenuTarget(emp);
-                                    }
-                                  : undefined
-                              }
-                              sx={{
-                                cursor: canUpdate ? "pointer" : "default",
-                                "&:hover": canUpdate
-                                  ? {
-                                      backgroundColor: "rgba(0, 0, 0, 0.04)",
-                                    }
-                                  : {},
-                              }}
-                            />
-                          </TableCell>
-                          {canReadRoles && (
-                            <TableCell>
-                              <Chip
-                                label={getUserRoleLabel(emp)}
-                                size="small"
-                                sx={{
-                                  backgroundColor: getUserRoleChipColor(getUserRole(emp)),
-                                  color: getUserRoleChipTextColor(getUserRole(emp)),
-                                  fontWeight: 600,
-                                  fontSize: 11,
-                                }}
-                              />
-                            </TableCell>
-                          )}
-                          {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
-                            <TableCell>
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                {canUpdate && (
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                      setEditTarget(emp);
-                                      setEditOpen(true);
-                                    }}
-                                    sx={{ color: "#6D5DF6" }}
-                                  >
-                                    <EditOutlinedIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {canManageRoles && (
-                                  <IconButton
-                                    size="small"
-                                    title="Manage System Role"
-                                    onClick={() => {
-                                      setRoleTarget(emp);
-                                      setRoleOpen(true);
-                                    }}
-                                    sx={{ color: "#8B5CF6" }}
-                                  >
-                                    <AdminPanelSettingsIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {hasPermission("attendance.create") && (
-                                  <IconButton
-                                    size="small"
-                                    title="Record Manual Attendance"
-                                    onClick={() => {
-                                      setManualTarget(emp);
-                                      setManualOpen(true);
-                                    }}
-                                    sx={{ color: "#10B981" }}
-                                  >
-                                    <CalendarMonthOutlinedIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {hasPermission("leave.create") && (
-                                  <IconButton
-                                    size="small"
-                                    title="Credit Comp-Off"
-                                    onClick={() => {
-                                      setCompOffTarget(emp);
-                                      setCompOffOpen(true);
-                                    }}
-                                    sx={{ color: "#D97706" }}
-                                  >
-                                    <AccessTimeIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                                {canDelete && (
-                                  <IconButton
-                                    size="small"
-                                    title="Delete Employee"
-                                    onClick={() => {
-                                      setDeleteTarget(emp);
-                                      setDeleteOpen(true);
-                                    }}
-                                    sx={{ color: "#EF4444" }}
-                                  >
-                                    <DeleteOutlineIcon fontSize="small" />
-                                  </IconButton>
-                                )}
-                              </Box>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      ))
+        {/* Conditional View Rendering: Design 2 (People Hub) vs Design 1 (Classic) */}
+        {viewMode === "people_hub" ? (
+          <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(255, 255, 255, 0.6)",
+                  zIndex: 10,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress sx={{ color: "#6D5DF6" }} />
+              </Box>
+            )}
+            <PeopleHubTableView
+              employees={displayedEmployees}
+              loading={loading}
+              canUpdate={canUpdate}
+              canDelete={canDelete}
+              canManageRoles={canManageRoles}
+              onEdit={(emp) => {
+                setEditTarget(emp);
+                setEditOpen(true);
+              }}
+              onDelete={(emp) => {
+                setDeleteTarget(emp);
+                setDeleteOpen(true);
+              }}
+              onRoleManage={(emp) => {
+                setRoleTarget(emp);
+                setRoleOpen(true);
+              }}
+              onCompOffCredit={(emp) => {
+                setCompOffTarget(emp);
+                setCompOffOpen(true);
+              }}
+              onManualAttendance={(emp) => {
+                setManualTarget(emp);
+                setManualOpen(true);
+              }}
+              onSelectEmployee={(emp) => {
+                navigate(paths.employees.detail.replace(":id", emp._id));
+              }}
+            />
+            <CustomTablePagination
+              count={total}
+              rowsPerPage={pageSize}
+              page={pageNumber}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              rowsPerPageOptions={[10, 25, 50, 100]}
+            />
+          </Card>
+        ) : (
+          <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(255, 255, 255, 0.6)",
+                  zIndex: 10,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress sx={{ color: "#6D5DF6" }} />
+              </Box>
+            )}
+            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Employee Name</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Phone</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Department</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Designation</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
+                    {canReadRoles && (
+                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
                     )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
+                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
+                    )}
+                  </TableRow>
+                </TableHead>
 
-              {/* Table Pagination */}
-              <CustomTablePagination
-                count={total}
-                rowsPerPage={pageSize}
-                page={pageNumber}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-              />
-            </>
-          )}
-        </Card>
+                <TableBody>
+                  {displayedEmployees.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)}
+                        align="center"
+                      >
+                        <Box sx={{ py: 8 }}>
+                          <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
+                          <Typography variant="body2" color="text.secondary">
+                            No employees found. {canCreate && 'Click "Add Employee" to create one.'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    displayedEmployees.map((emp, index) => (
+                      <TableRow
+                        key={emp._id || index}
+                        hover
+                        sx={{ height: 53, "&:last-child td": { border: 0 } }}
+                      >
+                        <TableCell>
+                          <Chip
+                            label={emp.employeeCode || "—"}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#EEF2FF",
+                              color: "#6D5DF6",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
+                          onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
+                        >
+                          {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>{emp.email || "—"}</TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>{emp.phone || "—"}</TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>
+                          {getDepartmentName(emp.departmentId)}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>
+                          {getDesignationName(emp.designationId)}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
+                          {formatEmployeeType(emp.employeeType)}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>
+                          {formatDate(emp.joiningDate)}
+                        </TableCell>
+                        <TableCell>
+                          <StatusChip
+                            status={emp.status}
+                            size="small"
+                            onClick={
+                              canUpdate
+                                ? (e) => {
+                                    setStatusMenuAnchor(e.currentTarget);
+                                    setStatusMenuTarget(emp);
+                                  }
+                                : undefined
+                            }
+                            sx={{
+                              cursor: canUpdate ? "pointer" : "default",
+                              "&:hover": canUpdate
+                                ? {
+                                    backgroundColor: "rgba(0, 0, 0, 0.04)",
+                                  }
+                                : {},
+                            }}
+                          />
+                        </TableCell>
+                        {canReadRoles && (
+                          <TableCell>
+                            <Chip
+                              label={getUserRoleLabel(emp)}
+                              size="small"
+                              sx={{
+                                backgroundColor: getUserRoleChipColor(getUserRole(emp)),
+                                color: getUserRoleChipTextColor(getUserRole(emp)),
+                                fontWeight: 600,
+                                fontSize: 11,
+                              }}
+                            />
+                          </TableCell>
+                        )}
+                        {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
+                          <TableCell>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              {canUpdate && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setEditTarget(emp);
+                                    setEditOpen(true);
+                                  }}
+                                  sx={{ color: "#6D5DF6" }}
+                                >
+                                  <EditOutlinedIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {canManageRoles && (
+                                <IconButton
+                                  size="small"
+                                  title="Manage System Role"
+                                  onClick={() => {
+                                    setRoleTarget(emp);
+                                    setRoleOpen(true);
+                                  }}
+                                  sx={{ color: "#8B5CF6" }}
+                                >
+                                  <AdminPanelSettingsIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {hasPermission("attendance.create") && (
+                                <IconButton
+                                  size="small"
+                                  title="Record Manual Attendance"
+                                  onClick={() => {
+                                    setManualTarget(emp);
+                                    setManualOpen(true);
+                                  }}
+                                  sx={{ color: "#10B981" }}
+                                >
+                                  <CalendarMonthOutlinedIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {hasPermission("leave.create") && (
+                                <IconButton
+                                  size="small"
+                                  title="Credit Comp-Off"
+                                  onClick={() => {
+                                    setCompOffTarget(emp);
+                                    setCompOffOpen(true);
+                                  }}
+                                  sx={{ color: "#D97706" }}
+                                >
+                                  <AccessTimeIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                              {canDelete && (
+                                <IconButton
+                                  size="small"
+                                  title="Delete Employee"
+                                  onClick={() => {
+                                    setDeleteTarget(emp);
+                                    setDeleteOpen(true);
+                                  }}
+                                  sx={{ color: "#EF4444" }}
+                                >
+                                  <DeleteOutlineIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  )}
+                  {displayedEmployees.length > 0 && Math.max(0, 10 - displayedEmployees.length) > 0 &&
+                    Array.from({ length: Math.max(0, 10 - displayedEmployees.length) }).map((_, index) => {
+                      const isLast = index === Math.max(0, 10 - displayedEmployees.length) - 1;
+                      return (
+                        <TableRow
+                          key={`empty-classic-${index}`}
+                          sx={{
+                            height: 53,
+                            "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
+                          }}
+                        >
+                          <TableCell colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)} />
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Table Pagination */}
+            <CustomTablePagination
+              count={total}
+              rowsPerPage={pageSize}
+              page={pageNumber}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              rowsPerPageOptions={[10, 25, 50, 100]}
+            />
+          </Card>
+        )}
       </Box>
 
       {editOpen && (
@@ -823,7 +1338,25 @@ function EmployeeListView() {
         }}
         loading={deleteLoading}
       />
-    </DashboardLayout>
+
+      {canCreate && (
+        <BulkImportDialog
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          tenantSlug={tenantSlug}
+          onSuccess={() => {
+            dispatch(
+              listEmployeesRequest({
+                pageNumber,
+                pageSize,
+                search: debouncedSearchVal,
+                status: statusVal,
+              })
+            );
+          }}
+        />
+      )}
+    </>
   );
 }
 

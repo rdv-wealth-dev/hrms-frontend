@@ -19,18 +19,18 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
+import TextInput from "../../../components/input/TextInput";
 
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 
-import DashboardLayout from "../../../layouts/dashboard/DashboardLayout";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import { usePagination } from "../../../hooks/usePagination";
 import { useSubmitSuccess } from "../../../hooks/useSubmitSuccess";
 import { useDialog } from "../../../hooks/useDialog";
+import { formatDate } from "../../../utils/format-date";
 import {
   getPendingLeaveRequestsRequest,
   reviewLeaveRequestRequest,
@@ -131,22 +131,8 @@ export default function LeaveApprovalsView() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      const dateObj = new Date(dateStr);
-      return dateObj.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   return (
-    <DashboardLayout>
+    <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -245,11 +231,11 @@ export default function LeaveApprovalsView() {
                         {/* Duration */}
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatDate(request.fromDate)}
+                            {formatDate(request.fromDate, { treatAsDateOnly: true })}
                           </Typography>
                           {request.fromDate !== request.toDate && (
                             <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                              to {formatDate(request.toDate)}
+                              to {formatDate(request.toDate, { treatAsDateOnly: true })}
                             </Typography>
                           )}
                         </TableCell>
@@ -351,12 +337,10 @@ export default function LeaveApprovalsView() {
           <Typography variant="body2" color="text.secondary">
             Are you sure you want to {reviewDialog.target?.status === "APPROVED" ? "approve" : "reject"} this leave request? You can add review comments below.
           </Typography>
-          <TextField
+          <TextInput
             label="Review Comments"
             value={reviewComments}
             onChange={(e) => setReviewComments(e.target.value)}
-            fullWidth
-            size="small"
             multiline
             rows={3}
             placeholder="Add comments or notes..."
@@ -386,6 +370,6 @@ export default function LeaveApprovalsView() {
           </Button>
         </DialogActions>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 }

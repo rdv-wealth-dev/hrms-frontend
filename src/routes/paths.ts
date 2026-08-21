@@ -7,6 +7,7 @@ export const paths = {
     forgotPassword: "/forgot-password",
     resetPassword: "/reset-password",
     activateAccount: "/activate-account",
+    changePassword: "/change-password",
   },
 
   dashboard: "/dashboard",
@@ -30,6 +31,7 @@ export const paths = {
   payroll: "/payroll",
 
   profile: "/profile",
+  onboarding: "/onboarding",
   attendanceRegularizations: "/attendance/regularizations",
   leaveApprovals: "/leave-approvals",
   reports: "/reports",

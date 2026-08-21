@@ -18,7 +18,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -27,6 +26,8 @@ import Grid from "@mui/material/Grid";
 import AddIcon from "@mui/icons-material/Add";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 
+import TextInput from "../../../components/input/TextInput";
+import { StatusChip } from "../../../components/common/StatusChip";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import { usePermissions } from "../../../hooks/usePermissions";
@@ -62,13 +63,13 @@ function LeaveTypeFormDialog({
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
-  const [annualQuota, setAnnualQuota] = useState(12);
+  const [annualQuota, setAnnualQuota] = useState<number | string>(12);
   const [accrualFrequency, setAccrualFrequency] = useState<"MONTHLY" | "YEARLY" | "NONE">("NONE");
-  const [accrualAmountPerCycle, setAccrualAmountPerCycle] = useState(0);
-  const [maxCarryForwardDays, setMaxCarryForwardDays] = useState(0);
-  const [maxConsecutiveDays, setMaxConsecutiveDays] = useState(0);
-  const [advanceNoticeDays, setAdvanceNoticeDays] = useState(0);
-  const [approvalLevels, setApprovalLevels] = useState(1);
+  const [accrualAmountPerCycle, setAccrualAmountPerCycle] = useState<number | string>("");
+  const [maxCarryForwardDays, setMaxCarryForwardDays] = useState<number | string>("");
+  const [maxConsecutiveDays, setMaxConsecutiveDays] = useState<number | string>("");
+  const [advanceNoticeDays, setAdvanceNoticeDays] = useState<number | string>("");
+  const [approvalLevels, setApprovalLevels] = useState<number | string>(1);
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -87,10 +88,10 @@ function LeaveTypeFormDialog({
       setDescription("");
       setAnnualQuota(12);
       setAccrualFrequency("NONE");
-      setAccrualAmountPerCycle(0);
-      setMaxCarryForwardDays(0);
-      setMaxConsecutiveDays(0);
-      setAdvanceNoticeDays(0);
+      setAccrualAmountPerCycle("");
+      setMaxCarryForwardDays("");
+      setMaxConsecutiveDays("");
+      setAdvanceNoticeDays("");
       setApprovalLevels(1);
       setIsPaid(true);
       setRequiresApproval(true);
@@ -106,14 +107,14 @@ function LeaveTypeFormDialog({
       code: code.trim().toUpperCase(),
       description: description.trim(),
       isPaid,
-      annualQuota,
+      annualQuota: typeof annualQuota === "string" ? (parseInt(annualQuota) || 0) : annualQuota,
       accrualFrequency,
-      accrualAmountPerCycle,
-      maxCarryForwardDays,
-      maxConsecutiveDays,
-      advanceNoticeDays,
+      accrualAmountPerCycle: typeof accrualAmountPerCycle === "string" ? (parseFloat(accrualAmountPerCycle) || 0) : accrualAmountPerCycle,
+      maxCarryForwardDays: typeof maxCarryForwardDays === "string" ? (parseInt(maxCarryForwardDays) || 0) : maxCarryForwardDays,
+      maxConsecutiveDays: typeof maxConsecutiveDays === "string" ? (parseInt(maxConsecutiveDays) || 0) : maxConsecutiveDays,
+      advanceNoticeDays: typeof advanceNoticeDays === "string" ? (parseInt(advanceNoticeDays) || 0) : advanceNoticeDays,
       requiresApproval,
-      approvalLevels,
+      approvalLevels: typeof approvalLevels === "string" ? (parseInt(approvalLevels) || 1) : approvalLevels,
       allowNegativeBalance,
       probationEligible,
       applySandwichPolicy,
@@ -136,10 +137,34 @@ function LeaveTypeFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>Create Leave Type</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: { xs: 2.5, sm: 3.5 },
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+            mx: { xs: 2, sm: "auto" },
+            width: { xs: "calc(100% - 32px)", sm: "100%" },
+          },
+        },
+      }}
+    >
+      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>Create Leave Type</DialogTitle>
 
-      <DialogContent sx={{ pt: "16px !important" }}>
+      <DialogContent sx={{ p: 0 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
@@ -153,91 +178,64 @@ function LeaveTypeFormDialog({
               General Information
             </Typography>
 
-            <TextField
+            <TextInput
               label="Leave Type Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              fullWidth
-              size="small"
               placeholder="e.g. Casual Leave"
               required
             />
 
-            <TextField
+            <TextInput
               label="Leave Code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              fullWidth
-              size="small"
               placeholder="e.g. CL"
               required
               slotProps={{ htmlInput: { maxLength: 10 } }}
             />
 
-            <TextField
+            <TextInput
+              multiline
+              rows={3}
               label="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              fullWidth
-              size="small"
-              multiline
-              rows={3}
               placeholder="Brief description of this leave policy"
             />
 
-            <TextField
-              label="Annual Quota (Days)"
+            <TextInput
               type="number"
+              label="Annual Quota (Days)"
               value={annualQuota}
-              onChange={(e) => setAnnualQuota(Math.max(0, parseInt(e.target.value) || 0))}
-              error={!!formErrors.annualQuota}
-              helperText={formErrors.annualQuota}
-              fullWidth
-              size="small"
+              onChange={(e) => setAnnualQuota(e.target.value === "" ? "" : Math.max(0, parseInt(e.target.value) || 0))}
+              error={formErrors.annualQuota}
               required
-              sx={{
-                "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                  WebkitAppearance: "none",
-                  margin: 0,
-                },
-                "& input[type=number]": { MozAppearance: "textfield" },
-              }}
             />
 
-            <TextField
+            <TextInput
               select
               label="Accrual Frequency"
               value={accrualFrequency}
               onChange={(e) => {
                 const val = e.target.value as "MONTHLY" | "YEARLY" | "NONE";
                 setAccrualFrequency(val);
-                if (val === "NONE") setAccrualAmountPerCycle(0);
+                if (val === "NONE") setAccrualAmountPerCycle("");
               }}
-              fullWidth
-              size="small"
             >
               <MenuItem value="NONE">No Accrual (Credited upfront)</MenuItem>
               <MenuItem value="MONTHLY">Monthly</MenuItem>
               <MenuItem value="YEARLY">Yearly</MenuItem>
-            </TextField>
+            </TextInput>
 
             {accrualFrequency !== "NONE" && (
-              <TextField
-                label="Accrual Amount Per Cycle"
+              <TextInput
                 type="number"
+                label="Accrual Amount Per Cycle"
                 value={accrualAmountPerCycle}
-                onChange={(e) => setAccrualAmountPerCycle(Math.max(0, parseFloat(e.target.value) || 0))}
-                error={!!formErrors.accrualAmountPerCycle}
-                helperText={formErrors.accrualAmountPerCycle}
-                fullWidth
-                size="small"
-                sx={{
-                  "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                  "& input[type=number]": { MozAppearance: "textfield" },
-                }}
+                placeholder="0"
+                onChange={(e) => setAccrualAmountPerCycle(e.target.value === "" ? "" : Math.max(0, parseFloat(e.target.value) || 0))}
+                error={formErrors.accrualAmountPerCycle}
               />
             )}
           </Grid>
@@ -250,80 +248,42 @@ function LeaveTypeFormDialog({
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 6 }}>
-                <TextField
+                <TextInput
+                  type="number"
                   label="Max Carry Forward (Days)"
-                  type="number"
                   value={maxCarryForwardDays}
-                  onChange={(e) => setMaxCarryForwardDays(Math.max(0, parseInt(e.target.value) || 0))}
-                  error={!!formErrors.maxCarryForwardDays}
-                  helperText={formErrors.maxCarryForwardDays}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                      WebkitAppearance: "none",
-                      margin: 0,
-                    },
-                    "& input[type=number]": { MozAppearance: "textfield" },
-                  }}
+                  placeholder="0"
+                  onChange={(e) => setMaxCarryForwardDays(e.target.value === "" ? "" : Math.max(0, parseInt(e.target.value) || 0))}
+                  error={formErrors.maxCarryForwardDays}
                 />
               </Grid>
               <Grid size={{ xs: 6 }}>
-                <TextField
+                <TextInput
+                  type="number"
                   label="Max Consecutive Days"
-                  type="number"
                   value={maxConsecutiveDays}
-                  onChange={(e) => setMaxConsecutiveDays(Math.max(0, parseInt(e.target.value) || 0))}
-                  error={!!formErrors.maxConsecutiveDays}
-                  helperText={formErrors.maxConsecutiveDays}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                      WebkitAppearance: "none",
-                      margin: 0,
-                    },
-                    "& input[type=number]": { MozAppearance: "textfield" },
-                  }}
+                  placeholder="0"
+                  onChange={(e) => setMaxConsecutiveDays(e.target.value === "" ? "" : Math.max(0, parseInt(e.target.value) || 0))}
+                  error={formErrors.maxConsecutiveDays}
                 />
               </Grid>
               <Grid size={{ xs: 6 }}>
-                <TextField
+                <TextInput
+                  type="number"
                   label="Advance Notice (Days)"
-                  type="number"
                   value={advanceNoticeDays}
-                  onChange={(e) => setAdvanceNoticeDays(Math.max(0, parseInt(e.target.value) || 0))}
-                  error={!!formErrors.advanceNoticeDays}
-                  helperText={formErrors.advanceNoticeDays}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                      WebkitAppearance: "none",
-                      margin: 0,
-                    },
-                    "& input[type=number]": { MozAppearance: "textfield" },
-                  }}
+                  placeholder="0"
+                  onChange={(e) => setAdvanceNoticeDays(e.target.value === "" ? "" : Math.max(0, parseInt(e.target.value) || 0))}
+                  error={formErrors.advanceNoticeDays}
                 />
               </Grid>
               <Grid size={{ xs: 6 }}>
-                <TextField
-                  label="Approval Levels"
+                <TextInput
                   type="number"
+                  label="Approval Levels"
                   value={approvalLevels}
-                  onChange={(e) => setApprovalLevels(Math.min(3, Math.max(1, parseInt(e.target.value) || 1)))}
-                  error={!!formErrors.approvalLevels}
-                  helperText={formErrors.approvalLevels}
-                  fullWidth
-                  size="small"
-                  slotProps={{ htmlInput: { min: 1, max: 3 } }}
-                  sx={{
-                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                      WebkitAppearance: "none",
-                      margin: 0,
-                    },
-                    "& input[type=number]": { MozAppearance: "textfield" },
-                  }}
+                  onChange={(e) => setApprovalLevels(e.target.value === "" ? "" : Math.max(1, parseInt(e.target.value) || 1))}
+                  error={formErrors.approvalLevels}
                 />
               </Grid>
             </Grid>
@@ -555,16 +515,7 @@ export default function LeaveTypeContent() {
                       {type.accrualFrequency === "NONE" ? "Upfront Credit" : type.accrualFrequency}
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={type.isPaid ? "Paid" : "Unpaid"}
-                        size="small"
-                        sx={{
-                          fontWeight: 600,
-                          backgroundColor: type.isPaid ? "#ECFDF5" : "#FEF2F2",
-                          color: type.isPaid ? "#047857" : "#B91C1C",
-                          borderRadius: 1.5,
-                        }}
-                      />
+                      <StatusChip status={type.isPaid ? "ACTIVE" : "INACTIVE"} label={type.isPaid ? "Paid" : "Unpaid"} />
                     </TableCell>
                     <TableCell>{type.approvalLevels} Level(s)</TableCell>
                   </TableRow>

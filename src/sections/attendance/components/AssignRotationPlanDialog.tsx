@@ -20,6 +20,8 @@ import type {
   AssignRotationPlanRequest,
 } from "../../../store/attendance/attendance.types";
 
+import TextInput from "../../../components/input/TextInput";
+
 type Props = {
   open: boolean;
   submitting: boolean;
@@ -100,36 +102,58 @@ export default function AssignRotationPlanDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: { xs: 2.5, sm: 3.5 },
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+            mx: { xs: 2, sm: "auto" },
+            width: { xs: "calc(100% - 32px)", sm: "100%" },
+          },
+        },
+      }}
+    >
       <Box component="form" onSubmit={handleFormSubmit}>
-        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
           Assign Rotation Plan
         </DialogTitle>
 
-        <DialogContent dividers sx={{ pt: 2, pb: 2 }}>
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
           {(error || validationError) && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Alert severity="error" sx={{ mb: 1, borderRadius: 2 }}>
               {error || validationError}
             </Alert>
           )}
 
           <Grid container spacing={2.5}>
             <Grid size={12}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography variant="body2" color="text.secondary">
                 Assign a rotational shift plan and start date for one or more employees.
               </Typography>
             </Grid>
 
             {/* Select Rotation Plan */}
             <Grid size={12}>
-              <TextField
+              <TextInput
                 select
                 required
-                fullWidth
                 label="Rotation Plan"
                 value={rotationPlanId}
                 onChange={(e) => setRotationPlanId(e.target.value)}
-                size="small"
               >
                 <MenuItem value="" disabled>
                   Select Rotation Plan
@@ -139,22 +163,17 @@ export default function AssignRotationPlanDialog({
                     {plan.name} ({plan.cycleDuration})
                   </MenuItem>
                 ))}
-              </TextField>
+              </TextInput>
             </Grid>
 
             {/* Rotation Start Date */}
             <Grid size={12}>
-              <TextField
+              <TextInput
                 required
-                fullWidth
                 label="Rotation Start Date"
                 type="date"
                 value={rotationStartDate}
                 onChange={(e) => setRotationStartDate(e.target.value)}
-                size="small"
-                slotProps={{
-                  inputLabel: { shrink: true }
-                }}
               />
             </Grid>
 
@@ -197,8 +216,22 @@ export default function AssignRotationPlanDialog({
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, py: 2.5 }}>
-          <Button onClick={onClose} disabled={submitting} variant="outlined" color="inherit">
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -206,18 +239,22 @@ export default function AssignRotationPlanDialog({
             variant="contained"
             disabled={submitting}
             sx={{
-              backgroundColor: "#6D5DF6",
-              textTransform: "none",
+              height: 42,
+              borderRadius: "10px",
+              px: 3,
+              fontSize: "14px",
               fontWeight: 600,
-              borderRadius: 2,
-              px: 4,
-              "&:hover": { backgroundColor: "#5B4BEA" }
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4BEA" },
             }}
           >
             {submitting ? (
-              <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
-            ) : null}
-            Assign Plan
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              "Assign Plan"
+            )}
           </Button>
         </DialogActions>
       </Box>

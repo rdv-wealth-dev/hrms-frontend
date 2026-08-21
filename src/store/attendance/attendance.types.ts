@@ -20,25 +20,53 @@ export interface CreateShiftRequest {
   fullDayMinutes?: number;
   breakDurationMinutes?: number;
   isDefault?: boolean;
+  absentThresholdMinutes?: number;
+  lateArrivalHalfDayMinutes?: number;
+  firstHalfCutoffMinutes?: number;
+  secondHalfCutoffMinutes?: number;
+  minimumWorkMinutesForHalfDay?: number;
+  checkInWindowStart?: string;
+  checkInWindowEnd?: string;
+  allowedCheckInFromTime?: string;
+  earlyLeaveStartTime?: string;
+  rejectEarlyPunch?: boolean;
+  lateArrivalQuotaPerMonth?: number;
+  earlyLeaveQuotaPerMonth?: number;
+  halfDayWeight?: number;
 }
+
+export type UpdateShiftRequest = Partial<CreateShiftRequest>;
 
 export interface Shift {
   _id: string;
   tenantId: string;
-  branchId: string;
+  branchId?: string;
   name: string;
   code: string;
   startTime: string;
   endTime: string;
-  gracePeriodMinutes: number;
-  graceLimitPerMonth: number;
-  halfDayThresholdMinutes: number;
-  fullDayMinutes: number;
-  breakDurationMinutes: number;
-  isDefault: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  gracePeriodMinutes?: number;
+  graceLimitPerMonth?: number;
+  halfDayThresholdMinutes?: number;
+  fullDayMinutes?: number;
+  breakDurationMinutes?: number;
+  isDefault?: boolean;
+  absentThresholdMinutes?: number;
+  lateArrivalHalfDayMinutes?: number;
+  firstHalfCutoffMinutes?: number;
+  secondHalfCutoffMinutes?: number;
+  minimumWorkMinutesForHalfDay?: number;
+  checkInWindowStart?: string;
+  checkInWindowEnd?: string;
+  allowedCheckInFromTime?: string;
+  earlyLeaveStartTime?: string;
+  rejectEarlyPunch?: boolean;
+  lateArrivalQuotaPerMonth?: number;
+  earlyLeaveQuotaPerMonth?: number;
+  halfDayWeight?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ShiftResponse {
@@ -76,8 +104,8 @@ export interface AttendanceRecord {
   _id?: string;
   tenantId?: string;
   branchId?: string;
-  employeeId?: string | { _id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string };
-  employee?: { id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string };
+  employeeId?: string | { _id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string; avatarUrl?: string; profilePicture?: string };
+  employee?: { id?: string; firstName?: string; lastName?: string; employeeCode?: string; fullName?: string; email?: string; avatarUrl?: string; profilePicture?: string };
   shiftId?: string;
   attendanceDate?: string;
   sessions: PunchSession[];
@@ -86,6 +114,9 @@ export interface AttendanceRecord {
   isRegularized: boolean;
   firstCheckIn?: string;
   lastCheckOut?: string;
+  overtimeId?: string;
+  isLate?: boolean;
+  isCheckOutEarly?: boolean;
 }
 
 export interface AttendanceRecordResponse {

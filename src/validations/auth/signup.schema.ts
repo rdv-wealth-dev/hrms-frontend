@@ -3,30 +3,54 @@ import { isValidPhoneNumber } from "libphonenumber-js";
 
 export const signupSchema = z
   .object({
-    companyName: z.string().min(1, "Company name is required"),
+    companyName: z
+      .string()
+      .min(2, "Company name must be at least 2 characters")
+      .max(200, "Company name cannot exceed 200 characters"),
 
-    industry: z.string().min(1, "Industry is required"),
+    workspaceSlug: z
+      .string()
+      .min(3, "Workspace URL must be at least 3 characters")
+      .max(63, "Workspace URL cannot exceed 63 characters")
+      .regex(
+        /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/,
+        "Only lowercase letters, numbers, and hyphens. Cannot start or end with a hyphen."
+      ),
 
-    firstName: z.string().min(1, "First name is required"),
+    employeeCountRange: z.enum(
+      ["1-10", "11-50", "51-200", "201-500", "500+"],
+      { message: "Please select your team size" }
+    ),
 
-    lastName: z.string().min(1, "Last name is required"),
+    industry: z.string().optional(),
+
+    firstName: z
+      .string()
+      .min(2, "First name must be at least 2 characters")
+      .max(100, "First name cannot exceed 100 characters"),
+
+    lastName: z
+      .string()
+      .min(2, "Last name must be at least 2 characters")
+      .max(100, "Last name cannot exceed 100 characters"),
 
     email: z
       .string()
       .min(1, "Email is required")
       .email("Please enter a valid email"),
 
-    // ISO alpha-2 country code, e.g. "IN" — sent to backend and used for phone validation
+    // ISO alpha-2 country code — used for phone validation
     countryCode: z.string().min(1, "Country code is required"),
 
-    // Digits only — no +, spaces, or dashes. Validated per-country below.
+    // Optional phone — digits only, validated per-country
     phone: z
       .string()
-      .min(1, "Phone number is required")
-      .regex(/^\d+$/, "Phone number must contain digits only"),
+      .regex(/^\d*$/, "Phone number must contain digits only")
+      .max(10, "Phone number cannot exceed 10 digits")
+      .optional()
+      .or(z.literal("")),
 
-    // ✅ timezone removed from the form schema — it's auto-detected on submit
-
+    // ✅ timezone auto-detected on submit — not a form field
     password: z
       .string()
       .min(1, "Password is required")
@@ -38,13 +62,15 @@ export const signupSchema = z
     message: "Passwords do not match",
     path: ["confirmPassword"],
   })
-  // Per-country phone validation using libphonenumber-js
-  // Only runs when both countryCode and phone are present
+  // Per-country phone validation — only runs when phone is provided
   .refine(
     (data) => {
-      if (!data.countryCode || !data.phone) return true;
+      if (!data.phone || !data.countryCode) return true;
       try {
-        return isValidPhoneNumber(data.phone, data.countryCode as Parameters<typeof isValidPhoneNumber>[1]);
+        return isValidPhoneNumber(
+          data.phone,
+          data.countryCode as Parameters<typeof isValidPhoneNumber>[1]
+        );
       } catch {
         return false;
       }

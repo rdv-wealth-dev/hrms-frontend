@@ -99,13 +99,33 @@ export function EventDetailPanel({ open, day, onClose }: EventDetailPanelProps) 
 
           {isWeekOff && day.offReason && (
             <Chip
-              label={day.offReason === "SATURDAY_POLICY" ? "Saturday Off" : day.offReason}
+              label={
+                day.offReason === "CUSTOM_WEEK_OFF"
+                  ? "Custom Off"
+                  : day.offReason === "FIXED_WEEKLY_OFF"
+                  ? "Weekly Off"
+                  : day.offReason
+              }
               size="small"
               sx={{
                 fontWeight: 600,
                 fontSize: "11px",
                 backgroundColor: "#F3F4F6",
                 color: "#4B5563",
+              }}
+            />
+          )}
+
+          {day.shift && (
+            <Chip
+              label={`Shift: ${day.shift.name} (${day.shift.startTime} - ${day.shift.endTime})`}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                fontSize: "11px",
+                backgroundColor: "#EEF2FF",
+                color: "#4338CA",
+                border: "1px solid #C7D2FE",
               }}
             />
           )}

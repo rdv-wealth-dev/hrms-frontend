@@ -13,6 +13,8 @@ import type {
   RestoreSessionSuccessPayload,
   ActivateAccountRequestPayload,
   ActivateAccountSuccessPayload,
+  CheckEmailRequestPayload,
+  CheckEmailSuccessPayload,
 } from "./auth.types";
 
 import { AUTH_ACTIONS } from "./auth.types";
@@ -136,6 +138,34 @@ export const restoreSessionFailure = (): AuthAction => ({
 });
 
 // ===========================================
+// Check Email
+// ===========================================
+
+export const checkEmailRequest = (payload: CheckEmailRequestPayload): AuthAction => ({
+  type: AUTH_ACTIONS.CHECK_EMAIL_REQUEST,
+  payload,
+});
+
+export const checkEmailSuccess = (payload: CheckEmailSuccessPayload): AuthAction => ({
+  type: AUTH_ACTIONS.CHECK_EMAIL_SUCCESS,
+  payload,
+});
+
+export const checkEmailFailure = (payload: string): AuthAction => ({
+  type: AUTH_ACTIONS.CHECK_EMAIL_FAILURE,
+  payload,
+});
+
+// ===========================================
+// Login Cooldown
+// ===========================================
+
+export const setLoginCooldown = (seconds: number | null): AuthAction => ({
+  type: AUTH_ACTIONS.SET_LOGIN_COOLDOWN,
+  payload: seconds,
+});
+
+// ===========================================
 // Logout
 // ===========================================
 
@@ -164,4 +194,9 @@ export const activateAccountSuccess = (
 export const activateAccountFailure = (payload: string): AuthAction => ({
   type: AUTH_ACTIONS.ACTIVATE_ACCOUNT_FAILURE,
   payload,
+});
+
+export const updateUserAvatar = (avatarUrl: string): AuthAction => ({
+  type: AUTH_ACTIONS.UPDATE_USER_AVATAR,
+  payload: avatarUrl,
 });

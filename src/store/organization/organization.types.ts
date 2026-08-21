@@ -15,34 +15,14 @@ export interface OrganizationBranding {
   supportPhone?: string;
 }
 
-export type SaturdayOffMode =
-  | "ALL_OFF"
-  | "ALL_WORKING"
-  | "FIRST_OFF"
-  | "SECOND_OFF"
-  | "THIRD_OFF"
-  | "FOURTH_OFF"
-  | "FIFTH_OFF_IF_EXISTS"
-  | "FIRST_AND_THIRD_OFF"
-  | "SECOND_AND_FOURTH_OFF"
-  | "CUSTOM";
+export type DayOfWeek = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
 
-export const SaturdayOffMode = {
-  ALL_OFF: "ALL_OFF",
-  ALL_WORKING: "ALL_WORKING",
-  FIRST_OFF: "FIRST_OFF",
-  SECOND_OFF: "SECOND_OFF",
-  THIRD_OFF: "THIRD_OFF",
-  FOURTH_OFF: "FOURTH_OFF",
-  FIFTH_OFF_IF_EXISTS: "FIFTH_OFF_IF_EXISTS",
-  FIRST_AND_THIRD_OFF: "FIRST_AND_THIRD_OFF",
-  SECOND_AND_FOURTH_OFF: "SECOND_AND_FOURTH_OFF",
-  CUSTOM: "CUSTOM",
-} as const;
+export type DayType = "WORKING" | "WEEK_OFF" | "HOLIDAY";
+export type OffReason = "HOLIDAY" | "ROTATIONAL_OFF" | "FIXED_WEEKLY_OFF" | "CUSTOM_WEEK_OFF";
 
-export interface SaturdayPolicy {
-  mode: SaturdayOffMode;
-  customOffWeeks?: number[];
+export interface CustomWeekOffRule {
+  dayOfWeek: DayOfWeek;
+  weeks: number[];
 }
 
 export interface OrganizationLocale {
@@ -54,7 +34,7 @@ export interface OrganizationLocale {
   fiscalYearStart: string;
   weeklyOffDays: string[];
   workingHoursPerDay: number;
-  saturdayPolicy?: SaturdayPolicy;
+  customWeekOffRules?: CustomWeekOffRule[];
 }
 
 export interface OrganizationSubscription {

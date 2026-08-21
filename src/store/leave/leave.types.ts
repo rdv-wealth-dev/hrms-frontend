@@ -1,4 +1,4 @@
-import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, LeaveBalance, CreateLeaveRequest, LeaveRequest, LeaveRequestsPaginatedResponse, CompOffRecord } from "../../api/leave.api";
+import type { LeaveType, CreateLeaveTypeRequest, Holiday, CreateHolidayRequest, UpdateHolidayRequest, LeaveBalance, CreateLeaveRequest, LeaveRequest, LeaveRequestsPaginatedResponse, CompOffRecord } from "../../api/leave.api";
 
 export type LeaveState = {
   leaveTypes: LeaveType[];
@@ -35,6 +35,18 @@ export const LEAVE_ACTIONS = {
   CREATE_HOLIDAY_REQUEST: 'leave/create_holiday_request',
   CREATE_HOLIDAY_SUCCESS: 'leave/create_holiday_success',
   CREATE_HOLIDAY_FAILURE: 'leave/create_holiday_failure',
+
+  UPDATE_HOLIDAY_REQUEST: 'leave/update_holiday_request',
+  UPDATE_HOLIDAY_SUCCESS: 'leave/update_holiday_success',
+  UPDATE_HOLIDAY_FAILURE: 'leave/update_holiday_failure',
+
+  DELETE_HOLIDAY_REQUEST: 'leave/delete_holiday_request',
+  DELETE_HOLIDAY_SUCCESS: 'leave/delete_holiday_success',
+  DELETE_HOLIDAY_FAILURE: 'leave/delete_holiday_failure',
+
+  SEED_DEFAULT_HOLIDAYS_REQUEST: 'leave/seed_default_holidays_request',
+  SEED_DEFAULT_HOLIDAYS_SUCCESS: 'leave/seed_default_holidays_success',
+  SEED_DEFAULT_HOLIDAYS_FAILURE: 'leave/seed_default_holidays_failure',
 
   GET_MY_BALANCES_REQUEST: 'leave/get_my_balances_request',
   GET_MY_BALANCES_SUCCESS: 'leave/get_my_balances_success',
@@ -124,6 +136,51 @@ export type CreateHolidaySuccessAction = {
 
 export type CreateHolidayFailureAction = {
   type: typeof LEAVE_ACTIONS.CREATE_HOLIDAY_FAILURE;
+  payload: string;
+};
+
+export type UpdateHolidayRequestAction = {
+  type: typeof LEAVE_ACTIONS.UPDATE_HOLIDAY_REQUEST;
+  payload: { id: string; data: UpdateHolidayRequest };
+};
+
+export type UpdateHolidaySuccessAction = {
+  type: typeof LEAVE_ACTIONS.UPDATE_HOLIDAY_SUCCESS;
+  payload: Holiday;
+};
+
+export type UpdateHolidayFailureAction = {
+  type: typeof LEAVE_ACTIONS.UPDATE_HOLIDAY_FAILURE;
+  payload: string;
+};
+
+export type DeleteHolidayRequestAction = {
+  type: typeof LEAVE_ACTIONS.DELETE_HOLIDAY_REQUEST;
+  payload: string;
+};
+
+export type DeleteHolidaySuccessAction = {
+  type: typeof LEAVE_ACTIONS.DELETE_HOLIDAY_SUCCESS;
+  payload: string;
+};
+
+export type DeleteHolidayFailureAction = {
+  type: typeof LEAVE_ACTIONS.DELETE_HOLIDAY_FAILURE;
+  payload: string;
+};
+
+export type SeedDefaultHolidaysRequestAction = {
+  type: typeof LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_REQUEST;
+  payload?: { countryCode?: string; stateCode?: string };
+};
+
+export type SeedDefaultHolidaysSuccessAction = {
+  type: typeof LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_SUCCESS;
+  payload?: Holiday[];
+};
+
+export type SeedDefaultHolidaysFailureAction = {
+  type: typeof LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_FAILURE;
   payload: string;
 };
 
@@ -243,6 +300,15 @@ export type LeaveAction =
   | CreateHolidayRequestAction
   | CreateHolidaySuccessAction
   | CreateHolidayFailureAction
+  | UpdateHolidayRequestAction
+  | UpdateHolidaySuccessAction
+  | UpdateHolidayFailureAction
+  | DeleteHolidayRequestAction
+  | DeleteHolidaySuccessAction
+  | DeleteHolidayFailureAction
+  | SeedDefaultHolidaysRequestAction
+  | SeedDefaultHolidaysSuccessAction
+  | SeedDefaultHolidaysFailureAction
   | GetMyLeaveBalancesRequestAction
   | GetMyLeaveBalancesSuccessAction
   | GetMyLeaveBalancesFailureAction

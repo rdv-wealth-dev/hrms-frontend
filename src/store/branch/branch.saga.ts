@@ -2,7 +2,7 @@ import axios from "axios";
 import type { SagaIterator } from "redux-saga";
 import { call, put, takeLatest } from "redux-saga/effects";
 
-import { listBranches, createBranch, getHeadOffice, updateBranch, deleteBranch } from "../../api/branch.api";
+import { listBranches, createBranch, getHeadOffice, updateBranch, deleteBranch, seedBranchMasterData } from "../../api/branch.api";
 import {
   listBranchesSuccess,
   listBranchesFailure,
@@ -14,12 +14,16 @@ import {
   updateBranchFailure,
   deleteBranchSuccess,
   deleteBranchFailure,
+  seedBranchSuccess,
+  seedBranchFailure,
 } from "./branch.actions";
+import { loadOrganizationRequest } from "../organization/organization.actions";
 import {
   BRANCH_ACTIONS,
   type CreateBranchRequestAction,
   type UpdateBranchRequestAction,
   type DeleteBranchRequestAction,
+  type SeedBranchRequestAction,
 } from "./branch.types";
 
 function* handleListBranches(): SagaIterator {
@@ -61,6 +65,7 @@ function* handleCreateBranch(action: CreateBranchRequestAction): SagaIterator {
     }
 
     yield put(createBranchSuccess(response.data));
+    yield put(loadOrganizationRequest());
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(
@@ -88,6 +93,7 @@ function* handleUpdateBranch(action: UpdateBranchRequestAction): SagaIterator {
     }
 
     yield put(updateBranchSuccess(response.data));
+    yield put(loadOrganizationRequest());
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       yield put(
@@ -157,10 +163,29 @@ function* handleGetHeadOffice(): SagaIterator {
   }
 }
 
+function* handleSeedBranch(action: SeedBranchRequestAction): SagaIterator {
+  try {
+    const response = yield call(seedBranchMasterData, action.payload);
+    if (response && response.succeeded === false) {
+      yield put(seedBranchFailure(response.message || "Failed to seed branch master data"));
+      return;
+    }
+    yield put(seedBranchSuccess());
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.errors?.[0] ||
+      error?.message ||
+      "Failed to seed branch master data";
+    yield put(seedBranchFailure(message));
+  }
+}
+
 export function* branchSaga(): SagaIterator {
   yield takeLatest(BRANCH_ACTIONS.LIST_REQUEST, handleListBranches);
   yield takeLatest(BRANCH_ACTIONS.CREATE_REQUEST, handleCreateBranch);
   yield takeLatest(BRANCH_ACTIONS.UPDATE_REQUEST, handleUpdateBranch);
   yield takeLatest(BRANCH_ACTIONS.DELETE_REQUEST, handleDeleteBranch);
   yield takeLatest(BRANCH_ACTIONS.HEAD_OFFICE_REQUEST, handleGetHeadOffice);
+  yield takeLatest(BRANCH_ACTIONS.SEED_REQUEST, handleSeedBranch);
 }

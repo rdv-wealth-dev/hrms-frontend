@@ -1,4 +1,4 @@
-import type { SaturdayPolicy } from "../organization/organization.types";
+import type { CustomWeekOffRule } from "../organization/organization.types";
 
 export interface BranchAddress {
   addressLine1?: string;
@@ -27,7 +27,7 @@ export interface BranchWorkPolicy {
   shiftStartTime?: string;
   shiftEndTime?: string;
   workingHoursPerDay?: number;
-  saturdayPolicy?: SaturdayPolicy;
+  customWeekOffRules?: CustomWeekOffRule[];
 }
 
 export interface BranchStatutory {
@@ -48,6 +48,7 @@ export interface Branch {
   isHeadOffice: boolean;
   isActive: boolean;
   parentBranchId?: string | null;
+  defaultShiftId?: string | { _id: string; name: string; startTime: string; endTime: string } | null;
   address?: BranchAddress;
   contact?: BranchContact;
   geo?: BranchGeo;
@@ -67,6 +68,7 @@ export interface BranchListResponse {
 export interface CreateBranchRequest {
   name: string;
   code: string;
+  defaultShiftId?: string | null;
   address?: BranchAddress;
   contact?: BranchContact;
   geo?: BranchGeo;
@@ -84,6 +86,7 @@ export interface CreateBranchResponse {
 export interface UpdateBranchRequest {
   name?: string;
   code?: string;
+  defaultShiftId?: string | null;
   address?: Partial<BranchAddress>;
   contact?: Partial<BranchContact>;
   geo?: BranchGeo;
@@ -151,6 +154,10 @@ export const BRANCH_ACTIONS = {
   HEAD_OFFICE_REQUEST: "branch/headOfficeRequest",
   HEAD_OFFICE_SUCCESS: "branch/headOfficeSuccess",
   HEAD_OFFICE_FAILURE: "branch/headOfficeFailure",
+
+  SEED_REQUEST: "branch/seedRequest",
+  SEED_SUCCESS: "branch/seedSuccess",
+  SEED_FAILURE: "branch/seedFailure",
 } as const;
 
 // ===========================================
@@ -233,6 +240,20 @@ export type DeleteBranchFailureAction = {
   payload: string;
 };
 
+export type SeedBranchRequestAction = {
+  type: typeof BRANCH_ACTIONS.SEED_REQUEST;
+  payload: string;
+};
+
+export type SeedBranchSuccessAction = {
+  type: typeof BRANCH_ACTIONS.SEED_SUCCESS;
+};
+
+export type SeedBranchFailureAction = {
+  type: typeof BRANCH_ACTIONS.SEED_FAILURE;
+  payload: string;
+};
+
 export type BranchAction =
   | ListBranchesRequestAction
   | ListBranchesSuccessAction
@@ -249,7 +270,10 @@ export type BranchAction =
   | DeleteBranchFailureAction
   | GetHeadOfficeRequestAction
   | GetHeadOfficeSuccessAction
-  | GetHeadOfficeFailureAction;
+  | GetHeadOfficeFailureAction
+  | SeedBranchRequestAction
+  | SeedBranchSuccessAction
+  | SeedBranchFailureAction;
 
 // ===========================================
 // Branch Calendar Types
@@ -262,6 +286,13 @@ export interface BranchCalendarEvent {
   years?: number;
 }
 
+export interface CalendarShift {
+  name: string;
+  code: string;
+  startTime: string;
+  endTime: string;
+}
+
 export interface BranchCalendarDay {
   date: string;
   dayOfWeek: string;
@@ -270,6 +301,8 @@ export interface BranchCalendarDay {
   offReason?: string | null;
   holidayName?: string | null;
   events: BranchCalendarEvent[];
+  shift?: CalendarShift | null;
+  slotNumber?: number | null;
 }
 
 export interface BranchCalendarSummary {
@@ -286,7 +319,7 @@ export interface BranchCalendarData {
   branchName: string;
   year: number;
   month: number;
-  saturdayPolicyMode?: string;
+  customWeekOffRules?: CustomWeekOffRule[];
   days: BranchCalendarDay[];
   summary: BranchCalendarSummary;
 }

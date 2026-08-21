@@ -15,12 +15,15 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 import { getMyTodayAttendance, recordPunch, listShifts } from "../../../api/attendance.api";
 import type { AttendanceRecord } from "../../../store/attendance/attendance.types";
 import { formatWorkedTime } from "../../../utils/time";
 import { getCurrentPosition } from "../../../utils/geolocation";
 import { useProfileBlockDetect } from "../../../hooks/useProfileBlockDetect";
+import { paths } from "../../../routes/paths";
+import NudgeReminderModal from "../../../components/common/NudgeReminderModal";
 
 export default function DailyPunchCard() {
   const navigate = useNavigate();
@@ -31,6 +34,8 @@ export default function DailyPunchCard() {
   const [success, setSuccess] = useState<string | null>(null);
   const [time, setTime] = useState(new Date());
   const [defaultShiftId, setDefaultShiftId] = useState<string | null>(null);
+  const [nudgeModalOpen, setNudgeModalOpen] = useState(false);
+  const [nudgePct, setNudgePct] = useState(45);
   const { isBlocked, pendingSections, detectBlock, reset } = useProfileBlockDetect();
 
   const getLocation = async (): Promise<{ longitude: number; latitude: number } | null> => {
@@ -86,27 +91,29 @@ export default function DailyPunchCard() {
       if (!shiftIdToUse) {
         try {
           const shiftsRes = await listShifts();
-          if (shiftsRes.succeeded && shiftsRes.data && shiftsRes.data.length > 0) {
-            const defaultShift = shiftsRes.data.find((s) => s.isDefault) || shiftsRes.data[0];
+          if ((shiftsRes?.succeeded || (shiftsRes as any)?.success) && shiftsRes?.data && shiftsRes.data.length > 0) {
+            const defaultShift = shiftsRes.data.find((s: any) => s.isDefault) || shiftsRes.data[0];
             shiftIdToUse = defaultShift._id;
             setDefaultShiftId(shiftIdToUse);
           }
         } catch (shiftErr) {
-          console.warn("Failed to fetch shifts list:", shiftErr);
+          console.warn("Shift pre-fetch skipped (backend will resolve default shift):", shiftErr);
         }
-      }
-
-      if (!shiftIdToUse) {
-        throw new Error("No active shifts available. Please set up a shift in the system settings first.");
       }
 
       const loc = await getLocation();
       const response = await recordPunch("CHECK_IN", shiftIdToUse, loc?.longitude, loc?.latitude);
-      if (response.succeeded && response.data) {
+      if ((response?.succeeded || (response as any)?.success) && response?.data) {
         setRecord(response.data);
         setSuccess("Checked in successfully!");
+
+        const onboardingData = (response as any)?.data?.onboarding || (response as any)?.onboarding;
+        if (onboardingData?.phase === "NUDGE") {
+          setNudgePct(onboardingData?.profileCompletionPct || 45);
+          setNudgeModalOpen(true);
+        }
       } else {
-        setError(response.message || "Failed to clock in");
+        setError(response?.message || "Failed to clock in");
       }
     } catch (err: any) {
       setError(
@@ -124,11 +131,11 @@ export default function DailyPunchCard() {
     try {
       const loc = await getLocation();
       const response = await recordPunch("CHECK_OUT", undefined, loc?.longitude, loc?.latitude);
-      if (response.succeeded && response.data) {
+      if ((response?.succeeded || (response as any)?.success) && response?.data) {
         setRecord(response.data);
         setSuccess("Checked out successfully!");
       } else {
-        setError(response.message || "Failed to clock out");
+        setError(response?.message || "Failed to clock out");
       }
     } catch (err: any) {
       setError(
@@ -349,7 +356,7 @@ export default function DailyPunchCard() {
           <Button
             variant="contained"
             fullWidth
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate(paths.onboarding)}
             sx={{
               maxWidth: 360,
               py: 1.2,
@@ -373,21 +380,35 @@ export default function DailyPunchCard() {
             Daily Attendance
           </Typography>
         </Box>
-        {loading ? (
-          <CircularProgress size={16} />
-        ) : (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Chip
-            label={chipLabel}
+            icon={<LocationOnIcon sx={{ fontSize: "14px !important", color: "#166534 !important" }} />}
+            label="Geofence Verified"
             size="small"
             sx={{
               fontWeight: 600,
-              fontSize: "0.75rem",
-              backgroundColor: chipColorBg,
-              color: chipColorText,
-              border: chipBorder,
+              fontSize: "0.72rem",
+              backgroundColor: "#DCFCE7",
+              color: "#166534",
+              border: "1px solid #BBF7D0",
             }}
           />
-        )}
+          {loading ? (
+            <CircularProgress size={16} />
+          ) : (
+            <Chip
+              label={chipLabel}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                backgroundColor: chipColorBg,
+                color: chipColorText,
+                border: chipBorder,
+              }}
+            />
+          )}
+        </Box>
       </Box>
 
       {/* Localized Digital Clock Display */}
@@ -626,17 +647,53 @@ export default function DailyPunchCard() {
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     Clock In
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
-                    {checkInTime}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
+                      {checkInTime}
+                    </Typography>
+                    {record?.isLate && (
+                      <Chip
+                        label="Late"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          backgroundColor: "rgba(245, 158, 11, 0.08)",
+                          color: "#F59E0B",
+                          border: "1px solid rgba(245, 158, 11, 0.15)",
+                          px: 0.5,
+                          borderRadius: "4px"
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     Clock Out
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
-                    {checkOutTime}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E1B4B" }}>
+                      {checkOutTime}
+                    </Typography>
+                    {record?.isCheckOutEarly && (
+                      <Chip
+                        label="Early"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          backgroundColor: "rgba(239, 68, 68, 0.08)",
+                          color: "#EF4444",
+                          border: "1px solid rgba(239, 68, 68, 0.15)",
+                          px: 0.5,
+                          borderRadius: "4px"
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
@@ -653,6 +710,11 @@ export default function DailyPunchCard() {
       )}
         </>
       )}
+      <NudgeReminderModal
+        open={nudgeModalOpen}
+        onClose={() => setNudgeModalOpen(false)}
+        completionPct={nudgePct}
+      />
     </Paper>
   );
 }

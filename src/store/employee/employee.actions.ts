@@ -38,7 +38,16 @@ export const clearEmployeeError = (): EmployeeAction => ({
 })
 
 export const listEmployeesRequest = (
-  payload: { pageNumber: number; pageSize: number; search?: string; status?: string }
+  payload: {
+    pageNumber: number;
+    pageSize: number;
+    search?: string;
+    status?: string;
+    joiningPeriod?: string;
+    branchId?: string;
+    departmentId?: string;
+    designationId?: string;
+  }
 ): EmployeeAction => ({
   type: EMPLOYEE_ACTIONS.LIST_REQUEST,
   payload,

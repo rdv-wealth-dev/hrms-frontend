@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { getMyBranchCalendar, getHeadOffice, getBranchCalendar } from "../api/branch.api";
 import { usePermissions } from "./usePermissions";
 import type { BranchCalendarData } from "../store/branch/branch.types";
@@ -19,22 +19,43 @@ export function useMyBranchCalendar({
 
   const [calendarData, setCalendarData] = useState<BranchCalendarData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // In-memory cache map
+  const cacheRef = useRef<Record<string, BranchCalendarData>>({});
 
   const [selectedYear, setSelectedYear] = useState<number | undefined>(initialYear);
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>(initialMonth);
 
   const fetchCalendar = useCallback(
     async (targetYear?: number, targetMonth?: number) => {
-      setLoading(true);
+      const cacheKey = `my_${targetYear || "current"}_${targetMonth || "current"}`;
+
+      if (cacheRef.current[cacheKey]) {
+        const cached = cacheRef.current[cacheKey];
+        setCalendarData(cached);
+        setSelectedYear(cached.year);
+        setSelectedMonth(cached.month);
+        setLoading(false);
+        setIsFetching(false);
+        return;
+      }
+
+      setLoading((prev) => (!prev ? true : false));
+      setIsFetching(true);
       setError(null);
+
+      if (targetYear) setSelectedYear(targetYear);
+      if (targetMonth) setSelectedMonth(targetMonth);
+
       try {
-        // If logged in as ORG_ADMIN, directly load Head Office calendar to avoid 404 console log
         if (isOrgAdmin) {
           const hoRes = await getHeadOffice();
           if (hoRes.succeeded && hoRes.data?._id) {
             const calRes = await getBranchCalendar(hoRes.data._id, targetYear, targetMonth);
             if (calRes.succeeded && calRes.data) {
+              cacheRef.current[cacheKey] = calRes.data;
               setCalendarData(calRes.data);
               setSelectedYear(calRes.data.year);
               setSelectedMonth(calRes.data.month);
@@ -45,9 +66,9 @@ export function useMyBranchCalendar({
           return;
         }
 
-        // Regular employee self-service call
         const response = await getMyBranchCalendar(targetYear, targetMonth);
         if (response.succeeded && response.data) {
+          cacheRef.current[cacheKey] = response.data;
           setCalendarData(response.data);
           setSelectedYear(response.data.year);
           setSelectedMonth(response.data.month);
@@ -60,10 +81,15 @@ export function useMyBranchCalendar({
         );
       } finally {
         setLoading(false);
+        setIsFetching(false);
       }
     },
     [isOrgAdmin]
   );
+
+  const clearCache = useCallback(() => {
+    cacheRef.current = {};
+  }, []);
 
   useEffect(() => {
     if (autoFetch) {
@@ -71,27 +97,28 @@ export function useMyBranchCalendar({
     }
   }, [autoFetch, initialYear, initialMonth, fetchCalendar]);
 
+  const currentYear = calendarData?.year || selectedYear || new Date().getFullYear();
+  const currentMonth = calendarData?.month || selectedMonth || new Date().getMonth() + 1;
+
   const nextMonth = useCallback(() => {
-    if (!calendarData) return;
-    let nextY = calendarData.year;
-    let nextM = calendarData.month + 1;
+    let nextY = currentYear;
+    let nextM = currentMonth + 1;
     if (nextM > 12) {
       nextM = 1;
       nextY += 1;
     }
     fetchCalendar(nextY, nextM);
-  }, [calendarData, fetchCalendar]);
+  }, [currentYear, currentMonth, fetchCalendar]);
 
   const prevMonth = useCallback(() => {
-    if (!calendarData) return;
-    let prevY = calendarData.year;
-    let prevM = calendarData.month - 1;
+    let prevY = currentYear;
+    let prevM = currentMonth - 1;
     if (prevM < 1) {
       prevM = 12;
       prevY -= 1;
     }
     fetchCalendar(prevY, prevM);
-  }, [calendarData, fetchCalendar]);
+  }, [currentYear, currentMonth, fetchCalendar]);
 
   const resetToCurrent = useCallback(() => {
     fetchCalendar(undefined, undefined);
@@ -128,6 +155,7 @@ export function useMyBranchCalendar({
     calendarData,
     summary: calendarData?.summary ?? null,
     loading,
+    isFetching,
     error,
     year: selectedYear,
     month: selectedMonth,
@@ -135,6 +163,7 @@ export function useMyBranchCalendar({
     nextMonth,
     prevMonth,
     resetToCurrent,
+    clearCache,
     daysWithEvents,
     birthdayDays,
     anniversaryDays,

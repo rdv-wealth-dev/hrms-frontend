@@ -10,90 +10,98 @@ interface UseBranchCalendarOptions {
 }
 
 export function useBranchCalendar({
-  branchId,
+  branchId: initialBranchId = "",
   initialYear,
   initialMonth,
   autoFetch = true,
 }: UseBranchCalendarOptions = {}) {
+  const [branchId, setBranchId] = useState<string>(initialBranchId);
+  const [year, setYear] = useState<number>(initialYear || new Date().getFullYear());
+  const [month, setMonth] = useState<number>(initialMonth || new Date().getMonth() + 1);
+
   const [calendarData, setCalendarData] = useState<BranchCalendarData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Active month/year state — undefined by default so backend auto-dates to current month
-  const [selectedYear, setSelectedYear] = useState<number | undefined>(initialYear);
-  const [selectedMonth, setSelectedMonth] = useState<number | undefined>(initialMonth);
+  // Sync external initialBranchId if updated
+  useEffect(() => {
+    if (initialBranchId && initialBranchId !== branchId) {
+      setBranchId(initialBranchId);
+    }
+  }, [initialBranchId]);
 
-  const fetchCalendar = useCallback(
-    async (targetBranchId?: string, targetYear?: number, targetMonth?: number) => {
-      const activeBranchId = targetBranchId || branchId;
-      if (!activeBranchId) return;
+  const fetchCalendar = useCallback(async () => {
+    if (!branchId) {
+      setCalendarData(null);
+      setLoading(false);
+      return;
+    }
 
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await getBranchCalendar(activeBranchId, targetYear, targetMonth);
-        if (response.succeeded && response.data) {
-          setCalendarData(response.data);
-          // Sync internal state with server response
-          setSelectedYear(response.data.year);
-          setSelectedMonth(response.data.month);
-        } else {
-          setError(response.message || "Failed to fetch branch calendar");
-        }
-      } catch (err: any) {
-        setError(
-          err?.response?.data?.message || err?.message || "An error occurred fetching calendar"
-        );
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await getBranchCalendar(branchId, year, month);
+      if (response?.succeeded && response?.data) {
+        setCalendarData(response.data);
+      } else {
+        setError(response?.message || "Failed to load branch monthly calendar.");
       }
-    },
-    [branchId]
-  );
+    } catch (err: any) {
+      const apiMessage = err?.response?.data?.message || err?.message || "Error fetching branch calendar.";
+      setError(apiMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [branchId, year, month]);
 
   useEffect(() => {
     if (autoFetch && branchId) {
-      fetchCalendar(branchId, initialYear, initialMonth);
+      fetchCalendar();
     }
-  }, [autoFetch, branchId, initialYear, initialMonth]);
+  }, [branchId, year, month, autoFetch, fetchCalendar]);
 
-  const nextMonth = useCallback(() => {
-    if (!calendarData) return;
-    let nextY = calendarData.year;
-    let nextM = calendarData.month + 1;
-    if (nextM > 12) {
-      nextM = 1;
-      nextY += 1;
+  const handlePrevMonth = () => {
+    if (month === 1) {
+      setMonth(12);
+      setYear((prev) => prev - 1);
+    } else {
+      setMonth((prev) => prev - 1);
     }
-    if (branchId) fetchCalendar(branchId, nextY, nextM);
-  }, [branchId, calendarData, fetchCalendar]);
+  };
 
-  const prevMonth = useCallback(() => {
-    if (!calendarData) return;
-    let prevY = calendarData.year;
-    let prevM = calendarData.month - 1;
-    if (prevM < 1) {
-      prevM = 12;
-      prevY -= 1;
+  const handleNextMonth = () => {
+    if (month === 12) {
+      setMonth(1);
+      setYear((prev) => prev + 1);
+    } else {
+      setMonth((prev) => prev + 1);
     }
-    if (branchId) fetchCalendar(branchId, prevY, prevM);
-  }, [branchId, calendarData, fetchCalendar]);
+  };
 
-  const resetToCurrent = useCallback(() => {
-    if (branchId) fetchCalendar(branchId, undefined, undefined);
-  }, [branchId, fetchCalendar]);
+  const handleResetMonth = () => {
+    setYear(new Date().getFullYear());
+    setMonth(new Date().getMonth() + 1);
+  };
 
   return {
+    branchId,
+    setBranchId,
+    year,
+    setYear,
+    month,
+    setMonth,
     calendarData,
-    summary: calendarData?.summary ?? null,
     loading,
+    isFetching: loading,
     error,
-    year: selectedYear,
-    month: selectedMonth,
-    fetchCalendar,
-    nextMonth,
-    prevMonth,
-    resetToCurrent,
+    handlePrevMonth,
+    prevMonth: handlePrevMonth,
+    handleNextMonth,
+    nextMonth: handleNextMonth,
+    handleResetMonth,
+    resetToCurrent: handleResetMonth,
+    refetch: fetchCalendar,
   };
 }
 

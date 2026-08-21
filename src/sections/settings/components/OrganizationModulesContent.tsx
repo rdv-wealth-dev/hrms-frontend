@@ -101,7 +101,7 @@ function OrganizationModulesContent() {
   }
 
   return (
-    <Box sx={{ py: 1 }} component="form" onSubmit={handleSubmit}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 3.5 } }} component="form" onSubmit={handleSubmit}>
       {error && (
         <Alert severity="error" sx={{ mb: 3, borderRadius: 2.5 }}>
           {error}

@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
 html,
 body,
 #root {
@@ -11,4 +9,37 @@ body,
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+/* =========================================================
+   Global Custom Scrollbar Styling (Chrome, Edge, Safari)
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 10px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #6D5DF6;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

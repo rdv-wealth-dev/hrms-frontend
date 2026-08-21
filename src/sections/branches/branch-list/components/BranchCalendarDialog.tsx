@@ -9,7 +9,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import Typography from "@mui/material/Typography";
 import { useBranchCalendar } from "../../../../hooks/useBranchCalendar";
-import { BranchCalendarGrid } from "../../../../components/calendar";
+import { LazyBranchCalendarGrid } from "../../../../components/calendar";
 
 interface BranchCalendarDialogProps {
   open: boolean;
@@ -27,6 +27,7 @@ export function BranchCalendarDialog({
   const {
     calendarData,
     loading,
+    isFetching,
     error,
     nextMonth,
     prevMonth,
@@ -73,7 +74,7 @@ export function BranchCalendarDialog({
       </DialogTitle>
 
       <DialogContent dividers sx={{ borderTop: "1px solid #E5E7EB", py: 2.5 }}>
-        {loading ? (
+        {!calendarData && loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <CircularProgress sx={{ color: "#6D5DF6" }} />
           </Box>
@@ -82,8 +83,9 @@ export function BranchCalendarDialog({
             {error}
           </Alert>
         ) : calendarData ? (
-          <BranchCalendarGrid
+          <LazyBranchCalendarGrid
             data={calendarData}
+            isFetching={isFetching}
             onPrevMonth={prevMonth}
             onNextMonth={nextMonth}
             onResetMonth={resetToCurrent}

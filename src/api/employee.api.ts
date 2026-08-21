@@ -34,7 +34,11 @@ export const listEmployees = async (
   pageNumber = 1,
   pageSize = 10,
   search?: string,
-  status?: string
+  status?: string,
+  joiningPeriod?: string,
+  designationId?: string,
+  departmentId?: string,
+  branchId?: string
 ): Promise<EmployeeListResponse> => {
   let url = `/employees?pageNumber=${pageNumber}&pageSize=${pageSize}`;
   if (search) {
@@ -42,6 +46,18 @@ export const listEmployees = async (
   }
   if (status) {
     url += `&status=${encodeURIComponent(status)}`;
+  }
+  if (joiningPeriod) {
+    url += `&joiningPeriod=${encodeURIComponent(joiningPeriod)}`;
+  }
+  if (designationId) {
+    url += `&designationId=${encodeURIComponent(designationId)}`;
+  }
+  if (departmentId) {
+    url += `&departmentId=${encodeURIComponent(departmentId)}`;
+  }
+  if (branchId) {
+    url += `&branchId=${encodeURIComponent(branchId)}`;
   }
   const response = await axiosInstance.get<EmployeeListResponse>(
     url,
@@ -92,30 +108,36 @@ export const deleteEmployee = async (id: string): Promise<DeleteEmployeeResponse
 };
 
 export interface AddBankAccountRequest {
+  employeeId?: string;
   bankName: string;
+  accountHolderName?: string;
   accountNumber: string;
-  ifscCode: string;
-  accountType: "SALARY" | "SAVINGS" | "CURRENT";
-  isPrimary: boolean;
+  ifscOrRoutingCode?: string;
+  ifscCode?: string;
+  accountType?: "SALARY" | "SAVINGS" | "CURRENT";
+  isPrimary?: boolean;
 }
 
 export interface AddBankAccountResponse {
   succeeded: boolean;
   message: string;
-  errors: string[];
+  errors?: string[];
   data: {
     _id: string;
-    tenantId: string;
-    branchId: string;
+    tenantId?: string;
+    branchId?: string;
     employeeId: string;
     bankName: string;
-    accountNumber: string;
-    ifscCode: string;
-    accountType: string;
-    isPrimary: boolean;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
+    accountNumber?: string;
+    accountNumberMasked?: string;
+    ifscOrRoutingCode?: string;
+    ifscCode?: string;
+    accountType?: string;
+    isPrimary?: boolean;
+    isActive?: boolean;
+    isVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
   };
 }
 
@@ -150,7 +172,7 @@ export const getBankAccounts = async (): Promise<GetBankAccountsResponse> => {
   return response.data;
 };
 
-export const addBankAccount = async (
+export const addMyBankAccount = async (
   payload: AddBankAccountRequest
 ): Promise<AddBankAccountResponse> => {
   const response = await axiosInstance.post<AddBankAccountResponse>(
@@ -272,11 +294,15 @@ export interface UploadDocumentResponse {
 
 export const uploadDocument = async (
   file: File,
-  documentType: string
+  documentType: string,
+  documentNumber?: string
 ): Promise<UploadDocumentResponse> => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("documentType", documentType);
+  if (documentNumber) {
+    formData.append("documentNumber", documentNumber);
+  }
 
   const token = localStorage.getItem("accessToken");
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -351,7 +377,7 @@ export interface GetPendingDocumentsResponse {
 
 export const getPendingDocuments = async (): Promise<GetPendingDocumentsResponse> => {
   const response = await axiosInstance.get<GetPendingDocumentsResponse>(
-    "/employees/documents/pending",
+    "/employee-documents/verification/pending",
     { headers: getAuthHeader() }
   );
   return response.data;
@@ -374,7 +400,7 @@ export const verifyDocument = async (
   payload: VerifyDocumentRequest
 ): Promise<VerifyDocumentResponse> => {
   const response = await axiosInstance.patch<VerifyDocumentResponse>(
-    `/employees/documents/${docId}/verify`,
+    `/employee-documents/${docId}/verify`,
     payload,
     { headers: getAuthHeader() }
   );
@@ -386,7 +412,7 @@ export const getHrDownloadUrl = async (
   docId: string
 ): Promise<GetDownloadUrlResponse> => {
   const response = await axiosInstance.get<GetDownloadUrlResponse>(
-    `/employees/${employeeId}/documents/${docId}/download-url`,
+    `/employee-documents/${employeeId}/${docId}/download-url`,
     { headers: getAuthHeader() }
   );
   return response.data;
@@ -400,6 +426,19 @@ export interface CompleteProfileCompletion {
   emergencyContact: boolean;
   bankDetails: boolean;
   mandatoryDocs: boolean;
+  overallScore?: number;
+  completedSections?: number;
+  totalSections?: number;
+}
+
+export interface CompleteProfileSummary {
+  totalDocuments?: number;
+  verifiedDocuments?: number;
+  pendingVerification?: number;
+  totalBankAccounts?: number;
+  primaryBankSet?: boolean;
+  profileCompletionDate?: string;
+  lastUpdated?: string;
 }
 
 export interface EmergencyContact {
@@ -409,21 +448,36 @@ export interface EmergencyContact {
 }
 
 export interface CompleteProfileEmployee {
-  _id: string;
+  id?: string;
+  _id?: string;
   employeeCode: string;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
+  avatarUrl?: string;
   dateOfBirth?: string;
   gender?: string;
+  bloodGroup?: string;
+  maritalStatus?: string;
+  nationality?: string;
+  pan?: string;
+  aadhaar?: string;
+  employeeType?: string;
+  status?: string;
+  joiningDate?: string;
+  confirmationDate?: string;
   currentAddress?: Record<string, unknown>;
   emergencyContacts?: EmergencyContact[];
-  departmentId?: { _id: string; name: string; code: string };
-  designationId?: { _id: string; name: string };
-  managerId?: { _id: string; firstName: string; lastName: string };
-  profileCompletion: CompleteProfileCompletion;
-  isProfileComplete: boolean;
+  departmentId?: { _id?: string; id?: string; name: string; code?: string };
+  designationId?: { _id?: string; id?: string; name: string };
+  branchId?: { _id?: string; id?: string; name?: string; code?: string } | string;
+  shiftId?: { _id?: string; id?: string; name?: string; startTime?: string; endTime?: string } | string;
+  managerId?: { _id?: string; id?: string; firstName: string; lastName: string } | null;
+  profileCompletion?: CompleteProfileCompletion;
+  isProfileComplete?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CompleteProfileDocument {
@@ -431,9 +485,13 @@ export interface CompleteProfileDocument {
   _id?: string;
   documentType: string;
   fileName: string;
-  s3Key: string;
+  mimeType?: string;
+  s3Key?: string;
   isVerified: boolean;
+  verifiedAt?: string;
+  canDownload?: boolean;
   sizeBytes: number;
+  uploadedAt?: string;
 }
 
 export interface CompleteProfileBankAccount {
@@ -445,22 +503,29 @@ export interface CompleteProfileBankAccount {
   ifscCode: string;
   accountType: string;
   isPrimary: boolean;
+  isActive?: boolean;
+  addedAt?: string;
+}
+
+export interface CompleteEmployeeProfileData {
+  employee: CompleteProfileEmployee;
+  profileCompletion?: CompleteProfileCompletion;
+  isProfileComplete?: boolean;
+  documents: CompleteProfileDocument[];
+  bankAccounts: CompleteProfileBankAccount[];
+  organizationRequirements?: {
+    mandatoryDocumentTypes: string[];
+    missingDocuments: string[];
+    documentLabels: Record<string, string>;
+  };
+  summary?: CompleteProfileSummary;
 }
 
 export interface CompleteEmployeeProfileResponse {
   succeeded: boolean;
   message: string;
   errors: string[];
-  data: {
-    employee: CompleteProfileEmployee;
-    documents: CompleteProfileDocument[];
-    bankAccounts: CompleteProfileBankAccount[];
-    organizationRequirements: {
-      mandatoryDocumentTypes: string[];
-      missingDocuments: string[];
-      documentLabels: Record<string, string>;
-    };
-  };
+  data: CompleteEmployeeProfileData;
 }
 
 export const getEmployeeCompleteProfile = async (
@@ -520,3 +585,340 @@ export const updateLoggedInEmployeeProfile = async (
   );
   return response.data;
 };
+
+/* ─── Avatar Upload APIs ─── */
+
+export interface AvatarCropParams {
+  cropX?: number;
+  cropY?: number;
+  cropWidth?: number;
+  cropHeight?: number;
+}
+
+export interface AvatarUploadResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data: {
+    avatarUrl: string;
+  };
+}
+
+export const uploadSelfAvatar = async (
+  file: File,
+  cropParams?: AvatarCropParams
+): Promise<AvatarUploadResponse> => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const query = new URLSearchParams();
+  if (cropParams?.cropX !== undefined) query.append("cropX", String(cropParams.cropX));
+  if (cropParams?.cropY !== undefined) query.append("cropY", String(cropParams.cropY));
+  if (cropParams?.cropWidth !== undefined) query.append("cropWidth", String(cropParams.cropWidth));
+  if (cropParams?.cropHeight !== undefined) query.append("cropHeight", String(cropParams.cropHeight));
+
+  const queryString = query.toString() ? `?${query.toString()}` : "";
+
+  const response = await axiosInstance.patch<AvatarUploadResponse>(
+    `/employees/me/avatar${queryString}`,
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const uploadEmployeeAvatar = async (
+  employeeId: string,
+  file: File,
+  cropParams?: AvatarCropParams
+): Promise<AvatarUploadResponse> => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const query = new URLSearchParams();
+  if (cropParams?.cropX !== undefined) query.append("cropX", String(cropParams.cropX));
+  if (cropParams?.cropY !== undefined) query.append("cropY", String(cropParams.cropY));
+  if (cropParams?.cropWidth !== undefined) query.append("cropWidth", String(cropParams.cropWidth));
+  if (cropParams?.cropHeight !== undefined) query.append("cropHeight", String(cropParams.cropHeight));
+
+  const queryString = query.toString() ? `?${query.toString()}` : "";
+
+  const response = await axiosInstance.patch<AvatarUploadResponse>(
+    `/employees/${employeeId}/avatar${queryString}`,
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+// ============================================================
+// Bulk Import / Export API Definitions
+// ============================================================
+
+export interface BulkImportErrorDetail {
+  rowNumber: number;
+  email?: string;
+  reason: string;
+}
+
+export interface BulkImportWarningDetail {
+  rowNumber: number;
+  email?: string;
+  reason: string;
+  severity: "WARNING";
+}
+
+export interface BulkImportResponse {
+  succeeded: boolean;
+  success: boolean;
+  message: string;
+  errors: BulkImportErrorDetail[];
+  data: {
+    totalProcessed: number;
+    insertedCount: number;
+    failedCount: number;
+    errors: BulkImportErrorDetail[];
+    warnings?: BulkImportWarningDetail[];
+    created?: {
+      departments?: string[];
+      designations?: string[];
+    };
+  } | null;
+}
+
+export interface ImportTemplateResponse {
+  succeeded: boolean;
+  message: string;
+  errors: any[];
+  data: {
+    fileName: string;
+    mimeType: string;
+    fileData: string; // Base64 spreadsheet
+  } | null;
+}
+
+export interface BulkExportResponse {
+  succeeded: boolean;
+  success: boolean;
+  message: string;
+  errors: any[];
+  data: {
+    fileName: string;
+    mimeType: string;
+    fileData: string; // Base64 spreadsheet
+    totalRecords: number;
+  } | null;
+}
+
+export const bulkImportEmployees = async (
+  file: File,
+  tenantSlug: string
+): Promise<BulkImportResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axiosInstance.post<BulkImportResponse>(
+    "/employees/bulk-import",
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+        "X-Tenant-Slug": tenantSlug,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const bulkExportEmployees = async (
+  params: {
+    format?: "csv" | "xlsx";
+    branchId?: string;
+    departmentId?: string;
+    status?: string;
+  },
+  tenantSlug: string
+): Promise<BulkExportResponse> => {
+  const response = await axiosInstance.get<BulkExportResponse>(
+    "/employees/bulk-export",
+    {
+      params,
+      headers: {
+        ...getAuthHeader(),
+        "X-Tenant-Slug": tenantSlug,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const getImportTemplate = async (
+  format: "xlsx" | "csv" = "xlsx"
+): Promise<ImportTemplateResponse> => {
+  const response = await axiosInstance.get<ImportTemplateResponse>(
+    "/employees/import-template",
+    {
+      params: { format },
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+// ── Dynamic Eligible Managers API ──
+
+export interface EligibleManagerItem {
+  _id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  avatarUrl?: string | null;
+  branchId?: string;
+  departmentId?: string;
+  departmentName?: string;
+  designationId?: string;
+  designationTitle?: string;
+  level?: number;
+  isDepartmentHead?: boolean;
+}
+
+export interface EligibleManagersResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    department?: {
+      _id: string;
+      name: string;
+      code: string;
+      head?: {
+        _id: string;
+        fullName: string;
+        employeeCode: string;
+      } | null;
+    } | null;
+    defaultManagerId?: string | null;
+    totalEligible: number;
+    managers: EligibleManagerItem[];
+  };
+}
+
+export const getEligibleManagers = async (params: {
+  branchId?: string;
+  departmentId?: string;
+  designationId?: string;
+  minLevel?: number;
+  search?: string;
+}): Promise<EligibleManagersResponse> => {
+  const response = await axiosInstance.get<EligibleManagersResponse>(
+    "/employees/eligible-managers",
+    {
+      params,
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+// ── Add Bank Account API ──
+
+export const addBankAccount = async (
+  employeeIdOrPayload: string | AddBankAccountRequest,
+  payload?: AddBankAccountRequest
+): Promise<AddBankAccountResponse> => {
+  if (typeof employeeIdOrPayload === "string") {
+    const response = await axiosInstance.post<AddBankAccountResponse>(
+      `/employees/${employeeIdOrPayload}/bank-accounts`,
+      payload,
+      { headers: getAuthHeader() }
+    );
+    return response.data;
+  }
+  return addMyBankAccount(employeeIdOrPayload);
+};
+
+// ── Assign Salary Structure API ──
+
+export interface CreateSalaryStructureRequest {
+  employeeId: string;
+  ctcAnnual: number;
+  grossMonthly?: number;
+  wagesForStatutory?: number;
+  currency?: string;
+  effectiveFrom?: string;
+  lineItems: Array<{
+    componentCode: string;
+    amount: number;
+  }>;
+}
+
+export interface CreateSalaryStructureResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    _id: string;
+    employeeId: string;
+    ctcAnnual: number;
+    grossMonthly?: number;
+    currency?: string;
+    isActive: boolean;
+  };
+}
+
+export const assignSalaryStructure = async (
+  payload: CreateSalaryStructureRequest
+): Promise<CreateSalaryStructureResponse> => {
+  const response = await axiosInstance.post<CreateSalaryStructureResponse>(
+    "/payroll/structures",
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface SalaryStructureItem {
+  _id: string;
+  employeeId: string;
+  ctcAnnual: number;
+  grossMonthly?: number;
+  netMonthly?: number;
+  wagesForStatutory?: number;
+  currency?: string;
+  effectiveFrom?: string;
+  isActive: boolean;
+  lineItems: Array<{
+    componentId?: string;
+    componentCode: string;
+    amount: number;
+  }>;
+}
+
+export interface GetSalaryStructureResponse {
+  succeeded: boolean;
+  message: string;
+  data: SalaryStructureItem;
+}
+
+export const getSalaryStructure = async (
+  employeeId: string
+): Promise<GetSalaryStructureResponse> => {
+  const response = await axiosInstance.get<GetSalaryStructureResponse>(
+    `/payroll/structures/${employeeId}`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+

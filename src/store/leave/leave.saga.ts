@@ -4,6 +4,9 @@ import {
   createLeaveType,
   listLeaveTypes,
   createHoliday,
+  updateHoliday,
+  deleteHoliday,
+  seedDefaultHolidays,
   listHolidays,
   getMyLeaveBalances,
   applyForLeave,
@@ -20,6 +23,12 @@ import {
   listLeaveTypesSuccess,
   createHolidayFailure,
   createHolidaySuccess,
+  updateHolidayFailure,
+  updateHolidaySuccess,
+  deleteHolidayFailure,
+  deleteHolidaySuccess,
+  seedDefaultHolidaysFailure,
+  seedDefaultHolidaysSuccess,
   listHolidaysFailure,
   listHolidaysSuccess,
   getMyLeaveBalancesFailure,
@@ -41,6 +50,9 @@ import { LEAVE_ACTIONS } from './leave.types';
 import type {
   CreateLeaveTypeRequestAction,
   CreateHolidayRequestAction,
+  UpdateHolidayRequestAction,
+  DeleteHolidayRequestAction,
+  SeedDefaultHolidaysRequestAction,
   ListHolidaysRequestAction,
   GetMyLeaveBalancesRequestAction,
   ApplyLeaveRequestAction,
@@ -93,6 +105,37 @@ function* createHolidaySaga(action: CreateHolidayRequestAction): SagaIterator {
   } catch (error: any) {
     const message = error.response?.data?.message || error.message || 'Failed to create holiday';
     yield put(createHolidayFailure(message));
+  }
+}
+
+function* updateHolidaySaga(action: UpdateHolidayRequestAction): SagaIterator {
+  try {
+    const response = yield call(updateHoliday, action.payload.id, action.payload.data);
+    yield put(updateHolidaySuccess(response.data));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to update holiday';
+    yield put(updateHolidayFailure(message));
+  }
+}
+
+function* deleteHolidaySaga(action: DeleteHolidayRequestAction): SagaIterator {
+  try {
+    yield call(deleteHoliday, action.payload);
+    yield put(deleteHolidaySuccess(action.payload));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to delete holiday';
+    yield put(deleteHolidayFailure(message));
+  }
+}
+
+function* seedDefaultHolidaysSaga(action: SeedDefaultHolidaysRequestAction): SagaIterator {
+  try {
+    const { countryCode, stateCode } = action.payload || {};
+    const response = yield call(seedDefaultHolidays, countryCode, stateCode);
+    yield put(seedDefaultHolidaysSuccess(response.data));
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || 'Failed to seed default statutory holidays';
+    yield put(seedDefaultHolidaysFailure(message));
   }
 }
 
@@ -174,6 +217,9 @@ export function* leaveSaga(): SagaIterator {
     takeLatest(LEAVE_ACTIONS.CREATE_REQUEST, createLeaveTypeSaga),
     takeLatest(LEAVE_ACTIONS.LIST_HOLIDAYS_REQUEST, listHolidaysSaga),
     takeLatest(LEAVE_ACTIONS.CREATE_HOLIDAY_REQUEST, createHolidaySaga),
+    takeLatest(LEAVE_ACTIONS.UPDATE_HOLIDAY_REQUEST, updateHolidaySaga),
+    takeLatest(LEAVE_ACTIONS.DELETE_HOLIDAY_REQUEST, deleteHolidaySaga),
+    takeLatest(LEAVE_ACTIONS.SEED_DEFAULT_HOLIDAYS_REQUEST, seedDefaultHolidaysSaga),
     takeLatest(LEAVE_ACTIONS.GET_MY_BALANCES_REQUEST, getMyBalancesSaga),
     takeLatest(LEAVE_ACTIONS.APPLY_LEAVE_REQUEST, applyLeaveSaga),
     takeLatest(LEAVE_ACTIONS.GET_PENDING_REQUESTS_REQUEST, getPendingLeaveRequestsSaga),
