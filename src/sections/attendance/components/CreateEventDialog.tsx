@@ -81,6 +81,7 @@ export default function CreateEventDialog({
     <Dialog
       open={open}
       onClose={submitting ? undefined : onClose}
+      disableRestoreFocus
       maxWidth="xs"
       fullWidth
       slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}

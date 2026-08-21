@@ -12,6 +12,7 @@ export default defineConfig({
       '@emotion/react',
       '@emotion/styled',
       '@mui/material',
+      'react-redux',
     ],
   },
   optimizeDeps: {

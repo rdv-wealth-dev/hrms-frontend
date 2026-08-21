@@ -1,7 +1,10 @@
+import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/rootReducer";
 import { useRole } from "../auth/hooks/use-role";
 import { ROLE_PERMISSIONS } from "../utils/permissions";
+
+const EMPTY_PERMISSIONS: string[] = [];
 
 export const canAccess = (userPermissions: string[], permission: string): boolean => {
   if (!Array.isArray(userPermissions)) return false;
@@ -15,25 +18,36 @@ export function usePermissions() {
   const isSuperAdmin = role === "ORG_ADMIN" || role === "HR_ADMIN" || (role as string) === "HR" || user?.isSuperAdmin === true;
 
   // Resolve permissions from either user payload or fallback role mapping
-  const permissions = userPermissions.length > 0
-    ? userPermissions
-    : (ROLE_PERMISSIONS[role] ?? []);
+  const permissions = useMemo(() => {
+    if (userPermissions && userPermissions.length > 0) return userPermissions;
+    if (role && ROLE_PERMISSIONS[role]) return ROLE_PERMISSIONS[role];
+    return EMPTY_PERMISSIONS;
+  }, [userPermissions, role]);
 
-  const hasPermission = (perm: string): boolean => {
-    if (isSuperAdmin) return true;
-    if ((role === "MANAGER" || role === "PRODUCT_MANAGER") && (perm === "attendance.approve" || perm === "leave.approve" || perm === "attendance.read")) return true;
-    return permissions.includes(perm);
-  };
+  const hasPermission = useCallback(
+    (perm: string): boolean => {
+      if (isSuperAdmin) return true;
+      if ((role === "MANAGER" || role === "PRODUCT_MANAGER") && (perm === "attendance.approve" || perm === "leave.approve" || perm === "attendance.read")) return true;
+      return permissions.includes(perm);
+    },
+    [isSuperAdmin, role, permissions]
+  );
 
-  const hasAnyPermission = (perms: string[]): boolean => {
-    if (isSuperAdmin) return true;
-    return perms.some((p) => permissions.includes(p));
-  };
+  const hasAnyPermission = useCallback(
+    (perms: string[]): boolean => {
+      if (isSuperAdmin) return true;
+      return perms.some((p) => permissions.includes(p));
+    },
+    [isSuperAdmin, permissions]
+  );
 
-  const hasAllPermissions = (perms: string[]): boolean => {
-    if (isSuperAdmin) return true;
-    return perms.every((p) => permissions.includes(p));
-  };
+  const hasAllPermissions = useCallback(
+    (perms: string[]): boolean => {
+      if (isSuperAdmin) return true;
+      return perms.every((p) => permissions.includes(p));
+    },
+    [isSuperAdmin, permissions]
+  );
 
   return {
     role,

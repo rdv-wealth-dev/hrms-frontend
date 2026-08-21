@@ -123,23 +123,36 @@ export default function LeaveDashboardView() {
   const [loadingOrgRequests, setLoadingOrgRequests] = useState(false);
   const navigate = useNavigate();
 
+  const { role, isSuperAdmin, hasPermission } = usePermissions();
+  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
+  const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("leave.approve") && !hasPermission("leave.read"));
+  const user = useSelector((state: RootState) => state.auth?.user);
+
+  const canReadEmployees = isOrgAdmin || hasPermission("employee.read");
+  const canReadLeaves = isOrgAdmin || hasPermission("leave.read");
+  const canApproveLeaves = isOrgAdmin || hasPermission("leave.approve");
+
   useEffect(() => {
     let isMounted = true;
-    setLoadingOrgEmployees(true);
-    listEmployees(1, 50)
-      .then((res) => {
-        if (isMounted && res?.data && Array.isArray(res.data)) {
-          setOrgEmployees(res.data);
-        }
-      })
-      .catch((err) => console.error("Failed prefetching employees for leave balances", err))
-      .finally(() => {
-        if (isMounted) setLoadingOrgEmployees(false);
-      });
+    if (canReadEmployees) {
+      setLoadingOrgEmployees(true);
+      listEmployees(1, 50)
+        .then((res) => {
+          if (isMounted && res?.data && Array.isArray(res.data)) {
+            setOrgEmployees(res.data);
+          }
+        })
+        .catch((err) => console.error("Failed prefetching employees for leave balances", err))
+        .finally(() => {
+          if (isMounted) setLoadingOrgEmployees(false);
+        });
+    } else {
+      setLoadingOrgEmployees(false);
+    }
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [canReadEmployees]);
 
   const {
     balances = [],
@@ -161,13 +174,8 @@ export default function LeaveDashboardView() {
     error: null,
   });
 
-  const { role, isSuperAdmin, hasPermission } = usePermissions();
-  const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("leave.approve"));
-  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
-  const user = useSelector((state: RootState) => state.auth?.user);
-
   const fetchOrgLeaves = useCallback(() => {
-    if (isOrgAdmin || hasPermission("leave.read")) {
+    if (canReadLeaves) {
       setLoadingOrgRequests(true);
       getLeaveReport({ pageNumber: 1, pageSize: 50 })
         .then((res) => {
@@ -182,7 +190,7 @@ export default function LeaveDashboardView() {
           setLoadingOrgRequests(false);
         });
     }
-  }, [isOrgAdmin, hasPermission]);
+  }, [canReadLeaves]);
 
   useEffect(() => {
     fetchOrgLeaves();
@@ -207,10 +215,13 @@ export default function LeaveDashboardView() {
   useEffect(() => {
     dispatch(getMyLeaveBalancesRequest(selectedYear));
     dispatch(listLeaveTypesRequest());
-    dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
     dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
     dispatch(getMyCompOffBalancesRequest());
-  }, [dispatch, selectedYear, pageNumber, pageSize]);
+
+    if (canApproveLeaves) {
+      dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
+    }
+  }, [dispatch, selectedYear, pageNumber, pageSize, canApproveLeaves]);
 
   // Handle success auto-close and reload
   useSubmitSuccess({
@@ -333,6 +344,22 @@ export default function LeaveDashboardView() {
 
   const pendingCount = displayRequests.filter((r) => (r?.status || "").toUpperCase() === "PENDING").length;
 
+  if (isEmployeeRole) {
+    return (
+      <Box sx={{ p: { xs: 2, md: 3 } }}>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
+            My Leaves
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 500 }}>
+            View your leave balances, history, and apply for leaves
+          </Typography>
+        </Box>
+        <LeaveTab isViewingOther={false} user={user} />
+      </Box>
+    );
+  }
+
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -379,9 +406,7 @@ export default function LeaveDashboardView() {
           )}
         </Box>
 
-        {isEmployeeRole ? (
-          <LeaveTab isViewingOther={false} user={user} />
-        ) : isProfileBlocked ? (
+        {isProfileBlocked ? (
           <Paper
             sx={{
               p: 6,

@@ -77,6 +77,7 @@ export default function ApplyLeaveDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      disableRestoreFocus
       maxWidth="sm"
       fullWidth
       slotProps={{

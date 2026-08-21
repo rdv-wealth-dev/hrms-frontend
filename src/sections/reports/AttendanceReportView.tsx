@@ -128,8 +128,13 @@ export default function AttendanceReportView() {
   const [manualOpen, setManualOpen] = useState(false);
   const [regularizeOpen, setRegularizeOpen] = useState(false);
 
-  const { role, hasPermission } = usePermissions();
+  const { role, hasPermission, isSuperAdmin } = usePermissions();
+  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
+  const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("attendance.read") && !hasPermission("report.read"));
   const canMarkAttendance = hasPermission("attendance.create");
+  const canReadDepartments = isOrgAdmin || hasPermission("department.read");
+  const canReadDesignations = isOrgAdmin || hasPermission("designation.read");
+  const canReadBranches = isOrgAdmin || hasPermission("branch.read");
 
   const dispatch = useDispatch<AppDispatch>();
   const { departments } = useSelector((state: RootState) => state.department);
@@ -137,10 +142,16 @@ export default function AttendanceReportView() {
   const { branches } = useSelector((state: RootState) => state.branch);
 
   useEffect(() => {
-    dispatch(listDepartmentsRequest());
-    dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
-    dispatch(listBranchesRequest());
-  }, [dispatch]);
+    if (canReadDepartments) {
+      dispatch(listDepartmentsRequest());
+    }
+    if (canReadDesignations) {
+      dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
+    }
+    if (canReadBranches) {
+      dispatch(listBranchesRequest());
+    }
+  }, [dispatch, canReadDepartments, canReadDesignations, canReadBranches]);
 
   const { pageNumber, pageSize, setPageNumber } =
     usePagination({ initialPageSize: 100 });
@@ -205,9 +216,12 @@ export default function AttendanceReportView() {
   };
 
   useEffect(() => {
-    fetchReport();
+    if (!isEmployeeRole) {
+      fetchReport();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    isEmployeeRole,
     pageNumber, 
     pageSize, 
     fromDate, 
@@ -563,10 +577,18 @@ export default function AttendanceReportView() {
     return days;
   }, [records]);
 
-  if (role === "EMPLOYEE") {
+  if (isEmployeeRole) {
     return (
       <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
-        <AttendanceTab hideTabs={true} />
+        <Box sx={{ mb: 3.5 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
+            My Attendance
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
+            View your monthly attendance history, calendar, and regularization requests
+          </Typography>
+        </Box>
+        <AttendanceTab hideTabs={false} />
       </Box>
     );
   }

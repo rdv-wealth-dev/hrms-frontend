@@ -189,6 +189,7 @@ export function ManualAttendanceDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      disableRestoreFocus
       maxWidth="sm"
       fullWidth
       slotProps={{

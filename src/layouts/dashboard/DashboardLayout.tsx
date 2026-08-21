@@ -178,6 +178,35 @@ function DashboardLayout() {
         return item.label;
     };
 
+    const getItemTarget = (item: NavItem) => {
+        if (role === "EMPLOYEE") {
+            if (item.path === paths.reports) return paths.reports;
+            if (item.path === paths.leave) return paths.leave;
+        }
+        return item.path;
+    };
+
+    const isItemActive = (item: NavItem) => {
+        if (role === "EMPLOYEE") {
+            const searchParams = new URLSearchParams(location.search);
+            const currentTab = searchParams.get("tab");
+
+            if (item.path === paths.reports) {
+                return location.pathname === paths.reports || (location.pathname === paths.profile && currentTab === "attendance");
+            }
+            if (item.path === paths.leave) {
+                return location.pathname === paths.profile && currentTab === "leave";
+            }
+            if (item.path === paths.profile) {
+                return (
+                    location.pathname === paths.profile &&
+                    (!currentTab || (currentTab !== "attendance" && currentTab !== "leave"))
+                );
+            }
+        }
+        return location.pathname === item.path;
+    };
+
     const getBadgeCount = (item: NavItem) => {
         if (role === "EMPLOYEE") return 0;
         if (item.path === paths.leaveApprovals || item.path === paths.leave) return pendingLeaveCount;
@@ -186,14 +215,15 @@ function DashboardLayout() {
     };
 
     const renderNavListItem = (item: NavItem, isCollapsed = false) => {
-        const isActive = location.pathname === item.path;
+        const targetPath = getItemTarget(item);
+        const isActive = isItemActive(item);
         const badgeCount = getBadgeCount(item);
 
         return (
             <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
                 <ListItemButton
                     onClick={() => {
-                        navigate(item.path);
+                        navigate(targetPath);
                         setMobileOpen(false);
                     }}
                     sx={{

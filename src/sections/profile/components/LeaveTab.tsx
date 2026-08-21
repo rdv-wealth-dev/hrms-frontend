@@ -132,22 +132,30 @@ export default function LeaveTab({
             <Card
               onClick={() => !isViewingOther && setApplyLeaveDialogOpen(true)}
               sx={{
-                p: 2.5,
+                p: 3,
+                borderRadius: "20px",
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #F1F5F9",
+                boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
                 cursor: isViewingOther ? "default" : "pointer",
-                transition: "all 0.15s ease",
+                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 width: "100%",
-                "&:hover": { borderColor: "#C7D2FE", transform: "translateY(-2px)" },
+                "&:hover": {
+                  boxShadow: "0 10px 25px -4px rgba(15, 23, 42, 0.08)",
+                  transform: "translateY(-3px)",
+                  borderColor: "#E2E8F0",
+                },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                   QUICK APPLY
                 </Typography>
-                <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Box sx={{ width: 36, height: 36, borderRadius: "10px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <AddIcon fontSize="small" />
                 </Box>
               </Box>
-              <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#4F46E5", mb: 0.5 }}>
+              <Typography sx={{ fontSize: "1.75rem", fontWeight: 600, color: "#4F46E5", mb: 0.5, letterSpacing: "-0.5px" }}>
                 Apply Leave
               </Typography>
               <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
@@ -159,16 +167,31 @@ export default function LeaveTab({
 
         {/* Card 2: Pending Requests */}
         <Grid size={cardGridSize} sx={{ display: "flex" }}>
-          <Card sx={{ p: 2.5, width: "100%" }}>
+          <Card
+            sx={{
+              p: 3,
+              borderRadius: "20px",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #F1F5F9",
+              boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
+              width: "100%",
+              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": {
+                boxShadow: "0 10px 25px -4px rgba(15, 23, 42, 0.08)",
+                transform: "translateY(-3px)",
+                borderColor: "#E2E8F0",
+              },
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 PENDING REQUESTS
               </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#FEF3C7", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: "10px", backgroundColor: "rgba(245, 158, 11, 0.1)", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <AccessTimeOutlinedIcon fontSize="small" />
               </Box>
             </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#D97706", mb: 0.5 }}>
+            <Typography sx={{ fontSize: "1.75rem", fontWeight: 600, color: "#0F172A", mb: 0.5, letterSpacing: "-0.5px" }}>
               {myLeaveRequests.filter((r: any) => (r?.status || "").toUpperCase() === "PENDING").length} Pending
             </Typography>
             <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
@@ -182,26 +205,30 @@ export default function LeaveTab({
           <Card
             onClick={() => setBalanceDialogOpen(true)}
             sx={{
-              p: 2.5,
+              p: 3,
+              borderRadius: "20px",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #F1F5F9",
+              boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
               width: "100%",
               cursor: "pointer",
-              transition: "all 0.15s ease",
+              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
               "&:hover": {
                 borderColor: "#86EFAC",
-                transform: "translateY(-2px)",
-                boxShadow: "0 8px 16px -4px rgba(22, 163, 74, 0.15)",
+                transform: "translateY(-3px)",
+                boxShadow: "0 10px 25px -4px rgba(22, 163, 74, 0.15)",
               },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 LEAVE BALANCE
               </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: "10px", backgroundColor: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <CalendarMonthOutlinedIcon fontSize="small" />
               </Box>
             </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#16A34A", mb: 0.5 }}>
+            <Typography sx={{ fontSize: "1.75rem", fontWeight: 600, color: "#16A34A", mb: 0.5, letterSpacing: "-0.5px" }}>
               {balances.length > 0 ? `${balances.reduce((acc: number, curr: any) => acc + (curr.available || 0), 0)} Days` : "20 Days"}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -217,16 +244,31 @@ export default function LeaveTab({
 
         {/* Card 4: Comp-Off Balance */}
         <Grid size={cardGridSize} sx={{ display: "flex" }}>
-          <Card sx={{ p: 2.5, width: "100%" }}>
+          <Card
+            sx={{
+              p: 3,
+              borderRadius: "20px",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #F1F5F9",
+              boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
+              width: "100%",
+              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": {
+                boxShadow: "0 10px 25px -4px rgba(15, 23, 42, 0.08)",
+                transform: "translateY(-3px)",
+                borderColor: "#E2E8F0",
+              },
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
                 COMP-OFF BALANCE
               </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EDE9FE", color: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: "10px", backgroundColor: "#EDE9FE", color: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <BadgeOutlinedIcon fontSize="small" />
               </Box>
             </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#7C3AED", mb: 0.5 }}>
+            <Typography sx={{ fontSize: "1.75rem", fontWeight: 600, color: "#7C3AED", mb: 0.5, letterSpacing: "-0.5px" }}>
               1.0 Day
             </Typography>
             <Typography sx={{ fontSize: "12px", color: "#64748B" }}>

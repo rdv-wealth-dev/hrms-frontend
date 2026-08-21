@@ -147,6 +147,7 @@ export default function RegularizeRequestDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      disableRestoreFocus
       fullWidth
       maxWidth="sm"
       slotProps={{
