@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { listTeams, type TeamItem } from "../api/team.api";
+import { listTeams, type TeamItem, type ListTeamsParams } from "../api/team.api";
 
-interface UseTeamsProps {
-  departmentId?: string;
-  branchId?: string;
+export interface UseTeamsProps extends ListTeamsParams {
   autoFetch?: boolean;
 }
 
-interface UseTeamsReturn {
+export interface UseTeamsReturn {
   teams: TeamItem[];
   teamOptions: { value: string; label: string }[];
   loading: boolean;
@@ -18,6 +16,8 @@ interface UseTeamsReturn {
 export function useTeams({
   departmentId,
   branchId,
+  type,
+  isCrossFunctional,
   autoFetch = true,
 }: UseTeamsProps = {}): UseTeamsReturn {
   const [teams, setTeams] = useState<TeamItem[]>([]);
@@ -28,7 +28,7 @@ export function useTeams({
     setLoading(true);
     setError(null);
     try {
-      const res = await listTeams({ departmentId, branchId });
+      const res = await listTeams({ departmentId, branchId, type, isCrossFunctional });
       let items: TeamItem[] = [];
 
       if (Array.isArray(res?.data)) {
@@ -47,7 +47,7 @@ export function useTeams({
     } finally {
       setLoading(false);
     }
-  }, [departmentId, branchId]);
+  }, [departmentId, branchId, type, isCrossFunctional]);
 
   useEffect(() => {
     if (autoFetch) {

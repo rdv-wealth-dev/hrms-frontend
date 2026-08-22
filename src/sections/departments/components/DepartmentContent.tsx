@@ -19,13 +19,15 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import TextInput from "../../../components/input/TextInput";
-import { CreateTeamDialog } from "../../teams";
+import { CreateTeamDialog, TeamsListContent } from "../../teams";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -237,6 +239,7 @@ function DepartmentContent() {
     const canCreate = hasPermission("department.create");
     const canUpdate = hasPermission("department.update");
 
+    const [activeTab, setActiveTab] = useState<"departments" | "teams">("departments");
     const [createOpen, setCreateOpen] = useState(false);
     const [createTeamOpen, setCreateTeamOpen] = useState(false);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
@@ -394,16 +397,56 @@ function DepartmentContent() {
                     </Box>
                 </Box>
 
-                {/* Error Banner */}
-                {error && !createOpen && !updateOpen && (
-                    <Alert
-                        severity="error"
-                        onClose={() => dispatch(clearDepartmentError())}
-                        sx={{ mb: 2 }}
+                {/* Tab Switcher */}
+                <Box sx={{ borderBottom: 1, borderColor: "#E2E8F0", mb: 3 }}>
+                    <Tabs
+                        value={activeTab}
+                        onChange={(_, val) => setActiveTab(val)}
+                        sx={{
+                            "& .MuiTab-root": {
+                                textTransform: "none",
+                                fontWeight: 700,
+                                fontSize: "14px",
+                                minHeight: 44,
+                                color: "#64748B",
+                                "&.Mui-selected": { color: "#6D5DF6" },
+                            },
+                            "& .MuiTabs-indicator": {
+                                backgroundColor: "#6D5DF6",
+                                height: 3,
+                                borderRadius: "3px 3px 0 0",
+                            },
+                        }}
                     >
-                        {error}
-                    </Alert>
-                )}
+                        <Tab
+                            icon={<ApartmentOutlinedIcon sx={{ fontSize: 20 }} />}
+                            iconPosition="start"
+                            label={`Departments Overview (${total || 0})`}
+                            value="departments"
+                        />
+                        <Tab
+                            icon={<GroupsRoundedIcon sx={{ fontSize: 20 }} />}
+                            iconPosition="start"
+                            label="Teams & Squads"
+                            value="teams"
+                        />
+                    </Tabs>
+                </Box>
+
+                {activeTab === "teams" ? (
+                    <TeamsListContent />
+                ) : (
+                    <>
+                        {/* Error Banner */}
+                        {error && !createOpen && !updateOpen && (
+                            <Alert
+                                severity="error"
+                                onClose={() => dispatch(clearDepartmentError())}
+                                sx={{ mb: 2 }}
+                            >
+                                {error}
+                            </Alert>
+                        )}
 
 
                 {/* Department Table */}
@@ -514,6 +557,8 @@ function DepartmentContent() {
                             </TableBody>
                         </Table>
                     </TableContainer>
+                )}
+                    </>
                 )}
             </Box>
 

@@ -1,0 +1,446 @@
+import { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Switch from "@mui/material/Switch";
+import Alert from "@mui/material/Alert";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+
+import TextInput from "../../../components/input/TextInput";
+import CustomSelect from "../../../components/input/CustomSelect";
+import PrimaryButton from "../../../components/button/PrimaryButton";
+
+import {
+  addTeamMember,
+  updateTeamMember,
+  type AddTeamMemberPayload,
+  type UpdateTeamMemberPayload,
+  type TeamMember,
+} from "../../../api/team.api";
+import { listEmployees } from "../../../api/employee.api";
+import { addTeamMemberSchema, type AddTeamMemberFormValues } from "../../../validations/team/add-member.schema";
+
+export interface AddTeamMemberDialogProps {
+  open: boolean;
+  mode?: "add" | "edit";
+  memberToEdit?: TeamMember | null;
+  teamId: string | null;
+  teamName?: string;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+const ROLE_OPTIONS = [
+  { value: "MEMBER", label: "Team Member", subtext: "Standard squad contributor" },
+  { value: "LEAD", label: "Team Lead", subtext: "Squad leader / manager" },
+];
+
+export function AddTeamMemberDialog({
+  open,
+  mode = "add",
+  memberToEdit,
+  teamId,
+  teamName,
+  onClose,
+  onSuccess,
+}: AddTeamMemberDialogProps) {
+  const isEditMode = mode === "edit";
+  const [employees, setEmployees] = useState<{ value: string; label: string; subtext?: string }[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<AddTeamMemberFormValues>({
+    resolver: zodResolver(addTeamMemberSchema),
+    defaultValues: {
+      employeeId: "",
+      roleInTeam: "MEMBER",
+      isPrimary: true,
+      allocationPercentage: 100,
+    },
+  });
+
+  // Extract plain employee ID string from memberToEdit
+  const extractEmployeeId = (mem?: TeamMember | null): string => {
+    if (!mem) return "";
+    if (typeof mem.employeeId === "object" && mem.employeeId) {
+      return String(mem.employeeId._id || mem.employeeId.id || "");
+    }
+    if (typeof mem.employeeId === "string") return mem.employeeId;
+    return String(mem._id || mem.id || "");
+  };
+
+  // Load active organization employees when open
+  useEffect(() => {
+    if (!open) return;
+
+    let isMounted = true;
+    setLoadingEmployees(true);
+    setSubmitError(null);
+
+    listEmployees(1, 100, undefined, "ACTIVE")
+      .then((res) => {
+        if (!isMounted) return;
+        const items = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items || [];
+        setEmployees(
+          items.map((emp: any) => {
+            const empId = String(emp._id || emp.id);
+            const name = emp.fullName || `${emp.firstName || ""} ${emp.lastName || ""}`.trim() || "Employee";
+            const code = emp.employeeCode ? `[${emp.employeeCode}]` : "";
+            const desig = typeof emp.designation === "object" ? emp.designation?.name : emp.designation || "";
+            return {
+              value: empId,
+              label: `${name} ${code}`.trim(),
+              subtext: desig || undefined,
+            };
+          })
+        );
+      })
+      .catch((err) => {
+        console.error("Failed to load employees for team member assignment:", err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingEmployees(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open]);
+
+  // Pre-fill form when dialog opens
+  useEffect(() => {
+    if (!open) return;
+
+    setSubmitError(null);
+
+    if (isEditMode && memberToEdit) {
+      const empId = extractEmployeeId(memberToEdit);
+      reset({
+        employeeId: empId,
+        roleInTeam: (memberToEdit.roleInTeam as any) === "LEAD" ? "LEAD" : "MEMBER",
+        isPrimary: memberToEdit.isPrimary !== false,
+        allocationPercentage: memberToEdit.allocationPercentage ?? 100,
+      });
+    } else {
+      reset({
+        employeeId: "",
+        roleInTeam: "MEMBER",
+        isPrimary: true,
+        allocationPercentage: 100,
+      });
+    }
+  }, [open, isEditMode, memberToEdit, reset]);
+
+  const onSubmit = async (values: AddTeamMemberFormValues) => {
+    if (!teamId) {
+      setSubmitError("Missing target team ID.");
+      return;
+    }
+
+    setSubmitError(null);
+
+    try {
+      if (isEditMode) {
+        // Find target employee ID for member update
+        const targetMemberId = extractEmployeeId(memberToEdit) || values.employeeId;
+        if (!targetMemberId) {
+          setSubmitError("Missing target member ID.");
+          return;
+        }
+
+        const updatePayload: UpdateTeamMemberPayload = {
+          roleInTeam: values.roleInTeam,
+          isPrimary: values.isPrimary ?? true,
+          allocationPercentage: Number(values.allocationPercentage) || 100,
+        };
+
+        const response = await updateTeamMember(teamId, targetMemberId, updatePayload);
+
+        if (response?.success || (response as any)?.succeeded) {
+          toast.success(response?.message || "Team member updated successfully!");
+          onSuccess?.();
+          onClose();
+        } else {
+          const msg = response?.message || "Failed to update team member.";
+          setSubmitError(msg);
+          toast.error(msg);
+        }
+      } else {
+        const createPayload: AddTeamMemberPayload = {
+          employeeId: values.employeeId,
+          roleInTeam: values.roleInTeam,
+          isPrimary: values.isPrimary ?? true,
+          allocationPercentage: Number(values.allocationPercentage) || 100,
+        };
+
+        const response = await addTeamMember(teamId, createPayload);
+
+        if (response?.success || (response as any)?.succeeded) {
+          toast.success(response?.message || "Team member added successfully!");
+          onSuccess?.();
+          onClose();
+        } else {
+          const msg = response?.message || "Failed to add member to team.";
+          setSubmitError(msg);
+          toast.error(msg);
+        }
+      }
+    } catch (err: any) {
+      let errorMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        `Failed to ${isEditMode ? "update" : "add"} team member.`;
+
+      if (typeof errorMsg === "string" && errorMsg.trim().startsWith("[") && errorMsg.includes("message")) {
+        try {
+          const parsed = JSON.parse(errorMsg);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            errorMsg = parsed.map((item: any) => `${item.path?.join(".") || "Field"}: ${item.message}`).join(" | ");
+          }
+        } catch {
+          // Keep raw string
+        }
+      }
+
+      setSubmitError(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={isSubmitting ? undefined : onClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: "blur(4px)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: { xs: "16px", sm: "20px" },
+            p: 0,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid #E2E8F0",
+            mx: { xs: 1.5, sm: "auto" },
+            width: { xs: "calc(100% - 24px)", sm: "100%" },
+            overflow: "hidden",
+          },
+        },
+      }}
+    >
+      {/* Header */}
+      <DialogTitle
+        component="div"
+        sx={{
+          py: 2,
+          px: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid #F1F5F9",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: "10px",
+              backgroundColor: isEditMode ? "rgba(109, 93, 246, 0.1)" : "rgba(16, 185, 129, 0.1)",
+              color: isEditMode ? "#6D5DF6" : "#10B981",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {isEditMode ? <EditOutlinedIcon sx={{ fontSize: 22 }} /> : <PersonAddAlt1Icon sx={{ fontSize: 22 }} />}
+          </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "#0F172A", lineHeight: 1.2 }}>
+              {isEditMode ? "Edit Member Allocation & Role" : "Add Member to Squad"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#64748B" }}>
+              {teamName ? `Managing member for ${teamName}` : "Configure member role and capacity allocation"}
+            </Typography>
+          </Box>
+        </Box>
+
+        <IconButton
+          onClick={onClose}
+          disabled={isSubmitting}
+          size="small"
+          sx={{
+            color: "#64748B",
+            borderRadius: "10px",
+            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+      </DialogTitle>
+
+      {/* Form Content */}
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <DialogContent sx={{ p: 3 }}>
+          {submitError && (
+            <Alert severity="error" sx={{ mb: 2.5, borderRadius: "10px" }}>
+              {submitError}
+            </Alert>
+          )}
+
+          <Grid container spacing={2}>
+            {/* Select Employee (Disabled in Edit Mode) */}
+            <Grid size={12}>
+              <Controller
+                name="employeeId"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    label="Employee"
+                    placeholder={loadingEmployees ? "Loading employees..." : "Search employee..."}
+                    options={employees}
+                    value={field.value}
+                    onChange={(val) => field.onChange(String(val))}
+                    error={errors.employeeId?.message}
+                    disabled={isEditMode}
+                    searchable
+                    required
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* Team Role */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Controller
+                name="roleInTeam"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    label="Role in Team"
+                    options={ROLE_OPTIONS}
+                    value={field.value}
+                    onChange={(val) => field.onChange(val as any)}
+                    error={errors.roleInTeam?.message}
+                    required
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* Allocation Percentage */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextInput
+                label="Capacity Allocation (%)"
+                type="number"
+                placeholder="100"
+                registration={register("allocationPercentage", {
+                  valueAsNumber: true,
+                })}
+                slotProps={{ htmlInput: { min: 1, max: 100 } }}
+                required
+              />
+            </Grid>
+
+            {/* Primary Team Switch */}
+            <Grid size={12}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: "12px",
+                  backgroundColor: "#F8FAFC",
+                  border: "1px solid #E2E8F0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#1E293B" }}>
+                    Primary Team Assignment
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                    Set this team as the employee's primary squad assignment
+                  </Typography>
+                </Box>
+                <Controller
+                  name="isPrimary"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={Boolean(field.value)}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      color="primary"
+                    />
+                  )}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        {/* Footer Actions */}
+        <DialogActions
+          sx={{
+            py: 1.75,
+            px: 3,
+            borderTop: "1px solid #F1F5F9",
+            backgroundColor: "#FAFAFA",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 1.25,
+          }}
+        >
+          <Button
+            onClick={onClose}
+            disabled={isSubmitting}
+            sx={{
+              height: 40,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              color: "#475569",
+              backgroundColor: "#F1F5F9",
+              "&:hover": { backgroundColor: "#E2E8F0" },
+            }}
+          >
+            Cancel
+          </Button>
+
+          <PrimaryButton type="submit" loading={isSubmitting} disabled={isSubmitting}>
+            {isEditMode ? "Save Changes" : "Add Member"}
+          </PrimaryButton>
+        </DialogActions>
+      </Box>
+    </Dialog>
+  );
+}
+
+export default AddTeamMemberDialog;

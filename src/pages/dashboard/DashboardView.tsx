@@ -13,6 +13,7 @@ import PermissionGuard from "../../components/auth/PermissionGuard";
 import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard";
 import OrgSetupGuidanceWidget from "../../sections/dashboard/components/OrgSetupGuidanceWidget";
 import CelebrationsKpiCard from "../../sections/dashboard/components/CelebrationsKpiCard";
+import MyTeamsWidget from "../../sections/teams/components/MyTeamsWidget";
 import { usePermissions } from "../../hooks/usePermissions";
 import type { RootState } from "../../store/rootReducer";
 
@@ -129,6 +130,11 @@ function DashboardView() {
             <DailyPunchCard />
           </Box>
         )}
+
+        {/* My Assigned Teams & Squads Widget */}
+        <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 } }}>
+          <MyTeamsWidget />
+        </Box>
 
         {/* Logged-in Employee My Branch Celebrations & Holidays Widget */}
         <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 }, width: { xs: "100%", md: "50%" } }}>
