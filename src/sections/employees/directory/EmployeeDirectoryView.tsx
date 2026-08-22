@@ -26,8 +26,10 @@ import { PeopleHubKpiCards } from "../employee-list/components/PeopleHubKpiCards
 import { PeopleHubDepartmentTabs, type FilterState } from "../employee-list/components/PeopleHubDepartmentTabs";
 import { ViewModeSwitcher } from "../employee-list/components/ViewModeSwitcher";
 import { EmployeeDirectoryCardGrid } from "./components/EmployeeDirectoryCardGrid";
+import EmployeeMatrixDetailDrawer from "./components/EmployeeMatrixDetailDrawer";
 
 function EmployeeDirectoryView() {
+  const [selectedEmpForMatrix, setSelectedEmpForMatrix] = useState<any | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
@@ -395,10 +397,18 @@ function EmployeeDirectoryView() {
         ) : (
           <EmployeeDirectoryCardGrid
             employees={displayedEmployees}
-            onSelectEmployee={(emp) => navigate(`/employees/${emp._id}`)}
+            onSelectEmployee={(emp) => setSelectedEmpForMatrix(emp)}
           />
         )}
       </Box>
+
+      {/* Multi-Level Reporting & Matrix Architecture Detail Drawer */}
+      <EmployeeMatrixDetailDrawer
+        open={Boolean(selectedEmpForMatrix)}
+        employee={selectedEmpForMatrix}
+        onClose={() => setSelectedEmpForMatrix(null)}
+        onRefresh={() => dispatch(listEmployeesRequest({ pageNumber: 1, pageSize: 100 }))}
+      />
     </>
   );
 }

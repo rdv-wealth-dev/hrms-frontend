@@ -172,19 +172,28 @@ export function EmployeeDirectoryCardGrid({
             </Typography>
 
             {/* Status Badge */}
-            <Chip
-              label={statusLabel}
-              size="small"
-              sx={{
-                height: 22,
-                fontSize: "11px",
-                fontWeight: 700,
-                backgroundColor: statusBg,
-                color: statusColor,
-                borderRadius: "12px",
-                px: 1,
-              }}
-            />
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, width: "100%" }}>
+              <Chip
+                label={statusLabel}
+                size="small"
+                sx={{
+                  height: 22,
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  backgroundColor: statusBg,
+                  color: statusColor,
+                  borderRadius: "12px",
+                  px: 1,
+                }}
+              />
+
+              {/* Manager & Squad Badges */}
+              {((emp as any).reportingManager || (emp as any).managerId) && (
+                <Typography variant="caption" sx={{ fontSize: "10.5px", color: "#6D5DF6", fontWeight: 700, display: "block" }}>
+                  👔 Mgr: {(emp as any).reportingManager?.fullName || (emp as any).managerId?.fullName || "Assigned"}
+                </Typography>
+              )}
+            </Box>
           </Paper>
         );
       })}

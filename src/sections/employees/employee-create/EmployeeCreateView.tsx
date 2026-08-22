@@ -45,9 +45,20 @@ import {
   type CreateEmployeeFormData,
 } from "../../../validations/employee/create-employee.schema";
 import { listShifts } from "../../../api/attendance.api";
+import { listRoles, type RoleItem } from "../../../api/role.api";
+import { listTeams } from "../../../api/team.api";
 import type { Shift } from "../../../store/attendance";
 import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
+
+const DEFAULT_FALLBACK_ROLES: RoleItem[] = [
+  { _id: "1", name: "Employee", slug: "EMPLOYEE", description: "Self-service access" },
+  { _id: "2", name: "Manager", slug: "MANAGER", description: "Team attendance & approvals" },
+  { _id: "3", name: "Team Leader", slug: "TEAM_LEADER", description: "Squad lead & member view" },
+  { _id: "4", name: "HR Admin", slug: "HR_ADMIN", description: "Full operational HR access" },
+  { _id: "5", name: "Branch Admin", slug: "BRANCH_ADMIN", description: "Branch operational access" },
+  { _id: "6", name: "Org Admin", slug: "ORG_ADMIN", description: "Full organizational access" },
+];
 
 const EMPLOYEE_TYPES = [
   { value: "FULL_TIME", label: "Full-Time" },
@@ -80,10 +91,54 @@ export default function EmployeeCreateView() {
   const [designations, setDesignations] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
 
+  const [teams, setTeams] = useState<Array<{ _id: string; name: string; code: string }>>([]);
+  const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
+
   const manageSalary = true;
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
   const [formValidationError, setFormValidationError] = useState<string | null>(null);
+
+  const [rolesList, setRolesList] = useState<RoleItem[]>(DEFAULT_FALLBACK_ROLES);
+
+  // Fetch active squad teams from DB
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingTeams(true);
+    listTeams()
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items || [];
+        setTeams(list);
+      })
+      .catch((err) => console.error("Failed to load squad teams:", err))
+      .finally(() => {
+        if (isMounted) setLoadingTeams(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch active system and custom roles from DB
+  useEffect(() => {
+    let isMounted = true;
+    listRoles()
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.data) ? res.data : [];
+        if (list.length > 0) {
+          setRolesList(list);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load roles from backend, using default fallback roles:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const {
     register,
@@ -97,7 +152,10 @@ export default function EmployeeCreateView() {
       branchId: activeBranchId || "",
       departmentId: "",
       designationId: "",
+      teamId: "",
       managerId: "",
+      secondaryManagerIds: [],
+      role: "EMPLOYEE",
       countryCode: "IN",
       employeeType: "FULL_TIME",
       shiftId: "",
@@ -288,13 +346,13 @@ export default function EmployeeCreateView() {
 
     // Clean up all empty optional fields to prevent backend validation errors
     const optionalKeys = [
-      "phone", "managerId", "probationEndDate", "shiftId",
+      "phone", "managerId", "teamId", "secondaryManagerIds", "probationEndDate", "shiftId",
       "pan", "aadhaar", "passportNo", "dateOfBirth", "gender",
       "bloodGroup", "maritalStatus", "nationality", "currentAddress", "permanentAddress"
     ];
     optionalKeys.forEach((key) => {
       const val = payload[key];
-      if (val === "" || val === null || val === undefined) {
+      if (val === "" || val === null || val === undefined || (Array.isArray(val) && val.length === 0)) {
         delete payload[key];
       } else if (typeof val === "object" && !Array.isArray(val)) {
         const hasValues = Object.values(val).some((v) => v !== "" && v !== null && v !== undefined);
@@ -344,6 +402,12 @@ export default function EmployeeCreateView() {
   const designationOptions: SelectOption[] = designations?.map((des) => ({
     value: des._id,
     label: des.name,
+  })) ?? [];
+
+  // Convert teams to CascadingSelect options
+  const teamOptions: SelectOption[] = teams?.map((t: any) => ({
+    value: t._id || t.id,
+    label: `${t.name} (${t.code || "SQUAD"})`,
   })) ?? [];
 
   // Convert managers to CascadingSelect options
@@ -398,7 +462,7 @@ export default function EmployeeCreateView() {
         <form onSubmit={handleSubmit(onSubmit, onInvalidForm)} autoComplete="off">
           <Stack spacing={3}>
 
-            {/* ── CARD 1: CASCADING ORGANIZATIONAL PLACEMENT (STEPS 1 - 4) ── */}
+            {/* ── CARD 1: CASCADING ORGANIZATIONAL PLACEMENT (STEPS 1 - 7) ── */}
             <Card sx={{ borderRadius: "12px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)", border: "1px solid #E5E7EB" }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
@@ -410,7 +474,7 @@ export default function EmployeeCreateView() {
 
                 <Grid container spacing={2.5}>
                   {/* Step 1: Branch Selection */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       select
                       label="STEP 1: Branch Location"
@@ -430,7 +494,7 @@ export default function EmployeeCreateView() {
                   </Grid>
 
                   {/* Step 2: Department (Cascading) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
                       label="STEP 2: Department"
                       required
@@ -446,7 +510,7 @@ export default function EmployeeCreateView() {
                   </Grid>
 
                   {/* Step 3: Designation (Cascading) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
                       label="STEP 3: Designation"
                       required
@@ -461,10 +525,24 @@ export default function EmployeeCreateView() {
                     />
                   </Grid>
 
-                  {/* Step 4: Reporting Manager (Auto-filled) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  {/* Step 4: Squad Team */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
-                      label="STEP 4: Reporting Manager"
+                      label="STEP 4: Squad Team (Optional)"
+                      value={watch("teamId")}
+                      options={teamOptions}
+                      loading={loadingTeams}
+                      disabledPlaceholder="No teams available"
+                      emptyPlaceholder="No squad teams found"
+                      error={errors.teamId?.message}
+                      registration={register("teamId")}
+                    />
+                  </Grid>
+
+                  {/* Step 5: Primary Reporting Manager */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <CascadingSelect
+                      label="STEP 5: Primary Reporting Manager"
                       value={watch("managerId")}
                       options={managerOptions}
                       loading={loadingManagers}
@@ -474,6 +552,45 @@ export default function EmployeeCreateView() {
                       error={errors.managerId?.message}
                       registration={register("managerId")}
                     />
+                  </Grid>
+
+                  {/* Step 6: Secondary Managers (Multi-Select) */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="STEP 6: Secondary Managers (Optional)"
+                      value={Array.isArray(watch("secondaryManagerIds")) ? watch("secondaryManagerIds") : []}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setValue("secondaryManagerIds", typeof val === "string" ? val.split(",") : val);
+                      }}
+                      error={errors.secondaryManagerIds?.message}
+                      slotProps={{ select: { multiple: true } }}
+                      disabled={!selectedBranchId || !selectedDepartmentId}
+                    >
+                      {eligibleManagers?.map((m) => (
+                        <MenuItem key={m._id} value={m._id}>
+                          {m.fullName} [{m.employeeCode}] • {m.designationTitle || "Manager"}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
+
+                  {/* Step 7: System Access Security Role */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="STEP 7: System Security Role"
+                      required
+                      registration={register("role")}
+                      error={errors.role?.message}
+                    >
+                      {rolesList?.map((r) => (
+                        <MenuItem key={r.slug || r._id} value={r.slug}>
+                          {r.name} ({r.slug})
+                        </MenuItem>
+                      ))}
+                    </TextInput>
                   </Grid>
                 </Grid>
               </CardContent>

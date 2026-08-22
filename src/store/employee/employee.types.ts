@@ -62,7 +62,10 @@ export interface CreateEmployeeRequest {
   branchId: string;
   departmentId: string;
   designationId: string;
+  teamId?: string;
   managerId?: string;
+  secondaryManagerIds?: string[];
+  role?: string;
   employeeType: string;
   joiningDate: string;
   probationEndDate?: string;

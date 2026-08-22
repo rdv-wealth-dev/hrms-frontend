@@ -77,6 +77,9 @@ export const createEmployeeSchema = z.object({
   designationId: z.string().min(1, "Designation is required"),
   
   managerId: z.string().optional(),
+  teamId: z.string().optional(),
+  secondaryManagerIds: z.array(z.string()).optional(),
+  role: z.string().min(1, "Role is required"),
   employeeType: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN", "CONSULTANT", "TEMPORARY", "UNPAID", "FREELANCE"], { message: "Employee type is required" }),
   joiningDate: z.string().min(1, "Joining date is required"),
   probationEndDate: z.string().optional(),
