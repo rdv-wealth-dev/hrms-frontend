@@ -23,7 +23,9 @@ import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import TextInput from "../../../components/input/TextInput";
+import { CreateTeamDialog } from "../../teams";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -231,11 +233,12 @@ function DepartmentContent() {
     const branchId = useActiveBranchId();
     const [selectedBranchId, setSelectedBranchId] = useState<string>(branchId || "");
     
-    const { hasPermission } = usePermissions();
+    const { hasPermission, canCreateTeam } = usePermissions();
     const canCreate = hasPermission("department.create");
     const canUpdate = hasPermission("department.update");
 
     const [createOpen, setCreateOpen] = useState(false);
+    const [createTeamOpen, setCreateTeamOpen] = useState(false);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
@@ -342,27 +345,53 @@ function DepartmentContent() {
                         </Box>
                     </Box>
 
-                    {/* + Add Department Button */}
-                    {canCreate && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setCreateOpen(true)}
-                            sx={{
-                                height: 40,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                borderRadius: "10px",
-                                px: 2.5,
-                                backgroundColor: "#6D5DF6",
-                                boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                                "&:hover": { backgroundColor: "#5B4BEA" },
-                                width: { xs: "100%", sm: "auto" },
-                            }}
-                        >
-                            Add Department
-                        </Button>
-                    )}
+                    {/* Action Buttons */}
+                    <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", width: { xs: "100%", sm: "auto" } }}>
+                        {canCreateTeam && (
+                            <Button
+                                variant="outlined"
+                                startIcon={<GroupsRoundedIcon />}
+                                onClick={() => setCreateTeamOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2.5,
+                                    borderColor: "#6D5DF6",
+                                    color: "#6D5DF6",
+                                    "&:hover": {
+                                        backgroundColor: "rgba(109, 93, 246, 0.08)",
+                                        borderColor: "#5B4BEA",
+                                    },
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Create Squad / Team
+                            </Button>
+                        )}
+
+                        {canCreate && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => setCreateOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2.5,
+                                    backgroundColor: "#6D5DF6",
+                                    boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                                    "&:hover": { backgroundColor: "#5B4BEA" },
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Add Department
+                            </Button>
+                        )}
+                    </Box>
                 </Box>
 
                 {/* Error Banner */}
@@ -519,6 +548,13 @@ function DepartmentContent() {
                     dispatch(clearDepartmentError());
                 }}
                 onSubmit={handleUpdate}
+            />
+
+            {/* Create Team / Squad Dialog */}
+            <CreateTeamDialog
+                open={createTeamOpen}
+                defaultBranchId={selectedBranchId || branchId}
+                onClose={() => setCreateTeamOpen(false)}
             />
         </>
     );
