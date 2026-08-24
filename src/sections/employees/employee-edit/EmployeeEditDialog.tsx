@@ -633,7 +633,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       select
-                      label="STEP 1: Branch Location *"
+                      label="STEP 1: Branch Location"
                       required
                       value={branchId}
                       onChange={(e) => {
@@ -658,7 +658,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   {/* Step 2: Department */}
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
-                      label="STEP 2: Department *"
+                      label="STEP 2: Department"
                       required
                       value={departmentId}
                       options={departmentOptions}
@@ -678,7 +678,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   {/* Step 3: Designation */}
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
-                      label="STEP 3: Designation *"
+                      label="STEP 3: Designation"
                       required
                       value={designationId}
                       options={designationOptions}
@@ -742,7 +742,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                     <TextInput
                       select
-                      label="System Security Role *"
+                      label="System Security Role"
                       required
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
@@ -759,7 +759,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                     <TextInput
                       select
-                      label="Employee Type *"
+                      label="Employee Type"
                       required
                       value={employeeType}
                       onChange={(e) => setEmployeeType(e.target.value)}
@@ -788,7 +788,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                 <Grid container spacing={2.5}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
-                      label="First Name *"
+                      label="First Name"
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
@@ -797,7 +797,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
-                      label="Last Name *"
+                      label="Last Name"
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}

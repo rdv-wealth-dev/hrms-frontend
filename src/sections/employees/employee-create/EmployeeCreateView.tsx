@@ -14,8 +14,6 @@ import Stack from "@mui/material/Stack";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
-import LinearProgress from "@mui/material/LinearProgress";
-import Chip from "@mui/material/Chip";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
@@ -422,8 +420,8 @@ export default function EmployeeCreateView() {
     <>
       <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1400, mx: "auto" }}>
         
-        {/* Header Title with Profile Completion Badge */}
-        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2 }}>
+        {/* Header Title */}
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <PersonAddOutlinedIcon color="primary" sx={{ fontSize: 32 }} />
             <Box>
@@ -435,16 +433,6 @@ export default function EmployeeCreateView() {
               </Typography>
             </Box>
           </Box>
-
-          <Card sx={{ borderRadius: "12px", border: "1px solid #E5E7EB", p: 1.5, minWidth: 220, bgcolor: "#F9FAFB" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: "#374151" }}>
-                Profile Completion
-              </Typography>
-              <Chip label={manageSalary ? "80%" : "65%"} size="small" color="primary" sx={{ height: 18, fontSize: "0.65rem" }} />
-            </Box>
-            <LinearProgress variant="determinate" value={manageSalary ? 80 : 65} sx={{ height: 6, borderRadius: 3 }} />
-          </Card>
         </Box>
 
         {/* Global Notifications */}

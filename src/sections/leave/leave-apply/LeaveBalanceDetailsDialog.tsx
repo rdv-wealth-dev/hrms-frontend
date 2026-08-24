@@ -215,7 +215,7 @@ export default function LeaveBalanceDetailsDialog({
               <Typography sx={{ fontSize: "11px", fontWeight: 600, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 Total Available Balance
               </Typography>
-              <Typography sx={{ fontSize: { xs: "1.35rem", sm: "1.5rem" }, fontWeight: 800, color: "#0F172A" }}>
+              <Typography sx={{ fontSize: { xs: "1.35rem", sm: "1.5rem" }, fontWeight: 700, color: "#0F172A" }}>
                 {totalAvailable} <Typography component="span" sx={{ fontSize: "13px", fontWeight: 600, color: "#64748B" }}>Days Remaining</Typography>
               </Typography>
             </Box>
@@ -245,7 +245,7 @@ export default function LeaveBalanceDetailsDialog({
         <Typography
           sx={{
             fontSize: "14px",
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#0F172A",
             mb: 2,
             display: "flex",
@@ -298,20 +298,7 @@ export default function LeaveBalanceDetailsDialog({
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.75, mb: 0.75, flexWrap: "wrap" }}>
-                    <Chip
-                      label={item.code}
-                      size="small"
-                      sx={{
-                        height: 20,
-                        fontSize: "9.5px",
-                        fontWeight: 700,
-                        backgroundColor: style.bg,
-                        color: style.color,
-                        border: `1px solid ${style.border}`,
-                        borderRadius: "5px",
-                      }}
-                    />
-                    <Typography sx={{ fontSize: "13.5px", fontWeight: 700, color: "#0F172A" }}>
+                    <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#0F172A" }}>
                       {item.name}
                     </Typography>
                     <Chip
@@ -329,7 +316,7 @@ export default function LeaveBalanceDetailsDialog({
 
                   {/* Centered Numbers Breakdown */}
                   <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 0.75 }}>
-                    <Typography sx={{ fontSize: "1.05rem", fontWeight: 800, color: "#0F172A" }}>
+                    <Typography sx={{ fontSize: "1.1rem", fontWeight: 700, color: "#0F172A" }}>
                       {item.available}
                     </Typography>
                     <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#64748B" }}>

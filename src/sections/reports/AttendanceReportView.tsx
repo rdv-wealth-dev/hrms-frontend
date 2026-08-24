@@ -35,6 +35,8 @@ import AttendanceKpiCards, { type AttendanceKpiData } from "../../components/car
 import TodayStatusBreakdownCard, { type StatusBreakdownData } from "../../components/card/TodayStatusBreakdownCard";
 import EmployeeAttendanceTable, { type AttendanceRecordRow } from "../../components/table/EmployeeAttendanceTable";
 import { FilterBar } from "../../components/filter";
+import PageHeader from "../../components/common/PageHeader";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 
 import ManualAttendanceDialog from "../attendance/components/ManualAttendanceDialog";
 import RegularizeRequestDialog from "../attendance/components/RegularizeRequestDialog";
@@ -579,56 +581,47 @@ export default function AttendanceReportView() {
 
   if (isEmployeeRole) {
     return (
-      <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
-        <Box sx={{ mb: 3.5 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-            My Attendance
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
-            View your monthly attendance history, calendar, and regularization requests
-          </Typography>
-        </Box>
-        <AttendanceTab hideTabs={false} />
+      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+        <PageHeader
+          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          title="My Attendance"
+        />
+        <AttendanceTab hideTabs={true} />
       </Box>
     );
   }
 
   return (
     <>
-      <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
-        
-        {/* Top Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 3.5 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-              Attendance
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
-              Real-time workforce attendance tracking
-            </Typography>
-          </Box>
-
-          {canMarkAttendance && (
-            <Button
-              variant="contained"
-              onClick={() => setManualOpen(true)}
-              startIcon={<AddIcon />}
-              sx={{
-                borderRadius: 2.5,
-                px: 2.5,
-                py: 1,
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: "0.875rem",
-                backgroundColor: "#6D5DF6",
-                boxShadow: "0 4px 14px rgba(109, 93, 246, 0.3)",
-                "&:hover": { backgroundColor: "#5B4BEA" },
-              }}
-            >
-              Mark Attendance
-            </Button>
-          )}
-        </Box>
+      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          title="Attendance"
+          subtitle="Real-time workforce attendance tracking"
+          action={
+            canMarkAttendance && (
+              <Button
+                variant="contained"
+                onClick={() => setManualOpen(true)}
+                startIcon={<AddIcon />}
+                sx={{
+                  borderRadius: "10px",
+                  px: 2.5,
+                  height: 40,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  backgroundColor: "#6D5DF6",
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  "&:hover": { backgroundColor: "#5B4BEA" },
+                }}
+              >
+                Mark Attendance
+              </Button>
+            )
+          }
+        />
 
         {/* 1. Top KPI Summary Cards */}
         <AttendanceKpiCards data={kpiData} />
@@ -709,7 +702,6 @@ export default function AttendanceReportView() {
           <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 66.666%" } }}>
             <LazyWeeklyTrendBarChart
               data={trendData}
-              onRegularizeClick={() => setRegularizeOpen(true)}
             />
           </Box>
           <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 33.333%" } }}>

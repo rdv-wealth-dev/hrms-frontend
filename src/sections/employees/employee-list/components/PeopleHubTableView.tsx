@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
@@ -26,7 +27,6 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import type { EmployeeListItem } from "../../../../store/employee/employee.types";
-import { VirtualizedTableBody } from "../../../../components/table";
 
 interface PeopleHubTableViewProps {
   employees: EmployeeListItem[];
@@ -127,7 +127,7 @@ function getEmployeeStatusStyle(status?: string, employeeType?: string, isActive
 
 export function PeopleHubTableView({
   employees = [],
-  loading = false,
+  loading: _loading = false,
   canUpdate = true,
   canDelete = true,
   canManageRoles = true,
@@ -139,7 +139,6 @@ export function PeopleHubTableView({
   onSelectEmployee,
 }: PeopleHubTableViewProps) {
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedEmp, setSelectedEmp] = useState<EmployeeListItem | null>(null);
 
@@ -241,9 +240,8 @@ export function PeopleHubTableView({
         })}
       </Box>
 
-      {/* Responsive Table View (sm+) with Virtualization & Sticky Header */}
+      {/* Responsive Table View (sm+) */}
       <TableContainer
-        ref={containerRef}
         component={Paper}
         elevation={0}
         sx={{
@@ -253,18 +251,12 @@ export function PeopleHubTableView({
           boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
           backgroundColor: "#FFFFFF",
           overflowX: "auto",
-          overflowY: "auto",
-          maxHeight: 620,
           maxWidth: "100%",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#CBD5E1 transparent",
-          "&::-webkit-scrollbar": { width: "6px", height: "6px" },
-          "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "10px" },
         }}
       >
-        <Table stickyHeader sx={{ minWidth: 1080, tableLayout: "auto" }}>
+        <Table sx={{ minWidth: 1080, tableLayout: "auto" }}>
           <TableHead>
-            <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8, backgroundColor: "#FAFAFA", zIndex: 3 } }}>
+            <TableRow sx={{ "& th": { borderBottom: "1px solid #E5E7EB", py: 1.8, backgroundColor: "#FAFAFA" } }}>
               <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", minWidth: 180 }}>
                 EMPLOYEE
               </TableCell>
@@ -293,7 +285,7 @@ export function PeopleHubTableView({
                 STATUS
               </TableCell>
 
-              {/* Sticky Quick Action Column Header */}
+              {/* Quick Action Column Header */}
               <TableCell
                 align="center"
                 sx={{
@@ -302,10 +294,7 @@ export function PeopleHubTableView({
                   color: "#64748B",
                   letterSpacing: "0.5px",
                   whiteSpace: "nowrap",
-                  position: "sticky",
-                  right: 0,
                   backgroundColor: "#FAFAFA",
-                  zIndex: 4,
                   px: 1.5,
                 }}
                 width={100}
@@ -315,13 +304,8 @@ export function PeopleHubTableView({
             </TableRow>
           </TableHead>
 
-          <VirtualizedTableBody
-            items={safeEmployees}
-            containerRef={containerRef}
-            estimateRowHeight={64}
-            columnsCount={8}
-            loading={loading}
-            renderRow={(emp, index) => {
+          <TableBody>
+            {safeEmployees.map((emp, index) => {
               const fullName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim() || "Employee";
               const initials = `${emp?.firstName?.[0] ?? ""}${emp?.lastName?.[0] ?? ""}`.toUpperCase() || "E";
               const meta = getPeopleHubMeta(index, emp);
@@ -473,15 +457,12 @@ export function PeopleHubTableView({
                     />
                   </TableCell>
 
-                  {/* Sticky Quick Action Trigger */}
+                  {/* Quick Action Trigger */}
                   <TableCell
                     align="center"
                     onClick={(e) => e.stopPropagation()}
                     sx={{
-                      position: "sticky",
-                      right: 0,
                       backgroundColor: "#FFFFFF",
-                      zIndex: 2,
                       px: 1.5,
                     }}
                   >
@@ -495,8 +476,8 @@ export function PeopleHubTableView({
                   </TableCell>
                 </TableRow>
               );
-            }}
-          />
+            })}
+          </TableBody>
         </Table>
       </TableContainer>
 

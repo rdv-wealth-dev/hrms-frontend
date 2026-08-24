@@ -25,6 +25,7 @@ import PrimaryButton from "../../../components/button/PrimaryButton";
 import {
   addTeamMember,
   updateTeamMember,
+  changeTeamLead,
   type AddTeamMemberPayload,
   type UpdateTeamMemberPayload,
   type TeamMember,
@@ -38,14 +39,11 @@ export interface AddTeamMemberDialogProps {
   memberToEdit?: TeamMember | null;
   teamId: string | null;
   teamName?: string;
+  hasActiveLead?: boolean;
+  members?: TeamMember[];
   onClose: () => void;
   onSuccess?: () => void;
 }
-
-const ROLE_OPTIONS = [
-  { value: "MEMBER", label: "Team Member", subtext: "Standard squad contributor" },
-  { value: "LEAD", label: "Team Lead", subtext: "Squad leader / manager" },
-];
 
 export function AddTeamMemberDialog({
   open,
@@ -53,6 +51,8 @@ export function AddTeamMemberDialog({
   memberToEdit,
   teamId,
   teamName,
+  hasActiveLead = false,
+  members = [],
   onClose,
   onSuccess,
 }: AddTeamMemberDialogProps) {
@@ -60,6 +60,25 @@ export function AddTeamMemberDialog({
   const [employees, setEmployees] = useState<{ value: string; label: string; subtext?: string }[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const isCurrentLead = isEditMode && (memberToEdit?.roleInTeam as any) === "LEAD";
+  // In add mode, disable adding a second lead if one exists. In edit mode, allow promoting to lead.
+  const isLeadDisabled = !isEditMode && Boolean(hasActiveLead);
+
+  const roleOptions = [
+    { value: "MEMBER", label: "Team Member", subtext: "Standard squad contributor" },
+    {
+      value: "LEAD",
+      label: "Team Lead",
+      subtext: isLeadDisabled
+        ? "Squad already has a Lead"
+        : isEditMode && !isCurrentLead && hasActiveLead
+          ? "Reassigns squad leadership to this member"
+          : "Squad leader / manager",
+      disabled: isLeadDisabled,
+      tooltip: isLeadDisabled ? "Team already has a Team Lead. Use 'Change Team Lead' or edit member to reassign leadership" : undefined,
+    },
+  ];
 
   const {
     register,
@@ -135,7 +154,7 @@ export function AddTeamMemberDialog({
       const empId = extractEmployeeId(memberToEdit);
       reset({
         employeeId: empId,
-        roleInTeam: (memberToEdit.roleInTeam as any) === "LEAD" ? "LEAD" : "MEMBER",
+        roleInTeam: isCurrentLead ? "LEAD" : "MEMBER",
         isPrimary: memberToEdit.isPrimary !== false,
         allocationPercentage: memberToEdit.allocationPercentage ?? 100,
       });
@@ -147,7 +166,7 @@ export function AddTeamMemberDialog({
         allocationPercentage: 100,
       });
     }
-  }, [open, isEditMode, memberToEdit, reset]);
+  }, [open, isEditMode, memberToEdit, isCurrentLead, reset]);
 
   const onSubmit = async (values: AddTeamMemberFormValues) => {
     if (!teamId) {
@@ -173,6 +192,36 @@ export function AddTeamMemberDialog({
         };
 
         const response = await updateTeamMember(teamId, targetMemberId, updatePayload);
+
+        if (values.roleInTeam === "LEAD") {
+          // 1. Synchronize team lead endpoint
+          await changeTeamLead(teamId, targetMemberId).catch(() => {});
+
+          // 2. Demote all other members who currently have roleInTeam === "LEAD" to "MEMBER"
+          if (Array.isArray(members) && members.length > 0) {
+            const oldLeads = members.filter((m: any) => {
+              const mEmpId = String(
+                typeof m.employeeId === "object"
+                  ? m.employeeId?._id || m.employeeId?.id
+                  : m.employeeId || m._id || m.id
+              );
+              return m.roleInTeam === "LEAD" && mEmpId !== targetMemberId && m._id !== targetMemberId;
+            });
+
+            const demotePromises = oldLeads.map((oldM: any) => {
+              const oldTargetId = String(
+                typeof oldM.employeeId === "object"
+                  ? oldM.employeeId?._id || oldM.employeeId?.id
+                  : oldM.employeeId || oldM._id || oldM.id
+              );
+              return updateTeamMember(teamId, oldTargetId, { roleInTeam: "MEMBER" }).catch(() => {});
+            });
+
+            if (demotePromises.length > 0) {
+              await Promise.allSettled(demotePromises);
+            }
+          }
+        }
 
         if (response?.success || (response as any)?.succeeded) {
           toast.success(response?.message || "Team member updated successfully!");
@@ -341,14 +390,30 @@ export function AddTeamMemberDialog({
                 name="roleInTeam"
                 control={control}
                 render={({ field }) => (
-                  <CustomSelect
-                    label="Role in Team"
-                    options={ROLE_OPTIONS}
-                    value={field.value}
-                    onChange={(val) => field.onChange(val as any)}
-                    error={errors.roleInTeam?.message}
-                    required
-                  />
+                  <Box>
+                    <CustomSelect
+                      label="Role in Team"
+                      options={roleOptions}
+                      value={field.value}
+                      onChange={(val) => field.onChange(val as any)}
+                      error={errors.roleInTeam?.message}
+                      required
+                    />
+                    {isLeadDisabled && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#64748B",
+                          display: "block",
+                          mt: 0.75,
+                          fontSize: "11.5px",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        ℹ️ Team already has a Team Lead. Use <b>Change Team Lead</b> to reassign leadership.
+                      </Typography>
+                    )}
+                  </Box>
                 )}
               />
             </Grid>

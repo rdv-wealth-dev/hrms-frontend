@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import InputAdornment from "@mui/material/InputAdornment";
+import Tooltip from "@mui/material/Tooltip";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import IconButton from "@mui/material/IconButton";
@@ -13,6 +14,7 @@ export interface CustomSelectOption {
   label: string;
   subtext?: string;
   disabled?: boolean;
+  tooltip?: string;
   icon?: React.ReactNode;
 }
 
@@ -222,23 +224,40 @@ export function CustomSelect({
             No options found
           </MenuItem>
         ) : (
-          filteredOptions?.map((opt) => (
-            <MenuItem key={String(opt?.value)} value={opt?.value} disabled={opt?.disabled}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  {opt?.icon}
-                  <Typography variant="body2" sx={{ fontWeight: value === opt?.value ? 600 : 400 }}>
-                    {opt?.label}
-                  </Typography>
+          filteredOptions?.map((opt) => {
+            const itemElement = (
+              <MenuItem
+                key={String(opt?.value)}
+                value={opt?.value}
+                disabled={opt?.disabled}
+                sx={opt?.disabled ? { pointerEvents: "auto !important", opacity: 0.6 } : undefined}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {opt?.icon}
+                    <Typography variant="body2" sx={{ fontWeight: value === opt?.value ? 600 : 400 }}>
+                      {opt?.label}
+                    </Typography>
+                  </Box>
+                  {opt?.subtext && (
+                    <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "11px", ml: "auto" }}>
+                      {opt?.subtext}
+                    </Typography>
+                  )}
                 </Box>
-                {opt?.subtext && (
-                  <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "11px", ml: "auto" }}>
-                    {opt?.subtext}
-                  </Typography>
-                )}
-              </Box>
-            </MenuItem>
-          ))
+              </MenuItem>
+            );
+
+            if (opt?.tooltip) {
+              return (
+                <Tooltip key={String(opt?.value)} title={opt.tooltip} arrow placement="top">
+                  <span>{itemElement}</span>
+                </Tooltip>
+              );
+            }
+
+            return itemElement;
+          })
         )}
       </TextField>
     </Box>

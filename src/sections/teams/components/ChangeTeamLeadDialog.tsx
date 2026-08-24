@@ -17,7 +17,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import CustomSelect from "../../../components/input/CustomSelect";
 import PrimaryButton from "../../../components/button/PrimaryButton";
 
-import { changeTeamLead, type TeamMember } from "../../../api/team.api";
+import { changeTeamLead, updateTeamMember, type TeamMember } from "../../../api/team.api";
 import { listEmployees } from "../../../api/employee.api";
 
 export interface ChangeTeamLeadDialogProps {
@@ -55,11 +55,11 @@ export function ChangeTeamLeadDialog({
     if (Array.isArray(members) && members.length > 0) {
       setEmployees(
         members.map((mem: any) => {
-          const emp = typeof mem.employeeId === "object" && mem.employeeId ? mem.employeeId : mem;
-          const empId = String(emp._id || emp.id || mem.employeeId || mem._id || mem.id);
-          const name = emp.fullName || `${emp.firstName || ""} ${emp.lastName || ""}`.trim() || "Member";
-          const code = emp.employeeCode ? `[${emp.employeeCode}]` : "";
-          const desig = typeof emp.designation === "object" ? emp.designation?.name : emp.designation || "";
+          const emp = typeof mem.employeeId === "object" && mem.employeeId ? mem.employeeId : null;
+          const empId = String(emp?._id || emp?.id || (typeof mem.employeeId === "string" ? mem.employeeId : "") || mem._id || mem.id || "");
+          const name = emp?.fullName || `${emp?.firstName || ""} ${emp?.lastName || ""}`.trim() || mem.fullName || "Member";
+          const code = emp?.employeeCode || mem.employeeCode ? `[${emp?.employeeCode || mem.employeeCode}]` : "";
+          const desig = typeof emp?.designation === "object" ? emp.designation?.name : emp?.designation || mem.designation || "";
           const roleBadge = mem.roleInTeam ? `(${mem.roleInTeam})` : "";
           return {
             value: empId,
@@ -122,6 +122,33 @@ export function ChangeTeamLeadDialog({
 
     try {
       const response = await changeTeamLead(teamId, selectedLeadId);
+
+      // Synchronize roleInTeam across squad members so the table immediately updates
+      const syncPromises: Promise<any>[] = [];
+
+      // 1. Promote new lead in members list
+      const newLeadMember = members.find((m: any) => {
+        const mEmpId = String(typeof m.employeeId === "object" ? m.employeeId?._id || m.employeeId?.id : m.employeeId || m._id || m.id);
+        return mEmpId === selectedLeadId || m._id === selectedLeadId;
+      });
+      if (newLeadMember) {
+        const targetId = String(typeof newLeadMember.employeeId === "object" ? newLeadMember.employeeId?._id || newLeadMember.employeeId?.id : newLeadMember.employeeId || newLeadMember._id || newLeadMember.id);
+        syncPromises.push(updateTeamMember(teamId, targetId, { roleInTeam: "LEAD" }).catch(() => {}));
+      }
+
+      // 2. Demote old lead(s) in members list
+      const oldLeads = members.filter((m: any) => {
+        const mEmpId = String(typeof m.employeeId === "object" ? m.employeeId?._id || m.employeeId?.id : m.employeeId || m._id || m.id);
+        return m.roleInTeam === "LEAD" && mEmpId !== selectedLeadId && m._id !== selectedLeadId;
+      });
+      oldLeads.forEach((oldM: any) => {
+        const targetId = String(typeof oldM.employeeId === "object" ? oldM.employeeId?._id || oldM.employeeId?.id : oldM.employeeId || oldM._id || oldM.id);
+        syncPromises.push(updateTeamMember(teamId, targetId, { roleInTeam: "MEMBER" }).catch(() => {}));
+      });
+
+      if (syncPromises.length > 0) {
+        await Promise.allSettled(syncPromises);
+      }
 
       if (response?.success || (response as any)?.succeeded) {
         toast.success(response?.message || "Team lead updated successfully!");

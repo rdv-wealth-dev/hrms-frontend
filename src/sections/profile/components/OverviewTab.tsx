@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -28,6 +29,8 @@ import { formatDate } from "../../../utils/format-date";
 
 import type { CompleteProfileEmployee } from "../../../api/employee.api";
 import TextInput from "../../../components/input/TextInput";
+import type { RootState } from "../../../store/rootReducer";
+import { listBranchesRequest } from "../../../store/branch";
 
 interface OverviewTabProps {
   empProfile: CompleteProfileEmployee | null;
@@ -48,10 +51,54 @@ export default function OverviewTab({
   user,
   showSnackbar,
 }: OverviewTabProps) {
+  const dispatch = useDispatch<any>();
+  const branches = useSelector((state: RootState) => state.branch?.branches || []);
+
+  useEffect(() => {
+    if (!branches || branches.length === 0) {
+      dispatch(listBranchesRequest());
+    }
+  }, [dispatch, branches]);
+
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js", "AWS"]);
   const [addSkillOpen, setAddSkillOpen] = useState(false);
   const [newSkillInput, setNewSkillInput] = useState("");
   const [aiInsightsDismissed, setAiInsightsDismissed] = useState(false);
+
+  const resolvedBranchName = useMemo(() => {
+    if (!empProfile) return "Head Office";
+
+    // 1. If branchId is an object with a name property
+    if (empProfile.branchId && typeof empProfile.branchId === "object") {
+      if (empProfile.branchId.name) return empProfile.branchId.name;
+    }
+
+    // 2. If branch is populated on empProfile as an object
+    const branchObj = (empProfile as any).branch;
+    if (branchObj && typeof branchObj === "object" && branchObj.name) {
+      return branchObj.name;
+    }
+
+    // 3. If branchId or branch is a string ID, resolve it from the Redux branches list
+    const branchIdStr = typeof empProfile.branchId === "string" 
+      ? empProfile.branchId 
+      : typeof branchObj === "string" 
+        ? branchObj 
+        : "";
+
+    if (branchIdStr) {
+      const match = branches.find((b: any) => String(b._id || b.id) === String(branchIdStr));
+      if (match?.name) return match.name;
+    }
+
+    // 4. If branchName exists directly as a non-ID string
+    const directName = (empProfile as any).branchName;
+    if (directName && typeof directName === "string" && !/^[0-9a-fA-F]{24}$/.test(directName)) {
+      return directName;
+    }
+
+    return "Head Office";
+  }, [empProfile, branches]);
 
   return (
     <Grid container spacing={3}>
@@ -136,11 +183,7 @@ export default function OverviewTab({
                     { label: "Employee Code", value: empProfile?.employeeCode || "NX-001" },
                     {
                       label: "Branch Name",
-                      value: empProfile?.branchId
-                        ? typeof empProfile.branchId === "object"
-                          ? empProfile.branchId.name || "Head Office"
-                          : empProfile.branchId
-                        : "Head Office",
+                      value: resolvedBranchName,
                     },
                     { label: "Department", value: empProfile?.departmentId?.name || "Engineering" },
                     { label: "Grade / Band", value: String((empProfile as any)?.band || "L5") },

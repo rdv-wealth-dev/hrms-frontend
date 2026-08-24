@@ -2,7 +2,6 @@ import { useState } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 
 export interface TrendBarData {
@@ -20,7 +19,6 @@ interface WeeklyTrendBarChartProps {
 export default function WeeklyTrendBarChart({
   data,
   maxScale,
-  onRegularizeClick,
 }: WeeklyTrendBarChartProps) {
   const [hoveredBar, setHoveredBar] = useState<TrendBarData | null>(null);
 
@@ -66,21 +64,6 @@ export default function WeeklyTrendBarChart({
         <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
           Weekly Attendance Trend
         </Typography>
-        {onRegularizeClick && (
-          <Button
-            onClick={onRegularizeClick}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: "#6D5DF6",
-              p: 0,
-              "&:hover": { backgroundColor: "transparent", color: "#5B4BEA" },
-            }}
-          >
-            Regularize Attendance
-          </Button>
-        )}
       </Box>
 
       {/* Chart Canvas Area */}

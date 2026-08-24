@@ -18,6 +18,8 @@ import Tab from "@mui/material/Tab";
 import Chip from "@mui/material/Chip";
 import AddIcon from "@mui/icons-material/Add";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
+import PageHeader from "../../../components/common/PageHeader";
 
 import { useSnackbar } from "../../../components/snackbar";
 import { usePermissions } from "../../../hooks/usePermissions";
@@ -347,14 +349,10 @@ export default function LeaveDashboardView() {
   if (isEmployeeRole) {
     return (
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-            My Leaves
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 500 }}>
-            View your leave balances, history, and apply for leaves
-          </Typography>
-        </Box>
+        <PageHeader
+          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          title="My Leaves"
+        />
         <LeaveTab isViewingOther={false} user={user} />
       </Box>
     );
@@ -363,48 +361,35 @@ export default function LeaveDashboardView() {
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        {/* Page Header Section */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "stretch", sm: "center" },
-            justifyContent: "space-between",
-            gap: 2,
-            mb: 3,
-          }}
-        >
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-              Leave Management
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 500 }}>
-              Manage team leave, balances, and approvals
-            </Typography>
-          </Box>
-
-          {role !== "ORG_ADMIN" && !isProfileBlocked && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenApply}
-              sx={{
-                backgroundColor: "#4F46E5",
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: "14px",
-                borderRadius: "10px",
-                px: 2.5,
-                height: 40,
-                boxShadow: "0 2px 6px rgba(79, 70, 229, 0.25)",
-                "&:hover": { backgroundColor: "#4338CA" },
-                width: { xs: "100%", sm: "auto" },
-              }}
-            >
-              Apply Leave
-            </Button>
-          )}
-        </Box>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          title="Leave Management"
+          subtitle="Manage team leave, balances, and approvals"
+          action={
+            role !== "ORG_ADMIN" && !isProfileBlocked && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenApply}
+                sx={{
+                  backgroundColor: "#6D5DF6",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  borderRadius: "10px",
+                  px: 2.5,
+                  height: 40,
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  "&:hover": { backgroundColor: "#5B4BEA" },
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                Apply Leave
+              </Button>
+            )
+          }
+        />
 
         {isProfileBlocked ? (
           <Paper

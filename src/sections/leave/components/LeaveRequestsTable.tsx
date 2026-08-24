@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
@@ -18,7 +19,6 @@ import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 import { StatusChip } from "../../../components/common/StatusChip";
 import { formatDateRange } from "../../../utils/format-date";
-import { VirtualizedTableBody } from "../../../components/table";
 
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/rootReducer";
@@ -48,14 +48,13 @@ const AVATAR_COLORS = ["#4F46E5", "#D97706", "#059669", "#0284C7", "#7C3AED", "#
 
 export default function LeaveRequestsTable({
   requests = [],
-  loading = false,
+  loading: _loading = false,
   onApprove,
   onReject,
   onPreview,
   onExport,
 }: LeaveRequestsTableProps) {
   const user = useSelector((state: RootState) => state.auth?.user);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [selectedType, setSelectedType] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
 
@@ -241,24 +240,17 @@ export default function LeaveRequestsTable({
 
       {/* Requests Data Table */}
       <TableContainer
-        ref={containerRef}
         sx={{
           borderRadius: "16px",
           border: "1px solid #E2E8F0",
           backgroundColor: "#FFFFFF",
           boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
           overflowX: "auto",
-          overflowY: "auto",
-          maxHeight: 560,
-          scrollbarWidth: "thin",
-          scrollbarColor: "#CBD5E1 transparent",
-          "&::-webkit-scrollbar": { width: "6px", height: "6px" },
-          "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "10px" },
         }}
       >
-        <Table stickyHeader>
+        <Table>
           <TableHead>
-            <TableRow sx={{ "& th": { backgroundColor: "#F8FAFC", zIndex: 3 } }}>
+            <TableRow sx={{ "& th": { backgroundColor: "#F8FAFC" } }}>
               <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", pl: 3, whiteSpace: "nowrap" }}>
                 EMPLOYEE
               </TableCell>
@@ -285,139 +277,144 @@ export default function LeaveRequestsTable({
             </TableRow>
           </TableHead>
 
-          <VirtualizedTableBody
-            items={filteredRequests}
-            containerRef={containerRef}
-            estimateRowHeight={58}
-            columnsCount={6}
-            loading={loading}
-            renderRow={(req, idx) => {
-              const reqEmpId = req?.employeeId?._id;
-              const userEmpId = user?.employeeId || user?.id;
-              const isCurrentUser = Boolean(userEmpId && reqEmpId === userEmpId);
+          <TableBody>
+            {filteredRequests.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                  <Typography variant="body2" sx={{ color: "#64748B" }}>
+                    No leave requests found matching your filter criteria.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredRequests.map((req, idx) => {
+                const reqEmpId = req?.employeeId?._id;
+                const userEmpId = user?.employeeId || user?.id;
+                const isCurrentUser = Boolean(userEmpId && reqEmpId === userEmpId);
 
-              const displayFirstName = req?.employeeId?.firstName ?? (isCurrentUser ? (user?.firstName ?? "") : "");
-              const displayLastName = req?.employeeId?.lastName ?? (isCurrentUser ? (user?.lastName ?? "") : "");
+                const displayFirstName = req?.employeeId?.firstName ?? (isCurrentUser ? (user?.firstName ?? "") : "");
+                const displayLastName = req?.employeeId?.lastName ?? (isCurrentUser ? (user?.lastName ?? "") : "");
 
-              const empName = `${displayFirstName} ${displayLastName}`.trim() || (isCurrentUser ? "You" : "Employee");
-              const initials = `${displayFirstName[0] ?? ""}${displayLastName[0] ?? ""}`.toUpperCase() || "E";
-              const avatarBg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-              const avatarUrl = getAvatarUrl(req);
-              const isPending = (req?.status || "").toUpperCase() === "PENDING";
+                const empName = `${displayFirstName} ${displayLastName}`.trim() || (isCurrentUser ? "You" : "Employee");
+                const initials = `${displayFirstName[0] ?? ""}${displayLastName[0] ?? ""}`.toUpperCase() || "E";
+                const avatarBg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                const avatarUrl = getAvatarUrl(req);
+                const isPending = (req?.status || "").toUpperCase() === "PENDING";
 
-              return (
-                <TableRow
-                  key={req?._id || `leave-req-${idx}`}
-                  hover
-                  sx={{
-                    height: 58,
-                    transition: "all 0.15s ease",
-                    "& .MuiTableCell-root": { whiteSpace: "nowrap" },
-                  }}
-                >
-                  {/* Employee Avatar & Name */}
-                  <TableCell sx={{ pl: 3 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar
-                        src={avatarUrl}
-                        sx={{
-                          width: 34,
-                          height: 34,
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          backgroundColor: avatarBg,
-                          color: "#FFFFFF",
-                        }}
-                      >
-                        {initials}
-                      </Avatar>
-                      <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
-                        {empName}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-
-                  {/* Leave Type */}
-                  <TableCell>
-                    <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
-                      {req?.leaveTypeId?.name || "Leave"}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Date Period */}
-                  <TableCell>
-                    <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
-                      {formatDateRange(req?.fromDate, req?.toDate)}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Total Days */}
-                  <TableCell>
-                    <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
-                      {req?.totalDays ? `${req.totalDays}d` : "1d"}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Status Badge */}
-                  <TableCell><StatusChip status={req?.status} /></TableCell>
-
-                  {/* Inline Actions */}
-                  <TableCell align="center">
-                    {isPending ? (
-                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                        <Tooltip title="Approve Request">
-                          <IconButton
-                            size="small"
-                            onClick={() => onApprove?.(req)}
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              backgroundColor: "#DCFCE7",
-                              color: "#16A34A",
-                              "&:hover": { backgroundColor: "#BBF7D0" },
-                            }}
-                          >
-                            <CheckIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                        </Tooltip>
-
-                        <Tooltip title="Reject Request">
-                          <IconButton
-                            size="small"
-                            onClick={() => onReject?.(req)}
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              backgroundColor: "#FEE2E2",
-                              color: "#DC2626",
-                              "&:hover": { backgroundColor: "#FCA5A5" },
-                            }}
-                          >
-                            <CloseIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    ) : (
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => onPreview?.(req)}
+                return (
+                  <TableRow
+                    key={req?._id || `leave-req-${idx}`}
+                    hover
+                    sx={{
+                      height: 58,
+                      transition: "all 0.15s ease",
+                      "& .MuiTableCell-root": { whiteSpace: "nowrap" },
+                    }}
+                  >
+                    {/* Employee Avatar & Name */}
+                    <TableCell sx={{ pl: 3 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                        <Avatar
+                          src={avatarUrl}
                           sx={{
-                            width: 28,
-                            height: 28,
-                            color: "#64748B",
-                            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+                            width: 34,
+                            height: 34,
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            backgroundColor: avatarBg,
+                            color: "#FFFFFF",
                           }}
                         >
-                          <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            }}
-          />
+                          {initials}
+                        </Avatar>
+                        <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
+                          {empName}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    {/* Leave Type */}
+                    <TableCell>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
+                        {req?.leaveTypeId?.name || "Leave"}
+                      </Typography>
+                    </TableCell>
+
+                    {/* Date Period */}
+                    <TableCell>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
+                        {formatDateRange(req?.fromDate, req?.toDate)}
+                      </Typography>
+                    </TableCell>
+
+                    {/* Total Days */}
+                    <TableCell>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
+                        {req?.totalDays ? `${req.totalDays}d` : "1d"}
+                      </Typography>
+                    </TableCell>
+
+                    {/* Status Badge */}
+                    <TableCell><StatusChip status={req?.status} /></TableCell>
+
+                    {/* Inline Actions */}
+                    <TableCell align="center">
+                      {isPending ? (
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                          <Tooltip title="Approve Request">
+                            <IconButton
+                              size="small"
+                              onClick={() => onApprove?.(req)}
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                backgroundColor: "#DCFCE7",
+                                color: "#16A34A",
+                                "&:hover": { backgroundColor: "#BBF7D0" },
+                              }}
+                            >
+                              <CheckIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Tooltip>
+
+                          <Tooltip title="Reject Request">
+                            <IconButton
+                              size="small"
+                              onClick={() => onReject?.(req)}
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                backgroundColor: "#FEE2E2",
+                                color: "#DC2626",
+                                "&:hover": { backgroundColor: "#FCA5A5" },
+                              }}
+                            >
+                              <CloseIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      ) : (
+                        <Tooltip title="View Details">
+                          <IconButton
+                            size="small"
+                            onClick={() => onPreview?.(req)}
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              color: "#64748B",
+                              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+                            }}
+                          >
+                            <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
         </Table>
       </TableContainer>
     </Box>

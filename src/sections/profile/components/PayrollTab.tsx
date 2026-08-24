@@ -24,6 +24,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../components/input/TextInput";
+import { usePermissions } from "../../../hooks/usePermissions";
 import {
   addBankAccount,
   deleteBankAccount,
@@ -155,6 +156,9 @@ export default function PayrollTab({
     }
   };
 
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const canAssignSalary = isSuperAdmin || hasPermission("payroll.create") || hasPermission("payroll.run") || hasPermission("employee.update");
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {/* ── CARD 2: SALARY STRUCTURE & CTC PLAN ── */}
@@ -164,14 +168,16 @@ export default function PayrollTab({
             <PaymentsOutlinedIcon sx={{ color: "#4F46E5" }} />
             Salary Structure & CTC Plan
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<EditOutlinedIcon />}
-            onClick={() => setSalaryDialogOpen(true)}
-            sx={{ backgroundColor: "#4F46E5", borderRadius: "8px" }}
-          >
-            {salaryStructure ? "Revise Salary Structure" : "Assign Salary Structure"}
-          </Button>
+          {canAssignSalary && (
+            <Button
+              variant="contained"
+              startIcon={<EditOutlinedIcon />}
+              onClick={() => setSalaryDialogOpen(true)}
+              sx={{ backgroundColor: "#4F46E5", borderRadius: "8px" }}
+            >
+              {salaryStructure ? "Revise Salary Structure" : "Assign Salary Structure"}
+            </Button>
+          )}
         </Box>
 
         {salaryLoading ? (

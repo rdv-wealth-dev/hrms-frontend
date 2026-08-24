@@ -1,6 +1,9 @@
 // src/theme/create-theme.ts
 import { createTheme } from "@mui/material/styles";
 import { themeConfig } from "./theme-config";
+import { typographyTokens } from "./tokens/typography.tokens";
+
+export { typographyTokens };
 
 export const theme = createTheme({
   palette: {
@@ -18,12 +21,57 @@ export const theme = createTheme({
   },
 
   typography: {
-    fontFamily: '"Inter", "Segoe UI", "Helvetica", "Arial", sans-serif',
+    fontFamily: typographyTokens.fontFamily,
 
-    // Fluid heading scale: smaller on mobile, full-size on desktop
-    h4: { fontSize: "clamp(1.2rem, 2.5vw, 1.6rem)", fontWeight: 700 },
-    h5: { fontSize: "clamp(1rem, 2vw, 1.35rem)", fontWeight: 700 },
-    h6: { fontSize: "clamp(0.95rem, 1.8vw, 1.15rem)", fontWeight: 600 },
+    h4: {
+      fontSize: "clamp(1.2rem, 2vw, 1.5rem)",
+      fontWeight: 700,
+      color: "#0F172A",
+      letterSpacing: "-0.01em",
+    },
+    h5: {
+      fontSize: "clamp(1.05rem, 1.8vw, 1.25rem)",
+      fontWeight: 700,
+      color: "#0F172A",
+      letterSpacing: "-0.01em",
+    },
+    h6: {
+      fontSize: "clamp(0.95rem, 1.5vw, 1.1rem)",
+      fontWeight: 600,
+      color: "#0F172A",
+    },
+    subtitle1: {
+      fontSize: "0.9375rem", // 15px
+      fontWeight: 600,
+      color: "#0F172A",
+    },
+    subtitle2: {
+      fontSize: "0.875rem", // 14px
+      fontWeight: 600,
+      color: "#0F172A",
+    },
+    body1: {
+      fontSize: "0.875rem", // 14px
+      fontWeight: 400,
+      lineHeight: 1.5,
+      color: "#1E293B",
+    },
+    body2: {
+      fontSize: "0.8125rem", // 13px
+      fontWeight: 400,
+      lineHeight: 1.4,
+      color: "#64748B",
+    },
+    caption: {
+      fontSize: "0.75rem", // 12px
+      fontWeight: 400,
+      color: "#64748B",
+    },
+    button: {
+      textTransform: "none",
+      fontWeight: 600,
+      fontSize: "0.875rem",
+    },
   },
 
   components: {
@@ -39,7 +87,12 @@ export const theme = createTheme({
         "*::-webkit-scrollbar-corner": { background: "transparent" },
 
         // Prevent horizontal overflow on every page globally
-        "body": { overflowX: "hidden" },
+        "body": {
+          overflowX: "hidden",
+          fontFamily: typographyTokens.fontFamily,
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
+        },
       },
     },
 
@@ -61,6 +114,20 @@ export const theme = createTheme({
           border: "1px solid #E2E8F0",
           backgroundColor: "#FFFFFF",
           boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+        },
+      },
+    },
+
+    MuiCardHeader: {
+      styleOverrides: {
+        title: {
+          fontSize: "0.9375rem", // 15px
+          fontWeight: 600,
+          color: "#0F172A",
+        },
+        subheader: {
+          fontSize: "0.8125rem", // 13px
+          color: "#64748B",
         },
       },
     },
@@ -130,7 +197,7 @@ export const theme = createTheme({
       },
     },
 
-    // ─── Dialog: fullscreen on mobile ─────────────────────────
+    // ─── Dialog: fullscreen on mobile & unified Title ─────────
     MuiDialog: {
       defaultProps: {
         fullScreen: false,
@@ -147,6 +214,17 @@ export const theme = createTheme({
       },
     },
 
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          fontSize: "1.125rem", // 18px
+          fontWeight: 700,
+          color: "#0F172A",
+          lineHeight: 1.25,
+        },
+      },
+    },
+
     // ─── TableContainer: horizontal scroll on mobile ───────────
     MuiTableContainer: {
       styleOverrides: {
@@ -157,15 +235,28 @@ export const theme = createTheme({
       },
     },
 
-    // ─── Table cells: compact padding on mobile ────────────────
+    // ─── Table cells: unified typography & compact padding on mobile ─
     MuiTableCell: {
       styleOverrides: {
         root: ({ theme }) => ({
+          fontFamily: typographyTokens.fontFamily,
           [theme.breakpoints.down("sm")]: {
             padding: "8px 10px",
             fontSize: "0.8rem",
           },
         }),
+        head: {
+          fontSize: "0.75rem", // 12px
+          fontWeight: 700,
+          letterSpacing: "0.5px",
+          textTransform: "uppercase",
+          color: "#64748B",
+          backgroundColor: "#F8FAFC",
+        },
+        body: {
+          fontSize: "0.84375rem", // 13.5px
+          color: "#1E293B",
+        },
       },
     },
 
@@ -176,6 +267,7 @@ export const theme = createTheme({
           textTransform: "none", // global: no UPPERCASE buttons
           fontWeight: 600,
           borderRadius: "10px",
+          fontFamily: typographyTokens.fontFamily,
         },
       },
     },
@@ -184,6 +276,7 @@ export const theme = createTheme({
     MuiMenuItem: {
       styleOverrides: {
         root: {
+          fontFamily: typographyTokens.fontFamily,
           "&.Mui-disabled": {
             opacity: 1,
             color: "#334155",
@@ -196,9 +289,13 @@ export const theme = createTheme({
     // ─── Global Input Base & Text Fields ───────────────────────
     MuiInputBase: {
       styleOverrides: {
+        root: {
+          fontFamily: typographyTokens.fontFamily,
+        },
         input: {
           fontSize: 14,
           color: "#111827",
+          fontFamily: typographyTokens.fontFamily,
           "&::placeholder": {
             fontSize: "13px",
             color: "#9CA3AF",
@@ -215,6 +312,7 @@ export const theme = createTheme({
           backgroundColor: "#FFFFFF",
           fontSize: "14px",
           color: "#0F172A",
+          fontFamily: typographyTokens.fontFamily,
           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           "&:hover .MuiOutlinedInput-notchedOutline": {
             borderColor: "#CBD5E1",
@@ -243,6 +341,7 @@ export const theme = createTheme({
     MuiInputLabel: {
       styleOverrides: {
         root: {
+          fontFamily: typographyTokens.fontFamily,
           fontSize: "14px",
           fontWeight: 500,
           color: "#64748B",
@@ -261,6 +360,7 @@ export const theme = createTheme({
     MuiFormHelperText: {
       styleOverrides: {
         root: {
+          fontFamily: typographyTokens.fontFamily,
           marginLeft: 0,
           marginTop: "4px",
           fontSize: "12px",
@@ -273,6 +373,7 @@ export const theme = createTheme({
         select: {
           display: "flex",
           alignItems: "center",
+          fontFamily: typographyTokens.fontFamily,
         },
       },
     },

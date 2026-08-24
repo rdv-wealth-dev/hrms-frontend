@@ -20,6 +20,8 @@ export interface KpiCardItem {
   progress?: number; // 0-100 percentage for circular progress ring
   progressColor?: string;
   variant?: KpiCardVariant;
+  size?: "small" | "medium";
+  onClick?: () => void;
 }
 
 interface KpiCardsGridProps {
@@ -79,7 +81,10 @@ export function KpiCard({
   progress,
   progressColor = "#10B981",
   variant = "green",
+  size = "medium",
+  onClick,
 }: KpiCardItem) {
+  const isSmall = size === "small";
   const config = VARIANT_CONFIGS[variant] || VARIANT_CONFIGS.green;
   const gradientId = `kpi-wedge-${variant}-${title.replace(/[^a-zA-Z0-9]/g, "")}`;
 
@@ -96,9 +101,10 @@ export function KpiCard({
 
   return (
     <Card
+      onClick={onClick}
       sx={{
-        p: { xs: 2.5, sm: 3 },
-        borderRadius: "20px",
+        p: isSmall ? { xs: 2, sm: 2.25 } : { xs: 2.5, sm: 3 },
+        borderRadius: isSmall ? "18px" : "20px",
         background: config.bgGradient,
         border: config.border,
         boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
@@ -107,9 +113,10 @@ export function KpiCard({
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        minHeight: 140,
+        minHeight: isSmall ? 125 : 140,
         height: "100%",
         boxSizing: "border-box",
+        cursor: onClick ? "pointer" : "default",
         transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
           boxShadow: "0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03)",
@@ -157,15 +164,18 @@ export function KpiCard({
         }}
       >
         {/* 1. Header Row: Title & (Icon Badge or Circular Progress Ring) */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: isSmall ? "flex-start" : "center", justifyContent: "space-between", gap: 1, mb: 1.5 }}>
           <Typography
             variant="caption"
             sx={{
               fontWeight: 700,
               color: "#64748B",
-              letterSpacing: "0.6px",
+              letterSpacing: "0.5px",
               fontSize: "11px",
               textTransform: "uppercase",
+              lineHeight: 1.3,
+              flex: 1,
+              minWidth: 0,
             }}
           >
             {title}
@@ -176,37 +186,51 @@ export function KpiCard({
               sx={{
                 position: "relative",
                 display: "inline-flex",
-                width: 38,
-                height: 38,
+                width: isSmall ? 32 : 40,
+                height: isSmall ? 32 : 40,
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                mr: isSmall ? { xs: -1.25, sm: -1.5 } : 0,
+                mt: isSmall ? 0.5 : 0,
               }}
             >
+              {/* Background Track Ring */}
               <CircularProgress
                 variant="determinate"
                 value={100}
-                size={38}
-                thickness={4.5}
-                sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                size={isSmall ? 32 : 40}
+                thickness={4}
+                sx={{
+                  color: "rgba(0, 0, 0, 0.06)",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                }}
               />
+              {/* Active Progress Ring */}
               <CircularProgress
                 variant="determinate"
                 value={Math.min(Math.max(progress, 0), 100)}
-                size={38}
-                thickness={4.5}
+                size={isSmall ? 32 : 40}
+                thickness={4}
                 sx={{
                   color: progressColor,
                   position: "absolute",
+                  top: 0,
                   left: 0,
                   "& .MuiCircularProgress-circle": { strokeLinecap: "round" },
                 }}
               />
+              {/* Centered Percentage Text */}
               <Typography
                 sx={{
-                  fontSize: "10px",
+                  fontSize: isSmall ? "8px" : "10.5px",
                   fontWeight: 700,
                   color: "#0F172A",
+                  textAlign: "center",
+                  lineHeight: 1,
+                  zIndex: 1,
                 }}
               >
                 {progress}%
@@ -216,15 +240,20 @@ export function KpiCard({
             icon && (
               <Box
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "10px",
+                  width: isSmall ? 26 : 38,
+                  height: isSmall ? 26 : 38,
+                  borderRadius: isSmall ? "6px" : "10px",
                   backgroundColor: iconBg || "rgba(255, 255, 255, 0.85)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
+                  mr: isSmall ? { xs: -1.25, sm: -1.5 } : 0,
+                  mt: isSmall ? 0.5 : 0,
                   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+                  "& svg": {
+                    fontSize: isSmall ? "14px !important" : "20px !important",
+                  },
                 }}
               >
                 {icon}

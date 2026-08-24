@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -28,6 +27,7 @@ import { ViewModeSwitcher, type ViewMode } from "../employee-list/components/Vie
 import { EmployeeDirectoryCardGrid } from "./components/EmployeeDirectoryCardGrid";
 import EmployeeMatrixDetailDrawer from "./components/EmployeeMatrixDetailDrawer";
 import OrganizationChart from "./components/OrganizationChart";
+import PageHeader from "../../../components/common/PageHeader";
 
 function EmployeeDirectoryView() {
   const [selectedEmpForMatrix, setSelectedEmpForMatrix] = useState<any | null>(null);
@@ -258,32 +258,16 @@ function EmployeeDirectoryView() {
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        {/* Top Header */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 2.5,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <PeopleAltOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
-                All Employees
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {total > 0
-                  ? `Showing ${displayedEmployees.length} of ${total} employee records`
-                  : "Manage employee directory, profiles, and assignments"}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<PeopleAltOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          title="All Employees"
+          subtitle={
+            total > 0
+              ? `Showing ${displayedEmployees.length} of ${total} employee records`
+              : "Manage employee directory, profiles, and assignments"
+          }
+          viewSwitcher={
             <ViewModeSwitcher
               viewMode={currentViewMode}
               onChange={(mode) => {
@@ -295,8 +279,9 @@ function EmployeeDirectoryView() {
                 }
               }}
             />
-
-            {canCreate && (
+          }
+          action={
+            canCreate && (
               <Button
                 variant="contained"
                 size="small"
@@ -323,9 +308,9 @@ function EmployeeDirectoryView() {
               >
                 Add Employee
               </Button>
-            )}
-          </Box>
-        </Box>
+            )
+          }
+        />
 
         {/* Metric KPI Summary Cards */}
         <PeopleHubKpiCards

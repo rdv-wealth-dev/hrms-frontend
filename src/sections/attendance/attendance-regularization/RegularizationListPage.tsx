@@ -20,6 +20,9 @@ import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+
+import PageHeader from "../../../components/common/PageHeader";
 
 const AVATAR_COLORS = ["#4F46E5", "#D97706", "#059669", "#0284C7", "#7C3AED", "#DB2777"];
 
@@ -168,46 +171,30 @@ function RegularizationListPage() {
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 }, width: "100%" }}>
-        {/* Page Header */}
-        <Box
-          sx={{
-            mb: { xs: 3, sm: 4 },
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
-              Attendance Regularizations
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {isEmployee
-                ? "View and track your daily punch correction requests."
-                : "Review and approve daily punch corrections submitted by employees."}
-            </Typography>
-          </Box>
-
-          <Button
-            variant="outlined"
-            onClick={() => loadData(true)}
-            startIcon={<RefreshIcon />}
-            sx={{
-              borderRadius: "10px",
-              borderColor: "#CBD5E1",
-              color: "#374151",
-              textTransform: "none",
-              fontWeight: 600,
-              alignSelf: { xs: "stretch", sm: "auto" },
-              justifyContent: "center",
-              "&:hover": { borderColor: "#6D5DF6", color: "#6D5DF6", backgroundColor: "#F5F3FF" },
-            }}
-          >
-            Refresh
-          </Button>
-        </Box>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<CalendarMonthOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          title="Attendance Regularizations"
+          action={
+            <Button
+              variant="outlined"
+              onClick={() => loadData(true)}
+              startIcon={<RefreshIcon />}
+              sx={{
+                borderRadius: "10px",
+                borderColor: "#CBD5E1",
+                color: "#374151",
+                textTransform: "none",
+                fontWeight: 600,
+                alignSelf: { xs: "stretch", sm: "auto" },
+                justifyContent: "center",
+                "&:hover": { borderColor: "#6D5DF6", color: "#6D5DF6", backgroundColor: "#F5F3FF" },
+              }}
+            >
+              Refresh
+            </Button>
+          }
+        />
 
         {error && (
           <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }} onClose={() => setError(null)}>

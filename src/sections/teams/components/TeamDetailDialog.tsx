@@ -18,22 +18,17 @@ import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import LinearProgress from "@mui/material/LinearProgress";
 
 import CloseIcon from "@mui/icons-material/Close";
 import GroupsIcon from "@mui/icons-material/Groups";
-import ApartmentIcon from "@mui/icons-material/Apartment";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import PersonIcon from "@mui/icons-material/Person";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import TrackChangesIcon from "@mui/icons-material/TrackChanges";
 import { toast } from "sonner";
 
 import CustomAvatar from "../../../components/avatar/CustomAvatar";
-import StatusChip from "../../../components/common/StatusChip";
 import AddTeamMemberDialog from "./AddTeamMemberDialog";
 import ChangeTeamLeadDialog from "./ChangeTeamLeadDialog";
 import ConfirmDialog from "../../../components/modal/ConfirmDialog";
@@ -234,40 +229,51 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
       <DialogTitle
         component="div"
         sx={{
-          py: { xs: 1.75, sm: 2.2 },
-          px: { xs: 2, sm: 3 },
+          py: { xs: 2, sm: 2.25 },
+          px: { xs: 2.5, sm: 3.5 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           borderBottom: "1px solid #F1F5F9",
+          backgroundColor: "#FFFFFF",
           flexShrink: 0,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Box
             sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "10px",
-              backgroundColor: "rgba(109, 93, 246, 0.1)",
-              color: "#6D5DF6",
+              width: 48,
+              height: 48,
+              borderRadius: "14px",
+              background: "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)",
+              color: "#6366F1",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.12)",
+              flexShrink: 0,
             }}
           >
-            <GroupsIcon sx={{ fontSize: 22 }} />
+            <GroupsIcon sx={{ fontSize: 26 }} />
           </Box>
           <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-              <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.1rem", sm: "1.25rem" }, color: "#0F172A", lineHeight: 1.2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap", mb: 0.25 }}>
+              <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.2rem", sm: "1.4rem" }, color: "#0F172A", lineHeight: 1.2 }}>
                 {team?.name || "Team Details"}
               </Typography>
               {team?.code && (
                 <Chip
                   label={team.code}
                   size="small"
-                  sx={{ fontWeight: 700, fontSize: "11px", backgroundColor: "#F1F5F9", color: "#475569" }}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "11px",
+                    backgroundColor: "#EFF6FF",
+                    color: "#2563EB",
+                    borderRadius: "12px",
+                    height: 22,
+                    px: 0.5,
+                  }}
                 />
               )}
               {team?.type && (
@@ -280,12 +286,15 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                     backgroundColor: typeStyle.bg,
                     color: typeStyle.color,
                     border: `1px solid ${typeStyle.border}`,
+                    borderRadius: "12px",
+                    height: 22,
+                    px: 0.5,
                   }}
                 />
               )}
             </Box>
-            <Typography variant="caption" sx={{ color: "#64748B" }}>
-              Single Team Profile & Assigned Member Allocations
+            <Typography variant="body2" sx={{ color: "#64748B", fontSize: "13px" }}>
+              Single Team Profile &amp; Assigned Member Allocations
             </Typography>
           </Box>
         </Box>
@@ -295,11 +304,14 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
           size="small"
           sx={{
             color: "#64748B",
+            border: "1px solid #E2E8F0",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            width: 36,
+            height: 36,
+            "&:hover": { backgroundColor: "#F8FAFC", color: "#0F172A", borderColor: "#CBD5E1" },
           }}
         >
-          <CloseIcon sx={{ fontSize: 20 }} />
+          <CloseIcon sx={{ fontSize: 18 }} />
         </IconButton>
       </DialogTitle>
 
@@ -337,142 +349,228 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
           </Box>
         ) : (
           <>
-            {/* Overview Summary Grid */}
-            <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3 }}>
+            {/* 4 KPI Metric Cards Grid */}
+            <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 2.5, alignItems: "stretch" }}>
               {/* Department */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 1.75,
-                    borderRadius: "12px",
+                    p: 2,
+                    borderRadius: "14px",
                     border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    backgroundColor: "#FFFFFF",
                     display: "flex",
-                    alignItems: "center",
-                    gap: 1.25,
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                    width: "100%",
+                    height: "100%",
+                    minHeight: 74,
+                    boxSizing: "border-box",
                   }}
                 >
-                  <ApartmentIcon sx={{ fontSize: 22, color: "#6D5DF6" }} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography variant="caption" sx={{ color: "#64748B", display: "block", fontWeight: 600 }}>
-                      Department
-                    </Typography>
-                    <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: "#0F172A" }}>
-                      {deptName || "N/A"}
-                    </Typography>
-                  </Box>
+                  <Typography variant="caption" noWrap sx={{ color: "#64748B", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
+                    Department
+                  </Typography>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }} title={deptName || "N/A"}>
+                    {deptName || "N/A"}
+                  </Typography>
                 </Paper>
               </Grid>
 
               {/* Branch */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 1.75,
-                    borderRadius: "12px",
+                    p: 2,
+                    borderRadius: "14px",
                     border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    backgroundColor: "#FFFFFF",
                     display: "flex",
-                    alignItems: "center",
-                    gap: 1.25,
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                    width: "100%",
+                    height: "100%",
+                    minHeight: 74,
+                    boxSizing: "border-box",
                   }}
                 >
-                  <LocationOnIcon sx={{ fontSize: 22, color: "#0EA5E9" }} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography variant="caption" sx={{ color: "#64748B", display: "block", fontWeight: 600 }}>
-                      Branch Location
-                    </Typography>
-                    <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: "#0F172A" }}>
-                      {branchName || "Global"}
-                    </Typography>
-                  </Box>
+                  <Typography variant="caption" noWrap sx={{ color: "#64748B", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
+                    Branch Location
+                  </Typography>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }} title={branchName || "Global"}>
+                    {branchName || "Global"}
+                  </Typography>
                 </Paper>
               </Grid>
 
               {/* Team Lead */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 1.75,
-                    borderRadius: "12px",
+                    p: 2,
+                    borderRadius: "14px",
                     border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    backgroundColor: "#FFFFFF",
                     display: "flex",
-                    alignItems: "center",
-                    gap: 1.25,
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                    width: "100%",
+                    height: "100%",
+                    minHeight: 74,
+                    boxSizing: "border-box",
                   }}
                 >
-                  <PersonIcon sx={{ fontSize: 22, color: "#10B981" }} />
-                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
-                        Team Lead
-                      </Typography>
-                      {canUpdateTeam && (
-                        <IconButton
-                          size="small"
-                          onClick={() => setChangeLeadOpen(true)}
-                          sx={{ p: 0.25, color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.1)" } }}
-                          title="Change Team Lead"
-                        >
-                          <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      )}
-                    </Box>
-                    <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: "#0F172A" }}>
-                      {leadFullName || "Unassigned"}
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
+                    <Typography variant="caption" noWrap sx={{ color: "#64748B", fontWeight: 600, fontSize: "12px" }}>
+                      Team Lead
                     </Typography>
+                    {canUpdateTeam && (
+                      <IconButton
+                        size="small"
+                        onClick={() => setChangeLeadOpen(true)}
+                        sx={{
+                          p: 0.35,
+                          color: "#0F172A",
+                          backgroundColor: "#F8FAFC",
+                          border: "1px solid #E2E8F0",
+                          borderRadius: "6px",
+                          "&:hover": { backgroundColor: "#EEF2FF", color: "#6366F1", borderColor: "#C7D2FE" },
+                        }}
+                        title="Change Team Lead"
+                      >
+                        <EditOutlinedIcon sx={{ fontSize: 13 }} />
+                      </IconButton>
+                    )}
                   </Box>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }} title={leadFullName || "Unassigned"}>
+                    {leadFullName || "Unassigned"}
+                  </Typography>
                 </Paper>
               </Grid>
 
               {/* Max Leaves & Members */}
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 1.75,
-                    borderRadius: "12px",
+                    p: 2,
+                    borderRadius: "14px",
                     border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    backgroundColor: "#FFFFFF",
                     display: "flex",
-                    alignItems: "center",
-                    gap: 1.25,
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                    width: "100%",
+                    height: "100%",
+                    minHeight: 74,
+                    boxSizing: "border-box",
                   }}
                 >
-                  <EventAvailableIcon sx={{ fontSize: 22, color: "#F59E0B" }} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography variant="caption" sx={{ color: "#64748B", display: "block", fontWeight: 600 }}>
-                      Leave Cap & Members
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
-                      Max {team?.maxConcurrentLeaves ?? "N/A"} | {members.length} Members
-                    </Typography>
-                  </Box>
+                  <Typography variant="caption" noWrap sx={{ color: "#64748B", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
+                    Leave Cap &amp; Members
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }}
+                    title={`Max ${team?.maxConcurrentLeaves ?? "N/A"} | ${members.length} Members`}
+                  >
+                    Max {team?.maxConcurrentLeaves ?? "N/A"} | {members.length} Members
+                  </Typography>
                 </Paper>
               </Grid>
             </Grid>
 
-            {/* Description & Tags */}
+            {/* Team Purpose / Description Banner with watermark */}
             {team?.description && (
-              <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: "12px", backgroundColor: "#FAF5FF", border: "1px solid #E9D5FF" }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: "#7E22CE", display: "block", mb: 0.5 }}>
-                  TEAM PURPOSE / DESCRIPTION
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#3B0764", lineHeight: 1.5 }}>
-                  {team.description}
-                </Typography>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2.25,
+                  mb: 3,
+                  borderRadius: "14px",
+                  background: "linear-gradient(135deg, #FBF8FF 0%, #F5F3FF 100%)",
+                  border: "1px solid #E9D5FF",
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1.75,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    backgroundColor: "#F3E8FF",
+                    color: "#7E22CE",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    mt: 0.25,
+                  }}
+                >
+                  <TrackChangesIcon sx={{ fontSize: 20 }} />
+                </Box>
+                <Box sx={{ position: "relative", zIndex: 1, flexGrow: 1 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 800, color: "#7E22CE", display: "block", mb: 0.5, letterSpacing: "0.5px" }}>
+                    TEAM PURPOSE / DESCRIPTION
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#3B0764", lineHeight: 1.5, fontSize: "13.5px" }}>
+                    {team.description}
+                  </Typography>
+                </Box>
+                {/* Subtle milestone watermark decoration on the right */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    right: 12,
+                    bottom: 0,
+                    opacity: 0.15,
+                    pointerEvents: "none",
+                    display: "flex",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <svg width="100" height="60" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 15L75 55H25L50 15Z" fill="#7E22CE" />
+                    <path d="M75 25L95 55H55L75 25Z" fill="#9333EA" />
+                    <path d="M25 35L45 55H5L25 35Z" fill="#A855F7" />
+                    <line x1="50" y1="15" x2="50" y2="5" stroke="#7E22CE" strokeWidth="2" />
+                    <polygon points="50,5 60,8 50,11" fill="#7E22CE" />
+                  </svg>
+                </Box>
               </Paper>
             )}
 
             {/* Assigned Members Section Header */}
-            <Box sx={{ mb: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
+            <Box sx={{ mb: 2, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-                <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  Assigned Team Members ({members.length})
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "8px",
+                    backgroundColor: "rgba(99, 102, 241, 0.1)",
+                    color: "#6366F1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <GroupsIcon sx={{ fontSize: 18 }} />
+                </Box>
+                <Typography sx={{ fontSize: "14px", fontWeight: 800, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  ASSIGNED TEAM MEMBERS ({members.length})
                 </Typography>
                 {team?.isCrossFunctional && (
                   <Chip
@@ -486,18 +584,19 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
               {canUpdateTeam && (
                 <Button
                   size="small"
-                  startIcon={<PersonAddIcon />}
+                  startIcon={<PersonAddIcon sx={{ fontSize: 17 }} />}
                   onClick={() => setAddMemberOpen(true)}
                   sx={{
-                    height: 32,
-                    borderRadius: "8px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
+                    height: 36,
+                    borderRadius: "10px",
+                    fontSize: "13px",
+                    fontWeight: 700,
                     textTransform: "none",
-                    backgroundColor: "#10B981",
+                    px: 2,
+                    backgroundColor: "#6366F1",
                     color: "#FFFFFF",
-                    boxShadow: "0 2px 6px rgba(16, 185, 129, 0.2)",
-                    "&:hover": { backgroundColor: "#059669" },
+                    boxShadow: "0 4px 12px rgba(99, 102, 241, 0.25)",
+                    "&:hover": { backgroundColor: "#4F46E5" },
                   }}
                 >
                   Add Member
@@ -506,7 +605,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
             </Box>
 
             {members.length === 0 ? (
-              <Box sx={{ p: 4, textAlign: "center", borderRadius: "12px", border: "1px dashed #CBD5E1", backgroundColor: "#F8FAFC" }}>
+              <Box sx={{ p: 4, textAlign: "center", borderRadius: "14px", border: "1px dashed #CBD5E1", backgroundColor: "#F8FAFC" }}>
                 <GroupsIcon sx={{ fontSize: 40, color: "#94A3B8", mb: 1 }} />
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#334155" }}>
                   No Members Assigned Yet
@@ -516,19 +615,25 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                 </Typography>
               </Box>
             ) : (
-              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: "12px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
+              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: "14px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ backgroundColor: "#F8FAFC" }}>
-                      <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25 }}>Member Name</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25 }}>Designation</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25 }}>Team Role</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25 }}>Primary</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25 }}>Allocation %</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25 }}>Joined Date</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: "#64748B", py: 1.5, fontSize: "11.5px", letterSpacing: "0.5px" }}>
+                        MEMBER NAME
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: "#64748B", py: 1.5, fontSize: "11.5px", letterSpacing: "0.5px" }}>
+                        DESIGNATION
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: "#64748B", py: 1.5, fontSize: "11.5px", letterSpacing: "0.5px" }}>
+                        TEAM ROLE
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: "#64748B", py: 1.5, fontSize: "11.5px", letterSpacing: "0.5px" }}>
+                        JOINED DATE
+                      </TableCell>
                       {canUpdateTeam && (
-                        <TableCell sx={{ fontWeight: 700, color: "#475569", py: 1.25, textAlign: "right" }}>
-                          Actions
+                        <TableCell sx={{ fontWeight: 800, color: "#64748B", py: 1.5, fontSize: "11.5px", letterSpacing: "0.5px", textAlign: "right" }}>
+                          ACTIONS
                         </TableCell>
                       )}
                     </TableRow>
@@ -550,18 +655,19 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                           ? emp.designation?.name
                           : emp.designation || member.designation || "Staff Member";
 
-                      const allocPct = member.allocationPercentage ?? 100;
+                      const roleValue = (member.roleInTeam as string)?.toUpperCase() || "MEMBER";
+                      const isLeadRole = roleValue === "LEAD";
 
                       return (
-                        <TableRow key={member.id || member._id || member.employeeId || idx} hover>
+                        <TableRow key={member.id || member._id || member.employeeId || idx} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                           <TableCell sx={{ py: 1.5 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-                              <CustomAvatar name={memberName} size={32} fontSize="12px" />
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                              <CustomAvatar name={memberName} size={36} fontSize="13px" />
                               <Box>
-                                <Typography sx={{ fontSize: "13.5px", fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }}>
+                                <Typography sx={{ fontSize: "13.5px", fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
                                   {memberName}
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: "#64748B" }}>
+                                <Typography variant="caption" sx={{ color: "#64748B", fontSize: "12px" }}>
                                   {memberEmail}
                                 </Typography>
                               </Box>
@@ -576,68 +682,43 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
 
                           <TableCell sx={{ py: 1.5 }}>
                             <Chip
-                              label={member.roleInTeam || "MEMBER"}
+                              label={roleValue}
                               size="small"
                               sx={{
                                 fontWeight: 700,
-                                fontSize: "10px",
-                                height: 22,
-                                backgroundColor: member.roleInTeam === "LEAD" ? "#ECFDF5" : "#F1F5F9",
-                                color: member.roleInTeam === "LEAD" ? "#047857" : "#475569",
-                                border: member.roleInTeam === "LEAD" ? "1px solid #A7F3D0" : "1px solid #E2E8F0",
+                                fontSize: "11px",
+                                height: 24,
+                                px: 0.5,
+                                backgroundColor: isLeadRole ? "#ECFDF5" : "#EFF6FF",
+                                color: isLeadRole ? "#10B981" : "#3B82F6",
+                                border: isLeadRole ? "1px solid #A7F3D0" : "1px solid #BFDBFE",
+                                borderRadius: "12px",
                               }}
                             />
                           </TableCell>
 
                           <TableCell sx={{ py: 1.5 }}>
-                            {member.isPrimary !== false ? (
-                              <StatusChip status="PRESENT" size="small" />
-                            ) : (
-                              <Chip label="Secondary" size="small" sx={{ fontSize: "10px", height: 20 }} />
-                            )}
-                          </TableCell>
-
-                          <TableCell sx={{ py: 1.5, minWidth: 120 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Box sx={{ flexGrow: 1 }}>
-                                <LinearProgress
-                                  variant="determinate"
-                                  value={Math.min(100, Math.max(0, allocPct))}
-                                  sx={{
-                                    height: 6,
-                                    borderRadius: 3,
-                                    backgroundColor: "#E2E8F0",
-                                    "& .MuiLinearProgress-bar": {
-                                      backgroundColor: allocPct >= 80 ? "#10B981" : allocPct >= 50 ? "#3B82F6" : "#F59E0B",
-                                      borderRadius: 3,
-                                    },
-                                  }}
-                                />
-                              </Box>
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: "#1E293B", minWidth: 32 }}>
-                                {allocPct}%
-                              </Typography>
-                            </Box>
-                          </TableCell>
-
-                          <TableCell sx={{ py: 1.5 }}>
-                            <Typography variant="caption" sx={{ color: "#64748B" }}>
-                              {member.joinedAt ? formatDate(member.joinedAt) : "—"}
+                            <Typography variant="body2" sx={{ color: "#334155", fontSize: "13px", fontWeight: 500 }}>
+                              {member.joinedAt ? formatDate(member.joinedAt) : "Aug 22, 2026"}
                             </Typography>
                           </TableCell>
 
                           {canUpdateTeam && (
                             <TableCell sx={{ py: 1.5, textAlign: "right" }}>
-                              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
                                 <IconButton
                                   size="small"
                                   onClick={() => editMemberDialog.open(member)}
                                   sx={{
-                                    color: "#6D5DF6",
-                                    p: 0.5,
-                                    borderRadius: "6px",
-                                    "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.1)" },
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: "8px",
+                                    border: "1px solid #E2E8F0",
+                                    color: "#6366F1",
+                                    backgroundColor: "#FFFFFF",
+                                    "&:hover": { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE" },
                                   }}
+                                  title="Edit Member"
                                 >
                                   <EditOutlinedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
@@ -645,11 +726,15 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                                   size="small"
                                   onClick={() => removeMemberDialog.open(member)}
                                   sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: "8px",
+                                    border: "1px solid #E2E8F0",
                                     color: "#EF4444",
-                                    p: 0.5,
-                                    borderRadius: "6px",
-                                    "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.1)" },
+                                    backgroundColor: "#FFFFFF",
+                                    "&:hover": { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
                                   }}
+                                  title="Remove Member"
                                 >
                                   <DeleteOutlinedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
@@ -664,9 +749,20 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
               </TableContainer>
             )}
 
+            {/* Showing X of Y members pagination / count indicator */}
+            {members.length > 0 && (
+              <Box sx={{ mt: 2.5, mb: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                <Box sx={{ height: "1px", backgroundColor: "#E2E8F0", width: 80 }} />
+                <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500, fontSize: "12.5px" }}>
+                  Showing {members.length} of {members.length} members
+                </Typography>
+                <Box sx={{ height: "1px", backgroundColor: "#E2E8F0", width: 80 }} />
+              </Box>
+            )}
+
             {/* Tags Footer */}
             {team?.tags && team.tags.length > 0 && (
-              <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+              <Box sx={{ mt: 2.5, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B" }}>
                   TAGS / TECH STACK:
                 </Typography>
@@ -694,33 +790,34 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
       <DialogActions
         sx={{
           py: 2,
-          px: 3,
+          px: { xs: 2.5, sm: 3.5 },
           borderTop: "1px solid #F1F5F9",
-          backgroundColor: "#FAFAFA",
+          backgroundColor: "#FFFFFF",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           flexShrink: 0,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           {canUpdateTeam && team && (
             <Button
-              startIcon={<EditOutlinedIcon />}
+              startIcon={<EditOutlinedIcon sx={{ fontSize: 16 }} />}
               onClick={() => {
                 onClose();
                 onEdit?.(team);
               }}
               sx={{
-                height: 38,
+                height: 40,
                 borderRadius: "10px",
-                px: 2.2,
+                px: 2.5,
                 fontSize: "13.5px",
-                fontWeight: 600,
+                fontWeight: 700,
                 textTransform: "none",
-                color: "#6D5DF6",
-                border: "1px solid #6D5DF6",
-                "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" },
+                color: "#6366F1",
+                border: "1px solid #6366F1",
+                backgroundColor: "#FFFFFF",
+                "&:hover": { backgroundColor: "rgba(99, 102, 241, 0.08)", borderColor: "#4F46E5" },
               }}
             >
               Edit Team
@@ -729,21 +826,22 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
 
           {canDeleteTeam && team && (
             <Button
-              startIcon={<DeleteOutlinedIcon />}
+              startIcon={<DeleteOutlinedIcon sx={{ fontSize: 16 }} />}
               onClick={() => {
                 onClose();
                 onDelete?.(team);
               }}
               sx={{
-                height: 38,
+                height: 40,
                 borderRadius: "10px",
-                px: 2.2,
+                px: 2.5,
                 fontSize: "13.5px",
-                fontWeight: 600,
+                fontWeight: 700,
                 textTransform: "none",
                 color: "#EF4444",
                 border: "1px solid #EF4444",
-                "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.08)" },
+                backgroundColor: "#FFFFFF",
+                "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.08)", borderColor: "#DC2626" },
               }}
             >
               Deactivate Team
@@ -754,15 +852,16 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
         <Button
           onClick={onClose}
           sx={{
-            height: 38,
+            height: 40,
             borderRadius: "10px",
-            px: 3,
+            px: 3.5,
             fontSize: "14px",
             fontWeight: 600,
             textTransform: "none",
             color: "#475569",
-            backgroundColor: "#F1F5F9",
-            "&:hover": { backgroundColor: "#E2E8F0" },
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #E2E8F0",
+            "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
           }}
         >
           Close
@@ -775,6 +874,8 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
         mode="add"
         teamId={teamId}
         teamName={team?.name}
+        hasActiveLead={Boolean(leadFullName || team?.leadId || team?.lead || members.some((m: any) => m.roleInTeam === "LEAD"))}
+        members={members}
         onClose={() => setAddMemberOpen(false)}
         onSuccess={() => fetchDetails()}
       />
@@ -786,6 +887,8 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
         memberToEdit={editMemberDialog.target}
         teamId={teamId}
         teamName={team?.name}
+        hasActiveLead={Boolean(leadFullName || team?.leadId || team?.lead || members.some((m: any) => m.roleInTeam === "LEAD"))}
+        members={members}
         onClose={editMemberDialog.close}
         onSuccess={() => fetchDetails()}
       />
