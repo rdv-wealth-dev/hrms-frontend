@@ -4,8 +4,9 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
 import TableRowsOutlinedIcon from "@mui/icons-material/TableRowsOutlined";
 import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 
-export type ViewMode = "classic" | "people_hub" | "directory";
+export type ViewMode = "classic" | "people_hub" | "directory" | "org_chart";
 
 interface ViewModeSwitcherProps {
   viewMode: ViewMode;
@@ -68,9 +69,15 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
           </ToggleButton>
         </Tooltip>
 
-        <Tooltip title="Employee Directory View" placement="top">
-          <ToggleButton value="directory" aria-label="Employee Directory View">
+        <Tooltip title="Employee Directory Cards" placement="top">
+          <ToggleButton value="directory" aria-label="Employee Directory Cards">
             <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="Organization Hierarchy Chart" placement="top">
+          <ToggleButton value="org_chart" aria-label="Organization Hierarchy Chart">
+            <AccountTreeOutlinedIcon sx={{ fontSize: 20 }} />
           </ToggleButton>
         </Tooltip>
       </ToggleButtonGroup>

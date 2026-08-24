@@ -121,6 +121,9 @@ export interface EmployeeListItem {
   maritalStatus: string;
   nationality: string;
   pan: string;
+  aadhaar?: string;
+  countryCode?: string;
+  avatarUrl?: string;
   departmentId: string;
   designationId: string;
   managerId: string | null;
@@ -160,21 +163,110 @@ export type EmployeeState = {
   search?: string;
   status?: string;
   joiningPeriod?: string;
+  selectedEmployee: EmployeeDetail | null;
+  loadingDetail: boolean;
+  detailError: string | null;
+}
+
+export interface PopulatedEntityRef {
+  _id: string;
+  name?: string;
+  code?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  employeeCode?: string;
+  email?: string;
+  designationTitle?: string;
+  startTime?: string;
+  endTime?: string;
+  level?: number;
+  isHeadOffice?: boolean;
+}
+
+export interface EmployeeDetail {
+  _id: string;
+  tenantId?: string;
+  branchId?: string | PopulatedEntityRef;
+  departmentId?: string | PopulatedEntityRef;
+  designationId?: string | PopulatedEntityRef;
+  teamId?: string | PopulatedEntityRef | null;
+  managerId?: string | PopulatedEntityRef | null;
+  secondaryManagerIds?: Array<string | PopulatedEntityRef>;
+  shiftId?: string | PopulatedEntityRef | null;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  countryCode?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bloodGroup?: string;
+  maritalStatus?: string;
+  nationality?: string;
+  pan?: string;
+  aadhaar?: string;
+  passportNo?: string;
+  drivingLicense?: string;
+  voterId?: string;
+  role?: string;
+  isOrgAdmin?: boolean;
+  employeeType: string;
+  status: string;
+  joiningDate: string;
+  confirmationDate?: string;
+  probationEndDate?: string;
+  currentAddress?: Address & { _id?: string };
+  permanentAddress?: Address & { _id?: string };
+  emergencyContacts?: EmergencyContact[];
+  avatarUrl?: string;
+  pfOnActuals?: boolean;
+  isActive?: boolean;
+  isProfileComplete?: boolean;
+  onboardingComplete?: boolean;
+  onboardingStep?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GetEmployeeByIdResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: EmployeeDetail | null;
 }
 
 export interface UpdateEmployeeRequest {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  countryCode?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bloodGroup?: string;
   maritalStatus?: string;
-  confirmationDate?: string;
+  nationality?: string;
+  pan?: string;
+  aadhaar?: string;
+  passportNo?: string;
+  drivingLicense?: string;
+  voterId?: string;
   departmentId?: string;
   designationId?: string;
-  currentAddress?: {
-    addressLine1?: string;
-    addressLine2?: string;
-    city?: string;
-    state?: string;
-    countryCode?: string;
-    zip?: string;
-  };
+  branchId?: string;
+  teamId?: string | null;
+  managerId?: string | null;
+  secondaryManagerIds?: string[];
+  role?: string;
+  employeeType?: string;
+  confirmationDate?: string;
+  probationEndDate?: string;
+  currentAddress?: Address;
+  permanentAddress?: Address;
+  emergencyContacts?: EmergencyContact[];
+  pfOnActuals?: boolean;
+  avatarUrl?: string;
 }
 
 export interface UpdateEmployeeResponse {
@@ -194,6 +286,11 @@ export const EMPLOYEE_ACTIONS = {
   LIST_REQUEST: 'employee/list_request',
   LIST_SUCCESS: 'employee/list_success',
   LIST_FAILURE: 'employee/list_failure',
+
+  GET_BY_ID_REQUEST: 'employee/get_by_id_request',
+  GET_BY_ID_SUCCESS: 'employee/get_by_id_success',
+  GET_BY_ID_FAILURE: 'employee/get_by_id_failure',
+  CLEAR_SELECTED: 'employee/clear_selected',
 
   UPDATE_REQUEST: 'employee/update_request',
   UPDATE_SUCCESS: 'employee/update_success',
@@ -247,6 +344,25 @@ export type ListEmployeesFailureAction = {
   payload: string;
 };
 
+export type GetEmployeeByIdRequestAction = {
+  type: typeof EMPLOYEE_ACTIONS.GET_BY_ID_REQUEST;
+  payload: string;
+};
+
+export type GetEmployeeByIdSuccessAction = {
+  type: typeof EMPLOYEE_ACTIONS.GET_BY_ID_SUCCESS;
+  payload: EmployeeDetail;
+};
+
+export type GetEmployeeByIdFailureAction = {
+  type: typeof EMPLOYEE_ACTIONS.GET_BY_ID_FAILURE;
+  payload: string;
+};
+
+export type ClearSelectedEmployeeAction = {
+  type: typeof EMPLOYEE_ACTIONS.CLEAR_SELECTED;
+};
+
 export type UpdateEmployeeRequestAction = {
   type: typeof EMPLOYEE_ACTIONS.UPDATE_REQUEST;
   payload: { id: string; data: UpdateEmployeeRequest };
@@ -286,9 +402,14 @@ export type EmployeeAction =
   | ListEmployeesRequestAction
   | ListEmployeesSuccessAction
   | ListEmployeesFailureAction
+  | GetEmployeeByIdRequestAction
+  | GetEmployeeByIdSuccessAction
+  | GetEmployeeByIdFailureAction
+  | ClearSelectedEmployeeAction
   | UpdateEmployeeRequestAction
   | UpdateEmployeeSuccessAction
   | UpdateEmployeeFailureAction
   | UpdateEmployeeStatusRequestAction
   | UpdateEmployeeStatusSuccessAction
   | UpdateEmployeeStatusFailureAction;
+

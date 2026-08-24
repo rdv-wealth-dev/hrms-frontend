@@ -24,12 +24,14 @@ import { listBranchesRequest } from "../../../store/branch/branch.actions";
 
 import { PeopleHubKpiCards } from "../employee-list/components/PeopleHubKpiCards";
 import { PeopleHubDepartmentTabs, type FilterState } from "../employee-list/components/PeopleHubDepartmentTabs";
-import { ViewModeSwitcher } from "../employee-list/components/ViewModeSwitcher";
+import { ViewModeSwitcher, type ViewMode } from "../employee-list/components/ViewModeSwitcher";
 import { EmployeeDirectoryCardGrid } from "./components/EmployeeDirectoryCardGrid";
 import EmployeeMatrixDetailDrawer from "./components/EmployeeMatrixDetailDrawer";
+import OrganizationChart from "./components/OrganizationChart";
 
 function EmployeeDirectoryView() {
   const [selectedEmpForMatrix, setSelectedEmpForMatrix] = useState<any | null>(null);
+  const [currentViewMode, setCurrentViewMode] = useState<ViewMode>("directory");
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
@@ -283,11 +285,13 @@ function EmployeeDirectoryView() {
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <ViewModeSwitcher
-              viewMode="directory"
+              viewMode={currentViewMode}
               onChange={(mode) => {
                 if (mode === "people_hub" || mode === "classic") {
                   localStorage.setItem("employee_view_mode", mode);
                   navigate(paths.employees.list);
+                } else {
+                  setCurrentViewMode(mode);
                 }
               }}
             />
@@ -329,76 +333,84 @@ function EmployeeDirectoryView() {
           totalEmployees={total || employees.length}
         />
 
-        {/* Single Line Toolbar & Filter Tabs Directly Above Cards */}
-        <PeopleHubDepartmentTabs
-          filters={filters}
-          searchElement={
-            <TextField
-              size="small"
-              placeholder="Search employees..."
-              value={searchVal}
-              onChange={(e) => setSearchVal(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ mr: 1 }}>
-                      <SearchIcon sx={{ color: "#94A3B8", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={{
-                width: { xs: 180, sm: 210 },
-                flexShrink: 0,
-                "& .MuiOutlinedInput-root": {
-                  height: 40,
-                  borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
-                  fontSize: "14px",
-                  color: "#0F172A",
-                  "& fieldset": { borderColor: "#E2E8F0" },
-                  "&:hover fieldset": { borderColor: "#CBD5E1" },
-                  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
-                },
-                "& .MuiOutlinedInput-input": {
-                  py: 0,
-                  height: 40,
-                  fontSize: "14px",
-                  boxSizing: "border-box",
-                  color: "#0F172A",
-                  "&::placeholder": {
-                    color: "#94A3B8",
-                    opacity: 1,
-                  },
-                },
-              }}
-            />
-          }
-          departmentsList={departmentsList}
-          designationsList={designationsList}
-          branchesList={branchesList}
-          teamsList={teamsList}
-          statusesList={statusesList}
-          selectedDepartment={selectedDeptFilter}
-          onSelectDepartment={setSelectedDeptFilter}
-          onFilterChange={(newFilters) => {
-            setFilters(newFilters);
-            if (newFilters.department !== undefined) {
-              setSelectedDeptFilter(getFilterString(newFilters.department));
-            }
-          }}
-        />
-
-        {/* Card Grid Design View */}
-        {loading && displayedEmployees.length === 0 ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+        {currentViewMode === "org_chart" ? (
+          <Box sx={{ mt: 3 }}>
+            <OrganizationChart />
           </Box>
         ) : (
-          <EmployeeDirectoryCardGrid
-            employees={displayedEmployees}
-            onSelectEmployee={(emp) => setSelectedEmpForMatrix(emp)}
-          />
+          <>
+            {/* Single Line Toolbar & Filter Tabs Directly Above Cards */}
+            <PeopleHubDepartmentTabs
+              filters={filters}
+              searchElement={
+                <TextField
+                  size="small"
+                  placeholder="Search employees..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ mr: 1 }}>
+                          <SearchIcon sx={{ color: "#94A3B8", fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  sx={{
+                    width: { xs: 180, sm: 210 },
+                    flexShrink: 0,
+                    "& .MuiOutlinedInput-root": {
+                      height: 40,
+                      borderRadius: "10px",
+                      backgroundColor: "#FFFFFF",
+                      fontSize: "14px",
+                      color: "#0F172A",
+                      "& fieldset": { borderColor: "#E2E8F0" },
+                      "&:hover fieldset": { borderColor: "#CBD5E1" },
+                      "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      py: 0,
+                      height: 40,
+                      fontSize: "14px",
+                      boxSizing: "border-box",
+                      color: "#0F172A",
+                      "&::placeholder": {
+                        color: "#94A3B8",
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              }
+              departmentsList={departmentsList}
+              designationsList={designationsList}
+              branchesList={branchesList}
+              teamsList={teamsList}
+              statusesList={statusesList}
+              selectedDepartment={selectedDeptFilter}
+              onSelectDepartment={setSelectedDeptFilter}
+              onFilterChange={(newFilters) => {
+                setFilters(newFilters);
+                if (newFilters.department !== undefined) {
+                  setSelectedDeptFilter(getFilterString(newFilters.department));
+                }
+              }}
+            />
+
+            {/* Card Grid Design View */}
+            {loading && displayedEmployees.length === 0 ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+                <CircularProgress sx={{ color: "#6D5DF6" }} />
+              </Box>
+            ) : (
+              <EmployeeDirectoryCardGrid
+                employees={displayedEmployees}
+                onSelectEmployee={(emp) => setSelectedEmpForMatrix(emp)}
+              />
+            )}
+          </>
         )}
       </Box>
 

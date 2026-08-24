@@ -26,18 +26,36 @@ export interface WorkRouteItem {
   isActive?: boolean;
 }
 
+export interface OrgTreeNodeAssignedEmployee {
+  _id?: string;
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  email?: string;
+  employeeCode?: string;
+  avatarUrl?: string;
+  designationTitle?: string;
+  departmentName?: string;
+  status?: string;
+}
+
 export interface OrgTreeNode {
   id: string;
   _id?: string;
   title: string;
+  code?: string;
   cSuiteRole?: string;
-  assignedEmployee?: {
+  levelTier?: number;
+  levelName?: string;
+  isVacant?: boolean;
+  department?: {
     _id?: string;
-    fullName?: string;
-    email?: string;
-    employeeCode?: string;
-    avatarUrl?: string;
-  };
+    name?: string;
+    code?: string;
+    color?: string;
+  } | null;
+  assignedEmployee?: OrgTreeNodeAssignedEmployee | null;
   children?: OrgTreeNode[];
 }
 
@@ -50,6 +68,23 @@ export interface CreateWorkRouteResponse {
 export interface OrgHierarchyResponse {
   success?: boolean;
   data?: OrgTreeNode[];
+}
+
+export interface ReparentNodePayload {
+  nodeId: string;
+  newParentId: string | null;
+}
+
+export interface ReparentNodeResponse {
+  success?: boolean;
+  message?: string;
+  data?: {
+    nodeId: string;
+    nodeTitle?: string;
+    previousParent?: string;
+    newParent?: string;
+    updatedAt?: string;
+  };
 }
 
 /**
@@ -72,5 +107,19 @@ export const createWorkRoute = async (
  */
 export const getOrgHierarchy = async (): Promise<OrgHierarchyResponse> => {
   const { data } = await axiosInstance.get<OrgHierarchyResponse>("/org-tree/hierarchy");
+  return data;
+};
+
+/**
+ * Reparents a node/subtree under a new parent node in the org tree
+ * PATCH /org-tree/reparent
+ */
+export const reparentOrgNode = async (
+  payload: ReparentNodePayload
+): Promise<ReparentNodeResponse> => {
+  const { data } = await axiosInstance.patch<ReparentNodeResponse>(
+    "/org-tree/reparent",
+    payload
+  );
   return data;
 };

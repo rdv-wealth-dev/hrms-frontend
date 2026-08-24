@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -12,18 +13,43 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Skeleton from "@mui/material/Skeleton";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
+
 import CloseIcon from "@mui/icons-material/Close";
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 
 import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
+import CascadingSelect, { type SelectOption } from "../../../components/input/CascadingSelect";
+import CustomAvatar from "../../../components/avatar/CustomAvatar";
+import { StatusChip } from "../../../components/common/StatusChip";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import type { EmployeeListItem } from "../../../store/employee/employee.types";
 import {
+  getEmployeeByIdRequest,
+  clearSelectedEmployee,
   updateEmployeeRequest,
   clearEmployeeError,
 } from "../../../store/employee";
+
+import { listDepartments } from "../../../api/department.api";
+import { listDesignations } from "../../../api/designation.api";
+import { listRoles, type RoleItem } from "../../../api/role.api";
+import { listTeams } from "../../../api/team.api";
+import { listBranchesRequest } from "../../../store/branch";
+import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
 
 type Props = {
   open: boolean;
@@ -31,118 +57,445 @@ type Props = {
   onClose: () => void;
 };
 
-const disabledMenuItemSx = {
-  color: "#94A3B8 !important",
-  fontWeight: 500,
-  "&.Mui-disabled": {
-    opacity: "1 !important",
-    color: "#94A3B8 !important",
-  },
+const DEFAULT_FALLBACK_ROLES: RoleItem[] = [
+  { _id: "1", name: "Employee", slug: "EMPLOYEE", description: "Self-service access" },
+  { _id: "2", name: "Manager", slug: "MANAGER", description: "Team attendance & approvals" },
+  { _id: "3", name: "Team Leader", slug: "TEAM_LEADER", description: "Squad lead & member view" },
+  { _id: "4", name: "HR Admin", slug: "HR_ADMIN", description: "Full operational HR access" },
+  { _id: "5", name: "Branch Admin", slug: "BRANCH_ADMIN", description: "Branch operational access" },
+  { _id: "6", name: "Org Admin", slug: "ORG_ADMIN", description: "Full organizational access" },
+];
+
+const EMPLOYEE_TYPES = [
+  { value: "FULL_TIME", label: "Full-Time" },
+  { value: "PART_TIME", label: "Part-Time" },
+  { value: "CONTRACT", label: "Contractor" },
+  { value: "INTERN", label: "Intern" },
+  { value: "CONSULTANT", label: "Consultant" },
+];
+
+const GENDER_OPTIONS = [
+  { value: "MALE", label: "Male" },
+  { value: "FEMALE", label: "Female" },
+  { value: "OTHER", label: "Other" },
+];
+
+const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+
+const MARITAL_STATUS_OPTIONS = [
+  { value: "SINGLE", label: "Single" },
+  { value: "MARRIED", label: "Married" },
+  { value: "DIVORCED", label: "Divorced" },
+  { value: "WIDOWED", label: "Widowed" },
+];
+
+// Helper: Safely resolve ObjectId string from either a string or populated object
+const resolveId = (val: unknown): string => {
+  if (!val) return "";
+  if (typeof val === "object" && val !== null) {
+    return (val as any)._id || (val as any).id || "";
+  }
+  return typeof val === "string" ? val : "";
+};
+
+// Helper: Safely resolve array of ObjectId strings from array of objects or strings
+const resolveIds = (val: unknown): string[] => {
+  if (!val || !Array.isArray(val)) return [];
+  return val.map((item) => resolveId(item)).filter(Boolean);
+};
+
+// Helper: Format ISO date to YYYY-MM-DD for date inputs
+const formatDateInput = (dateVal?: string | Date | null): string => {
+  if (!dateVal) return "";
+  try {
+    const d = new Date(dateVal);
+    return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
+  } catch {
+    return "";
+  }
 };
 
 function EmployeeEditDialog({ open, employee, onClose }: Props) {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { submitting, error } = useSelector(
-    (state: RootState) => state.employee
+  const {
+    submitting,
+    error,
+    selectedEmployee,
+    loadingDetail,
+    detailError,
+  } = useSelector((state: RootState) => state.employee);
+
+  const branches = useSelector(
+    (state: RootState) => state.branch?.branches ?? []
   );
 
-  const departments = useSelector(
-    (state: RootState) => state.department?.departments ?? []
-  );
-  const designations = useSelector(
-    (state: RootState) => state.designation?.designations ?? []
-  );
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
-  const [maritalStatus, setMaritalStatus] = useState(employee?.maritalStatus || "");
-  const [departmentId, setDepartmentId] = useState(employee?.departmentId || "");
-  const [designationId, setDesignationId] = useState(employee?.designationId || "");
-  const [confirmationDate, setConfirmationDate] = useState(() => {
-    if (!employee?.confirmationDate) return "";
-    const d = new Date(employee.confirmationDate);
-    return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
+  // Form State: 1. Organization & Placement
+  const [branchId, setBranchId] = useState<string>("");
+  const [departmentId, setDepartmentId] = useState<string>("");
+  const [designationId, setDesignationId] = useState<string>("");
+  const [teamId, setTeamId] = useState<string>("");
+  const [managerId, setManagerId] = useState<string>("");
+  const [secondaryManagerIds, setSecondaryManagerIds] = useState<string[]>([]);
+  const [role, setRole] = useState<string>("EMPLOYEE");
+  const [employeeType, setEmployeeType] = useState<string>("FULL_TIME");
+
+  // Form State: 2. Personal & Contact Info
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [countryCode, setCountryCode] = useState<string>("IN");
+  const [dateOfBirth, setDateOfBirth] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [bloodGroup, setBloodGroup] = useState<string>("");
+  const [maritalStatus, setMaritalStatus] = useState<string>("SINGLE");
+  const [nationality, setNationality] = useState<string>("Indian");
+  const [pan, setPan] = useState<string>("");
+  const [aadhaar, setAadhaar] = useState<string>("");
+  const [passportNo, setPassportNo] = useState<string>("");
+  const [drivingLicense, setDrivingLicense] = useState<string>("");
+  const [voterId, setVoterId] = useState<string>("");
+
+  // Form State: 3. Employment Schedule & Dates
+  const [joiningDate, setJoiningDate] = useState<string>("");
+  const [confirmationDate, setConfirmationDate] = useState<string>("");
+  const [probationEndDate, setProbationEndDate] = useState<string>("");
+  const [pfOnActuals, setPfOnActuals] = useState<boolean>(false);
+
+  // Form State: 4. Address Details
+  const [currAddress1, setCurrAddress1] = useState<string>("");
+  const [currAddress2, setCurrAddress2] = useState<string>("");
+  const [currCity, setCurrCity] = useState<string>("");
+  const [currState, setCurrState] = useState<string>("");
+  const [currZip, setCurrZip] = useState<string>("");
+  const [currCountry, setCurrCountry] = useState<string>("IN");
+
+  const [sameAsCurrent, setSameAsCurrent] = useState<boolean>(false);
+  const [permAddress1, setPermAddress1] = useState<string>("");
+  const [permAddress2, setPermAddress2] = useState<string>("");
+  const [permCity, setPermCity] = useState<string>("");
+  const [permState, setPermState] = useState<string>("");
+  const [permZip, setPermZip] = useState<string>("");
+  const [permCountry, setPermCountry] = useState<string>("IN");
+
+  // Cascading Dynamic Options
+  const [departments, setDepartments] = useState<Array<{ _id: string; name: string; code: string }>>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState<boolean>(false);
+
+  const [designations, setDesignations] = useState<Array<{ _id: string; name: string; code: string }>>([]);
+  const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
+
+  const [teams, setTeams] = useState<Array<{ _id: string; name: string; code: string }>>([]);
+  const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
+
+  const [rolesList, setRolesList] = useState<RoleItem[]>(DEFAULT_FALLBACK_ROLES);
+
+  // Fetch initial master branches & roles
+  useEffect(() => {
+    if (open) {
+      if (branches.length === 0) {
+        dispatch(listBranchesRequest());
+      }
+      listRoles()
+        .then((res) => {
+          if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+            setRolesList(res.data);
+          }
+        })
+        .catch(() => {});
+
+      setLoadingTeams(true);
+      listTeams()
+        .then((res) => {
+          const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items || [];
+          setTeams(list);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingTeams(false));
+    }
+  }, [open, branches.length, dispatch]);
+
+  // Hook: Fetch eligible managers dynamically based on selected Branch + Department + Designation
+  const {
+    managers: eligibleManagers,
+    loading: loadingManagers,
+  } = useEligibleManagers({
+    branchId: branchId || undefined,
+    departmentId: departmentId || undefined,
+    designationId: designationId || undefined,
   });
 
-  const [addressLine1, setAddressLine1] = useState(employee?.currentAddress?.addressLine1 || "");
-  const [city, setCity] = useState(employee?.currentAddress?.city || "");
-  const [stateName, setStateName] = useState(employee?.currentAddress?.state || "");
-  const [zip, setZip] = useState(employee?.currentAddress?.zip || "");
-  const [countryCode, setCountryCode] = useState(employee?.currentAddress?.countryCode || "IN");
-
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-
+  // 1. Fetch fresh, populated employee data when dialog opens
   useEffect(() => {
-    if (employee) {
-      setMaritalStatus(employee.maritalStatus || "SINGLE");
-      const deptVal = typeof employee.departmentId === "object" ? (employee.departmentId as any)?._id : employee.departmentId;
-      setDepartmentId(deptVal || "");
-      const desigVal = typeof employee.designationId === "object" ? (employee.designationId as any)?._id : employee.designationId;
-      setDesignationId(desigVal || "");
-      setConfirmationDate(
-        employee.confirmationDate
-          ? new Date(employee.confirmationDate).toISOString().split("T")[0]
-          : ""
-      );
-      setAddressLine1(employee.currentAddress?.addressLine1 || "");
-      setCity(employee.currentAddress?.city || "");
-      setStateName(employee.currentAddress?.state || "");
-      setZip(employee.currentAddress?.zip || "");
-      setCountryCode(employee.currentAddress?.countryCode || "IN");
+    if (open && employee?._id) {
+      dispatch(clearEmployeeError());
+      dispatch(getEmployeeByIdRequest(employee._id));
+      setActiveTab(0);
+      setHasSubmitted(false);
     }
-  }, [employee]);
+    return () => {
+      if (!open) {
+        dispatch(clearSelectedEmployee());
+      }
+    };
+  }, [open, employee?._id, dispatch]);
 
+  // 2. Populate form fields safely whenever fresh server data arrives
   useEffect(() => {
-    dispatch(clearEmployeeError());
-    setHasSubmitted(false);
-  }, [dispatch]);
+    const data = selectedEmployee || employee;
+    if (data) {
+      // Identity & Basic Info
+      setFirstName(data.firstName || "");
+      setLastName(data.lastName || "");
+      setPhone(data.phone || "");
+      setCountryCode(data.countryCode || "IN");
+      setDateOfBirth(formatDateInput(data.dateOfBirth));
+      setGender(data.gender || "");
+      setBloodGroup(data.bloodGroup || "");
+      setMaritalStatus(data.maritalStatus || "SINGLE");
+      setNationality(data.nationality || "Indian");
+      setPan(data.pan || "");
+      setAadhaar(data.aadhaar || "");
+      setPassportNo((data as any).passportNo || "");
+      setDrivingLicense((data as any).drivingLicense || "");
+      setVoterId((data as any).voterId || "");
+      setPfOnActuals(Boolean((data as any).pfOnActuals));
 
+      // Organization Placement
+      const resolvedBranch = resolveId(data.branchId);
+      const resolvedDept = resolveId(data.departmentId);
+      const resolvedDesig = resolveId(data.designationId);
+      const resolvedTeam = resolveId((data as any).teamId);
+      const resolvedMgr = resolveId(data.managerId);
+      const resolvedSecondary = resolveIds((data as any).secondaryManagerIds);
+
+      setBranchId(resolvedBranch);
+      setDepartmentId(resolvedDept);
+      setDesignationId(resolvedDesig);
+      setTeamId(resolvedTeam);
+      setManagerId(resolvedMgr);
+      setSecondaryManagerIds(resolvedSecondary);
+      setRole((data as any).role || "EMPLOYEE");
+      setEmployeeType(data.employeeType || "FULL_TIME");
+
+      // Dates
+      setJoiningDate(formatDateInput(data.joiningDate));
+      setConfirmationDate(formatDateInput(data.confirmationDate));
+      setProbationEndDate(formatDateInput((data as any).probationEndDate));
+
+      // Current Address
+      const curr = data.currentAddress || {};
+      setCurrAddress1(curr.addressLine1 || "");
+      setCurrAddress2(curr.addressLine2 || "");
+      setCurrCity(curr.city || "");
+      setCurrState(curr.state || "");
+      setCurrZip(curr.zip || "");
+      setCurrCountry(curr.countryCode || "IN");
+
+      // Permanent Address
+      const perm = (data as any).permanentAddress || {};
+      setPermAddress1(perm.addressLine1 || "");
+      setPermAddress2(perm.addressLine2 || "");
+      setPermCity(perm.city || "");
+      setPermState(perm.state || "");
+      setPermZip(perm.zip || "");
+      setPermCountry(perm.countryCode || "IN");
+    }
+  }, [selectedEmployee, employee]);
+
+  // 3. Reactive Watcher: Fetch departments when branchId changes
+  useEffect(() => {
+    if (!branchId) {
+      setDepartments([]);
+      return;
+    }
+    let isMounted = true;
+    setLoadingDepartments(true);
+    listDepartments(1, 100, branchId)
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items ?? [];
+        setDepartments(list);
+      })
+      .catch(() => {
+        if (isMounted) setDepartments([]);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingDepartments(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [branchId]);
+
+  // 4. Reactive Watcher: Fetch designations when departmentId changes
+  useEffect(() => {
+    if (!departmentId) {
+      setDesignations([]);
+      return;
+    }
+    let isMounted = true;
+    setLoadingDesignations(true);
+    listDesignations(1, 100, departmentId)
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items ?? [];
+        setDesignations(list);
+      })
+      .catch(() => {
+        if (isMounted) setDesignations([]);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingDesignations(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [departmentId]);
+
+  // 5. Sync Permanent Address with Current Address when toggle is active
+  useEffect(() => {
+    if (sameAsCurrent) {
+      setPermAddress1(currAddress1);
+      setPermAddress2(currAddress2);
+      setPermCity(currCity);
+      setPermState(currState);
+      setPermZip(currZip);
+      setPermCountry(currCountry);
+    }
+  }, [sameAsCurrent, currAddress1, currAddress2, currCity, currState, currZip, currCountry]);
+
+  // 6. Handle successful update & close dialog
   useEffect(() => {
     if (hasSubmitted && !submitting && !error && open) {
       onClose();
       const timer = setTimeout(() => {
         setHasSubmitted(false);
-      }, 0);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [submitting, error, hasSubmitted, open, onClose]);
 
+  // Convert departments to CascadingSelect options
+  const departmentOptions: SelectOption[] = useMemo(
+    () =>
+      departments?.map((d) => ({
+        value: d._id,
+        label: `${d.name} (${d.code || "—"})`,
+      })) ?? [],
+    [departments]
+  );
+
+  // Convert designations to CascadingSelect options
+  const designationOptions: SelectOption[] = useMemo(
+    () =>
+      designations?.map((des) => ({
+        value: des._id,
+        label: des.name,
+      })) ?? [],
+    [designations]
+  );
+
+  // Convert teams to CascadingSelect options
+  const teamOptions: SelectOption[] = useMemo(
+    () =>
+      teams?.map((t: any) => ({
+        value: t._id || t.id,
+        label: `${t.name} (${t.code || "SQUAD"})`,
+      })) ?? [],
+    [teams]
+  );
+
+  // Convert eligible managers to CascadingSelect options
+  const managerOptions: SelectOption[] = useMemo(
+    () =>
+      eligibleManagers?.map((m) => ({
+        value: m._id,
+        label: m.fullName,
+        subLabel: `${m.designationTitle || "Manager"} • ${m.employeeCode}`,
+        isHead: m.isDepartmentHead,
+      })) ?? [],
+    [eligibleManagers]
+  );
+
   const handleSubmit = () => {
-    if (!employee?._id) return;
-    if (!addressLine1.trim() || !city.trim() || !stateName.trim() || !zip.trim() || !departmentId || !designationId) {
-      return;
-    }
+    const targetId = employee?._id || selectedEmployee?._id;
+    if (!targetId) return;
 
     setHasSubmitted(true);
-    dispatch(
-      updateEmployeeRequest(employee._id, {
-        maritalStatus,
-        confirmationDate: confirmationDate || undefined,
-        departmentId: departmentId || undefined,
-        designationId: designationId || undefined,
-        currentAddress: {
-          addressLine1: addressLine1.trim(),
-          city: city.trim(),
-          state: stateName.trim(),
-          countryCode,
-          zip: zip.trim(),
-        },
-      })
-    );
+
+    const payload: any = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      phone: phone.trim() || undefined,
+      countryCode: countryCode || "IN",
+      dateOfBirth: dateOfBirth || undefined,
+      gender: gender || undefined,
+      bloodGroup: bloodGroup || undefined,
+      maritalStatus: maritalStatus || "SINGLE",
+      nationality: nationality.trim() || undefined,
+      pan: pan.trim().toUpperCase() || undefined,
+      aadhaar: aadhaar.trim() || undefined,
+      passportNo: passportNo.trim().toUpperCase() || undefined,
+      drivingLicense: drivingLicense.trim() || undefined,
+      voterId: voterId.trim().toUpperCase() || undefined,
+
+      branchId: branchId || undefined,
+      departmentId: departmentId || undefined,
+      designationId: designationId || undefined,
+      teamId: teamId || null,
+      managerId: managerId || null,
+      secondaryManagerIds: secondaryManagerIds,
+      role: role || "EMPLOYEE",
+      employeeType: employeeType || "FULL_TIME",
+
+      confirmationDate: confirmationDate || undefined,
+      probationEndDate: probationEndDate || undefined,
+      pfOnActuals,
+
+      currentAddress: {
+        addressLine1: currAddress1.trim(),
+        addressLine2: currAddress2.trim() || undefined,
+        city: currCity.trim(),
+        state: currState.trim(),
+        countryCode: currCountry || "IN",
+        zip: currZip.trim(),
+      },
+      permanentAddress: {
+        addressLine1: permAddress1.trim() || currAddress1.trim(),
+        addressLine2: permAddress2.trim() || currAddress2.trim() || undefined,
+        city: permCity.trim() || currCity.trim(),
+        state: permState.trim() || currState.trim(),
+        countryCode: permCountry || currCountry || "IN",
+        zip: permZip.trim() || currZip.trim(),
+      },
+    };
+
+    dispatch(updateEmployeeRequest(targetId, payload));
   };
 
   const isFormInvalid =
-    !addressLine1.trim() ||
-    !city.trim() ||
-    !stateName.trim() ||
-    !zip.trim() ||
+    !firstName.trim() ||
+    !lastName.trim() ||
+    !branchId ||
     !departmentId ||
     !designationId;
+
+  const activeEmployee = selectedEmployee || employee;
+  const fullName = activeEmployee
+    ? `${activeEmployee.firstName || ""} ${activeEmployee.lastName || ""}`.trim()
+    : "Employee";
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       slotProps={{
         backdrop: {
@@ -153,220 +506,692 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
         },
         paper: {
           sx: {
-            borderRadius: "20px",
-            p: { xs: 2.5, sm: 3.5 },
+            borderRadius: { xs: "12px", sm: "20px" },
+            p: { xs: 2, sm: 3 },
             backgroundColor: "#FFFFFF",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
             border: "1px solid #E2E8F0",
+            maxHeight: "92vh",
+            display: "flex",
+            flexDirection: "column",
           },
         },
       }}
     >
-      {/* Modal Header */}
-      <DialogTitle
-        component="div"
-        sx={{
-          p: 0,
-          mb: 3,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Typography sx={{ fontSize: { xs: "16px", sm: "18px" }, fontWeight: 700, color: "#0F172A" }}>
-          Update Employee Details
-        </Typography>
-        <IconButton
-          onClick={onClose}
-          size="small"
-          disabled={submitting}
+      {/* ── Dialog Header with Profile Banner ── */}
+      <DialogTitle component="div" sx={{ p: 0, mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <CustomAvatar
+              name={fullName}
+              src={activeEmployee?.avatarUrl}
+              size={48}
+              sx={{ border: "2px solid #6D5DF6", boxShadow: "0 2px 8px rgba(109, 93, 246, 0.2)" }}
+            />
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                <Typography sx={{ fontSize: { xs: "16px", sm: "19px" }, fontWeight: 700, color: "#0F172A" }}>
+                  Edit {fullName}
+                </Typography>
+                {activeEmployee?.employeeCode && (
+                  <Chip
+                    label={activeEmployee.employeeCode}
+                    size="small"
+                    sx={{ fontWeight: 700, bgcolor: "#F1F5F9", color: "#475569", fontSize: "12px", height: 22 }}
+                  />
+                )}
+                {activeEmployee?.status && (
+                  <StatusChip status={activeEmployee.status} size="small" />
+                )}
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: "13px" }}>
+                {activeEmployee?.email || "Update organizational hierarchy and employee profile records"}
+              </Typography>
+            </Box>
+          </Box>
+
+          <IconButton
+            onClick={onClose}
+            size="small"
+            disabled={submitting}
+            sx={{
+              color: "#64748B",
+              borderRadius: "10px",
+              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Box>
+
+        {/* Navigation Tabs */}
+        <Tabs
+          value={activeTab}
+          onChange={(_e, val) => setActiveTab(val)}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
-            color: "#64748B",
-            borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            mt: 2,
+            minHeight: 44,
+            borderBottom: "1px solid #E2E8F0",
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "13.5px",
+              minHeight: 44,
+              px: 2,
+              gap: 1,
+            },
           }}
         >
-          <CloseIcon sx={{ fontSize: 18 }} />
-        </IconButton>
+          <Tab icon={<BusinessOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Organization & Access" />
+          <Tab icon={<PersonOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Personal Details" />
+          <Tab icon={<CalendarMonthOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Employment & Schedule" />
+          <Tab icon={<HomeOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Address Details" />
+        </Tabs>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, overflowX: "hidden" }}>
-        {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: "10px" }}>{error}</Alert>}
+      {/* ── Dialog Body ── */}
+      <DialogContent sx={{ p: { xs: 1, sm: 2 }, overflowY: "auto" }}>
+        {error && <Alert severity="error" sx={{ mb: 2, borderRadius: "10px" }}>{error}</Alert>}
+        {detailError && <Alert severity="warning" sx={{ mb: 2, borderRadius: "10px" }}>{detailError}</Alert>}
 
-        {/* Section 1: Employment Information Header */}
-        <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A", mb: 2 }}>
-          Employment Information
-        </Typography>
+        {loadingDetail ? (
+          <Box sx={{ py: 4 }}>
+            <Stack spacing={2.5}>
+              <Skeleton variant="rectangular" height={50} sx={{ borderRadius: "10px" }} />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Skeleton variant="rectangular" height={52} sx={{ borderRadius: "10px" }} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Skeleton variant="rectangular" height={52} sx={{ borderRadius: "10px" }} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Skeleton variant="rectangular" height={52} sx={{ borderRadius: "10px" }} />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Skeleton variant="rectangular" height={52} sx={{ borderRadius: "10px" }} />
+                </Grid>
+              </Grid>
+            </Stack>
+          </Box>
+        ) : (
+          <Box sx={{ pt: 1 }}>
+            {/* ══════════════════════════════════════════════════════ */}
+            {/* TAB 0: ORGANIZATION & ACCESS HIERARCHY                 */}
+            {/* ══════════════════════════════════════════════════════ */}
+            {activeTab === 0 && (
+              <Stack spacing={2.5}>
+                <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", display: "flex", alignItems: "center", gap: 1 }}>
+                  <BusinessOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                  Organizational Placement & Reporting Hierarchy
+                </Typography>
 
-        <Grid container spacing={{ xs: 2, sm: 2.5 }} sx={{ mb: 3 }}>
-          {/* Marital Status */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Marital Status"
-              value={maritalStatus}
-              onChange={(e) => setMaritalStatus(e.target.value)}
-              slotProps={{ select: { displayEmpty: true } }}
-            >
-              <MenuItem value="" disabled sx={disabledMenuItemSx}>
-                Select marital status
-              </MenuItem>
-              <MenuItem value="SINGLE">Single</MenuItem>
-              <MenuItem value="MARRIED">Married</MenuItem>
-              <MenuItem value="DIVORCED">Divorced</MenuItem>
-              <MenuItem value="WIDOWED">Widowed</MenuItem>
-            </TextInput>
-          </Grid>
+                <Grid container spacing={2.5}>
+                  {/* Step 1: Branch Location */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="STEP 1: Branch Location *"
+                      required
+                      value={branchId}
+                      onChange={(e) => {
+                        setBranchId(e.target.value);
+                        setDepartmentId("");
+                        setDesignationId("");
+                        setManagerId("");
+                        setSecondaryManagerIds([]);
+                      }}
+                    >
+                      <MenuItem value="" disabled sx={{ color: "#94A3B8" }}>
+                        Select Branch
+                      </MenuItem>
+                      {branches?.map((b) => (
+                        <MenuItem key={b._id} value={b._id}>
+                          {b.name} {b.isHeadOffice ? "(HQ)" : ""}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
 
-          {/* Confirmation Date */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              type="date"
-              label="Confirmation Date (optional)"
-              placeholder="Select confirmation date"
-              value={confirmationDate}
-              onChange={(e) => setConfirmationDate(e.target.value)}
-            />
-          </Grid>
+                  {/* Step 2: Department */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <CascadingSelect
+                      label="STEP 2: Department *"
+                      required
+                      value={departmentId}
+                      options={departmentOptions}
+                      loading={loadingDepartments}
+                      disabled={!branchId}
+                      disabledPlaceholder="Select Branch first"
+                      emptyPlaceholder="No departments in branch"
+                      onChange={(e) => {
+                        setDepartmentId(e.target.value);
+                        setDesignationId("");
+                        setManagerId("");
+                        setSecondaryManagerIds([]);
+                      }}
+                    />
+                  </Grid>
 
-          {/* Department */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Department"
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
-              slotProps={{ select: { displayEmpty: true } }}
-            >
-              <MenuItem value="" disabled sx={disabledMenuItemSx}>
-                Choose a department
-              </MenuItem>
-              {departments.map((dept) => (
-                <MenuItem key={dept._id} value={dept._id}>
-                  {dept.name} ({dept.code})
-                </MenuItem>
-              ))}
-            </TextInput>
-          </Grid>
+                  {/* Step 3: Designation */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <CascadingSelect
+                      label="STEP 3: Designation *"
+                      required
+                      value={designationId}
+                      options={designationOptions}
+                      loading={loadingDesignations}
+                      disabled={!departmentId}
+                      disabledPlaceholder="Select Department first"
+                      emptyPlaceholder="No designations in department"
+                      onChange={(e) => setDesignationId(e.target.value)}
+                    />
+                  </Grid>
 
-          {/* Designation */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              select
-              label="Designation"
-              value={designationId}
-              onChange={(e) => setDesignationId(e.target.value)}
-              slotProps={{ select: { displayEmpty: true } }}
-            >
-              <MenuItem value="" disabled sx={disabledMenuItemSx}>
-                Choose a designation
-              </MenuItem>
-              {designations.map((desig) => (
-                <MenuItem key={desig._id} value={desig._id}>
-                  {desig.name}
-                </MenuItem>
-              ))}
-            </TextInput>
-          </Grid>
-        </Grid>
+                  {/* Step 4: Squad Team */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <CascadingSelect
+                      label="STEP 4: Squad Team (Optional)"
+                      value={teamId}
+                      options={teamOptions}
+                      loading={loadingTeams}
+                      disabledPlaceholder="No squad teams found"
+                      emptyPlaceholder="No squad teams available"
+                      onChange={(e) => setTeamId(e.target.value)}
+                    />
+                  </Grid>
 
-        {/* Section 2: Current Address Header */}
-        <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A", mb: 2 }}>
-          Current Address
-        </Typography>
+                  {/* Step 5: Primary Reporting Manager */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <CascadingSelect
+                      label="STEP 5: Primary Reporting Manager"
+                      value={managerId}
+                      options={managerOptions}
+                      loading={loadingManagers}
+                      disabled={!branchId || !departmentId}
+                      disabledPlaceholder="Select Branch & Dept first"
+                      emptyPlaceholder="No eligible managers found"
+                      onChange={(e) => setManagerId(e.target.value)}
+                    />
+                  </Grid>
 
-        <Grid container spacing={{ xs: 2, sm: 2.5 }}>
-          {/* Address Line 1 */}
-          <Grid size={12}>
-            <TextInput
-              label="Address Line 1"
-              placeholder="e.g. Flat 402, Sunshine Apartments, MG Road"
-              value={addressLine1}
-              onChange={(e) => setAddressLine1(e.target.value)}
-              required
-            />
-          </Grid>
+                  {/* Step 6: Secondary Managers (Multi-Select) */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="STEP 6: Secondary Managers (Optional)"
+                      value={secondaryManagerIds}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSecondaryManagerIds(typeof val === "string" ? val.split(",") : val);
+                      }}
+                      slotProps={{ select: { multiple: true } }}
+                      disabled={!branchId || !departmentId}
+                    >
+                      {eligibleManagers?.map((m) => (
+                        <MenuItem key={m._id} value={m._id}>
+                          {m.fullName} [{m.employeeCode}] • {m.designationTitle || "Manager"}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
 
-          {/* City */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="City"
-              placeholder="e.g. Mumbai"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-            />
-          </Grid>
+                  {/* Step 7: System Access Security Role */}
+                  <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                    <TextInput
+                      select
+                      label="System Security Role *"
+                      required
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                    >
+                      {rolesList?.map((r) => (
+                        <MenuItem key={r.slug || r._id} value={r.slug}>
+                          {r.name} ({r.slug})
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
 
-          {/* State */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="State"
-              placeholder="e.g. Maharashtra"
-              value={stateName}
-              onChange={(e) => setStateName(e.target.value)}
-              required
-            />
-          </Grid>
+                  {/* Step 8: Employee Type */}
+                  <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                    <TextInput
+                      select
+                      label="Employee Type *"
+                      required
+                      value={employeeType}
+                      onChange={(e) => setEmployeeType(e.target.value)}
+                    >
+                      {EMPLOYEE_TYPES.map((t) => (
+                        <MenuItem key={t.value} value={t.value}>
+                          {t.label}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
+                </Grid>
+              </Stack>
+            )}
 
-          {/* Zip Code */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextInput
-              label="Zip Code"
-              placeholder="e.g. 400001"
-              value={zip}
-              onChange={(e) => setZip(e.target.value)}
-              required
-            />
-          </Grid>
+            {/* ══════════════════════════════════════════════════════ */}
+            {/* TAB 1: PERSONAL & CONTACT INFORMATION                  */}
+            {/* ══════════════════════════════════════════════════════ */}
+            {activeTab === 1 && (
+              <Stack spacing={2.5}>
+                <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", display: "flex", alignItems: "center", gap: 1 }}>
+                  <PersonOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                  Personal Information & Government Identity
+                </Typography>
 
-          {/* Phone Number */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <PhoneInput
-              label="Phone Number"
-              countryCodeValue={countryCode}
-              onCountryCodeChange={(code) => setCountryCode(code)}
-            />
-          </Grid>
-        </Grid>
+                <Grid container spacing={2.5}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextInput
+                      label="First Name *"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextInput
+                      label="Last Name *"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextInput
+                      label="Work Email Address"
+                      disabled
+                      value={activeEmployee?.email || ""}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+                      Work email is tied to the login account and cannot be modified.
+                    </Typography>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <PhoneInput
+                      label="Mobile Phone Number"
+                      countryCodeValue={countryCode}
+                      phoneValue={phone}
+                      onCountryCodeChange={(code) => setCountryCode(code)}
+                      onPhoneChange={(val) => setPhone(val)}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      type="date"
+                      label="Date of Birth"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="Gender"
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                    >
+                      <MenuItem value="">Select Gender</MenuItem>
+                      {GENDER_OPTIONS.map((g) => (
+                        <MenuItem key={g.value} value={g.value}>
+                          {g.label}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="Blood Group"
+                      value={bloodGroup}
+                      onChange={(e) => setBloodGroup(e.target.value)}
+                    >
+                      <MenuItem value="">Select Blood Group</MenuItem>
+                      {BLOOD_GROUP_OPTIONS.map((bg) => (
+                        <MenuItem key={bg} value={bg}>
+                          {bg}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="Marital Status"
+                      value={maritalStatus}
+                      onChange={(e) => setMaritalStatus(e.target.value)}
+                    >
+                      {MARITAL_STATUS_OPTIONS.map((ms) => (
+                        <MenuItem key={ms.value} value={ms.value}>
+                          {ms.label}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      label="Nationality"
+                      value={nationality}
+                      onChange={(e) => setNationality(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      label="PAN Card Number"
+                      value={pan}
+                      placeholder="e.g. ABCPS1234D"
+                      onChange={(e) => setPan(e.target.value.toUpperCase())}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      label="Aadhaar Card Number"
+                      value={aadhaar}
+                      placeholder="12 digits"
+                      onChange={(e) => setAadhaar(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      label="Passport Number"
+                      value={passportNo}
+                      placeholder="e.g. Z1234567"
+                      onChange={(e) => setPassportNo(e.target.value.toUpperCase())}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      label="Driving License"
+                      value={drivingLicense}
+                      placeholder="License number"
+                      onChange={(e) => setDrivingLicense(e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+              </Stack>
+            )}
+
+            {/* ══════════════════════════════════════════════════════ */}
+            {/* TAB 2: EMPLOYMENT SCHEDULE & DATES                     */}
+            {/* ══════════════════════════════════════════════════════ */}
+            {activeTab === 2 && (
+              <Stack spacing={2.5}>
+                <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", display: "flex", alignItems: "center", gap: 1 }}>
+                  <CalendarMonthOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                  Employment Timeline & Statutory Flags
+                </Typography>
+
+                <Grid container spacing={2.5}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      type="date"
+                      label="Date of Joining"
+                      disabled
+                      value={joiningDate}
+                      slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+                      Official joining timestamp is recorded on creation.
+                    </Typography>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      type="date"
+                      label="Confirmation Date (Optional)"
+                      value={confirmationDate}
+                      onChange={(e) => setConfirmationDate(e.target.value)}
+                      slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      type="date"
+                      label="Probation End Date (Optional)"
+                      value={probationEndDate}
+                      onChange={(e) => setProbationEndDate(e.target.value)}
+                      slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                  </Grid>
+
+                  <Grid size={12}>
+                    <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0", mt: 1 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={pfOnActuals}
+                            onChange={(e) => setPfOnActuals(e.target.checked)}
+                            color="primary"
+                          />
+                        }
+                        label={
+                          <Box>
+                            <Typography sx={{ fontWeight: 600, fontSize: "14px", color: "#1E293B" }}>
+                              Provident Fund (PF) on Actual Gross Wages
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Enable if statutory PF contribution is calculated on actual gross salary instead of statutory ceiling (₹15,000).
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Stack>
+            )}
+
+            {/* ══════════════════════════════════════════════════════ */}
+            {/* TAB 3: CURRENT & PERMANENT ADDRESSES                   */}
+            {/* ══════════════════════════════════════════════════════ */}
+            {activeTab === 3 && (
+              <Stack spacing={3}>
+                {/* Current Address */}
+                <Box>
+                  <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                    <HomeOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                    Current Residential Address
+                  </Typography>
+
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 8 }}>
+                      <TextInput
+                        label="Address Line 1"
+                        placeholder="Flat / Building / Street"
+                        value={currAddress1}
+                        onChange={(e) => setCurrAddress1(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="Address Line 2"
+                        placeholder="Landmark / Area"
+                        value={currAddress2}
+                        onChange={(e) => setCurrAddress2(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="City"
+                        value={currCity}
+                        onChange={(e) => setCurrCity(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="State / Province"
+                        value={currState}
+                        onChange={(e) => setCurrState(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="Postal / Zip Code"
+                        value={currZip}
+                        onChange={(e) => setCurrZip(e.target.value)}
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Divider />
+
+                {/* Permanent Address */}
+                <Box>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", mb: 2 }}>
+                    <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B" }}>
+                      Permanent Address
+                    </Typography>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={sameAsCurrent}
+                          onChange={(e) => setSameAsCurrent(e.target.checked)}
+                          size="small"
+                        />
+                      }
+                      label={<Typography sx={{ fontSize: "13px", fontWeight: 500 }}>Same as Current Address</Typography>}
+                    />
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 8 }}>
+                      <TextInput
+                        label="Permanent Address Line 1"
+                        disabled={sameAsCurrent}
+                        value={permAddress1}
+                        onChange={(e) => setPermAddress1(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="Permanent Address Line 2"
+                        disabled={sameAsCurrent}
+                        value={permAddress2}
+                        onChange={(e) => setPermAddress2(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="City"
+                        disabled={sameAsCurrent}
+                        value={permCity}
+                        onChange={(e) => setPermCity(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="State / Province"
+                        disabled={sameAsCurrent}
+                        value={permState}
+                        onChange={(e) => setPermState(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextInput
+                        label="Postal / Zip Code"
+                        disabled={sameAsCurrent}
+                        value={permZip}
+                        onChange={(e) => setPermZip(e.target.value)}
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Stack>
+            )}
+          </Box>
+        )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 0, mt: 3.5, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-        <Button
-          onClick={onClose}
-          disabled={submitting}
-          sx={{
-            height: 42,
-            borderRadius: "10px",
-            px: 2.5,
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "none",
-            backgroundColor: "#F1F5F9",
-            color: "#475569",
-            "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={submitting || isFormInvalid}
-          variant="contained"
-          sx={{
-            height: 42,
-            borderRadius: "10px",
-            px: 3,
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "none",
-            backgroundColor: "#6D5DF6",
-            boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-            "&:hover": { backgroundColor: "#5B4BEA" },
-          }}
-        >
-          {submitting ? <CircularProgress size={18} color="inherit" /> : "Update Employee"}
-        </Button>
+      {/* ── Dialog Actions ── */}
+      <DialogActions
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          pt: 2,
+          borderTop: "1px solid #E2E8F0",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 1.5,
+        }}
+      >
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            size="small"
+            disabled={activeTab === 0}
+            onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
+            sx={{ textTransform: "none", color: "#64748B" }}
+          >
+            ← Previous Section
+          </Button>
+          <Button
+            size="small"
+            disabled={activeTab === 3}
+            onClick={() => setActiveTab((prev) => Math.min(3, prev + 1))}
+            sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+          >
+            Next Section →
+          </Button>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting || isFormInvalid || loadingDetail}
+            variant="contained"
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 3.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#6D5DF6",
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "#5B4BEA" },
+            }}
+          >
+            {submitting ? <CircularProgress size={18} color="inherit" /> : "Save Changes"}
+          </Button>
+        </Box>
       </DialogActions>
     </Dialog>
   );

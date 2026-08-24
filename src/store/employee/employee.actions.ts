@@ -1,5 +1,6 @@
 import type {
   EmployeeAction,
+  EmployeeDetail,
   CreateEmployeeRequest,
   CreateEmployeeResponse,
   EmployeeListResponse,
@@ -65,6 +66,31 @@ export const listEmployeesFailure = (
 ): EmployeeAction => ({
   type: EMPLOYEE_ACTIONS.LIST_FAILURE,
   payload,
+})
+
+export const getEmployeeByIdRequest = (
+  id: string
+): EmployeeAction => ({
+  type: EMPLOYEE_ACTIONS.GET_BY_ID_REQUEST,
+  payload: id,
+})
+
+export const getEmployeeByIdSuccess = (
+  payload: EmployeeDetail
+): EmployeeAction => ({
+  type: EMPLOYEE_ACTIONS.GET_BY_ID_SUCCESS,
+  payload,
+})
+
+export const getEmployeeByIdFailure = (
+  payload: string
+): EmployeeAction => ({
+  type: EMPLOYEE_ACTIONS.GET_BY_ID_FAILURE,
+  payload,
+})
+
+export const clearSelectedEmployee = (): EmployeeAction => ({
+  type: EMPLOYEE_ACTIONS.CLEAR_SELECTED,
 })
 
 export const updateEmployeeRequest = (

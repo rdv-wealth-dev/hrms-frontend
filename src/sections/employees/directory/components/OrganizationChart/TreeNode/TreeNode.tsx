@@ -1,68 +1,106 @@
+import { useState } from "react";
 import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
+import ButtonBase from "@mui/material/ButtonBase";
+import Typography from "@mui/material/Typography";
 
-import EmployeeCard from "../EmployeeCard";
-import DepartmentHeader from "../DepartmentHeader";
-import TreeConnector from "../TreeConnector";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import type { EmployeeNode } from "../types";
+import EmployeeCard from "../EmployeeCard/EmployeeCard";
+import TreeConnector from "../TreeConnector/TreeConnector";
+import type { OrgTreeNode, EmployeeNode } from "../types";
 
-type TreeNodeProps = {
-  employee: EmployeeNode;
+export type TreeNodeProps = {
+  node: OrgTreeNode | EmployeeNode | any;
+  onReparent?: (node: OrgTreeNode | EmployeeNode | any) => void;
+  defaultExpanded?: boolean;
 };
 
-function TreeNode({ employee }: TreeNodeProps) {
-  const assistant = employee.children?.[0];
-  const departments = assistant?.children ?? [];
+export default function TreeNode({
+  node,
+  onReparent,
+  defaultExpanded = true,
+}: TreeNodeProps) {
+  const [expanded, setExpanded] = useState<boolean>(defaultExpanded);
+
+  const children: any[] = node?.children ?? [];
+  const hasChildren = children.length > 0;
 
   return (
     <Stack sx={{ alignItems: "center" }}>
-      {/* CEO */}
-      <Paper elevation={2} sx={{ width: 300, p: 2, borderRadius: 2 }}>
-        <EmployeeCard employee={employee} />
-      </Paper>
+      {/* Current Position Node Card */}
+      <EmployeeCard employee={node} onReparent={onReparent} />
 
-      {/* Vertical line: CEO → Assistant */}
-      <Box sx={{ width: 2, height: 40, bgcolor: "grey.300" }} />
-
-      {/* Executive Assistant */}
-      {assistant && (
-        <>
-          <Paper elevation={2} sx={{ width: 300, p: 2, borderRadius: 2 }}>
-            <EmployeeCard employee={assistant} />
-          </Paper>
-
-          {/* Branching connector: Assistant → Departments */}
-          {departments.length > 0 && (
-            <TreeConnector departmentCount={departments.length} />
+      {/* Expand / Collapse Toggle Pill (if node has direct reports) */}
+      {hasChildren && (
+        <ButtonBase
+          onClick={() => setExpanded((prev) => !prev)}
+          sx={{
+            mt: 1,
+            mb: 0.5,
+            px: 1.5,
+            py: 0.3,
+            borderRadius: "20px",
+            backgroundColor: expanded ? "#F1F5F9" : "#6D5DF6",
+            color: expanded ? "#475569" : "#FFFFFF",
+            border: "1px solid",
+            borderColor: expanded ? "#CBD5E1" : "#6D5DF6",
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            fontSize: "11px",
+            fontWeight: 700,
+            boxShadow: "0 2px 4px rgba(0,0,0,0.06)",
+            transition: "all 0.15s ease-in-out",
+            "&:hover": {
+              backgroundColor: expanded ? "#E2E8F0" : "#5B4BEA",
+            },
+          }}
+        >
+          {expanded ? (
+            <>
+              <ExpandLessIcon sx={{ fontSize: 14 }} />
+              <Typography sx={{ fontSize: "11px", fontWeight: 700 }}>
+                Hide {children.length} {children.length === 1 ? "report" : "reports"}
+              </Typography>
+            </>
+          ) : (
+            <>
+              <ExpandMoreIcon sx={{ fontSize: 14 }} />
+              <Typography sx={{ fontSize: "11px", fontWeight: 700 }}>
+                Show {children.length} {children.length === 1 ? "report" : "reports"}
+              </Typography>
+            </>
           )}
-        </>
+        </ButtonBase>
       )}
 
-      {/* Departments */}
-      {departments.length > 0 && (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 4 }}>
-          {departments.map((department) => (
-            <Stack
-              key={department.id}
-              spacing={2}
-              sx={{ alignItems: "center" }}
-            >
-              <DepartmentHeader
-                title={department.department!}
-                color={department.departmentColor!}
-                count={department.teamCount}
+      {/* Children Subtrees (when expanded) */}
+      {hasChildren && expanded && (
+        <>
+          {/* Connector Branch Lines */}
+          <TreeConnector childCount={children.length} />
+
+          {/* Children Row Container */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 4,
+            }}
+          >
+            {children.map((childNode, index) => (
+              <TreeNode
+                key={childNode?.id || childNode?._id || index}
+                node={childNode}
+                onReparent={onReparent}
+                defaultExpanded={true}
               />
-              <Paper elevation={2} sx={{ width: 300, p: 2, borderRadius: 2 }}>
-                <EmployeeCard employee={department} />
-              </Paper>
-            </Stack>
-          ))}
-        </Box>
+            ))}
+          </Box>
+        </>
       )}
     </Stack>
   );
 }
-
-export default TreeNode;

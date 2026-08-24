@@ -3,6 +3,7 @@ import type {
   CreateEmployeeRequest,
   CreateEmployeeResponse,
   EmployeeListResponse,
+  GetEmployeeByIdResponse,
   UpdateEmployeeRequest,
   UpdateEmployeeResponse,
 } from "../store/employee/employee.types";
@@ -61,6 +62,16 @@ export const listEmployees = async (
   }
   const response = await axiosInstance.get<EmployeeListResponse>(
     url,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export const getEmployeeById = async (
+  id: string
+): Promise<GetEmployeeByIdResponse> => {
+  const response = await axiosInstance.get<GetEmployeeByIdResponse>(
+    `/employees/${id}`,
     { headers: getAuthHeader() }
   );
   return response.data;
