@@ -19,6 +19,7 @@ import OrganizationModulesContent from "./components/OrganizationModulesContent"
 import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
 import OrganizationDocumentsContent from "./components/OrganizationDocumentsContent";
 import BranchListContent from "../branches/branch-list/components/BranchListContent";
+import RolesListContent from "./components/roles/RolesListContent";
 import { usePermissions } from "../../hooks/usePermissions";
 
 import {
@@ -32,15 +33,16 @@ import {
 // =============================================================
 
 const CONTENT_MAP: Record<string, ReactNode> = {
-  "org-profile":   <OrganizationProfileContent />,
-  "org-modules":   <OrganizationModulesContent />,
-  "org-statutory": <OrganizationStatutoryContent />,
-  "org-documents": <OrganizationDocumentsContent />,
-  branches:        <BranchListContent />,
-  departments:     <DepartmentContent />,
-  designations:    <DesignationContent />,
-  "leave-types":   <LeaveTypeContent />,
-  "shift-master":  <ShiftContent />,
+  "org-profile":       <OrganizationProfileContent />,
+  "org-modules":       <OrganizationModulesContent />,
+  "org-statutory":     <OrganizationStatutoryContent />,
+  "org-documents":     <OrganizationDocumentsContent />,
+  "roles-permissions": <RolesListContent />,
+  branches:            <BranchListContent />,
+  departments:         <DepartmentContent />,
+  designations:        <DesignationContent />,
+  "leave-types":       <LeaveTypeContent />,
+  "shift-master":      <ShiftContent />,
 };
 
 // =============================================================

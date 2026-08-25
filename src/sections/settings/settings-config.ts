@@ -30,6 +30,7 @@ export const SETTINGS_SUB_ITEMS: SettingsSubItem[] = [
   { id: "org-modules",   label: "Modules Activation",   categoryId: "company",     permission: "settings.read" },
   { id: "org-statutory", label: "Statutory Settings",   categoryId: "company",     permission: "settings.read" },
   { id: "org-documents", label: "Mandatory Documents",  categoryId: "company",     permission: "settings.read" },
+  { id: "roles-permissions", label: "Roles & Permissions", categoryId: "company",   permission: "role.read"     },
   { id: "branches",      label: "Branches",             categoryId: "company",     permission: "branch.read"   },
   { id: "departments",   label: "Departments",          categoryId: "master-data", permission: "department.read" },
   { id: "designations", label: "Designations", categoryId: "master-data", permission: "designation.read" },

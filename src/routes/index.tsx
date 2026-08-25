@@ -3,12 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { paths } from "./paths";
 
-import AuthGuard from "../../src/auth/guards/AuthGuard";
-import GuestGuard from "../../src/auth/guards/GuestGuard";
-import RoleGuard from "../../src/auth/guards/RoleGuard";
+import AuthGuard from "@/auth/guards/AuthGuard";
+import GuestGuard from "@/auth/guards/GuestGuard";
+import RoleGuard from "@/auth/guards/RoleGuard";
 
-import PageLoader from "../components/loader/PageLoader";
-import DashboardLayout from "../layouts/dashboard/DashboardLayout";
+import PageLoader from "@/components/loader/PageLoader";
+import DashboardLayout from "@/layouts/dashboard/DashboardLayout";
 
 const SignUpPage = lazy(() => import("../pages/auth/SignUp"));
 const LoginPage = lazy(() => import("../pages/auth/Login"));
