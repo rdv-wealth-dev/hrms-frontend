@@ -17,6 +17,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 
 import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
@@ -161,6 +162,13 @@ export default function EmployeeCreateView() {
       maritalStatus: "",
       bloodGroup: "",
       nationality: "Indian",
+      bankAccount: {
+        bankName: "",
+        accountNumber: "",
+        ifscCode: "",
+        accountType: "SALARY",
+        accountHolderName: "",
+      },
     },
   });
 
@@ -346,7 +354,7 @@ export default function EmployeeCreateView() {
     const optionalKeys = [
       "phone", "managerId", "teamId", "secondaryManagerIds", "probationEndDate", "shiftId",
       "pan", "aadhaar", "passportNo", "dateOfBirth", "gender",
-      "bloodGroup", "maritalStatus", "nationality", "currentAddress", "permanentAddress"
+      "bloodGroup", "maritalStatus", "nationality", "currentAddress", "permanentAddress", "bankAccount"
     ];
     optionalKeys.forEach((key) => {
       const val = payload[key];
@@ -359,6 +367,21 @@ export default function EmployeeCreateView() {
         }
       }
     });
+
+    // Bank Account mapping / validation cleanup
+    if (payload.bankAccount) {
+      const bank = payload.bankAccount;
+      if (!bank.bankName && !bank.accountNumber && !bank.ifscCode) {
+        delete payload.bankAccount;
+      } else {
+        if (!bank.accountHolderName) {
+          bank.accountHolderName = `${payload.firstName || ""} ${payload.lastName || ""}`.trim();
+        }
+        if (bank.ifscCode) {
+          bank.ifscCode = bank.ifscCode.toUpperCase().trim();
+        }
+      }
+    }
 
     // Salary Structure mapping
     if (!manageSalary || (!payload.salarySetup && !payload.salaryStructure)) {
@@ -702,12 +725,79 @@ export default function EmployeeCreateView() {
               </CardContent>
             </Card>
 
-            {/* ── CARD 6: COMPENSATION & SALARY SETUP ── */}
+            {/* ── CARD 6: BANK ACCOUNT DETAILS (PAYROLL SETUP) ── */}
+            <Card sx={{ borderRadius: "12px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)", border: "1px solid #E5E7EB" }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+                  <AccountBalanceOutlinedIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#1F2937" }}>
+                    Bank Account Details (Payroll Setup)
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={2.5}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      label="Bank Name"
+                      placeholder="e.g. HDFC Bank, SBI, ICICI"
+                      registration={register("bankAccount.bankName")}
+                      error={errors.bankAccount?.bankName?.message}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      label="Account Number"
+                      format="numeric"
+                      maxLength={20}
+                      placeholder="e.g. 50100432109876"
+                      registration={register("bankAccount.accountNumber")}
+                      error={errors.bankAccount?.accountNumber?.message}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      label="IFSC Code"
+                      format="uppercase"
+                      maxLength={11}
+                      placeholder="e.g. HDFC0001234"
+                      registration={register("bankAccount.ifscCode")}
+                      error={errors.bankAccount?.ifscCode?.message}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      select
+                      label="Account Type"
+                      registration={register("bankAccount.accountType")}
+                      error={errors.bankAccount?.accountType?.message}
+                    >
+                      <MenuItem value="SALARY">Salary Account</MenuItem>
+                      <MenuItem value="SAVINGS">Savings Account</MenuItem>
+                      <MenuItem value="CURRENT">Current Account</MenuItem>
+                    </TextInput>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <TextInput
+                      label="Account Holder Name (Optional)"
+                      placeholder="Leave blank to use employee's full name"
+                      registration={register("bankAccount.accountHolderName")}
+                      error={errors.bankAccount?.accountHolderName?.message}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* ── CARD 7: COMPENSATION & SALARY SETUP ── */}
             <Card sx={{ borderRadius: "12px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)", border: "1px solid #E5E7EB" }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <AccountBalanceOutlinedIcon color="primary" />
+                    <PaymentsOutlinedIcon color="primary" />
                     <Typography variant="h6" sx={{ fontWeight: 700, color: "#1F2937" }}>
                       Compensation & Salary Setup
                     </Typography>

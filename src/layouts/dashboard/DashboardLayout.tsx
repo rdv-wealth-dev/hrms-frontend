@@ -36,6 +36,7 @@ import { logoutUser } from "../../api/auth.api";
 import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
+import { useModalTrigger } from "../../hooks/useModalTrigger";
 import { OnboardingBanner } from "../../components/common/OnboardingBanner";
 
 import { getPendingLeaveRequests } from "../../api/leave.api";
@@ -114,6 +115,8 @@ function DashboardLayout() {
 
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+
+    const handleMobileMenuOpen = useModalTrigger(() => setMobileOpen(true));
 
     const [pendingLeaveCount, setPendingLeaveCount] = useState<number>(0);
     const [pendingRegCount, setPendingRegCount] = useState<number>(0);
@@ -232,11 +235,11 @@ function DashboardLayout() {
                         py: 1,
                         justify: isCollapsed ? "center" : "initial",
                         transition: "all 0.2s ease",
-                        backgroundColor: isActive ? "#4F46E5" : "transparent",
+                        background: isActive ? "linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)" : "transparent",
                         border: "1px solid transparent",
-                        boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.2)" : "none",
+                        boxShadow: isActive ? "0px 4px 14px rgba(168, 85, 247, 0.25)" : "none",
                         "&:hover": {
-                            backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
+                            background: isActive ? "linear-gradient(135deg, #B76EF9 0%, #9A6FF8 100%)" : "rgba(168, 85, 247, 0.08)",
                             border: "1px solid transparent",
                         },
                     }}
@@ -246,7 +249,7 @@ function DashboardLayout() {
                             minWidth: isCollapsed ? 0 : 34,
                             mr: isCollapsed ? 0 : 0,
                             justifyContent: "center",
-                            color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+                            color: isActive ? "#FFFFFF" : "#A855F7",
                         }}
                     >
                         {item.icon}
@@ -257,7 +260,7 @@ function DashboardLayout() {
                                 sx={{
                                     fontSize: 14,
                                     fontWeight: isActive ? 700 : 500,
-                                    color: isActive ? "#FFFFFF" : "#6B6699",
+                                    color: isActive ? "#FFFFFF" : "#475569",
                                 }}
                             >
                                 {getItemLabel(item)}
@@ -290,10 +293,10 @@ function DashboardLayout() {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    background: "#EDEBFC",
-                    color: "#312E81",
+                    background: "linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(192, 132, 252, 0.04) 100%), #FFFFFF",
+                    color: "#1E1B4B",
                     overflow: "hidden",
-                    borderRight: "1px solid #DAD7F2",
+                    borderRight: "1px solid #EFE6F8",
                 }}
             >
                 {/* Logo */}
@@ -314,30 +317,30 @@ function DashboardLayout() {
                                 width: 34,
                                 height: 34,
                                 borderRadius: "10px",
-                                background: "linear-gradient(135deg, #6D5DF6 0%, #4F46E5 100%)",
+                                background: "linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 fontWeight: 800,
                                 color: "#fff",
-                                boxShadow: "0 2px 10px rgba(109, 93, 246, 0.3)",
+                                boxShadow: "0 2px 10px rgba(168, 85, 247, 0.3)",
                             }}
                         >
                             N
                         </Box>
                     ) : (
                         <>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#312E81", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#1E1B4B", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
                                 NexusHR
                             </Typography>
-                            <Typography variant="caption" sx={{ color: "#6366F1", fontSize: 11, mt: 0.5, fontWeight: 500 }}>
+                            <Typography variant="caption" sx={{ color: "#A855F7", fontSize: 11, mt: 0.5, fontWeight: 600 }}>
                                 AI-Powered HRMS
                             </Typography>
                         </>
                     )}
                 </Box>
 
-                <Divider sx={{ borderColor: "#DAD7F2" }} />
+                <Divider sx={{ borderColor: "#EFE6F8" }} />
 
                 {/* Nav Items with Premium Custom Light Scrollbar */}
                 <List
@@ -348,7 +351,7 @@ function DashboardLayout() {
                         overflowY: "auto",
                         minHeight: 0,
                         scrollbarWidth: "thin",
-                        scrollbarColor: "rgba(99, 102, 241, 0.2) transparent",
+                        scrollbarColor: "rgba(168, 85, 247, 0.2) transparent",
                         "&::-webkit-scrollbar": {
                             width: "5px",
                         },
@@ -356,11 +359,11 @@ function DashboardLayout() {
                             backgroundColor: "transparent",
                         },
                         "&::-webkit-scrollbar-thumb": {
-                            backgroundColor: "rgba(99, 102, 241, 0.2)",
+                            backgroundColor: "rgba(168, 85, 247, 0.2)",
                             borderRadius: "10px",
                             transition: "background-color 0.2s ease",
                             "&:hover": {
-                                backgroundColor: "rgba(99, 102, 241, 0.4)",
+                                backgroundColor: "rgba(168, 85, 247, 0.35)",
                             },
                         },
                         "&::-webkit-scrollbar-button": {
@@ -377,7 +380,7 @@ function DashboardLayout() {
                     {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
                 </List>
 
-                <Divider sx={{ borderColor: "#DAD7F2" }} />
+                <Divider sx={{ borderColor: "#EFE6F8" }} />
 
                 {/* User Footer Container */}
                 <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2, flexShrink: 0 }}>
@@ -385,13 +388,16 @@ function DashboardLayout() {
                         sx={{
                             p: isCollapsed ? 1 : 1.2,
                             borderRadius: 3,
-                            backgroundColor: "rgba(79, 70, 229, 0.05)",
-                            border: "1px solid #DAD7F2",
+                            backgroundColor: "rgba(168, 85, 247, 0.04)",
+                            border: "1px solid #EFE6F8",
                             boxShadow: "none",
                         }}
                     >
                         <Box
-                            onClick={() => navigate(paths.profile)}
+                            onClick={() => {
+                                navigate(paths.profile);
+                                setMobileOpen(false);
+                            }}
                             sx={{
                                 display: "flex",
                                 alignItems: "center",
@@ -403,7 +409,7 @@ function DashboardLayout() {
                                 borderRadius: "8px",
                                 transition: "all 0.2s ease",
                                 "&:hover": {
-                                    backgroundColor: "rgba(79, 70, 229, 0.08)",
+                                    backgroundColor: "rgba(168, 85, 247, 0.08)",
                                 },
                             }}
                         >
@@ -412,8 +418,8 @@ function DashboardLayout() {
                                     <Typography
                                         variant="body2"
                                         sx={{
-                                            color: "#312E81",
-                                            fontWeight: 600,
+                                            color: "#1E1B4B",
+                                            fontWeight: 700,
                                             fontSize: 13,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
@@ -425,8 +431,9 @@ function DashboardLayout() {
                                     <Typography
                                         variant="caption"
                                         sx={{
-                                            color: "#6B6699",
+                                            color: "#64748B",
                                             fontSize: 11,
+                                            fontWeight: 500,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
                                             whiteSpace: "nowrap",
@@ -465,7 +472,7 @@ function DashboardLayout() {
                                 py: 0.75,
                                 justifyContent: isCollapsed ? "center" : "initial",
                                 transition: "all 0.2s ease",
-                                color: "#6B6699",
+                                color: "#64748B",
                                 "&:hover": {
                                     backgroundColor: "rgba(239, 68, 68, 0.08)",
                                     color: "#EF4444",
@@ -475,7 +482,7 @@ function DashboardLayout() {
                             <ListItemIcon
                                 sx={{
                                     minWidth: isCollapsed ? 0 : 30,
-                                    color: "rgba(79, 70, 229, 0.7)",
+                                    color: "#A855F7",
                                     justifyContent: "center",
                                 }}
                             >
@@ -504,13 +511,16 @@ function DashboardLayout() {
                 variant="temporary"
                 open={mobileOpen}
                 onClose={() => setMobileOpen(false)}
-                ModalProps={{ keepMounted: true }}
+                ModalProps={{
+                    keepMounted: true,
+                    disableRestoreFocus: true,
+                }}
                 sx={{
                     display: { xs: "block", md: "none" },
                     "& .MuiDrawer-paper": {
                         width: 240,
-                        borderRight: "1px solid #DAD7F2",
-                        background: "#EDEBFC",
+                        borderRight: "1px solid #EFE6F8",
+                        background: "linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(192, 132, 252, 0.04) 100%), #FFFFFF",
                     },
                 }}
             >
@@ -557,8 +567,8 @@ function DashboardLayout() {
                     display: { xs: "none", md: "block" },
                     "& .MuiDrawer-paper": {
                         width: sidebarWidth,
-                        borderRight: "1px solid #DAD7F2",
-                        background: "#EDEBFC",
+                        borderRight: "1px solid #EFE6F8",
+                        background: "linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(192, 132, 252, 0.04) 100%), #FFFFFF",
                         boxSizing: "border-box",
                         transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         overflowX: "hidden",
@@ -609,7 +619,7 @@ function DashboardLayout() {
                     {/* Left: Mobile hamburger menu trigger */}
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <IconButton
-                            onClick={() => setMobileOpen(true)}
+                            onClick={handleMobileMenuOpen}
                             sx={{
                                 display: { xs: "inline-flex", md: "none" },
                                 color: "#475569",

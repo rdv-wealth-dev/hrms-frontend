@@ -65,6 +65,7 @@ const DocumentsTab = lazy(() => import("./components/DocumentsTab"));
 const PayrollTab = lazy(() => import("./components/PayrollTab"));
 const LeaveTab = lazy(() => import("./components/LeaveTab"));
 const AttendanceTab = lazy(() => import("./components/AttendanceTab"));
+import { LazyTabPanel } from "../../components/tabs/LazyTabPanel";
 
 interface ProfileViewProps {
   targetEmployeeId?: string;
@@ -79,10 +80,10 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    if (!organization) {
+    if (!organization && hasPermission("organization.read")) {
       dispatch(loadOrganizationRequest());
     }
-  }, [dispatch, organization]);
+  }, [dispatch, organization, hasPermission]);
 
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;
@@ -601,7 +602,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             <CircularProgress sx={{ color: "#4F46E5" }} />
           </Card>
         }>
-          <Box sx={{ display: activeTab === "overview" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "overview"}>
             <OverviewTab
               empProfile={empProfile}
               displayEmail={displayEmail || ""}
@@ -611,9 +612,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               user={user}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "personal" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "personal"}>
             <PersonalTab
               empProfile={empProfile}
               isViewingOther={isViewingOther}
@@ -624,9 +625,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "documents" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "documents"}>
             <DocumentsTab
               documents={documents}
               missingDocTypes={missingDocTypes}
@@ -635,9 +636,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "payroll" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "payroll"}>
             <PayrollTab
               bankAccounts={bankAccounts}
               bankAccountsLoading={bankAccountsLoading}
@@ -647,18 +648,18 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "leave" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "leave"}>
             <LeaveTab
               isViewingOther={isViewingOther}
               user={user}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "attendance" && canViewAttendance ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "attendance" && canViewAttendance}>
             <AttendanceTab employeeId={employeeId || undefined} isViewingOther={isViewingOther} />
-          </Box>
+          </LazyTabPanel>
 
           {/* AI Insights Coming Soon Tab */}
           {activeTab === "ai-insights" && (

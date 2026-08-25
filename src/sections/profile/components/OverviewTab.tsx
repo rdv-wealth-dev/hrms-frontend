@@ -31,6 +31,7 @@ import type { CompleteProfileEmployee } from "../../../api/employee.api";
 import TextInput from "../../../components/input/TextInput";
 import type { RootState } from "../../../store/rootReducer";
 import { listBranchesRequest } from "../../../store/branch";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 interface OverviewTabProps {
   empProfile: CompleteProfileEmployee | null;
@@ -52,13 +53,14 @@ export default function OverviewTab({
   showSnackbar,
 }: OverviewTabProps) {
   const dispatch = useDispatch<any>();
+  const { hasPermission } = usePermissions();
   const branches = useSelector((state: RootState) => state.branch?.branches || []);
 
   useEffect(() => {
-    if (!branches || branches.length === 0) {
+    if ((!branches || branches.length === 0) && hasPermission("branch.read")) {
       dispatch(listBranchesRequest());
     }
-  }, [dispatch, branches]);
+  }, [dispatch, branches, hasPermission]);
 
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js", "AWS"]);
   const [addSkillOpen, setAddSkillOpen] = useState(false);

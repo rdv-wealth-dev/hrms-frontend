@@ -8,9 +8,12 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import type { UseFormRegisterReturn } from "react-hook-form";
 
+export type InputFormat = "aadhaar" | "pan" | "numeric" | "alphanumeric" | "uppercase";
+
 export type TextInputProps = {
   label?: string;
   type?: string;
+  format?: InputFormat;
   placeholder?: string;
   variant?: "outlined" | "underlined";
   registration?: UseFormRegisterReturn;
@@ -34,6 +37,7 @@ export type TextInputProps = {
 function TextInput({
   label,
   type = "text",
+  format,
   placeholder,
   variant = "outlined",
   registration,
@@ -58,16 +62,25 @@ function TextInput({
   const isPassword = type === "password";
   const resolvedType = isPassword ? (showPassword ? "text" : "password") : type;
 
+  // Resolve effective maxLength based on format
+  const resolvedMaxLength =
+    maxLength !== undefined
+      ? maxLength
+      : format === "aadhaar"
+        ? 12
+        : format === "pan"
+          ? 10
+          : type === "tel"
+            ? 10
+            : undefined;
+
   const mergedSlotProps = {
     htmlInput: {
       ...(type === "number" ? { min: min !== undefined ? min : 0 } : {}),
-      ...(maxLength !== undefined ? { maxLength } : {}),
+      ...(resolvedMaxLength !== undefined ? { maxLength: resolvedMaxLength } : {}),
       onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (type === "number" && (e.key === "-" || e.key === "e" || e.key === "E")) {
-          e.preventDefault();
-        }
-        if (type === "tel") {
-          const isControlKey = [
+        const isControlKey =
+          [
             "Backspace",
             "Delete",
             "ArrowLeft",
@@ -77,19 +90,41 @@ function TextInput({
             "End",
             "Enter",
             "Escape",
-          ].includes(e.key) || e.ctrlKey || e.metaKey;
+          ].includes(e.key) ||
+          e.ctrlKey ||
+          e.metaKey;
 
+        if (type === "number" && (e.key === "-" || e.key === "e" || e.key === "E")) {
+          e.preventDefault();
+        }
+        if (type === "tel" || format === "aadhaar" || format === "numeric") {
           if (!isControlKey && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+          }
+        }
+        if (format === "pan" || format === "alphanumeric") {
+          if (!isControlKey && !/^[a-zA-Z0-9]$/.test(e.key)) {
             e.preventDefault();
           }
         }
         slotProps?.htmlInput?.onKeyDown?.(e);
       },
       onInput: (e: React.FormEvent<HTMLInputElement>) => {
-        if (type === "tel") {
-          const target = e.target as HTMLInputElement;
-          const max = maxLength || 10;
+        const target = e.target as HTMLInputElement;
+        if (type === "tel" || format === "numeric") {
+          const max = resolvedMaxLength || 10;
           target.value = target.value.replace(/\D/g, "").slice(0, max);
+        } else if (format === "aadhaar") {
+          const max = resolvedMaxLength || 12;
+          target.value = target.value.replace(/\D/g, "").slice(0, max);
+        } else if (format === "pan") {
+          const max = resolvedMaxLength || 10;
+          target.value = target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, max);
+        } else if (format === "uppercase") {
+          target.value = target.value.toUpperCase();
+        } else if (format === "alphanumeric") {
+          const cleaned = target.value.replace(/[^a-zA-Z0-9]/g, "");
+          target.value = resolvedMaxLength !== undefined ? cleaned.slice(0, resolvedMaxLength) : cleaned;
         }
         slotProps?.htmlInput?.onInput?.(e);
       },
@@ -244,6 +279,29 @@ function TextInput({
           ...sx,
         };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (format && e.target) {
+      const target = e.target as HTMLInputElement;
+      if (format === "pan") {
+        const max = resolvedMaxLength || 10;
+        target.value = target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, max);
+      } else if (format === "aadhaar") {
+        const max = resolvedMaxLength || 12;
+        target.value = target.value.replace(/\D/g, "").slice(0, max);
+      } else if (format === "uppercase") {
+        target.value = target.value.toUpperCase();
+      } else if (format === "numeric") {
+        const max = resolvedMaxLength;
+        const cleaned = target.value.replace(/\D/g, "");
+        target.value = max !== undefined ? cleaned.slice(0, max) : cleaned;
+      } else if (format === "alphanumeric") {
+        const cleaned = target.value.replace(/[^a-zA-Z0-9]/g, "");
+        target.value = resolvedMaxLength !== undefined ? cleaned.slice(0, resolvedMaxLength) : cleaned;
+      }
+    }
+    onChange?.(e);
+  };
+
   const extraProps: any = {};
   if (value !== undefined) {
     extraProps.value = value ?? "";
@@ -251,7 +309,7 @@ function TextInput({
     extraProps.defaultValue = "";
   }
   if (onChange !== undefined) {
-    extraProps.onChange = onChange;
+    extraProps.onChange = handleChange;
   }
   if (onBlur !== undefined) {
     extraProps.onBlur = onBlur;

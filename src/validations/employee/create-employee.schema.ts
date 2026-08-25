@@ -57,6 +57,31 @@ const salarySetupSchema = z.object({
   }).optional(),
 });
 
+export const bankAccountSchema = z.object({
+  bankName: z.string().trim().optional().or(z.literal("")),
+  accountNumber: z
+    .string()
+    .trim()
+    .refine(
+      (val) => !val || (val.length >= 6 && val.length <= 20 && /^\d+$/.test(val)),
+      "Account number must be 6-20 numeric digits"
+    )
+    .optional()
+    .or(z.literal("")),
+  ifscCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine(
+      (val) => !val || /^[A-Z]{4}0[A-Z0-9]{6}$/.test(val),
+      "Invalid IFSC code format (e.g. HDFC0001234)"
+    )
+    .optional()
+    .or(z.literal("")),
+  accountType: z.enum(["SALARY", "SAVINGS", "CURRENT"]).optional(),
+  accountHolderName: z.string().trim().optional().or(z.literal("")),
+});
+
 export const createEmployeeSchema = z.object({
   firstName: z.string().trim().min(2, "First name must be 2-100 characters").max(100, "Max 100 characters"),
   lastName: z.string().trim().min(2, "Last name must be 2-100 characters").max(100, "Max 100 characters"),
@@ -68,8 +93,8 @@ export const createEmployeeSchema = z.object({
   bloodGroup: z.string().trim().optional(),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]).optional().or(z.literal("")),
   nationality: z.string().trim().optional(),
-  pan: z.string().trim().refine((val) => !val || val.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
-  aadhaar: z.string().trim().refine((val) => !val || /^\d{12}$/.test(val), "Aadhaar must be exactly 12 numeric digits").optional().or(z.literal("")),
+  pan: z.string().trim().refine((val) => !val || /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(val), "Invalid PAN format (e.g. ABCDE1234F)").optional().or(z.literal("")),
+  aadhaar: z.string().trim().refine((val) => !val || /^[2-9]\d{11}$/.test(val), "Aadhaar must be 12 digits and cannot start with 0 or 1").optional().or(z.literal("")),
   
   // Organization Mapping
   branchId: z.string().min(1, "Branch is required").optional().or(z.literal("")),
@@ -87,9 +112,11 @@ export const createEmployeeSchema = z.object({
   permanentAddress: addressSchema.optional(),
   emergencyContacts: z.array(emergencyContactSchema).optional(),
   
+  bankAccount: bankAccountSchema.optional(),
   salarySetup: salarySetupSchema.optional(),
   salaryStructure: salaryStructureV1Schema.optional(),
   shiftId: z.string().optional(),
 });
 
 export type CreateEmployeeFormData = z.infer<typeof createEmployeeSchema>;
+export type BankAccountFormData = z.infer<typeof bankAccountSchema>;

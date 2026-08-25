@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
@@ -20,7 +21,6 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import Divider from "@mui/material/Divider";
 
 import CloseIcon from "@mui/icons-material/Close";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
@@ -50,6 +50,11 @@ import { listRoles, type RoleItem } from "../../../api/role.api";
 import { listTeams } from "../../../api/team.api";
 import { listBranchesRequest } from "../../../store/branch";
 import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
+import { useFormValidation } from "../../../hooks/useFormValidation";
+import {
+  updateEmployeeSchema,
+  type UpdateEmployeeFormData,
+} from "../../../validations/employee/update-employee.schema";
 
 type Props = {
   open: boolean;
@@ -88,6 +93,13 @@ const MARITAL_STATUS_OPTIONS = [
   { value: "DIVORCED", label: "Divorced" },
   { value: "WIDOWED", label: "Widowed" },
 ];
+
+const TAB_FIELDS: Record<number, (keyof UpdateEmployeeFormData)[]> = {
+  0: ["branchId", "departmentId", "designationId", "role", "employeeType"],
+  1: ["firstName", "lastName", "phone", "pan", "aadhaar"],
+  2: ["joiningDate", "confirmationDate", "probationEndDate"],
+  3: ["currAddress1", "currCity", "currState", "currZip"],
+};
 
 // Helper: Safely resolve ObjectId string from either a string or populated object
 const resolveId = (val: unknown): string => {
@@ -132,6 +144,15 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
   const [activeTab, setActiveTab] = useState<number>(0);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
+
+  // Global Form Validation Hook
+  const {
+    errors,
+    validate,
+    clearError,
+    getTabErrorCount,
+    clearAllErrors,
+  } = useFormValidation<UpdateEmployeeFormData>(updateEmployeeSchema);
 
   // Form State: 1. Organization & Placement
   const [branchId, setBranchId] = useState<string>("");
@@ -235,13 +256,14 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       dispatch(getEmployeeByIdRequest(employee._id));
       setActiveTab(0);
       setHasSubmitted(false);
+      clearAllErrors();
     }
     return () => {
       if (!open) {
         dispatch(clearSelectedEmployee());
       }
     };
-  }, [open, employee?._id, dispatch]);
+  }, [open, employee?._id, dispatch, clearAllErrors]);
 
   // 2. Populate form fields safely whenever fresh server data arrives
   useEffect(() => {
@@ -370,9 +392,10 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     }
   }, [sameAsCurrent, currAddress1, currAddress2, currCity, currState, currZip, currCountry]);
 
-  // 6. Handle successful update & close dialog
+  // 6. Handle successful update & close dialog with toast
   useEffect(() => {
     if (hasSubmitted && !submitting && !error && open) {
+      toast.success("Employee profile updated successfully!");
       onClose();
       const timer = setTimeout(() => {
         setHasSubmitted(false);
@@ -380,6 +403,13 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       return () => clearTimeout(timer);
     }
   }, [submitting, error, hasSubmitted, open, onClose]);
+
+  // 7. Handle server error toast
+  useEffect(() => {
+    if (hasSubmitted && error) {
+      toast.error(error);
+    }
+  }, [hasSubmitted, error]);
 
   // Convert departments to CascadingSelect options
   const departmentOptions: SelectOption[] = useMemo(
@@ -423,9 +453,72 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     [eligibleManagers]
   );
 
+  // Tab Error Badges calculation
+  const tab0Errors = getTabErrorCount(TAB_FIELDS[0]);
+  const tab1Errors = getTabErrorCount(TAB_FIELDS[1]);
+  const tab2Errors = getTabErrorCount(TAB_FIELDS[2]);
+  const tab3Errors = getTabErrorCount(TAB_FIELDS[3]);
+
   const handleSubmit = () => {
     const targetId = employee?._id || selectedEmployee?._id;
     if (!targetId) return;
+
+    const formData: UpdateEmployeeFormData = {
+      firstName,
+      lastName,
+      phone,
+      countryCode,
+      dateOfBirth,
+      gender,
+      bloodGroup,
+      maritalStatus,
+      nationality,
+      pan,
+      aadhaar,
+      passportNo,
+      drivingLicense,
+      voterId,
+
+      branchId,
+      departmentId,
+      designationId,
+      teamId: teamId || null,
+      managerId: managerId || null,
+      secondaryManagerIds,
+      role,
+      employeeType,
+
+      joiningDate,
+      confirmationDate,
+      probationEndDate,
+      pfOnActuals,
+
+      currAddress1,
+      currAddress2,
+      currCity,
+      currState,
+      currZip,
+      currCountry,
+
+      sameAsCurrent,
+      permAddress1,
+      permAddress2,
+      permCity,
+      permState,
+      permZip,
+      permCountry,
+    };
+
+    // Run global validation
+    const validation = validate(formData, {
+      tabMapping: TAB_FIELDS,
+      onTabChange: (tabIdx) => setActiveTab(tabIdx),
+      toastMessage: "Please fix the highlighted errors before saving.",
+    });
+
+    if (!validation.isValid) {
+      return;
+    }
 
     setHasSubmitted(true);
 
@@ -478,13 +571,6 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
     dispatch(updateEmployeeRequest(targetId, payload));
   };
-
-  const isFormInvalid =
-    !firstName.trim() ||
-    !lastName.trim() ||
-    !branchId ||
-    !departmentId ||
-    !designationId;
 
   const activeEmployee = selectedEmployee || employee;
   const fullName = activeEmployee
@@ -564,7 +650,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           </IconButton>
         </Box>
 
-        {/* Navigation Tabs */}
+        {/* Navigation Tabs with Dynamic Error Badges */}
         <Tabs
           value={activeTab}
           onChange={(_e, val) => setActiveTab(val)}
@@ -584,10 +670,102 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             },
           }}
         >
-          <Tab icon={<BusinessOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Organization & Access" />
-          <Tab icon={<PersonOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Personal Details" />
-          <Tab icon={<CalendarMonthOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Employment & Schedule" />
-          <Tab icon={<HomeOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Address Details" />
+          <Tab
+            icon={<BusinessOutlinedIcon sx={{ fontSize: 18 }} />}
+            iconPosition="start"
+            label={
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                <span>Organization & Access</span>
+                {tab0Errors > 0 && (
+                  <Chip
+                    label={tab0Errors}
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      bgcolor: "#FEE2E2",
+                      color: "#DC2626",
+                      borderRadius: "10px",
+                      px: 0.2,
+                    }}
+                  />
+                )}
+              </Box>
+            }
+          />
+          <Tab
+            icon={<PersonOutlinedIcon sx={{ fontSize: 18 }} />}
+            iconPosition="start"
+            label={
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                <span>Personal Details</span>
+                {tab1Errors > 0 && (
+                  <Chip
+                    label={tab1Errors}
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      bgcolor: "#FEE2E2",
+                      color: "#DC2626",
+                      borderRadius: "10px",
+                      px: 0.2,
+                    }}
+                  />
+                )}
+              </Box>
+            }
+          />
+          <Tab
+            icon={<CalendarMonthOutlinedIcon sx={{ fontSize: 18 }} />}
+            iconPosition="start"
+            label={
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                <span>Employment & Schedule</span>
+                {tab2Errors > 0 && (
+                  <Chip
+                    label={tab2Errors}
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      bgcolor: "#FEE2E2",
+                      color: "#DC2626",
+                      borderRadius: "10px",
+                      px: 0.2,
+                    }}
+                  />
+                )}
+              </Box>
+            }
+          />
+          <Tab
+            icon={<HomeOutlinedIcon sx={{ fontSize: 18 }} />}
+            iconPosition="start"
+            label={
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                <span>Address Details</span>
+                {tab3Errors > 0 && (
+                  <Chip
+                    label={tab3Errors}
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      bgcolor: "#FEE2E2",
+                      color: "#DC2626",
+                      borderRadius: "10px",
+                      px: 0.2,
+                    }}
+                  />
+                )}
+              </Box>
+            }
+          />
         </Tabs>
       </DialogTitle>
 
@@ -636,7 +814,9 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="STEP 1: Branch Location"
                       required
                       value={branchId}
+                      error={errors.branchId}
                       onChange={(e) => {
+                        clearError("branchId");
                         setBranchId(e.target.value);
                         setDepartmentId("");
                         setDesignationId("");
@@ -666,7 +846,9 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       disabled={!branchId}
                       disabledPlaceholder="Select Branch first"
                       emptyPlaceholder="No departments in branch"
+                      error={errors.departmentId}
                       onChange={(e) => {
+                        clearError("departmentId");
                         setDepartmentId(e.target.value);
                         setDesignationId("");
                         setManagerId("");
@@ -686,7 +868,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       disabled={!departmentId}
                       disabledPlaceholder="Select Department first"
                       emptyPlaceholder="No designations in department"
-                      onChange={(e) => setDesignationId(e.target.value)}
+                      error={errors.designationId}
+                      onChange={(e) => {
+                        clearError("designationId");
+                        setDesignationId(e.target.value);
+                      }}
                     />
                   </Grid>
 
@@ -699,7 +885,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       loading={loadingTeams}
                       disabledPlaceholder="No squad teams found"
                       emptyPlaceholder="No squad teams available"
-                      onChange={(e) => setTeamId(e.target.value)}
+                      error={errors.teamId}
+                      onChange={(e) => {
+                        clearError("teamId");
+                        setTeamId(e.target.value);
+                      }}
                     />
                   </Grid>
 
@@ -713,7 +903,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       disabled={!branchId || !departmentId}
                       disabledPlaceholder="Select Branch & Dept first"
                       emptyPlaceholder="No eligible managers found"
-                      onChange={(e) => setManagerId(e.target.value)}
+                      error={errors.managerId}
+                      onChange={(e) => {
+                        clearError("managerId");
+                        setManagerId(e.target.value);
+                      }}
                     />
                   </Grid>
 
@@ -745,7 +939,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="System Security Role"
                       required
                       value={role}
-                      onChange={(e) => setRole(e.target.value)}
+                      error={errors.role}
+                      onChange={(e) => {
+                        clearError("role");
+                        setRole(e.target.value);
+                      }}
                     >
                       {rolesList?.map((r) => (
                         <MenuItem key={r.slug || r._id} value={r.slug}>
@@ -762,7 +960,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="Employee Type"
                       required
                       value={employeeType}
-                      onChange={(e) => setEmployeeType(e.target.value)}
+                      error={errors.employeeType}
+                      onChange={(e) => {
+                        clearError("employeeType");
+                        setEmployeeType(e.target.value);
+                      }}
                     >
                       {EMPLOYEE_TYPES.map((t) => (
                         <MenuItem key={t.value} value={t.value}>
@@ -791,7 +993,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="First Name"
                       required
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      error={errors.firstName}
+                      onChange={(e) => {
+                        clearError("firstName");
+                        setFirstName(e.target.value);
+                      }}
                     />
                   </Grid>
 
@@ -800,7 +1006,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="Last Name"
                       required
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      error={errors.lastName}
+                      onChange={(e) => {
+                        clearError("lastName");
+                        setLastName(e.target.value);
+                      }}
                     />
                   </Grid>
 
@@ -820,8 +1030,12 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="Mobile Phone Number"
                       countryCodeValue={countryCode}
                       phoneValue={phone}
+                      phoneError={errors.phone}
                       onCountryCodeChange={(code) => setCountryCode(code)}
-                      onPhoneChange={(val) => setPhone(val)}
+                      onPhoneChange={(val) => {
+                        clearError("phone");
+                        setPhone(val);
+                      }}
                     />
                   </Grid>
 
@@ -830,7 +1044,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       type="date"
                       label="Date of Birth"
                       value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      error={errors.dateOfBirth}
+                      onChange={(e) => {
+                        clearError("dateOfBirth");
+                        setDateOfBirth(e.target.value);
+                      }}
                       slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
@@ -840,7 +1058,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       select
                       label="Gender"
                       value={gender}
-                      onChange={(e) => setGender(e.target.value)}
+                      error={errors.gender}
+                      onChange={(e) => {
+                        clearError("gender");
+                        setGender(e.target.value);
+                      }}
                     >
                       <MenuItem value="">Select Gender</MenuItem>
                       {GENDER_OPTIONS.map((g) => (
@@ -856,7 +1078,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       select
                       label="Blood Group"
                       value={bloodGroup}
-                      onChange={(e) => setBloodGroup(e.target.value)}
+                      error={errors.bloodGroup}
+                      onChange={(e) => {
+                        clearError("bloodGroup");
+                        setBloodGroup(e.target.value);
+                      }}
                     >
                       <MenuItem value="">Select Blood Group</MenuItem>
                       {BLOOD_GROUP_OPTIONS.map((bg) => (
@@ -872,7 +1098,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       select
                       label="Marital Status"
                       value={maritalStatus}
-                      onChange={(e) => setMaritalStatus(e.target.value)}
+                      error={errors.maritalStatus}
+                      onChange={(e) => {
+                        clearError("maritalStatus");
+                        setMaritalStatus(e.target.value);
+                      }}
                     >
                       {MARITAL_STATUS_OPTIONS.map((ms) => (
                         <MenuItem key={ms.value} value={ms.value}>
@@ -886,25 +1116,39 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     <TextInput
                       label="Nationality"
                       value={nationality}
-                      onChange={(e) => setNationality(e.target.value)}
+                      error={errors.nationality}
+                      onChange={(e) => {
+                        clearError("nationality");
+                        setNationality(e.target.value);
+                      }}
                     />
                   </Grid>
 
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       label="PAN Card Number"
+                      format="pan"
                       value={pan}
                       placeholder="e.g. ABCPS1234D"
-                      onChange={(e) => setPan(e.target.value.toUpperCase())}
+                      error={errors.pan}
+                      onChange={(e) => {
+                        clearError("pan");
+                        setPan(e.target.value);
+                      }}
                     />
                   </Grid>
 
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       label="Aadhaar Card Number"
+                      format="aadhaar"
                       value={aadhaar}
                       placeholder="12 digits"
-                      onChange={(e) => setAadhaar(e.target.value)}
+                      error={errors.aadhaar}
+                      onChange={(e) => {
+                        clearError("aadhaar");
+                        setAadhaar(e.target.value);
+                      }}
                     />
                   </Grid>
 
@@ -913,7 +1157,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="Passport Number"
                       value={passportNo}
                       placeholder="e.g. Z1234567"
-                      onChange={(e) => setPassportNo(e.target.value.toUpperCase())}
+                      error={errors.passportNo}
+                      onChange={(e) => {
+                        clearError("passportNo");
+                        setPassportNo(e.target.value.toUpperCase());
+                      }}
                     />
                   </Grid>
 
@@ -922,7 +1170,24 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       label="Driving License"
                       value={drivingLicense}
                       placeholder="License number"
-                      onChange={(e) => setDrivingLicense(e.target.value)}
+                      error={errors.drivingLicense}
+                      onChange={(e) => {
+                        clearError("drivingLicense");
+                        setDrivingLicense(e.target.value);
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      label="Voter ID"
+                      value={voterId}
+                      placeholder="Voter ID number"
+                      error={errors.voterId}
+                      onChange={(e) => {
+                        clearError("voterId");
+                        setVoterId(e.target.value.toUpperCase());
+                      }}
                     />
                   </Grid>
                 </Grid>
@@ -958,7 +1223,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       type="date"
                       label="Confirmation Date (Optional)"
                       value={confirmationDate}
-                      onChange={(e) => setConfirmationDate(e.target.value)}
+                      error={errors.confirmationDate}
+                      onChange={(e) => {
+                        clearError("confirmationDate");
+                        setConfirmationDate(e.target.value);
+                      }}
                       slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
@@ -968,7 +1237,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       type="date"
                       label="Probation End Date (Optional)"
                       value={probationEndDate}
-                      onChange={(e) => setProbationEndDate(e.target.value)}
+                      error={errors.probationEndDate}
+                      onChange={(e) => {
+                        clearError("probationEndDate");
+                        setProbationEndDate(e.target.value);
+                      }}
                       slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
@@ -1018,7 +1291,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                         label="Address Line 1"
                         placeholder="Flat / Building / Street"
                         value={currAddress1}
-                        onChange={(e) => setCurrAddress1(e.target.value)}
+                        error={errors.currAddress1}
+                        onChange={(e) => {
+                          clearError("currAddress1");
+                          setCurrAddress1(e.target.value);
+                        }}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
@@ -1026,107 +1303,145 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                         label="Address Line 2"
                         placeholder="Landmark / Area"
                         value={currAddress2}
-                        onChange={(e) => setCurrAddress2(e.target.value)}
+                        error={errors.currAddress2}
+                        onChange={(e) => {
+                          clearError("currAddress2");
+                          setCurrAddress2(e.target.value);
+                        }}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <TextInput
                         label="City"
                         value={currCity}
-                        onChange={(e) => setCurrCity(e.target.value)}
+                        error={errors.currCity}
+                        onChange={(e) => {
+                          clearError("currCity");
+                          setCurrCity(e.target.value);
+                        }}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <TextInput
                         label="State / Province"
                         value={currState}
-                        onChange={(e) => setCurrState(e.target.value)}
+                        error={errors.currState}
+                        onChange={(e) => {
+                          clearError("currState");
+                          setCurrState(e.target.value);
+                        }}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <TextInput
                         label="Postal / Zip Code"
                         value={currZip}
-                        onChange={(e) => setCurrZip(e.target.value)}
+                        error={errors.currZip}
+                        onChange={(e) => {
+                          clearError("currZip");
+                          setCurrZip(e.target.value);
+                        }}
                       />
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Divider />
+                {/* Permanent Address Toggle */}
+                <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={sameAsCurrent}
+                        onChange={(e) => setSameAsCurrent(e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Typography sx={{ fontWeight: 600, fontSize: "14px", color: "#1E293B" }}>
+                        Permanent Address is the same as Current Address
+                      </Typography>
+                    }
+                  />
+                </Box>
 
-                {/* Permanent Address */}
-                <Box>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", mb: 2 }}>
-                    <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B" }}>
-                      Permanent Address
+                {/* Permanent Address Form */}
+                {!sameAsCurrent && (
+                  <Box>
+                    <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", mb: 2 }}>
+                      Permanent / Domicile Address
                     </Typography>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={sameAsCurrent}
-                          onChange={(e) => setSameAsCurrent(e.target.checked)}
-                          size="small"
-                        />
-                      }
-                      label={<Typography sx={{ fontSize: "13px", fontWeight: 500 }}>Same as Current Address</Typography>}
-                    />
-                  </Box>
 
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 8 }}>
-                      <TextInput
-                        label="Permanent Address Line 1"
-                        disabled={sameAsCurrent}
-                        value={permAddress1}
-                        onChange={(e) => setPermAddress1(e.target.value)}
-                      />
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 12, sm: 8 }}>
+                        <TextInput
+                          label="Address Line 1"
+                          placeholder="Flat / Building / Street"
+                          value={permAddress1}
+                          error={errors.permAddress1}
+                          onChange={(e) => {
+                            clearError("permAddress1");
+                            setPermAddress1(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextInput
+                          label="Address Line 2"
+                          placeholder="Landmark / Area"
+                          value={permAddress2}
+                          error={errors.permAddress2}
+                          onChange={(e) => {
+                            clearError("permAddress2");
+                            setPermAddress2(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextInput
+                          label="City"
+                          value={permCity}
+                          error={errors.permCity}
+                          onChange={(e) => {
+                            clearError("permCity");
+                            setPermCity(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextInput
+                          label="State / Province"
+                          value={permState}
+                          error={errors.permState}
+                          onChange={(e) => {
+                            clearError("permState");
+                            setPermState(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextInput
+                          label="Postal / Zip Code"
+                          value={permZip}
+                          error={errors.permZip}
+                          onChange={(e) => {
+                            clearError("permZip");
+                            setPermZip(e.target.value);
+                          }}
+                        />
+                      </Grid>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextInput
-                        label="Permanent Address Line 2"
-                        disabled={sameAsCurrent}
-                        value={permAddress2}
-                        onChange={(e) => setPermAddress2(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextInput
-                        label="City"
-                        disabled={sameAsCurrent}
-                        value={permCity}
-                        onChange={(e) => setPermCity(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextInput
-                        label="State / Province"
-                        disabled={sameAsCurrent}
-                        value={permState}
-                        onChange={(e) => setPermState(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextInput
-                        label="Postal / Zip Code"
-                        disabled={sameAsCurrent}
-                        value={permZip}
-                        onChange={(e) => setPermZip(e.target.value)}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
+                  </Box>
+                )}
               </Stack>
             )}
           </Box>
         )}
       </DialogContent>
 
-      {/* ── Dialog Actions ── */}
+      {/* ── Dialog Footer ── */}
       <DialogActions
         sx={{
-          p: { xs: 1.5, sm: 2 },
-          pt: 2,
+          p: { xs: 1.5, sm: 2.5 },
           borderTop: "1px solid #E2E8F0",
           display: "flex",
           justifyContent: "space-between",
@@ -1136,22 +1451,22 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
         }}
       >
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            size="small"
-            disabled={activeTab === 0}
-            onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
-            sx={{ textTransform: "none", color: "#64748B" }}
-          >
-            ← Previous Section
-          </Button>
-          <Button
-            size="small"
-            disabled={activeTab === 3}
-            onClick={() => setActiveTab((prev) => Math.min(3, prev + 1))}
-            sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
-          >
-            Next Section →
-          </Button>
+          {activeTab > 0 && (
+            <Button
+              onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
+              sx={{ textTransform: "none", color: "#64748B", fontWeight: 600 }}
+            >
+              ← Previous Section
+            </Button>
+          )}
+          {activeTab < 3 && (
+            <Button
+              onClick={() => setActiveTab((prev) => Math.min(3, prev + 1))}
+              sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+            >
+              Next Section →
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ display: "flex", gap: 1.5 }}>
@@ -1175,7 +1490,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
           <Button
             onClick={handleSubmit}
-            disabled={submitting || isFormInvalid || loadingDetail}
+            disabled={submitting || loadingDetail}
             variant="contained"
             sx={{
               height: 42,

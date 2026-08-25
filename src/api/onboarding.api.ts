@@ -16,12 +16,37 @@ export interface EmergencyContact {
   email?: string;
 }
 
+export interface EducationDetail {
+  qualificationLevel:
+    | "DOCTORATE"
+    | "POST_GRADUATE"
+    | "UNDER_GRADUATE"
+    | "DIPLOMA"
+    | "HIGHER_SECONDARY"
+    | "SECONDARY"
+    | "OTHER";
+  degree: string;
+  fieldOfStudy?: string;
+  institutionName: string;
+  yearOfPassing?: number;
+  percentageOrCgpa?: string;
+}
+
 export interface Step1Payload {
   dateOfBirth: string;
   gender: "MALE" | "FEMALE" | "OTHER";
   bloodGroup?: string;
   maritalStatus: "SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED";
+  religion?: string;
   phone: string;
+  fatherName?: string;
+  fatherPhone?: string;
+  motherName?: string;
+  motherPhone?: string;
+  highestQualification?: string;
+  educationDetails?: EducationDetail[];
+  previousEmployerName?: string;
+  previousEmployerLastWorkingDate?: string;
   currentAddress: CurrentAddress;
   emergencyContact: EmergencyContact[];
   pan?: string;

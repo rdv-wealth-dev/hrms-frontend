@@ -473,8 +473,10 @@ export default function HolidayListView() {
     dispatch(listHolidaysRequest(selectedYear));
   }, [dispatch, selectedYear]);
 
-  // Load branches list on mount
+  // Load branches list on mount (only if user has branch.read permission)
   useEffect(() => {
+    if (!hasPermission("branch.read")) return;
+
     listBranches()
       .then((res) => {
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -483,7 +485,7 @@ export default function HolidayListView() {
         }
       })
       .catch((err) => console.error("Failed loading branches", err));
-  }, []);
+  }, [hasPermission]);
 
   // Fetch resolved holidays when in RESOLVED view mode or when branch/year changes
   useEffect(() => {

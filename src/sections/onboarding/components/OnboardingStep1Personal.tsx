@@ -9,9 +9,17 @@ import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import Divider from "@mui/material/Divider";
+import Card from "@mui/material/Card";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
+import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 
 import {
   onboardingStep1Schema,
@@ -21,9 +29,31 @@ import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
 import { formatToYYYYMMDD } from "../../../utils/format-date";
 
-const GENDERS = ["MALE", "FEMALE", "OTHER"];
-const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
-const MARITAL_STATUSES = ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"];
+const GENDERS = ["MALE", "FEMALE", "OTHER"] as const;
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"] as const;
+const MARITAL_STATUSES = ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"] as const;
+const RELIGIONS = [
+  "HINDUISM",
+  "ISLAM",
+  "CHRISTIANITY",
+  "SIKHISM",
+  "BUDDHISM",
+  "JAINISM",
+  "ZOROASTRIANISM",
+  "JUDAISM",
+  "OTHER",
+  "PREFER_NOT_TO_SAY",
+] as const;
+
+const QUALIFICATION_LEVELS = [
+  "DOCTORATE",
+  "POST_GRADUATE",
+  "UNDER_GRADUATE",
+  "DIPLOMA",
+  "HIGHER_SECONDARY",
+  "SECONDARY",
+  "OTHER",
+] as const;
 
 interface OnboardingStep1Props {
   initialValues?: Partial<OnboardingStep1FormData>;
@@ -36,7 +66,34 @@ const buildStep1Defaults = (initial?: Partial<OnboardingStep1FormData>): Onboard
   gender: initial?.gender || "",
   bloodGroup: initial?.bloodGroup || "",
   maritalStatus: initial?.maritalStatus || "",
+  religion: initial?.religion || "",
   phone: initial?.phone || "",
+  fatherName: initial?.fatherName || "",
+  fatherPhone: initial?.fatherPhone || "",
+  motherName: initial?.motherName || "",
+  motherPhone: initial?.motherPhone || "",
+  highestQualification: initial?.highestQualification || "",
+  educationDetails: initial?.educationDetails?.length
+    ? initial.educationDetails.map((ed) => ({
+        qualificationLevel: ed?.qualificationLevel || "UNDER_GRADUATE",
+        degree: ed?.degree || "",
+        fieldOfStudy: ed?.fieldOfStudy || "",
+        institutionName: ed?.institutionName || "",
+        yearOfPassing: ed?.yearOfPassing ? Number(ed.yearOfPassing) : undefined,
+        percentageOrCgpa: ed?.percentageOrCgpa || "",
+      }))
+    : [
+        {
+          qualificationLevel: "UNDER_GRADUATE",
+          degree: "",
+          fieldOfStudy: "",
+          institutionName: "",
+          yearOfPassing: undefined,
+          percentageOrCgpa: "",
+        },
+      ],
+  previousEmployerName: initial?.previousEmployerName || "",
+  previousEmployerLastWorkingDate: formatToYYYYMMDD(initial?.previousEmployerLastWorkingDate) || "",
   pan: initial?.pan || "",
   aadhaar: initial?.aadhaar || "",
   passportNo: initial?.passportNo || "",
@@ -49,7 +106,12 @@ const buildStep1Defaults = (initial?: Partial<OnboardingStep1FormData>): Onboard
     zip: initial?.currentAddress?.zip || "",
   },
   emergencyContact: initial?.emergencyContact?.length
-    ? initial.emergencyContact
+    ? initial.emergencyContact.map((ec) => ({
+        name: ec?.name || "",
+        relationship: ec?.relationship || "",
+        phone: ec?.phone || "",
+        email: ec?.email || "",
+      }))
     : [{ name: "", relationship: "", phone: "", email: "" }],
 });
 
@@ -63,12 +125,15 @@ export default function OnboardingStep1Personal({
     control,
     handleSubmit,
     setValue,
+    watch,
     reset,
     formState: { errors },
   } = useForm<OnboardingStep1FormData>({
-    resolver: zodResolver(onboardingStep1Schema),
+    resolver: zodResolver(onboardingStep1Schema) as any,
     defaultValues: buildStep1Defaults(initialValues),
   });
+
+  const previousEmployerName = watch("previousEmployerName");
 
   useEffect(() => {
     if (initialValues) {
@@ -76,20 +141,37 @@ export default function OnboardingStep1Personal({
     }
   }, [initialValues, reset]);
 
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields: emergencyFields,
+    append: appendEmergency,
+    remove: removeEmergency,
+  } = useFieldArray({
     control,
     name: "emergencyContact",
   });
 
+  const {
+    fields: educationFields,
+    append: appendEducation,
+    remove: removeEducation,
+  } = useFieldArray({
+    control,
+    name: "educationDetails",
+  });
+
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
+      {/* 1. Personal Information */}
       <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5 }}>
-          1. Personal Information
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+          <PersonOutlinedIcon sx={{ color: "#6366F1" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            1. Personal Details
+          </Typography>
+        </Box>
 
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextInput
               label="Date of Birth"
               type="date"
@@ -99,7 +181,7 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name="gender"
               control={control}
@@ -120,7 +202,7 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name="maritalStatus"
               control={control}
@@ -141,7 +223,7 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name="bloodGroup"
               control={control}
@@ -161,24 +243,293 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
 
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name="religion"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Religion (Optional)"
+                  error={errors.religion?.message}
+                >
+                  <MenuItem value="">Select Religion</MenuItem>
+                  {RELIGIONS.map((rel) => (
+                    <MenuItem key={rel} value={rel}>
+                      {rel.replace(/_/g, " ")}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <PhoneInput
+              label="Personal Phone Number"
+              required
+              phoneRegistration={register("phone")}
+              countryCodeRegistration={register("currentAddress.countryCode")}
+              phoneError={errors.phone?.message}
+              countryCodeError={errors.currentAddress?.countryCode?.message}
+              setValue={setValue}
+              watch={watch}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* 2. Parents' Details */}
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+          <FamilyRestroomIcon sx={{ color: "#6366F1" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            2. Parents' Information
+          </Typography>
+        </Box>
+
+        <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label="Phone Number"
-              type="tel"
-              maxLength={10}
-              required
-              registration={register("phone")}
-              error={errors.phone?.message}
+              label="Father's Full Name"
+              registration={register("fatherName")}
+              error={errors.fatherName?.message}
             />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
+              label="Father's Phone Number"
+              type="tel"
+              format="numeric"
+              maxLength={15}
+              registration={register("fatherPhone")}
+              error={errors.fatherPhone?.message}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Mother's Full Name"
+              registration={register("motherName")}
+              error={errors.motherName?.message}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Mother's Phone Number"
+              type="tel"
+              format="numeric"
+              maxLength={15}
+              registration={register("motherPhone")}
+              error={errors.motherPhone?.message}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* 3. Higher Education & Qualification History */}
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <SchoolOutlinedIcon sx={{ color: "#6366F1" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              3. Education & Qualifications
+            </Typography>
+          </Box>
+          <Button
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() =>
+              appendEducation({
+                qualificationLevel: "UNDER_GRADUATE",
+                degree: "",
+                fieldOfStudy: "",
+                institutionName: "",
+                yearOfPassing: undefined,
+                percentageOrCgpa: "",
+              })
+            }
+            sx={{ textTransform: "none", fontWeight: 600, color: "#6366F1" }}
+          >
+            Add Qualification
+          </Button>
+        </Box>
+
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="highestQualification"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label="Highest Qualification Level (Optional)"
+                  error={errors.highestQualification?.message}
+                >
+                  <MenuItem value="">Select Level</MenuItem>
+                  {QUALIFICATION_LEVELS.map((ql) => (
+                    <MenuItem key={ql} value={ql}>
+                      {ql.replace(/_/g, " ")}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+              )}
+            />
+          </Grid>
+        </Grid>
+
+        {educationFields.map((field, idx) => (
+          <Card
+            key={field.id}
+            variant="outlined"
+            sx={{
+              p: 2.5,
+              borderRadius: 2.5,
+              mb: idx === educationFields.length - 1 ? 0 : 2,
+              backgroundColor: "rgba(248, 250, 252, 0.6)",
+              borderColor: "#E2E8F0",
+            }}
+          >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#475569" }}>
+                Qualification #{idx + 1}
+              </Typography>
+              <IconButton onClick={() => removeEducation(idx)} size="small" sx={{ color: "#EF4444" }}>
+                <DeleteOutlineOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Controller
+                  name={`educationDetails.${idx}.qualificationLevel` as const}
+                  control={control}
+                  render={({ field: qField }) => (
+                    <TextInput
+                      {...qField}
+                      select
+                      required
+                      label="Level"
+                      error={errors.educationDetails?.[idx]?.qualificationLevel?.message}
+                    >
+                      <MenuItem value="">Select Level</MenuItem>
+                      {QUALIFICATION_LEVELS.map((ql) => (
+                        <MenuItem key={ql} value={ql}>
+                          {ql.replace(/_/g, " ")}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  )}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <TextInput
+                  label="Degree / Certificate"
+                  required
+                  placeholder="e.g. B.Tech, M.Sc, MBA"
+                  registration={register(`educationDetails.${idx}.degree` as const)}
+                  error={errors.educationDetails?.[idx]?.degree?.message}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <TextInput
+                  label="Field of Study"
+                  placeholder="e.g. Computer Science"
+                  registration={register(`educationDetails.${idx}.fieldOfStudy` as const)}
+                  error={errors.educationDetails?.[idx]?.fieldOfStudy?.message}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 5 }}>
+                <TextInput
+                  label="Institution / University Name"
+                  required
+                  placeholder="e.g. Delhi University, IIT Bombay"
+                  registration={register(`educationDetails.${idx}.institutionName` as const)}
+                  error={errors.educationDetails?.[idx]?.institutionName?.message}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3.5 }}>
+                <TextInput
+                  label="Year of Passing"
+                  type="tel"
+                  format="numeric"
+                  maxLength={4}
+                  placeholder="e.g. 2022"
+                  registration={register(`educationDetails.${idx}.yearOfPassing` as const)}
+                  error={errors.educationDetails?.[idx]?.yearOfPassing?.message}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3.5 }}>
+                <TextInput
+                  label="Percentage / CGPA"
+                  placeholder="e.g. 84.5% or 9.2 CGPA"
+                  registration={register(`educationDetails.${idx}.percentageOrCgpa` as const)}
+                  error={errors.educationDetails?.[idx]?.percentageOrCgpa?.message}
+                />
+              </Grid>
+            </Grid>
+          </Card>
+        ))}
+      </Paper>
+
+      {/* 4. Previous Employment History */}
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+          <BusinessCenterOutlinedIcon sx={{ color: "#6366F1" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            4. Previous Employment (Optional)
+          </Typography>
+        </Box>
+
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label="Previous Employer / Company Name"
+              placeholder="e.g. Infosys Ltd"
+              registration={register("previousEmployerName")}
+              error={errors.previousEmployerName?.message}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextInput
+              label={`Last Working Date${previousEmployerName ? " *" : " (Optional)"}`}
+              type="date"
+              required={!!previousEmployerName}
+              registration={register("previousEmployerLastWorkingDate")}
+              error={errors.previousEmployerLastWorkingDate?.message}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* 5. Statutory Documents & Identity */}
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+          <BadgeOutlinedIcon sx={{ color: "#6366F1" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            5. Identity & Statutory Details
+          </Typography>
+        </Box>
+
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextInput
               label="PAN Card Number"
+              format="pan"
               maxLength={10}
+              placeholder="e.g. ABCDE1234F"
               registration={register("pan")}
               error={errors.pan?.message}
-              slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
               onChange={(e) => {
                 const upper = (e.target.value ?? "").toUpperCase();
                 setValue("pan", upper, { shouldValidate: true });
@@ -186,18 +537,23 @@ export default function OnboardingStep1Personal({
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextInput
               label="Aadhaar Card Number"
+              format="aadhaar"
               maxLength={12}
+              placeholder="12 numeric digits"
               registration={register("aadhaar")}
               error={errors.aadhaar?.message}
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextInput
               label="Passport Number (Optional)"
+              format="uppercase"
+              maxLength={15}
+              placeholder="e.g. Z1234567"
               registration={register("passportNo")}
               error={errors.passportNo?.message}
             />
@@ -205,11 +561,14 @@ export default function OnboardingStep1Personal({
         </Grid>
       </Paper>
 
-      {/* Current Address */}
+      {/* 6. Current Address */}
       <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5 }}>
-          Current Address
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+          <HomeOutlinedIcon sx={{ color: "#6366F1" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            6. Current Residential Address
+          </Typography>
+        </Box>
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }}>
@@ -227,7 +586,7 @@ export default function OnboardingStep1Personal({
               error={errors.currentAddress?.addressLine2?.message}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextInput
               label="City"
               required
@@ -235,7 +594,7 @@ export default function OnboardingStep1Personal({
               error={errors.currentAddress?.city?.message}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextInput
               label="State"
               required
@@ -243,26 +602,11 @@ export default function OnboardingStep1Personal({
               error={errors.currentAddress?.state?.message}
             />
           </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Controller
-              name="currentAddress.countryCode"
-              control={control}
-              render={({ field }) => (
-                <PhoneInput
-                  label="Country Code"
-                  countryCodeValue={field.value}
-                  onCountryCodeChange={field.onChange}
-                  countryCodeError={errors.currentAddress?.countryCode?.message}
-                  required
-                />
-              )}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextInput
               label="Zip / Postal Code"
               type="tel"
+              format="numeric"
               maxLength={6}
               required
               registration={register("currentAddress.zip")}
@@ -272,17 +616,20 @@ export default function OnboardingStep1Personal({
         </Grid>
       </Paper>
 
-      {/* Emergency Contacts */}
+      {/* 7. Emergency Contacts */}
       <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
-            Emergency Contacts (Min. 1 Required)
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ContactEmergencyOutlinedIcon sx={{ color: "#6366F1" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              7. Emergency Contacts (Min. 1 Required)
+            </Typography>
+          </Box>
           <Button
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => append({ name: "", relationship: "SPOUSE", phone: "", email: "" })}
-            sx={{ textTransform: "none", fontWeight: 600 }}
+            onClick={() => appendEmergency({ name: "", relationship: "", phone: "", email: "" })}
+            sx={{ textTransform: "none", fontWeight: 600, color: "#6366F1" }}
           >
             Add Contact
           </Button>
@@ -294,8 +641,8 @@ export default function OnboardingStep1Personal({
           </Typography>
         )}
 
-        {fields.map((field, idx) => (
-          <Box key={field.id} sx={{ mb: idx === fields.length - 1 ? 0 : 2 }}>
+        {emergencyFields.map((field, idx) => (
+          <Box key={field.id} sx={{ mb: idx === emergencyFields.length - 1 ? 0 : 2 }}>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextInput
@@ -317,7 +664,8 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   label="Phone Number"
                   type="tel"
-                  maxLength={10}
+                  format="numeric"
+                  maxLength={15}
                   required
                   registration={register(`emergencyContact.${idx}.phone` as const)}
                   error={errors.emergencyContact?.[idx]?.phone?.message}
@@ -326,20 +674,21 @@ export default function OnboardingStep1Personal({
               <Grid size={{ xs: 10, sm: 2.5 }}>
                 <TextInput
                   label="Email Address"
+                  type="email"
                   required
                   registration={register(`emergencyContact.${idx}.email` as const)}
                   error={errors.emergencyContact?.[idx]?.email?.message}
                 />
               </Grid>
               <Grid size={{ xs: 2, sm: 0.5 }} sx={{ display: "flex", justifyContent: "flex-end", pt: 3 }}>
-                {fields.length > 1 && (
-                  <IconButton onClick={() => remove(idx)} size="small" sx={{ color: "#EF4444" }}>
+                {emergencyFields.length > 1 && (
+                  <IconButton onClick={() => removeEmergency(idx)} size="small" sx={{ color: "#EF4444" }}>
                     <DeleteOutlineOutlinedIcon fontSize="small" />
                   </IconButton>
                 )}
               </Grid>
             </Grid>
-            {idx < fields.length - 1 && <Divider sx={{ my: 2 }} />}
+            {idx < emergencyFields.length - 1 && <Divider sx={{ my: 2 }} />}
           </Box>
         ))}
       </Paper>
@@ -351,7 +700,16 @@ export default function OnboardingStep1Personal({
           variant="contained"
           disabled={loading}
           endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" } }}
+          sx={{
+            px: 4,
+            py: 1.2,
+            borderRadius: "10px",
+            background: "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)",
+            "&:hover": { background: "linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)" },
+            fontWeight: 700,
+            textTransform: "none",
+            fontSize: "15px",
+          }}
         >
           {loading ? "Saving..." : "Save & Continue"}
         </Button>

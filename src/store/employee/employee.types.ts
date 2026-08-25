@@ -74,6 +74,13 @@ export interface CreateEmployeeRequest {
   emergencyContacts?: EmergencyContact[];
   salarySetup?: SalarySetup;
   shiftId?: string;
+  bankAccount?: {
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    accountType?: "SALARY" | "SAVINGS" | "CURRENT" | string;
+    accountHolderName?: string;
+  };
 }
 
 export interface EmployeeResponseData {
