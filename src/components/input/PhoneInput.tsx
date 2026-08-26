@@ -9,6 +9,7 @@ import MenuList from "@mui/material/MenuList";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SearchIcon from "@mui/icons-material/Search";
 import type { UseFormRegisterReturn, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { isPossibleNumber } from "libphonenumber-js";
 import { countries, type CountryData } from "../../utils/country-data";
 
 // Helper to generate native flag emojis dynamically from ISO 2-letter codes
@@ -76,6 +77,21 @@ export default function PhoneInput({
     );
   }, [currentCountryCode]);
 
+  // Compute exact maximum allowed digits based on selected country
+  const dynamicMaxLength = useMemo(() => {
+    const code = (activeCountry?.code || "IN").toUpperCase();
+    if (["IN", "US", "CA", "GB"].includes(code)) return 10;
+    if (["AE", "FR"].includes(code)) return 9;
+    try {
+      for (let len = 15; len >= 6; len--) {
+        if (isPossibleNumber("9".repeat(len), code as any)) return len;
+      }
+    } catch {
+      // fallback
+    }
+    return 15;
+  }, [activeCountry]);
+
   const handleOpenDropdown = () => {
     if (disabled) return;
     setIsMenuOpen(true);
@@ -96,6 +112,27 @@ export default function PhoneInput({
         shouldDirty: true,
       });
     }
+
+    // Auto-truncate phone value if it exceeds the newly selected country's valid length
+    const currentPhone =
+      phoneValue !== undefined
+        ? phoneValue
+        : phoneRegistration?.name && watch
+        ? watch(phoneRegistration.name)
+        : "";
+
+    const targetCode = (country.code || "IN").toUpperCase();
+    const targetMax = ["IN", "US", "CA", "GB"].includes(targetCode) ? 10 : ["AE", "FR"].includes(targetCode) ? 9 : 15;
+
+    if (currentPhone && String(currentPhone).length > targetMax) {
+      const trimmed = String(currentPhone).slice(0, targetMax);
+      if (phoneRegistration?.name && setValue) {
+        setValue(phoneRegistration.name, trimmed, { shouldValidate: true, shouldDirty: true });
+      } else if (onPhoneChange) {
+        onPhoneChange(trimmed);
+      }
+    }
+
     handleCloseDropdown();
   };
 
@@ -142,7 +179,7 @@ export default function PhoneInput({
         variant="outlined"
         slotProps={{
           htmlInput: {
-            maxLength: 15,
+            maxLength: dynamicMaxLength,
             autoComplete: "new-password",
             onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
               // Standard control keys
@@ -160,11 +197,24 @@ export default function PhoneInput({
 
               if (!isControlKey && !/^\d$/.test(e.key)) {
                 e.preventDefault();
+                return;
+              }
+
+              if (!isControlKey) {
+                const target = e.target as HTMLInputElement;
+                if (target.value.length >= dynamicMaxLength) {
+                  e.preventDefault();
+                }
               }
             },
             onInput: (e: React.FormEvent<HTMLInputElement>) => {
               const target = e.target as HTMLInputElement;
-              target.value = target.value.replace(/\D/g, "");
+              const digits = target.value.replace(/\D/g, "");
+              if (digits.length > dynamicMaxLength) {
+                target.value = digits.slice(0, dynamicMaxLength);
+              } else {
+                target.value = digits;
+              }
             },
           },
           input: {

@@ -46,6 +46,7 @@ import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
   getEmployeeCompleteProfile,
   getLoggedInEmployeeProfile,
+  getMyFullProfile,
   getBankAccounts,
   getEmployeeDocuments,
   uploadSelfAvatar,
@@ -216,24 +217,32 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
     if (!loadedSelf && !cancelled && !isViewingOther) {
       try {
-        const [profileRes, bankRes, docRes] = await Promise.all([
+        const [meFullRes, profileRes, bankRes, docRes] = await Promise.allSettled([
+          getMyFullProfile(),
           getLoggedInEmployeeProfile(),
           getBankAccounts(),
           getEmployeeDocuments(),
         ]);
 
-        if (profileRes.succeeded) {
-          const empData = profileRes.data ? { ...profileRes.data } : null;
+        if (meFullRes.status === "fulfilled" && meFullRes.value?.data?.employee) {
+          const empData = { ...meFullRes.value.data.employee };
+          if (empData?.avatarUrl && !empData.avatarUrl.includes("?t=")) {
+            empData.avatarUrl = `${empData.avatarUrl}?t=${Date.now()}`;
+          }
+          setEmpProfile(empData as any);
+        } else if (profileRes.status === "fulfilled" && profileRes.value?.succeeded) {
+          const empData = profileRes.value.data ? { ...profileRes.value.data } : null;
           if (empData?.avatarUrl && !empData.avatarUrl.includes("?t=")) {
             empData.avatarUrl = `${empData.avatarUrl}?t=${Date.now()}`;
           }
           setEmpProfile(empData);
         }
-        if (bankRes.succeeded) {
-          setBankAccounts((bankRes.data || []) as BankAccount[]);
+
+        if (bankRes.status === "fulfilled" && bankRes.value?.succeeded) {
+          setBankAccounts((bankRes.value.data || []) as BankAccount[]);
         }
-        if (docRes.succeeded) {
-          setDocuments((docRes.data || []) as EmployeeDocument[]);
+        if (docRes.status === "fulfilled" && docRes.value?.succeeded) {
+          setDocuments((docRes.value.data || []) as EmployeeDocument[]);
         }
         setMissingDocTypes([]);
       } catch (fallbackErr) {

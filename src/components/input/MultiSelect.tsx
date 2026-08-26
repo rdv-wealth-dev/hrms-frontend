@@ -28,6 +28,7 @@ export interface MultiSelectProps {
   searchPlaceholder?: string;
   size?: "small" | "medium";
   fullWidth?: boolean;
+  error?: string;
   sx?: any;
 }
 
@@ -42,6 +43,7 @@ export function MultiSelect({
   searchPlaceholder = "Search options...",
   fullWidth = true,
   size = "small",
+  error,
   sx,
 }: MultiSelectProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -309,6 +311,11 @@ export function MultiSelect({
           )}
         </Box>
       </Popover>
+      {error && (
+        <Typography variant="caption" color="error" sx={{ mt: 0.5, display: "block" }}>
+          {error}
+        </Typography>
+      )}
     </Box>
   );
 }

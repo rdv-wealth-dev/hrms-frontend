@@ -18,6 +18,9 @@ import { useProfileSelfUpdate } from "../../../hooks/useProfileSelfUpdate";
 import EmergencyContactDialog from "./EmergencyContactDialog";
 import type { CompleteProfileEmployee, EmergencyContact } from "../../../api/employee.api";
 
+import TuneIcon from "@mui/icons-material/Tune";
+import useCustomFields from "../../../hooks/useCustomFields";
+
 interface PersonalTabProps {
   empProfile: CompleteProfileEmployee | null;
   isViewingOther: boolean;
@@ -39,6 +42,7 @@ export default function PersonalTab({
   onRefreshProfileData,
   showSnackbar,
 }: PersonalTabProps) {
+  const { customFields: activeCustomFields } = useCustomFields({ scope: "ORGANIZATION" });
   const ecDialog = useDialog<void>();
   const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
   const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);
@@ -156,6 +160,40 @@ export default function PersonalTab({
           </Box>
         )}
       </Card>
+
+      {/* Dynamic Custom Fields Card */}
+      {activeCustomFields && activeCustomFields.length > 0 && (
+        <Card sx={{ p: 3.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+            <TuneIcon sx={{ color: "#4F46E5" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              Additional Custom Information
+            </Typography>
+          </Box>
+          <Grid container spacing={2.5}>
+            {activeCustomFields.map((field) => {
+              const customData = (empProfile as any)?.customFields || {};
+              const rawVal = customData[field.fieldKey] ?? field.defaultValue ?? "—";
+              const displayVal = Array.isArray(rawVal)
+                ? rawVal.join(", ")
+                : typeof rawVal === "boolean"
+                ? rawVal ? "Yes" : "No"
+                : String(rawVal);
+
+              return (
+                <Grid key={field._id} size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>
+                    {field.fieldLabel}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
+                    {displayVal || "—"}
+                  </Typography>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Card>
+      )}
 
       {/* Add Emergency Contact dialog */}
       <EmergencyContactDialog

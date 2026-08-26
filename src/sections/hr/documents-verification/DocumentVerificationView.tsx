@@ -188,7 +188,7 @@ export function DocumentVerificationView() {
               </Typography>
             </Box>
           ) : (
-            <TableContainer component={Paper} elevation={0} sx={{ boxShadow: "none", borderRadius: 4, overflow: "hidden" }}>
+            <TableContainer component={Paper} elevation={0} sx={{ boxShadow: "none", borderRadius: 4, overflowX: "auto" }}>
               <Table sx={{ minWidth: 800 }}>
                 <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
                   <TableRow>

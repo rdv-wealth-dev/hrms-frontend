@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
@@ -20,6 +20,11 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+
+import TuneIcon from "@mui/icons-material/Tune";
+import DynamicFieldRenderer from "../../../components/input/DynamicFieldRenderer";
+import useCustomFields from "../../../hooks/useCustomFields";
+import type { CustomFieldDefinition } from "../../../api/custom-field.api";
 
 import {
   onboardingStep1Schema,
@@ -56,8 +61,11 @@ const QUALIFICATION_LEVELS = [
 ] as const;
 
 interface OnboardingStep1Props {
-  initialValues?: Partial<OnboardingStep1FormData>;
-  onSubmitStep: (data: OnboardingStep1FormData) => Promise<void>;
+  initialValues?: Partial<OnboardingStep1FormData> & {
+    customFields?: Record<string, any>;
+  };
+  customFieldDefinitions?: CustomFieldDefinition[];
+  onSubmitStep: (data: OnboardingStep1FormData & { customFields?: Record<string, any> }) => Promise<void>;
   loading: boolean;
 }
 
@@ -117,9 +125,17 @@ const buildStep1Defaults = (initial?: Partial<OnboardingStep1FormData>): Onboard
 
 export default function OnboardingStep1Personal({
   initialValues,
+  customFieldDefinitions: passedDefinitions,
   onSubmitStep,
   loading,
 }: OnboardingStep1Props) {
+  const { customFields: fetchedDefinitions } = useCustomFields({ scope: "ORGANIZATION", autoFetch: !passedDefinitions });
+  const activeDefinitions = passedDefinitions?.length ? passedDefinitions : fetchedDefinitions;
+
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>(
+    () => initialValues?.customFields || {}
+  );
+
   const {
     register,
     control,
@@ -138,6 +154,9 @@ export default function OnboardingStep1Personal({
   useEffect(() => {
     if (initialValues) {
       reset(buildStep1Defaults(initialValues));
+      if (initialValues.customFields) {
+        setCustomFieldValues(initialValues.customFields);
+      }
     }
   }, [initialValues, reset]);
 
@@ -303,7 +322,7 @@ export default function OnboardingStep1Personal({
               label="Father's Phone Number"
               type="tel"
               format="numeric"
-              maxLength={15}
+              maxLength={10}
               registration={register("fatherPhone")}
               error={errors.fatherPhone?.message}
             />
@@ -322,7 +341,7 @@ export default function OnboardingStep1Personal({
               label="Mother's Phone Number"
               type="tel"
               format="numeric"
-              maxLength={15}
+              maxLength={10}
               registration={register("motherPhone")}
               error={errors.motherPhone?.message}
             />
@@ -665,7 +684,7 @@ export default function OnboardingStep1Personal({
                   label="Phone Number"
                   type="tel"
                   format="numeric"
-                  maxLength={15}
+                  maxLength={10}
                   required
                   registration={register(`emergencyContact.${idx}.phone` as const)}
                   error={errors.emergencyContact?.[idx]?.phone?.message}
@@ -693,10 +712,51 @@ export default function OnboardingStep1Personal({
         ))}
       </Paper>
 
+      {/* 8. Dynamic Custom Fields Section */}
+      {activeDefinitions && activeDefinitions.length > 0 && (
+        <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+            <TuneIcon sx={{ color: "#6366F1" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              8. Additional Information
+            </Typography>
+          </Box>
+
+          <Grid container spacing={2}>
+            {activeDefinitions.map((field) => (
+              <Grid
+                key={field._id}
+                size={{
+                  xs: 12,
+                  sm: field.fieldType === "SELECT" || field.fieldType === "MULTI_SELECT" ? 12 : 6,
+                }}
+              >
+                <DynamicFieldRenderer
+                  field={field}
+                  value={customFieldValues[field.fieldKey]}
+                  onChange={(val) =>
+                    setCustomFieldValues((prev: Record<string, any>) => ({
+                      ...prev,
+                      [field.fieldKey]: val,
+                    }))
+                  }
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+      )}
+
       {/* Action Row */}
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
         <Button
-          type="submit"
+          type="button"
+          onClick={handleSubmit((data) =>
+            onSubmitStep({
+              ...data,
+              customFields: customFieldValues,
+            })
+          )}
           variant="contained"
           disabled={loading}
           endIcon={<ArrowForwardIcon />}

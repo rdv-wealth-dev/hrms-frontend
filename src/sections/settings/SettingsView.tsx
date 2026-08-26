@@ -20,6 +20,7 @@ import OrganizationStatutoryContent from "./components/OrganizationStatutoryCont
 import OrganizationDocumentsContent from "./components/OrganizationDocumentsContent";
 import BranchListContent from "../branches/branch-list/components/BranchListContent";
 import RolesListContent from "./components/roles/RolesListContent";
+import CustomFieldsSettingsTab from "./components/CustomFieldsSettingsTab";
 import { usePermissions } from "../../hooks/usePermissions";
 
 import {
@@ -37,6 +38,7 @@ const CONTENT_MAP: Record<string, ReactNode> = {
   "org-modules":       <OrganizationModulesContent />,
   "org-statutory":     <OrganizationStatutoryContent />,
   "org-documents":     <OrganizationDocumentsContent />,
+  "custom-fields":     <CustomFieldsSettingsTab />,
   "roles-permissions": <RolesListContent />,
   branches:            <BranchListContent />,
   departments:         <DepartmentContent />,
@@ -140,9 +142,6 @@ function SettingsView() {
         <Box sx={{ mb: { xs: 2, md: 3 } }}>
           <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", fontSize: { xs: "1.1rem", md: "1.4rem" } }}>
             Settings &amp; Administration
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, display: { xs: "none", sm: "block" } }}>
-            Configure NexusHR for your organization
           </Typography>
         </Box>
 

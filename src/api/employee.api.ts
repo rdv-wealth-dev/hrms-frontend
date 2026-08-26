@@ -564,6 +564,38 @@ export const getLoggedInEmployeeProfile = async (): Promise<GetLoggedInEmployeeR
   return response.data;
 };
 
+// ── API 9: Get My Full Profile with Dynamic Schema ───────────
+export interface ProfileMeData {
+  account?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  };
+  employee?: CompleteProfileEmployee & {
+    customFields?: Record<string, any>;
+  };
+  customFieldDefinitions?: any[];
+  todayAttendance?: { status: string };
+  leaveBalances?: any[];
+}
+
+export interface ProfileMeResponse {
+  succeeded?: boolean;
+  success?: boolean;
+  message?: string;
+  data: ProfileMeData;
+}
+
+export const getMyFullProfile = async (): Promise<ProfileMeResponse> => {
+  const response = await axiosInstance.get<ProfileMeResponse>(
+    "/profile/me",
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
 export interface UpdateLoggedInEmployeeRequest {
   phone?: string;
   dateOfBirth?: string;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -116,7 +116,29 @@ function DashboardLayout() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
+    // Keep a stable focus target for the temporary mobile Drawer.
+    // When the Drawer closes, focus is restored to the element that opened it.
+    const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+
     const handleMobileMenuOpen = useModalTrigger(() => setMobileOpen(true));
+
+    const restoreMobileMenuFocus = () => {
+        // Let MUI finish the Drawer close/Modal transition before restoring focus.
+        requestAnimationFrame(() => {
+            mobileMenuButtonRef.current?.focus();
+        });
+    };
+
+    const handleMobileDrawerClose = () => {
+        setMobileOpen(false);
+        restoreMobileMenuFocus();
+    };
+
+    const handleMobileNavigation = (targetPath: string) => {
+        navigate(targetPath);
+        setMobileOpen(false);
+        restoreMobileMenuFocus();
+    };
 
     const [pendingLeaveCount, setPendingLeaveCount] = useState<number>(0);
     const [pendingRegCount, setPendingRegCount] = useState<number>(0);
@@ -226,8 +248,7 @@ function DashboardLayout() {
             <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
                 <ListItemButton
                     onClick={() => {
-                        navigate(targetPath);
-                        setMobileOpen(false);
+                        handleMobileNavigation(targetPath);
                     }}
                     sx={{
                         borderRadius: 2.5,
@@ -395,8 +416,7 @@ function DashboardLayout() {
                     >
                         <Box
                             onClick={() => {
-                                navigate(paths.profile);
-                                setMobileOpen(false);
+                                handleMobileNavigation(paths.profile);
                             }}
                             sx={{
                                 display: "flex",
@@ -508,12 +528,12 @@ function DashboardLayout() {
         <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#F5F6FA", width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
             {/* Mobile Drawer */}
             <Drawer
+                id="mobile-navigation-drawer"
                 variant="temporary"
                 open={mobileOpen}
-                onClose={() => setMobileOpen(false)}
+                onClose={handleMobileDrawerClose}
                 ModalProps={{
                     keepMounted: true,
-                    disableRestoreFocus: true,
                 }}
                 sx={{
                     display: { xs: "block", md: "none" },
@@ -619,6 +639,10 @@ function DashboardLayout() {
                     {/* Left: Mobile hamburger menu trigger */}
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <IconButton
+                            ref={mobileMenuButtonRef}
+                            aria-label="Open navigation menu"
+                            aria-expanded={mobileOpen}
+                            aria-controls="mobile-navigation-drawer"
                             onClick={handleMobileMenuOpen}
                             sx={{
                                 display: { xs: "inline-flex", md: "none" },

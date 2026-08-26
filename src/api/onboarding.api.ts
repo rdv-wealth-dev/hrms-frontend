@@ -1,4 +1,5 @@
 import axiosInstance from "./axios";
+import type { CustomFieldDefinition } from "./custom-field.api";
 
 export interface CurrentAddress {
   addressLine1: string;
@@ -52,6 +53,7 @@ export interface Step1Payload {
   pan?: string;
   aadhaar?: string;
   passportNo?: string;
+  customFields?: Record<string, any>;
 }
 
 export interface FamilyMember {
@@ -104,6 +106,7 @@ export interface OnboardingStatusResponse {
     step3Data?: Partial<Step3Payload>;
     missingDocuments?: string[];
     mandatoryDocumentTypes?: string[];
+    customFieldDefinitions?: CustomFieldDefinition[];
   };
 }
 
