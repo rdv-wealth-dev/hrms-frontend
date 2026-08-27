@@ -46,7 +46,7 @@ export function VirtualizedTable<T>({
   data = [],
   renderRow,
   rowKey,
-  maxHeight = 580,
+  maxHeight = "none",
   minWidth = 750,
   estimateRowHeight = 56,
   overscan = 5,
@@ -129,8 +129,9 @@ export function VirtualizedTable<T>({
       <TableContainer
         ref={containerRef}
         sx={{
-          maxHeight,
-          overflowY: "auto",
+          ...(maxHeight && maxHeight !== "none"
+            ? { maxHeight, overflowY: "auto" }
+            : { overflowY: "visible" }),
           overflowX: "auto",
           scrollbarWidth: "thin",
           scrollbarColor: "#CBD5E1 transparent",

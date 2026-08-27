@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -37,7 +38,6 @@ import EmployeeAttendanceTable, { type AttendanceRecordRow } from "../../compone
 import { FilterBar } from "../../components/filter";
 import PageHeader from "../../components/common/PageHeader";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
-
 import ManualAttendanceDialog from "../attendance/components/ManualAttendanceDialog";
 import RegularizeRequestDialog from "../attendance/components/RegularizeRequestDialog";
 
@@ -51,29 +51,6 @@ const STATUS_OPTIONS = [
   { value: "HOLIDAY", label: "Holiday" },
   { value: "WEEK_OFF", label: "Week Off" },
 ];
-
-const COLOR_PALETTE = [
-  "#6D5DF6", "#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#EC4899"
-];
-
-function getInitials(name?: string): string {
-  if (!name) return "EMP";
-  const parts = name.trim().split(" ");
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
-}
-
-function getColorForName(name?: string): string {
-  if (!name) return COLOR_PALETTE[0];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % COLOR_PALETTE.length;
-  return COLOR_PALETTE[index];
-}
 
 function getRecordLocalDateStr(r: AttendanceRecord): string {
   const raw = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
@@ -441,14 +418,25 @@ export default function AttendanceReportView() {
     return rawStatus || "PRESENT";
   };
 
-  // Convert real live API records to table row format
+  // Convert real live API records to table row format — one row per punch event
   const tableRows: AttendanceRecordRow[] = useMemo(() => {
-    return todayRecords.map((r) => {
+    const formatPunchDate = (dateInput?: string) => {
+      if (!dateInput) return "--";
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) return "--";
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yy = String(d.getFullYear()).slice(-2);
+      return `${dd} ${mm} ${yy}`;
+    };
+
+    return todayRecords.flatMap((r) => {
       const empObj = typeof r?.employeeId === "object" ? r.employeeId : r?.employee;
       const firstName = empObj?.firstName || (r as any)?.firstName || "";
       const lastName = empObj?.lastName || (r as any)?.lastName || "";
       const fullName = empObj?.fullName || (r as any)?.fullName || (r as any)?.employeeName || `${firstName} ${lastName}`.trim();
       const empName = fullName || "Employee";
+      const empCode = empObj?.employeeCode || (r as any)?.employeeCode || "--";
 
       const avatarUrl =
         empObj?.avatarUrl ||
@@ -458,27 +446,34 @@ export default function AttendanceReportView() {
         (empObj as any)?.user?.avatarUrl ||
         "";
 
-      const mins = getRealWorkedMinutes(r);
       const status = getResolvedStatus(r);
-
       const deptName = (empObj as any)?.department?.name || (empObj as any)?.departmentName || (r as any)?.departmentName || "";
       const desigName = (empObj as any)?.designation?.title || (empObj as any)?.designationName || (r as any)?.designationName || "";
       const branchName = (empObj as any)?.branch?.name || (empObj as any)?.branchName || (r as any)?.branchName || "";
+      const punchDate = formatPunchDate(r?.attendanceDate);
 
-      return {
-        id: r?._id || Math.random().toString(),
+      // Real punch log: one row per session. Falls back to firstCheckIn/lastCheckOut
+      // only for older records that predate the sessions[] array.
+      const sessions = Array.isArray(r?.sessions) && r.sessions.length > 0
+        ? r.sessions
+        : [
+            ...(r?.firstCheckIn ? [{ timestamp: r.firstCheckIn }] : []),
+            ...(r?.lastCheckOut ? [{ timestamp: r.lastCheckOut }] : []),
+          ];
+
+      return sessions.map((s, idx) => ({
+        id: `${r?._id || "rec"}-${idx}`,
+        recordId: r?._id || "",
+        employeeCode: empCode,
         employeeName: empName,
-        initials: getInitials(empName),
-        avatarColor: getColorForName(empName),
         avatarUrl,
+        punchLog: formatTime(s.timestamp),
+        punchDate,
+        status,
         departmentName: deptName,
         designationName: desigName,
-        branchName: branchName,
-        checkIn: formatTime(r?.firstCheckIn),
-        checkOut: formatTime(r?.lastCheckOut),
-        hours: formatWorkedTime(mins),
-        status: status,
-      };
+        branchName,
+      }));
     });
   }, [todayRecords]);
 
@@ -728,8 +723,9 @@ export default function AttendanceReportView() {
           <>
             <EmployeeAttendanceTable
               records={paginatedRows}
+              startIndex={clientPage * clientRowsPerPage}
               onRowClick={(row) => {
-                const origRecord = records.find((r) => r._id === row.id);
+                const origRecord = records.find((r) => r._id === row.recordId);
                 if (origRecord) detailDialog.open(origRecord);
               }}
             />

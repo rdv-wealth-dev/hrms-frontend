@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
@@ -23,6 +17,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import PageHeader from "../../../components/common/PageHeader";
+import { VirtualizedTable } from "../../../components/table";
 
 const AVATAR_COLORS = ["#4F46E5", "#D97706", "#059669", "#0284C7", "#7C3AED", "#DB2777"];
 
@@ -382,170 +377,150 @@ function RegularizationListPage() {
               })}
             </Box>
 
-            {/* Desktop & Tablet Table View (sm+) */}
-            <TableContainer
-              sx={{
-                display: { xs: "none", sm: "block" },
-                borderRadius: "16px",
-                border: "1px solid #E2E8F0",
-                backgroundColor: "#FFFFFF",
-                boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
-                overflowX: "auto",
-              }}
-            >
-              <Table sx={{ minWidth: 800 }}>
-                <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", pl: 3, whiteSpace: "nowrap" }}>
-                      EMPLOYEE
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-                      ATTENDANCE DATE
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-                      REQUESTED CHECK IN
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-                      REQUESTED CHECK OUT
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-                      REASON
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-                      STATUS
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 700, fontSize: "11px", color: "#64748B", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-                      {isEmployee ? "REQUESTED ON" : "ACTIONS"}
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {requests.map((request, idx) => {
-                    const empName = isEmployee
-                      ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "My Profile"
-                      : getEmployeeName(request.employeeId);
-                    const empAvatar = isEmployee
-                      ? user?.avatarUrl || (user as any)?.profilePicture || undefined
-                      : getEmployeeAvatar(request.employeeId);
-                    const initials = empName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "E";
-                    const avatarBg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-                    const isPending = (request?.status || "").toUpperCase() === "PENDING";
+            {/* Desktop & Tablet Virtualized Table View (sm+) */}
+            <Box sx={{ display: { xs: "none", sm: "block" }, width: "100%" }}>
+              <VirtualizedTable<RegularizationRequest>
+                data={requests}
+                loading={loading}
+                maxHeight="none"
+                minWidth={800}
+                estimateRowHeight={58}
+                rowKey={(request, idx) => request._id || `reg-${idx}`}
+                columns={[
+                  {
+                    id: "employee",
+                    header: "EMPLOYEE",
+                    minWidth: 180,
+                    sticky: "left",
+                    cell: (request, idx) => {
+                      const empName = isEmployee
+                        ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "My Profile"
+                        : getEmployeeName(request.employeeId);
+                      const empAvatar = isEmployee
+                        ? user?.avatarUrl || (user as any)?.profilePicture || undefined
+                        : getEmployeeAvatar(request.employeeId);
+                      const initials = empName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "E";
+                      const avatarBg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
-                    return (
-                      <TableRow
-                        key={request._id}
-                        hover
+                      return (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                          <Avatar
+                            src={empAvatar}
+                            sx={{
+                              width: 34,
+                              height: 34,
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              backgroundColor: avatarBg,
+                              color: "#FFFFFF",
+                            }}
+                          >
+                            {initials}
+                          </Avatar>
+                          <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A", lineHeight: 1.2 }}>
+                            {empName}
+                          </Typography>
+                        </Box>
+                      );
+                    },
+                  },
+                  {
+                    id: "attendanceDate",
+                    header: "ATTENDANCE DATE",
+                    minWidth: 140,
+                    cell: (request) => (
+                      <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
+                        {formatDate(request.attendanceDate)}
+                      </Typography>
+                    ),
+                  },
+                  {
+                    id: "requestedCheckIn",
+                    header: "REQUESTED CHECK IN",
+                    minWidth: 140,
+                    cell: (request) => (
+                      <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#059669" }}>
+                        {formatTime(request.requestedCheckIn)}
+                      </Typography>
+                    ),
+                  },
+                  {
+                    id: "requestedCheckOut",
+                    header: "REQUESTED CHECK OUT",
+                    minWidth: 140,
+                    cell: (request) => (
+                      <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#059669" }}>
+                        {formatTime(request.requestedCheckOut)}
+                      </Typography>
+                    ),
+                  },
+                  {
+                    id: "reason",
+                    header: "REASON",
+                    minWidth: 160,
+                    cell: (request) => (
+                      <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis" }} title={request.reason}>
+                        {request.reason || "—"}
+                      </Typography>
+                    ),
+                  },
+                  {
+                    id: "status",
+                    header: "STATUS",
+                    minWidth: 110,
+                    cell: (request) => (
+                      <Chip
+                        label={getStatusChipStyles(request.status).label}
+                        size="small"
                         sx={{
-                          transition: "all 0.15s ease",
-                          "& .MuiTableCell-root": { whiteSpace: "nowrap" },
+                          height: 24,
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          borderRadius: "12px",
+                          backgroundColor: getStatusChipStyles(request.status).bg,
+                          color: getStatusChipStyles(request.status).text,
+                          px: 0.5,
                         }}
-                      >
-                        {/* Employee Avatar & Name */}
-                        <TableCell sx={{ pl: 3 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                            <Avatar
-                              src={empAvatar}
+                      />
+                    ),
+                  },
+                  {
+                    id: "actions",
+                    header: isEmployee ? "REQUESTED ON" : "ACTIONS",
+                    minWidth: 120,
+                    align: "center",
+                    sticky: "right",
+                    cell: (request) => {
+                      const isPending = (request?.status || "").toUpperCase() === "PENDING";
+                      return isEmployee ? (
+                        <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
+                          {formatDate(request.createdAt)}
+                        </Typography>
+                      ) : (
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                          <Tooltip title={isPending ? "Review Request" : "View Details"}>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setReviewOpen(true);
+                              }}
                               sx={{
-                                width: 34,
-                                height: 34,
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                backgroundColor: avatarBg,
-                                color: "#FFFFFF",
+                                color: isPending ? "#4F46E5" : "#64748B",
+                                backgroundColor: isPending ? "#EEF2FF" : "#F1F5F9",
+                                "&:hover": { backgroundColor: isPending ? "#E0E7FF" : "#E2E8F0" },
                               }}
                             >
-                              {initials}
-                            </Avatar>
-                            <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A", lineHeight: 1.2 }}>
-                              {empName}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-
-                        {/* Date */}
-                        <TableCell>
-                          <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
-                            {formatDate(request.attendanceDate)}
-                          </Typography>
-                        </TableCell>
-
-                        {/* Requested Check In */}
-                        <TableCell>
-                          <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#059669" }}>
-                            {formatTime(request.requestedCheckIn)}
-                          </Typography>
-                        </TableCell>
-
-                        {/* Requested Check Out */}
-                        <TableCell>
-                          <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#059669" }}>
-                            {formatTime(request.requestedCheckOut)}
-                          </Typography>
-                        </TableCell>
-
-                        {/* Reason */}
-                        <TableCell>
-                          <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis" }} title={request.reason}>
-                            {request.reason || "—"}
-                          </Typography>
-                        </TableCell>
-
-                        {/* Status Badge */}
-                        <TableCell>
-                          <Chip
-                            label={getStatusChipStyles(request.status).label}
-                            size="small"
-                            sx={{
-                              height: 24,
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              borderRadius: "12px",
-                              backgroundColor: getStatusChipStyles(request.status).bg,
-                              color: getStatusChipStyles(request.status).text,
-                              px: 0.5,
-                            }}
-                          />
-                        </TableCell>
-
-                        {/* Action / Requested On */}
-                        <TableCell align="center">
-                          {isEmployee ? (
-                            <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
-                              {formatDate(request.createdAt)}
-                            </Typography>
-                          ) : (
-                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                              <Tooltip title={isPending ? "Review Request" : "View Details"}>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => {
-                                    setSelectedRequest(request);
-                                    setReviewOpen(true);
-                                  }}
-                                  sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: "8px",
-                                    backgroundColor: isPending ? "#EEF2FF" : "#F1F5F9",
-                                    color: isPending ? "#6D5DF6" : "#64748B",
-                                    border: "1px solid #E2E8F0",
-                                    "&:hover": {
-                                      backgroundColor: isPending ? "#E0E7FF" : "#E2E8F0",
-                                    },
-                                  }}
-                                >
-                                  <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                              {isPending ? <RateReviewOutlinedIcon fontSize="small" /> : <VisibilityOutlinedIcon fontSize="small" />}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      );
+                    },
+                  },
+                ]}
+              />
+            </Box>
           </Box>
         )}
 

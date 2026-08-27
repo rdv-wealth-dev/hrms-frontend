@@ -6,13 +6,6 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -28,6 +21,7 @@ import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import TextInput from "../../../components/input/TextInput";
 import { CreateTeamDialog, TeamsListContent } from "../../teams";
+import { VirtualizedTable } from "../../../components/table";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -450,114 +444,116 @@ function DepartmentContent() {
 
 
                 {/* Department Table */}
-                {loading ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
-                        <CircularProgress />
-                    </Box>
-                ) : (
-                    <TableContainer
-                        component={Paper}
-                        sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
-                    >
-                        <Table>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Name</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Description</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                                    {canUpdate && (
-                                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
-                                    )}
-                                </TableRow>
-                            </TableHead>
-
-                            <TableBody>
-                                {(departments ?? []).length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={canUpdate ? 5 : 4} align="center">
-                                            <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
-                                                <ApartmentOutlinedIcon
-                                                    sx={{ fontSize: 54, color: "#9CA3AF" }}
-                                                />
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
-                                                    No Departments Configured Yet
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
-                                                    Click "Create Department" to set up your organization's first department.
-                                                </Typography>
-                                                {canCreate && (
-                                                    <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
-                                                        <Button
-                                                            variant="contained"
-                                                            onClick={() => setCreateOpen(true)}
-                                                            startIcon={<AddIcon />}
-                                                            sx={{
-                                                                borderRadius: 2,
-                                                                textTransform: "none",
-                                                                fontWeight: 600,
-                                                                backgroundColor: "#6D5DF6",
-                                                                "&:hover": { backgroundColor: "#5B4BEA" },
-                                                            }}
-                                                        >
-                                                            Create Department
-                                                        </Button>
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    (departments ?? []).map((dept) => (
-                                        <TableRow
-                                            key={dept?._id ?? Math.random()}
-                                            hover
-                                            sx={{ "&:last-child td": { border: 0 } }}
-                                        >
-                                            <TableCell sx={{ fontWeight: 500, fontSize: 14 }}>
-                                                {dept?.name ?? "—"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={dept?.code ?? ""}
-                                                    size="small"
-                                                    sx={{
-                                                        backgroundColor: "#EEF2FF",
-                                                        color: "#6D5DF6",
-                                                        fontWeight: 600,
-                                                        fontSize: 12,
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell sx={{ color: "#6B7280", fontSize: 13 }}>
-                                                {dept?.description || "—"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={dept?.isActive ? "Active" : "Inactive"}
-                                                    size="small"
-                                                    color={dept?.isActive ? "success" : "default"}
-                                                    variant="outlined"
-                                                />
-                                            </TableCell>
-                                            {canUpdate && (
-                                                <TableCell>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => openEdit(dept)}
-                                                        sx={{ color: "#6D5DF6" }}
-                                                    >
-                                                        <EditOutlinedIcon fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                )}
+                <VirtualizedTable<any>
+                    data={departments ?? []}
+                    loading={loading}
+                    maxHeight="none"
+                    minWidth={600}
+                    estimateRowHeight={52}
+                    rowKey={(dept, index) => dept?._id || `dept-${index}`}
+                    emptyState={
+                        <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
+                            <ApartmentOutlinedIcon sx={{ fontSize: 54, color: "#9CA3AF" }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
+                                No Departments Configured Yet
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, textAlign: "center" }}>
+                                Click "Create Department" to set up your organization's first department.
+                            </Typography>
+                            {canCreate && (
+                                <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => setCreateOpen(true)}
+                                        startIcon={<AddIcon />}
+                                        sx={{
+                                            borderRadius: 2,
+                                            textTransform: "none",
+                                            fontWeight: 600,
+                                            backgroundColor: "#6D5DF6",
+                                            "&:hover": { backgroundColor: "#5B4BEA" },
+                                        }}
+                                    >
+                                        Create Department
+                                    </Button>
+                                </Box>
+                            )}
+                        </Box>
+                    }
+                    columns={[
+                        {
+                            id: "name",
+                            header: "Name",
+                            minWidth: 150,
+                            sticky: "left",
+                            cell: (dept) => (
+                                <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+                                    {dept?.name ?? "—"}
+                                </Typography>
+                            ),
+                        },
+                        {
+                            id: "code",
+                            header: "Code",
+                            minWidth: 100,
+                            cell: (dept) => (
+                                <Chip
+                                    label={dept?.code ?? ""}
+                                    size="small"
+                                    sx={{
+                                        backgroundColor: "#EEF2FF",
+                                        color: "#6D5DF6",
+                                        fontWeight: 600,
+                                        fontSize: 12,
+                                    }}
+                                />
+                            ),
+                        },
+                        {
+                            id: "description",
+                            header: "Description",
+                            minWidth: 200,
+                            cell: (dept) => (
+                                <Typography sx={{ color: "#6B7280", fontSize: 13 }}>
+                                    {dept?.description || "—"}
+                                </Typography>
+                            ),
+                        },
+                        {
+                            id: "status",
+                            header: "Status",
+                            minWidth: 100,
+                            cell: (dept) => (
+                                <Chip
+                                    label={dept?.isActive ? "Active" : "Inactive"}
+                                    size="small"
+                                    color={dept?.isActive ? "success" : "default"}
+                                    variant="outlined"
+                                />
+                            ),
+                        },
+                        ...(canUpdate
+                            ? [
+                                  {
+                                      id: "actions",
+                                      header: "Actions",
+                                      minWidth: 80,
+                                      align: "center" as const,
+                                      sticky: "right" as const,
+                                      cell: (dept: any) => (
+                                          <IconButton
+                                              size="small"
+                                              onClick={() => openEdit(dept)}
+                                              sx={{ color: "#6D5DF6" }}
+                                          >
+                                              <EditOutlinedIcon fontSize="small" />
+                                          </IconButton>
+                                      ),
+                                  },
+                              ]
+                            : []),
+                    ]}
+                />
                     </>
                 )}
             </Box>

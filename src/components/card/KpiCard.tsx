@@ -240,9 +240,9 @@ export function KpiCard({
             icon && (
               <Box
                 sx={{
-                  width: isSmall ? 26 : 38,
-                  height: isSmall ? 26 : 38,
-                  borderRadius: isSmall ? "6px" : "10px",
+                  width: isSmall ? 22 : 26,
+                  height: isSmall ? 22 : 26,
+                  borderRadius: isSmall ? "6px" : "7px",
                   backgroundColor: iconBg || "rgba(255, 255, 255, 0.85)",
                   display: "flex",
                   alignItems: "center",
@@ -252,7 +252,7 @@ export function KpiCard({
                   mt: isSmall ? 0.5 : 0,
                   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
                   "& svg": {
-                    fontSize: isSmall ? "14px !important" : "20px !important",
+                    fontSize: isSmall ? "12px !important" : "14px !important",
                   },
                 }}
               >

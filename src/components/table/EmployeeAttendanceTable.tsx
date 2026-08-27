@@ -8,22 +8,24 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Chip from "@mui/material/Chip";
 
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { CustomAvatar } from "../avatar";
 import VirtualizedTableBody from "./VirtualizedTableBody";
 
 export interface AttendanceRecordRow {
-  id: string;
+  id: string;          // unique per punch row — used as the React key
+  recordId: string;    // original attendance record _id — used for row-click lookups
+  employeeCode: string;
   employeeName: string;
-  initials: string;
-  avatarColor: string;
   avatarUrl?: string;
-  checkIn: string;
-  checkOut: string;
-  hours: string;
-  status: "Present" | "Wfh" | "Late" | "Absent" | "Half Day" | string;
+  punchLog: string;    // single formatted time, e.g. "10:46 AM"
+  punchDate: string;   // e.g. "25 08 26"
+  // Kept but not rendered as columns — your existing filter bar reads these
+  status?: string;
+  departmentName?: string;
+  designationName?: string;
+  branchName?: string;
 }
 
 interface EmployeeAttendanceTableProps {
@@ -32,6 +34,7 @@ interface EmployeeAttendanceTableProps {
   onRowClick?: (record: AttendanceRecordRow) => void;
   loading?: boolean;
   maxHeight?: number | string;
+  startIndex?: number; // offset for continuous S.No. across pages, default 0
 }
 
 export default function EmployeeAttendanceTable({
@@ -39,33 +42,11 @@ export default function EmployeeAttendanceTable({
   onExport,
   onRowClick,
   loading = false,
-  maxHeight = 480,
+  maxHeight = "none",
+  startIndex = 0,
 }: EmployeeAttendanceTableProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const safeRecords = Array.isArray(records) ? records : [];
-
-  const getStatusChipProps = (status: string) => {
-    const s = (status || "").toLowerCase();
-    if (s.includes("present")) {
-      return { label: "Present", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0" };
-    }
-    if (s.includes("wfh") || s.includes("remote")) {
-      return { label: "WFH", color: "#0D9488", bg: "#F0FDFA", border: "#99F6E4" };
-    }
-    if (s.includes("late")) {
-      return { label: "Late", color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE" };
-    }
-    if (s.includes("half")) {
-      return { label: "Half Day", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A" };
-    }
-    if (s.includes("leave")) {
-      return { label: "On Leave", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" };
-    }
-    if (s.includes("absent")) {
-      return { label: "Absent", color: "#DC2626", bg: "#FEF2F2", border: "#FCA5A5" };
-    }
-    return { label: (status || "Unknown").replace(/_/g, " "), color: "#4B5563", bg: "#F3F4F6", border: "#E5E7EB" };
-  };
 
   const handleCsvExport = () => {
     if (onExport) {
@@ -74,8 +55,14 @@ export default function EmployeeAttendanceTable({
     }
     if (safeRecords.length === 0) return;
 
-    const headers = ["Employee", "Check In", "Check Out", "Hours", "Status"];
-    const rows = safeRecords.map((r) => [r?.employeeName ?? "", r?.checkIn ?? "", r?.checkOut ?? "", r?.hours ?? "", r?.status ?? ""]);
+    const headers = ["S.No", "Employee Code", "Employee Name", "Punch Log", "Punch Date"];
+    const rows = safeRecords.map((r, i) => [
+      String(startIndex + i + 1),
+      r?.employeeCode ?? "",
+      r?.employeeName ?? "",
+      r?.punchLog ?? "",
+      r?.punchDate ?? "",
+    ]);
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
@@ -99,7 +86,6 @@ export default function EmployeeAttendanceTable({
         overflow: "hidden",
       }}
     >
-      {/* Table Card Header */}
       <Box
         sx={{
           px: { xs: 2, sm: 3 },
@@ -134,12 +120,12 @@ export default function EmployeeAttendanceTable({
         </Button>
       </Box>
 
-      {/* Virtualized Table Container */}
       <TableContainer
         ref={containerRef}
         sx={{
-          maxHeight,
-          overflowY: "auto",
+          ...(maxHeight && maxHeight !== "none"
+            ? { maxHeight, overflowY: "auto" }
+            : { overflowY: "visible" }),
           overflowX: "auto",
           scrollbarWidth: "thin",
           scrollbarColor: "#CBD5E1 transparent",
@@ -151,19 +137,19 @@ export default function EmployeeAttendanceTable({
           <TableHead>
             <TableRow sx={{ "& th": { backgroundColor: "#F9FAFB", zIndex: 3 } }}>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem", color: "#6B7280", letterSpacing: "0.05em" }}>
-                EMPLOYEE
+                S.NO.
               </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem", color: "#6B7280", letterSpacing: "0.05em" }}>
-                CHECK IN
+                EMPLOYEE CODE
               </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem", color: "#6B7280", letterSpacing: "0.05em" }}>
-                CHECK OUT
+                EMPLOYEE NAME
               </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem", color: "#6B7280", letterSpacing: "0.05em" }}>
-                HOURS
+                PUNCH LOG
               </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem", color: "#6B7280", letterSpacing: "0.05em" }}>
-                STATUS
+                PUNCH DATE
               </TableCell>
             </TableRow>
           </TableHead>
@@ -174,8 +160,7 @@ export default function EmployeeAttendanceTable({
             estimateRowHeight={56}
             columnsCount={5}
             loading={loading}
-            renderRow={(row) => {
-              const chip = getStatusChipProps(row?.status);
+            renderRow={(row, index) => {
               return (
                 <TableRow
                   key={row?.id}
@@ -187,7 +172,18 @@ export default function EmployeeAttendanceTable({
                     transition: "background-color 0.15s ease",
                   }}
                 >
-                  {/* EMPLOYEE column */}
+                  <TableCell>
+                    <Typography variant="body2" sx={{ color: "#6B7280", fontWeight: 500 }}>
+                      {startIndex + index + 1}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                      {row?.employeeCode ?? "--"}
+                    </Typography>
+                  </TableCell>
+
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                       <CustomAvatar
@@ -201,43 +197,16 @@ export default function EmployeeAttendanceTable({
                     </Box>
                   </TableCell>
 
-                  {/* CHECK IN column */}
                   <TableCell>
                     <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", fontWeight: 500 }}>
-                      {row?.checkIn ?? "--"}
+                      {row?.punchLog ?? "--"}
                     </Typography>
                   </TableCell>
 
-                  {/* CHECK OUT column */}
                   <TableCell>
                     <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#4B5563", fontWeight: 500 }}>
-                      {row?.checkOut ?? "--"}
+                      {row?.punchDate ?? "--"}
                     </Typography>
-                  </TableCell>
-
-                  {/* HOURS column */}
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
-                      {row?.hours ?? "--"}
-                    </Typography>
-                  </TableCell>
-
-                  {/* STATUS column */}
-                  <TableCell>
-                    <Chip
-                      label={chip.label}
-                      size="small"
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: "0.75rem",
-                        color: chip.color,
-                        backgroundColor: chip.bg,
-                        border: `1px solid ${chip.border}`,
-                        borderRadius: 2,
-                        px: 0.5,
-                        height: 24,
-                      }}
-                    />
                   </TableCell>
                 </TableRow>
               );
