@@ -26,6 +26,12 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import PersonIcon from "@mui/icons-material/Person";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputAdornment from "@mui/material/InputAdornment";
+import Badge from "@mui/material/Badge";
+import SearchIcon from "@mui/icons-material/Search";
+import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import CustomAvatar from "../../components/avatar/CustomAvatar";
 
 // CollapsibleNavGroup import removed (flattened menu)
 
@@ -656,8 +662,78 @@ function DashboardLayout() {
                         </IconButton>
                     </Box>
 
-                    {/* Right: Back Button */}
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                    {/* Right: Search, Notifications, Avatar, & Back Button */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 1.5, md: 2 } }}>
+                        {/* Search Bar */}
+                        <OutlinedInput
+                            placeholder="Search employees, reports, actions..."
+                            size="small"
+                            startAdornment={
+                                <InputAdornment position="start">
+                                    <SearchIcon sx={{ color: "#9CA3AF", fontSize: 20 }} />
+                                </InputAdornment>
+                            }
+                            endAdornment={
+                                <InputAdornment position="end">
+                                    <Box
+                                        sx={{
+                                            px: 0.8,
+                                            py: 0.2,
+                                            borderRadius: 1,
+                                            backgroundColor: "#F3F4F6",
+                                            border: "1px solid #E5E7EB",
+                                            fontSize: "0.7rem",
+                                            fontWeight: 600,
+                                            color: "#6B7280",
+                                            display: { xs: "none", sm: "inline-flex" },
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        ⌘ K
+                                    </Box>
+                                </InputAdornment>
+                            }
+                            sx={{
+                                width: { xs: 150, sm: 240, md: 300 },
+                                borderRadius: 2.5,
+                                backgroundColor: "#FFFFFF",
+                                fontSize: "0.85rem",
+                                "& fieldset": {
+                                    borderColor: "#E5E7EB",
+                                },
+                                "&:hover fieldset": {
+                                    borderColor: "#D1D5DB",
+                                },
+                                "&.Mui-focused fieldset": {
+                                    borderColor: "#6D5DF6",
+                                },
+                            }}
+                        />
+
+                        {/* Notifications Bell */}
+                        <IconButton
+                            sx={{
+                                backgroundColor: "#FFFFFF",
+                                border: "1px solid #E5E7EB",
+                                p: 0.8,
+                                borderRadius: 2.5,
+                                "&:hover": {
+                                    backgroundColor: "#F9FAFB",
+                                },
+                            }}
+                        >
+                            <Badge badgeContent={6} color="error">
+                                <NotificationsNoneOutlinedIcon sx={{ color: "#4B5563", fontSize: 20 }} />
+                            </Badge>
+                        </IconButton>
+
+                        {/* User Avatar */}
+                        <CustomAvatar
+                            name={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}
+                            size={34}
+                            fontSize="0.8rem"
+                        />
+
                         {showBackButton && (
                             <Button
                                 variant="text"
