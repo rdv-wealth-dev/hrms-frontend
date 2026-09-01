@@ -15,6 +15,7 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 
 import TextInput from "../../../components/input/TextInput";
+import PhoneInput from "../../../components/input/PhoneInput";
 import { useSnackbar } from "../../../components/snackbar";
 import { completeOnboarding, type CompleteOnboardingRequest } from "../../../api/auth.api";
 import { useUserOrgData } from "../../../hooks/useUserOrgData";
@@ -333,12 +334,12 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
 
             {/* Contact Phone & Admin Title */}
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextInput
-                type="tel"
-                label="Contact Phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                maxLength={10}
+              <PhoneInput
+                label="Phone Number"
+                phoneValue={phone}
+                countryCodeValue={countryCode}
+                onPhoneChange={(val) => setPhone(val.replace(/\D/g, ""))}
+                onCountryCodeChange={(code) => setCountryCode(code)}
                 required
               />
             </Grid>

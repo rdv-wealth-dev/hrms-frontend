@@ -26,40 +26,155 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 ## 1. 🔐 Authentication & Account Setup
 
 ### **1.1 Sign Up / User Registration**
-* **Route**: `/auth/sign-up`
-* **Features**: Multi-field registration form with company domain assignment and country-based phone validation.
+* **Route**: `/signup` (wrapped in `<GuestGuard>`)
+* **Overview**: Multi-field company workspace registration form with auto-sanitized workspace URL generation (alphanumeric), real-time URL availability check, country-aware phone validation, and work email verification.
+* **Access Control**: Guest-Only (`GuestGuard`). Logged-in users attempting to access `/signup` are automatically redirected to `/dashboard`.
 * **Testing Steps**:
-  1. Click **Create an Account** on the Login screen.
-  2. Fill in Company Name, Workspace URL, Team Size, Name, Email, Phone Number, and Password.
-  3. Click **Register**.
-* **Expected Result**: Account is created and confirmation screen/email prompt is displayed.
-* **⚠️ Validation Errors to Test**:
-  | Field | Trigger Condition | Expected Error Message |
-  | :--- | :--- | :--- |
-  | **Company Name** | Less than 2 chars | `"Company name must be at least 2 characters"` |
-  | **Workspace URL** | Invalid characters or starts with hyphen | `"Only lowercase letters, numbers, and hyphens. Cannot start or end with a hyphen."` |
-  | **Team Size** | Unselected dropdown | `"Please select your team size"` |
-  | **First / Last Name** | Less than 2 chars | `"First name must be at least 2 characters"` |
-  | **Phone** | Non-digits or > 10 digits | `"Phone number must contain digits only"` / `"Invalid phone number for the selected country"` |
-  | **Password** | Less than 8 chars | `"Password must be at least 8 characters"` |
-  | **Confirm Password** | Mismatched with Password | `"Passwords do not match"` |
+  1. Navigate to `/signup` (ensure you are logged out).
+  2. Enter **Company Name** (e.g. `Creater Tech`) — verify **Workspace URL** auto-generates as `creatertech` (clean alphanumeric, without hyphens or spaces).
+  3. Select **Team Size** from the dropdown menu (e.g. `11 – 50 employees`).
+  4. Enter **First Name** and **Last Name**.
+  5. Enter **Work Email** (must be a valid business domain email; personal domains like `gmail.com` are rejected on backend submit).
+  6. Enter **Password** and **Confirm Password** (must match, 8-12 chars, containing uppercase, lowercase, digit, and special character).
+  7. Select **Country Code** and enter **Phone Number** (digits only, validated per country format).
+  8. Click **Create Account**.
+
+---
+
+#### **✅ Success Cases**
+
+| Action | Steps | Expected Result |
+| :--- | :--- | :--- |
+| **Workspace URL Auto-Generation** | Type `Creater Tech` into **Company Name** field | `workspaceSlug` field automatically populates with `creatertech`. Real-time availability indicator displays `✓ "creatertech" is available` in green (`#10B981`). |
+| **Pick Suggested Slug** | Type a taken slug name, click any suggestion chip (e.g. `creatertech1`) | Workspace URL field updates to `creatertech1`, availability indicator updates to `✓ "creatertech1" is available`. |
+| **Successful Account Registration** | Fill all required fields with valid data & click **Create Account** | Submit button shows loading spinner (`loading={true}`). Backend returns `201 Created` with message `"Company registered successfully"`. Redux state `isRegisterSuccess` triggers navigation to `/check-email` with state `{ email: "user@domain.com" }`. |
+| **Already Authenticated Redirect** | Navigate directly to `/signup` while logged in | `GuestGuard` intercepts request (`hasSession === true`) and redirects instantly to `/dashboard`. |
+
+---
+
+#### **⚠️ Validation Errors to Test**
+
+| Field | Trigger Condition | Expected Error Message | Source |
+| :--- | :--- | :--- | :--- |
+| **Company Name** | Leave empty or enter 1 character | `"Company name must be at least 2 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Company Name** | Enter text > 200 characters | `"Company name cannot exceed 200 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Workspace URL** | Clear field or enter < 3 characters | `"Workspace URL must be at least 3 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Workspace URL** | Enter text > 63 characters | `"Workspace URL cannot exceed 63 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Workspace URL** | Enter non-alphanumeric/hyphen characters | `"Only lowercase letters, numbers, and hyphens. Cannot start or end with a hyphen."` | Frontend Zod (`signup.schema.ts`) |
+| **Workspace URL** | Enter reserved name (e.g. `admin`, `api`, `app`) | `"This workspace name is reserved. Please choose another."` | Backend DTO (`common.validator.ts`) |
+| **Team Size** | Unselected dropdown | `"Please select your team size"` | Frontend Zod (`signup.schema.ts`) |
+| **First Name** | Leave empty or enter 1 character | `"First name must be at least 2 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **First Name** | Enter text > 100 characters | `"First name cannot exceed 100 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Last Name** | Leave empty or enter 1 character | `"Last name must be at least 2 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Last Name** | Enter text > 100 characters | `"Last name cannot exceed 100 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Work Email** | Leave blank | `"Email is required"` | Frontend Zod (`signup.schema.ts`) |
+| **Work Email** | Invalid email format (e.g. `user@com`) | `"Please enter a valid email"` | Frontend Zod (`signup.schema.ts`) |
+| **Work Email** | Personal email domain (e.g. `gmail.com`, `yahoo.com`) | `"Please use your work email address. Personal email providers are not allowed."` | Backend DTO (`common.validator.ts`) |
+| **Password** | Leave blank | `"Password is required"` | Frontend Zod (`signup.schema.ts`) |
+| **Password** | Less than 8 characters | `"Password must be at least 8 characters"` | Frontend Zod (`signup.schema.ts`) |
+| **Password** | Missing uppercase, lowercase, digit, or special char | `"Password must contain at least one uppercase letter"` / `"Password must contain at least one number"` / `"Password must contain at least one special character"` | Backend DTO (`common.validator.ts`) |
+| **Password** | Exceeds 12 characters | `"Password must not exceed 12 characters"` | Backend DTO (`auth.dto.ts`) |
+| **Confirm Password** | Leave blank | `"Confirm password is required"` | Frontend Zod (`signup.schema.ts`) |
+| **Confirm Password** | Does not match Password | `"Passwords do not match"` | Frontend Zod (`signup.schema.ts`) |
+| **Phone Number** | Contains letters or special characters | `"Phone number must contain digits only"` | Frontend Zod (`signup.schema.ts`) |
+| **Phone Number** | Exceeds 10 digits | `"Phone number cannot exceed 10 digits"` | Frontend Zod (`signup.schema.ts`) |
+| **Phone Number** | Number invalid for selected country code | `"Invalid phone number for the selected country"` | Frontend Zod (`signup.schema.ts` / `libphonenumber-js`) |
+
+---
+
+#### **❌ Error / Failure Cases**
+
+| Scenario | Trigger Condition | Expected Behavior |
+| :--- | :--- | :--- |
+| **Workspace URL Already Taken (409)** | Slug already registered in database (`workspaceSlugExists`) | Real-time status shows `⚠️ Already taken. Try:` followed by up to 3 suggestion chips. Red warning text displayed: `"Please choose an available workspace URL before continuing."`. **Create Account** button remains disabled (`disabled={slugAvailable === false}`). |
+| **Duplicate Email Registration (409)** | Register with an email already in database | Backend rejects with `409 Conflict`. Top-right toast notification pops up displaying: `"Email already registered"`. |
+| **Slug Conflict on Submit (409)** | Submit registration when workspace slug is claimed concurrently | Backend rejects with `409 Conflict`. Top-right toast notification pops up displaying: `"Workspace URL \"{workspaceSlug}\" is already taken."`. |
+| **Backend DTO Validation Failure (400)** | Field fails backend DTO (e.g. personal email or password > 12 chars) | Backend rejects with `400 Bad Request`. Redux Saga helper `extractErrorMessage()` extracts `errors[0].message` and top-right toast notification displays the specific field error (e.g. `"Please use your work email address. Personal email providers are not allowed."`). |
+| **Slug Check API Failure** | Backend server offline or network error during `checkSlug()` GET call | Real-time status displays orange warning: `⚠️ Could not check availability. Please try again.`. |
+| **Server Connection Failure (500/Network)** | Backend offline or unhandled database exception | Top-right toast notification displays Axios error message (`"Registration failed"` or `"Something went wrong"`). |
+
+---
+
+#### **🛡️ Role-Based Access & Restrictions**
+
+| Role Slug | Can Access? | Restrictions / What They See Instead | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Unauthenticated / Guest** | ✅ Yes | Full access to `/signup` page and workspace creation form. | [`AppRoutes` / `GuestGuard`](file:///d:/hrms/src/routes/index.tsx#L47-L49) |
+| **`ORG_ADMIN`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
+| **`HR_ADMIN`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
+| **`BRANCH_ADMIN`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
+| **`LEADERSHIP`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
+| **`MANAGER`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
+| **`PRODUCT_MANAGER`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
+| **`EMPLOYEE`** | ❌ No | Intercepted by `GuestGuard` (`hasSession === true`). Instantly redirected to `/dashboard`. | [`GuestGuard.tsx:L25-L27`](file:///d:/hrms/src/auth/guards/GuestGuard.tsx#L25-L27) |
 
 ---
 
 ### **1.2 Login Page**
-* **Route**: `/auth/login`
-* **Features**: Email & Password Login, Remember Me toggle, Forgot Password trigger.
+* **Route**: `/login` (wrapped in `<GuestGuard>`)
+* **Overview**: Secure authentication screen featuring real-time email domain/SSO detection, workspace branding auto-discovery, lockout rate-limiting with live countdown timer, and automated post-login redirect priority dispatch.
+* **Access Control**: Guest-Only (`GuestGuard`). Logged-in users attempting to access `/login` are automatically redirected to `/dashboard`.
 * **Testing Steps**:
-  1. Navigate to `/auth/login`.
-  2. Enter valid credentials (e.g. `admin@company.com` / `Password123`).
-  3. Click **Sign In**.
-* **Expected Result**: Authenticates successfully and redirects to `/dashboard`.
-* **⚠️ Validation Errors to Test**:
-  | Field | Trigger Condition | Expected Error Message |
-  | :--- | :--- | :--- |
-  | **Email** | Leave blank | `"Email is required"` |
-  | **Email** | Enter invalid format (e.g. `admin@com`) | `"Please enter a valid email"` |
-  | **Password** | Leave blank | `"Password is required"` |
+  1. Navigate to `/login` (ensure you are logged out).
+  2. Enter your registered **Company Email** (e.g., `admin@company.com`). Notice the 500ms debounced email check: if workspace branding exists, the company logo and name appear dynamically above the heading.
+  3. Enter your **Password**.
+  4. (Optional) Check **Remember this device** to issue a 30-day persistent session token.
+  5. Click **Sign In**.
+  6. Observe post-login redirect priority:
+     * **Priority 1**: If `requiresPasswordReset` is true $\rightarrow$ redirected to `/auth/change-password`.
+     * **Priority 2**: If `onboardingCompleted` is false $\rightarrow$ redirected to `/onboarding`.
+     * **Priority 3**: Role-based redirect (`ORG_ADMIN` $\rightarrow$ `/dashboard`, `HR` $\rightarrow$ `/hr/dashboard`, `EMPLOYEE` $\rightarrow$ `/employee/dashboard`).
+
+---
+
+#### **✅ Success Cases**
+
+| Action | Steps | Expected Result |
+| :--- | :--- | :--- |
+| **Workspace Branding Auto-Discovery** | Type a valid registered email into **Company Email** field & pause 500ms | Input displays circular loading indicator (`CircularProgress`). Upon response, heading updates to Company Name, workspace logo displays, and subtext updates to `"Sign in to your workspace"`. |
+| **SSO Email Detection** | Type an email belonging to an SSO-enabled domain | Password field hides automatically. Alert displays: `"Continue with [provider]"` or `"SSO is enabled for this account."`. |
+| **Successful Authentication (Admin)** | Enter valid credentials for `ORG_ADMIN` & click **Sign In** | `accessToken` & `refreshToken` saved in `localStorage`. Redirects to `/dashboard`. |
+| **First Login Workspace Setup Redirect** | Log in with a newly registered account where `onboardingCompleted === false` | Priority redirect triggers: User is redirected to `/onboarding` setup wizard instead of dashboard. |
+| **Mandatory Password Change Redirect** | Log in with an admin-invited account where `requiresPasswordReset === true` | Priority redirect triggers: User is redirected to `/auth/change-password` with `replace: true`. |
+| **Remember Device Token** | Check **Remember this device** checkbox before submitting | `rememberDevice: true` is sent in payload. Backend returns a 30-day hashed token set in storage. |
+| **Already Authenticated Redirect** | Navigate directly to `/login` while logged in | `GuestGuard` intercepts request (`hasSession === true`) and redirects instantly to `/dashboard`. |
+
+---
+
+#### **⚠️ Validation Errors to Test**
+
+| Field | Trigger Condition | Expected Error Message | Source |
+| :--- | :--- | :--- | :--- |
+| **Company Email** | Leave blank & click **Sign In** | `"Email is required"` | Frontend Zod (`login.schema.ts`) |
+| **Company Email** | Invalid email format (e.g. `admin@com`) | `"Please enter a valid email"` | Frontend Zod (`login.schema.ts`) |
+| **Password** | Leave blank & click **Sign In** | `"Password is required"` | Frontend Zod (`login.schema.ts`) |
+
+---
+
+#### **❌ Error / Failure Cases**
+
+| Scenario | Trigger Condition | Expected Behavior |
+| :--- | :--- | :--- |
+| **Invalid Email or Password** | Submit incorrect password (1–4 failed attempts) | Toast notification displays: `"Invalid email or password. N attempt(s) remaining before lockout."` for 5 seconds. |
+| **Unverified Email (403)** | Log in with account that hasn't completed email verification | Toast notification displays: `"Please verify your email address before logging in. Check your inbox for the verification link."` with an interactive **Resend Email** action button (10-second duration). Clicking action navigates to `/check-email`. |
+| **Deactivated Account (401)** | Log in with user account marked `isActive: false` in DB | Toast notification displays: `"Your account has been deactivated. Please contact your administrator."`. |
+| **Lockout Rate Limiting (429)** | 5 consecutive failed login attempts | Backend returns `429 Too Many Requests` with `remainingSecs` (900s / 15 mins). **Sign In** button becomes disabled (`disabled={true}`). Red text displays: `"Too many attempts. Try again in {secondsLeft} seconds."` along with a **Reset Password?** link. Live countdown timer runs via `useCountdown`. |
+| **Server Offline / Network Failure** | Submit login form when backend server is unreachable | Toast notification displays Axios error message (`"Login failed"` or `"Something went wrong"`). |
+
+---
+
+#### **🛡️ Role-Based Access & Restrictions**
+
+| Role Slug | Can Access? | Post-Login Redirect Target | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Unauthenticated / Guest** | ✅ Yes | N/A (Can view and submit login form) | [`AppRoutes` / `GuestGuard`](file:///d:/hrms/src/routes/index.tsx#L50-L53) |
+| **`ORG_ADMIN`** | ❌ No (Redirected if logged in) | Redirects to `/dashboard` | [`LoginView.tsx:L68`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L68) |
+| **`HR` / `HR_ADMIN`** | ❌ No (Redirected if logged in) | Redirects to `/hr/dashboard` | [`LoginView.tsx:L71`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L71) |
+| **`EMPLOYEE`** | ❌ No (Redirected if logged in) | Redirects to `/employee/dashboard` | [`LoginView.tsx:L74`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L74) |
+| **`BRANCH_ADMIN`** | ❌ No (Redirected if logged in) | Fallback redirects to `/` | [`LoginView.tsx:L77`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L77) |
+| **`LEADERSHIP`** | ❌ No (Redirected if logged in) | Fallback redirects to `/` | [`LoginView.tsx:L77`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L77) |
+| **`MANAGER`** | ❌ No (Redirected if logged in) | Fallback redirects to `/` | [`LoginView.tsx:L77`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L77) |
+| **`PRODUCT_MANAGER`** | ❌ No (Redirected if logged in) | Fallback redirects to `/` | [`LoginView.tsx:L77`](file:///d:/hrms/src/sections/auth/login/LoginView.tsx#L77) |
 
 ---
 
@@ -76,19 +191,71 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 
 ## 2. 📊 Main Dashboard & Quick Widgets
 
-* **Route**: `/dashboard`
-* **Overview**: Centralized command center for HR managers and employees.
+* **Route**: `/dashboard` (wrapped in `<AuthGuard>`)
+* **Overview**: Centralized command center providing real-time workforce metrics, AI-driven insights, interactive attendance charts, pending leave requests, team widgets, and organization setup guidance.
+* **Access Control**: Authenticated users only (`AuthGuard`). Redirects unauthenticated guests to `/login`.
+* **Testing Steps**:
+  1. Log in to the application and navigate to `/dashboard`.
+  2. Observe top header greeting displaying user's first name, last login timestamp, IP address, and login device.
+  3. Review top KPI cards (*Total Employees*, *Present Today*, *Leave Requests Pending*, *Upcoming Celebrations*).
+  4. (If logged in as `ORG_ADMIN` or `HR_ADMIN` with an incomplete workspace setup) Observe the **Organization Initial Setup Required** banner displaying current progress (0–3 steps completed). Click **Complete Initial Setup** to open the modal wizard.
+  5. Fill out setup modal fields (**Country Code**, **Timezone**, **Base Currency**, **Fiscal Year Start**, **Employee Count Range**, **Industry**, **Phone Number**, **Admin Job Title**) and click **Complete Setup & Seed Head Office**.
+  6. (If logged in as non-`ORG_ADMIN`) Interact with the **Daily Punch Card** widget to clock in/out.
 
-### **Features & Testing**:
-1. **KPI Metric Cards**:
-   * View live top-level metrics: *Total Employees*, *Present Today*, *Leave Requests Pending*, *Upcoming Celebrations*.
-   * Verify that KPI icons are compact (`26px` $\times$ `26px`) and subtext trends are properly colored.
-2. **Weekly Attendance Trend Chart**:
-   * View bar charts comparing daily present vs. absent vs. late counts.
-3. **Today's Status Breakdown Widget**:
-   * Inspect visual pie chart/breakdown of workforce status (On Time, Late, WFH, On Leave, Absent).
-4. **Celebrations Card**:
-   * Displays upcoming birthdays and work anniversaries for the current week.
+---
+
+### **2.1 Organization Setup Wizard Dialog**
+* **Trigger**: Click **Complete Initial Setup** button inside `OrgSetupGuidanceWidget` on `/dashboard`.
+* **Overview**: Modal dialog for administrators to configure organization locales and automatically seed Head Office branch, default departments, designations, shifts, and statutory holidays into MongoDB.
+
+---
+
+#### **✅ Success Cases**
+
+| Action | Steps | Expected Result |
+| :--- | :--- | :--- |
+| **Open Organization Setup Dialog** | Click **Complete Initial Setup** button on `OrgSetupGuidanceWidget` card | `AdminSetupWizardDialog` opens. Form fields pre-populate with existing organization data from `useUserOrgData()` (`countryCode`, `timezone`, `baseCurrency`, `fiscalYearStart`, `employeeCountRange`, `industry`, `phone`). |
+| **Dynamic Flag & Dial Code Sync** | Select a new country in **Country Code** dropdown or change **Phone Number** flag | Country flag emoji, international dial code, and digit length validation auto-update dynamically across `<PhoneInput />`. |
+| **Complete Setup & Master Data Seeding** | Fill required fields & click **Complete Setup & Seed Head Office** | Button shows loading spinner (`submitting: true`). Backend executes `completeOnboarding()`: seeds Head Office branch, default departments, designations, shifts, and national holidays. Toast displays `"Organization setup & Head Office seeding completed successfully!"` (or backend message `"Workspace configured successfully."`). Dialog closes and `OrgSetupGuidanceWidget` auto-hides. |
+| **Manual Progress Bar Refresh** | Click **Refresh status** icon on `OrgSetupGuidanceWidget` card | `fetchCounts()` executes, re-checking branch, department, and designation counts from API and updating progress bar (`0%`, `33%`, `66%`, `100%`). |
+| **Auto-Hide Guidance Banner** | Complete all 3 setup items (Branch + Depts + Designations) | `OrgSetupGuidanceWidget` detects `hasBranch && hasDepts && hasDesigs === true` and cleanly unmounts from `/dashboard`. |
+
+---
+
+#### **⚠️ Validation Errors to Test**
+
+| Field | Trigger Condition | Expected Error Message | Source |
+| :--- | :--- | :--- | :--- |
+| **Phone Number** | Enter non-digit characters or input length $\neq 10$ digits | `"Contact phone number must be exactly 10 digits."` | Frontend `AdminSetupWizardDialog.tsx:L106` |
+| **Phone Number** | Submit empty phone input | Browser native field validation / `"Invalid phone number for the selected country"` | Frontend `<PhoneInput />` |
+| **Admin Job Title** | Leave blank & submit form | Browser native required validation (`!adminJobTitle.trim()`) | Frontend `AdminSetupWizardDialog.tsx:L103` |
+| **Timezone** | Clear dropdown selection & submit | `"Timezone is required"` | Backend DTO (`OnboardingWizardDto`) |
+| **Base Currency** | Clear dropdown selection & submit | `"Base currency is required"` | Backend DTO (`OnboardingWizardDto`) |
+| **Fiscal Year Start** | Clear dropdown selection & submit | `"Fiscal year start is required"` | Backend DTO (`OnboardingWizardDto`) |
+
+---
+
+#### **❌ Error / Failure Cases**
+
+| Scenario | Trigger Condition | Expected Behavior |
+| :--- | :--- | :--- |
+| **Backend Setup API Failure (400/500)** | Submit setup form when API fails or database transaction errors | Alert banner inside dialog displays server error message (`err?.response?.data?.message` or `"Failed to complete onboarding setup."`). Dialog stays open. |
+| **Head Office Check Failure** | API call to `getHeadOffice()` fails on widget mount | Widget catches error silently, sets `branchExists = false`, and allows manual branch creation. |
+| **Department / Designation Count API Failure** | `listDepartments()` or `listDesignations()` network failure | `Promise.all` catch block sets count to `0` and displays error banner: `"Failed to check organization setup status."`. |
+
+---
+
+#### **🛡️ Role-Based Access & Restrictions**
+
+| Role Slug | Can Access Dashboard? | Component Visibility / Restrictions | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Yes | Full Dashboard access. **Sees `OrgSetupGuidanceWidget`** (if setup incomplete). **Hides `DailyPunchCard`** (`role !== "ORG_ADMIN"`). | [`DashboardView.tsx:L36-L40`](file:///d:/hrms/src/pages/dashboard/DashboardView.tsx#L36-L40) & [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
+| **`HR_ADMIN`** / **`HR`** | ✅ Yes | Full Dashboard access. **Sees `OrgSetupGuidanceWidget`** (if setup incomplete). **Sees `DailyPunchCard`**. | [`DashboardView.tsx:L36-L40`](file:///d:/hrms/src/pages/dashboard/DashboardView.tsx#L36-L40) & [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
+| **`BRANCH_ADMIN`** | ✅ Yes | Dashboard access. **Hides `OrgSetupGuidanceWidget`** (`role !== "ORG_ADMIN" && role !== "HR_ADMIN"` returns `null`). **Sees `DailyPunchCard`**. | [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
+| **`LEADERSHIP`** | ✅ Yes | Dashboard access. **Hides `OrgSetupGuidanceWidget`**. **Sees `DailyPunchCard`**. | [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
+| **`MANAGER`** | ✅ Yes | Dashboard access. **Hides `OrgSetupGuidanceWidget`**. **Sees `DailyPunchCard`**. | [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
+| **`PRODUCT_MANAGER`** | ✅ Yes | Dashboard access. **Hides `OrgSetupGuidanceWidget`**. **Sees `DailyPunchCard`**. | [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
+| **`EMPLOYEE`** | ✅ Yes | Dashboard access. **Hides `OrgSetupGuidanceWidget`**. **Sees `DailyPunchCard`**. | [`OrgSetupGuidanceWidget.tsx:L87`](file:///d:/hrms/src/sections/dashboard/components/OrgSetupGuidanceWidget.tsx#L87) |
 
 ---
 

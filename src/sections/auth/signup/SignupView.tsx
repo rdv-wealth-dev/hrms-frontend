@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -58,6 +59,15 @@ function SignupView() {
   // Track whether the user has manually edited the slug field
   // If true, stop auto-generating from company name
   const isSlugManuallyEdited = useRef(false);
+
+  // Trigger toast on API / DTO registration errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        duration: 5000,
+      });
+    }
+  }, [error]);
 
   useEffect(() => {
     if (isRegisterSuccess) {
@@ -239,18 +249,6 @@ function SignupView() {
             />
           </Box>
 
-          {/* API Error */}
-          {error && (
-            <Box sx={{ gridColumn: "1 / 3" }}>
-              <Typography
-                color="error"
-                variant="body2"
-                sx={{ textAlign: "center", fontSize: { xs: "11px", sm: "13px" } }}
-              >
-                {error}
-              </Typography>
-            </Box>
-          )}
 
           {/* Slug taken warning */}
           {slugAvailable === false && !errors.workspaceSlug && (

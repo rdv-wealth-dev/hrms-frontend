@@ -286,7 +286,7 @@ export default function OnboardingStep1Personal({
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <PhoneInput
-              label="Personal Phone Number"
+              label="Phone Number"
               required
               phoneRegistration={register("phone")}
               countryCodeRegistration={register("currentAddress.countryCode")}
