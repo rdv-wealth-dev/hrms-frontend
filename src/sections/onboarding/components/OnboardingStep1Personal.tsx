@@ -250,7 +250,7 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   {...field}
                   select
-                  label="Blood Group (Optional)"
+                  label="Blood Group"
                   error={errors.bloodGroup?.message}
                 >
                   <MenuItem value="">Select Blood Group</MenuItem>
@@ -270,7 +270,7 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   {...field}
                   select
-                  label="Religion (Optional)"
+                  label="Religion"
                   error={errors.religion?.message}
                 >
                   <MenuItem value="">Select Religion</MenuItem>
@@ -386,7 +386,7 @@ export default function OnboardingStep1Personal({
                 <TextInput
                   {...field}
                   select
-                  label="Highest Qualification Level (Optional)"
+                  label="Highest Qualification Level"
                   error={errors.highestQualification?.message}
                 >
                   <MenuItem value="">Select Level</MenuItem>
@@ -505,7 +505,7 @@ export default function OnboardingStep1Personal({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
           <BusinessCenterOutlinedIcon sx={{ color: "#6366F1" }} />
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
-            4. Previous Employment (Optional)
+            4. Previous Employment
           </Typography>
         </Box>
 
@@ -521,7 +521,7 @@ export default function OnboardingStep1Personal({
 
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label={`Last Working Date${previousEmployerName ? " *" : " (Optional)"}`}
+              label="Last Working Date"
               type="date"
               required={!!previousEmployerName}
               registration={register("previousEmployerLastWorkingDate")}
@@ -569,7 +569,7 @@ export default function OnboardingStep1Personal({
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextInput
-              label="Passport Number (Optional)"
+              label="Passport Number"
               format="uppercase"
               maxLength={15}
               placeholder="e.g. Z1234567"
@@ -600,7 +600,7 @@ export default function OnboardingStep1Personal({
           </Grid>
           <Grid size={{ xs: 12 }}>
             <TextInput
-              label="Address Line 2 (Optional)"
+              label="Address Line 2"
               registration={register("currentAddress.addressLine2")}
               error={errors.currentAddress?.addressLine2?.message}
             />

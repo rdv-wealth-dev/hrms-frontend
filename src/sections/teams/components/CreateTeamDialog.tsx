@@ -508,7 +508,7 @@ export function CreateTeamDialog({
                 control={control}
                 render={({ field }) => (
                   <CustomSelect
-                    label="Branch (Optional)"
+                    label="Branch"
                     placeholder={loadingMeta ? "Loading branches..." : "All / Head Office"}
                     options={[{ value: "", label: "No specific branch (Global)" }, ...branches]}
                     value={field.value || ""}
@@ -533,7 +533,7 @@ export function CreateTeamDialog({
                 control={control}
                 render={({ field }) => (
                   <CustomSelect
-                    label="Team Lead (Optional)"
+                    label="Team Lead"
                     placeholder={loadingManagers ? "Loading leads..." : "Select Team Lead"}
                     options={[{ value: "", label: "No assigned lead yet" }, ...leadOptions]}
                     value={field.value || ""}
@@ -661,7 +661,7 @@ export function CreateTeamDialog({
             {/* Description */}
             <Grid size={12}>
               <TextInput
-                label="Description (Optional)"
+                label="Description"
                 placeholder="Briefly describe the purpose, goals, or scope of this team..."
                 multiline
                 rows={2}

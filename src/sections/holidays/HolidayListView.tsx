@@ -293,7 +293,7 @@ function HolidayFormDialog({
         <TextInput
           multiline
           rows={2}
-          label="Description (optional)"
+          label="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Brief description or context"
@@ -392,7 +392,7 @@ function SeedHolidaysDialog({
         </Alert>
 
         <TextInput
-          label="State / Canton Code (Optional)"
+          label="State / Canton Code"
           value={stateCode}
           onChange={(e) => setStateCode(e.target.value)}
           placeholder="e.g. ZH (Zurich), GE, KA, NY, CA"

@@ -879,7 +879,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   {/* Step 4: Squad Team */}
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
-                      label="STEP 4: Squad Team (Optional)"
+                      label="STEP 4: Squad Team"
                       value={teamId}
                       options={teamOptions}
                       loading={loadingTeams}
@@ -915,7 +915,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       select
-                      label="STEP 6: Secondary Managers (Optional)"
+                      label="STEP 6: Secondary Managers"
                       value={secondaryManagerIds}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -1221,7 +1221,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       type="date"
-                      label="Confirmation Date (Optional)"
+                      label="Confirmation Date"
                       value={confirmationDate}
                       error={errors.confirmationDate}
                       onChange={(e) => {
@@ -1235,7 +1235,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       type="date"
-                      label="Probation End Date (Optional)"
+                      label="Probation End Date"
                       value={probationEndDate}
                       error={errors.probationEndDate}
                       onChange={(e) => {

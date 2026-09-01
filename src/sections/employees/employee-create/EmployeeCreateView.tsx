@@ -539,7 +539,7 @@ export default function EmployeeCreateView() {
                   {/* Step 4: Squad Team */}
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
-                      label="STEP 4: Squad Team (Optional)"
+                      label="STEP 4: Squad Team"
                       value={watch("teamId")}
                       options={teamOptions}
                       loading={loadingTeams}
@@ -569,7 +569,7 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       select
-                      label="STEP 6: Secondary Managers (Optional)"
+                      label="STEP 6: Secondary Managers"
                       value={Array.isArray(watch("secondaryManagerIds")) ? watch("secondaryManagerIds") : []}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -617,7 +617,8 @@ export default function EmployeeCreateView() {
                 <Grid container spacing={2.5}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
-                      label="First Name *"
+                      label="First Name"
+                      required
                       placeholder="e.g. Rohan"
                       registration={register("firstName")}
                       error={errors.firstName?.message}
@@ -627,7 +628,8 @@ export default function EmployeeCreateView() {
 
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
-                      label="Last Name *"
+                      label="Last Name"
+                      required
                       placeholder="e.g. Sharma"
                       registration={register("lastName")}
                       error={errors.lastName?.message}
@@ -637,7 +639,8 @@ export default function EmployeeCreateView() {
 
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
-                      label="Work Email Address *"
+                      label="Work Email Address"
+                      required
                       placeholder="e.g. rohan.sharma@apexglobal.io"
                       registration={register("email")}
                       error={errors.email?.message}
@@ -675,7 +678,8 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       select
-                      label="Employee Type *"
+                      label="Employee Type"
+                      required
                       registration={register("employeeType")}
                       error={errors.employeeType?.message}
                     >
@@ -690,7 +694,8 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       type="date"
-                      label="Joining Date *"
+                      label="Joining Date"
+                      required
                       slotProps={{ inputLabel: { shrink: true } }}
                       registration={register("joiningDate")}
                       error={errors.joiningDate?.message}
@@ -700,7 +705,7 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       type="date"
-                      label="Probation End Date (Optional)"
+                      label="Probation End Date"
                       slotProps={{ inputLabel: { shrink: true } }}
                       registration={register("probationEndDate")}
                     />
@@ -782,7 +787,7 @@ export default function EmployeeCreateView() {
 
                   <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                     <TextInput
-                      label="Account Holder Name (Optional)"
+                      label="Account Holder Name"
                       placeholder="Leave blank to use employee's full name"
                       registration={register("bankAccount.accountHolderName")}
                       error={errors.bankAccount?.accountHolderName?.message}

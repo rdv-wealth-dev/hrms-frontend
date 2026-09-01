@@ -14,6 +14,7 @@ import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import TablePagination from "@mui/material/TablePagination";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -162,7 +163,7 @@ function DeptFormDialog({
                 <TextInput
                     multiline
                     rows={3}
-                    label="Description (optional)"
+                    label="Description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value ?? "")}
                     placeholder="Brief description of this department"
@@ -241,6 +242,9 @@ function DepartmentContent() {
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
     const [editTarget, setEditTarget] = useState<Department | null>(null);
 
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
     useEffect(() => {
         if (branchId && !selectedBranchId) {
             setSelectedBranchId(branchId);
@@ -249,7 +253,7 @@ function DepartmentContent() {
 
     // Load departments filtered by selected branch
     useEffect(() => {
-        dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
+        dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
         dispatch(getHeadOfficeRequest());
         dispatch(listBranchesRequest());
     }, [dispatch, selectedBranchId]);
@@ -259,7 +263,7 @@ function DepartmentContent() {
         if (hasSubmittedCreate && !submitting && !error && createOpen) {
             setCreateOpen(false);
             setHasSubmittedCreate(false);
-            dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
+            dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [submitting, error, hasSubmittedCreate, selectedBranchId]);
@@ -445,7 +449,7 @@ function DepartmentContent() {
 
                 {/* Department Table */}
                 <VirtualizedTable<any>
-                    data={departments ?? []}
+                    data={(departments ?? []).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
                     loading={loading}
                     maxHeight="none"
                     minWidth={600}
@@ -553,6 +557,26 @@ function DepartmentContent() {
                               ]
                             : []),
                     ]}
+                />
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 50, 100]}
+                    component="div"
+                    count={(departments ?? []).length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(_, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value, 10));
+                        setPage(0);
+                    }}
+                    sx={{
+                        borderTop: "1px solid #E2E8F0",
+                        color: "#475569",
+                        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                            fontSize: "13px",
+                            fontWeight: 500,
+                        },
+                    }}
                 />
                     </>
                 )}

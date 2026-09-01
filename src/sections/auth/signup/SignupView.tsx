@@ -38,15 +38,11 @@ const EMPLOYEE_COUNT_OPTIONS = [
   { value: "500+", label: "500+ employees" },
 ];
 
-// Sanitise company name → workspace slug suggestion
+// Sanitise company name → workspace slug suggestion (alphanumeric only, no hyphens)
 function toSlug(name: string): string {
   return name
     .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function SignupView() {
@@ -87,7 +83,7 @@ function SignupView() {
       firstName: "",
       lastName: "",
       email: "",
-      countryCode: "",
+      countryCode: "IN",
       phone: "",
       password: "",
       confirmPassword: "",
@@ -233,7 +229,7 @@ function SignupView() {
           {/* Row 6: Phone Number (full width, same as Work Email) */}
           <Box sx={{ gridColumn: "1 / 3" }}>
             <PhoneInput
-              label="Phone Number (optional)"
+              label="Phone Number"
               phoneRegistration={register("phone")}
               countryCodeRegistration={register("countryCode")}
               phoneError={errors.phone?.message}

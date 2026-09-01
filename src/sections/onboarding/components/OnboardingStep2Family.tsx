@@ -151,7 +151,7 @@ export default function OnboardingStep2Family({
 
                 <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
                   <TextInput
-                    label="Occupation (Optional)"
+                    label="Occupation"
                     registration={register(`familyMembers.${idx}.occupation` as const)}
                     error={errors.familyMembers?.[idx]?.occupation?.message}
                   />

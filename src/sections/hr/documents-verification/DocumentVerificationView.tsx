@@ -336,7 +336,7 @@ export function DocumentVerificationView() {
             Are you sure you want to reject this document? You can optionally provide a reason.
           </Typography>
           <TextInput
-            label="Remarks (optional)"
+            label="Remarks"
             value={rejectRemarks}
             onChange={(e) => setRejectRemarks(e.target.value)}
             multiline

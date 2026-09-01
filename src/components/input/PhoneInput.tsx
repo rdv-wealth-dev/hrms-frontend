@@ -63,15 +63,17 @@ export default function PhoneInput({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Watch countryCode form state to dynamically update UI flag
-  const currentCountryCode = countryCodeValue !== undefined
-    ? countryCodeValue
-    : (countryCodeRegistration?.name && watch ? watch(countryCodeRegistration.name) : "IN");
+  const watchedCountryCode = countryCodeRegistration?.name && watch ? watch(countryCodeRegistration.name) : undefined;
+  const currentCountryCode =
+    countryCodeValue !== undefined && countryCodeValue !== ""
+      ? countryCodeValue
+      : (watchedCountryCode || "IN");
 
-  // Resolve current active country object with fallbacks
+  // Resolve current active country object with fallbacks to India (IN)
   const activeCountry = useMemo(() => {
-    const code = currentCountryCode || "IN";
+    const code = (currentCountryCode || "IN").toUpperCase();
     return (
-      countries.find((c) => c.code === code.toUpperCase()) ||
+      countries.find((c) => c.code === code) ||
       countries.find((c) => c.code === "IN") ||
       countries[0]
     );

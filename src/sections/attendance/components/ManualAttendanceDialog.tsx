@@ -374,7 +374,7 @@ export function ManualAttendanceDialog({
                   <TextInput
                     {...field}
                     type="time"
-                    label="Check-Out Time (optional)"
+                    label="Check-Out Time"
                     disabled={submitting}
                     error={errors.checkOutTime?.message}
                   />

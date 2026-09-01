@@ -20,6 +20,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
+import TablePagination from "@mui/material/TablePagination";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -86,9 +87,13 @@ function DesignationContent() {
   const [editDescription, setEditDescription] = useState("");
   const [editLevel, setEditLevel] = useState("1");
 
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   // Fetch list on mount and ensure branch data is in Redux for useActiveBranchId
   useEffect(() => {
-    dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 10 }));
+    dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
     dispatch(getHeadOfficeRequest());
     dispatch(listBranchesRequest());
   }, [dispatch]);
@@ -110,7 +115,7 @@ function DesignationContent() {
       setDescription("");
       setDepartmentId("");
       setLevel("1");
-      dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 10 }));
+      dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitting, error, hasSubmittedCreate]);
@@ -285,7 +290,9 @@ function DesignationContent() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (designations ?? []).map((d) => (
+                  (designations ?? [])
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((d) => (
                     <TableRow
                       key={d?._id ?? Math.random()}
                       hover
@@ -334,6 +341,26 @@ function DesignationContent() {
                 )}
               </TableBody>
             </Table>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 50, 100]}
+              component="div"
+              count={(designations ?? []).length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(_, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              sx={{
+                borderTop: "1px solid #E2E8F0",
+                color: "#475569",
+                "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                  fontSize: "13px",
+                  fontWeight: 500,
+                },
+              }}
+            />
           </TableContainer>
         )}
       </Box>
@@ -420,7 +447,7 @@ function DesignationContent() {
           <TextInput
             multiline
             rows={3}
-            label="Description (optional)"
+            label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value ?? "")}
             placeholder="Brief description of this role"
@@ -534,7 +561,7 @@ function DesignationContent() {
           <TextInput
             multiline
             rows={3}
-            label="Description (optional)"
+            label="Description"
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value ?? "")}
           />

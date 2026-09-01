@@ -32,7 +32,7 @@ export const createDesignation = async (
 
 export const listDesignations = async (
     pageNumber = 1,
-    pageSize = 10,
+    pageSize = 100,
     departmentId?: string
 ): Promise<DesignationListResponse> => {
     let url = `/designations?pageNumber=${pageNumber}&pageSize=${pageSize}`;

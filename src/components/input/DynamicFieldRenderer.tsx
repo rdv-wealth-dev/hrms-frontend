@@ -30,14 +30,14 @@ export function DynamicFieldRenderer({
   if (!field || field.isActive === false) return null;
 
   const isRequired = field.isRequired;
-  const label = `${field.fieldLabel || "Custom Field"}${isRequired ? " *" : ""}`;
+  const label = field.fieldLabel || "Custom Field";
   const options = field.options || [];
 
   // Helper title bar with optional tooltip helper text
   const FieldLabelHeader = () => (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
       <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-        {label}
+        {label} {isRequired && <span style={{ color: "#EF4444" }}>*</span>}
       </Typography>
       {field.helperText && (
         <Tooltip title={field.helperText} arrow placement="top">
@@ -134,6 +134,7 @@ export function DynamicFieldRenderer({
       <Box sx={{ mb: 2, width: "100%" }}>
         <TextInput
           select
+          required={isRequired}
           label={label}
           value={value ?? field.defaultValue ?? ""}
           onChange={(e) => onChange(e.target.value)}
@@ -199,7 +200,7 @@ export function DynamicFieldRenderer({
           label={
             <Box>
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E293B" }}>
-                {label}
+                {label} {isRequired && <span style={{ color: "#EF4444" }}>*</span>}
               </Typography>
               {field.helperText && (
                 <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -223,6 +224,7 @@ export function DynamicFieldRenderer({
     return (
       <Box sx={{ mb: 2, width: "100%" }}>
         <TextInput
+          required={isRequired}
           label={label}
           type="number"
           value={value ?? field.defaultValue ?? ""}
@@ -244,6 +246,7 @@ export function DynamicFieldRenderer({
     return (
       <Box sx={{ mb: 2, width: "100%" }}>
         <TextInput
+          required={isRequired}
           label={label}
           type="date"
           value={value ?? field.defaultValue ?? ""}
@@ -264,6 +267,7 @@ export function DynamicFieldRenderer({
   return (
     <Box sx={{ mb: 2, width: "100%" }}>
       <TextInput
+        required={isRequired}
         label={label}
         value={value ?? field.defaultValue ?? ""}
         onChange={(e) => onChange(e.target.value)}

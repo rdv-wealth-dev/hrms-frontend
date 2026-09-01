@@ -474,13 +474,13 @@ export function EmployeeMatrixDetailDrawer({
               required
             />
             <TextInput
-              label="Project Name (Optional)"
+              label="Project Name"
               placeholder="e.g. Core API Optimization"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
             />
             <TextInput
-              label="Notes (Optional)"
+              label="Notes"
               placeholder="e.g. All backend pull requests submitted to Senior Dev for review"
               value={routeNotes}
               onChange={(e) => setRouteNotes(e.target.value)}

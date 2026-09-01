@@ -271,7 +271,8 @@ export function ShiftFormDialog({
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label="Shift Name *"
+              label="Shift Name"
+              required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. General Custom Shift"
@@ -280,7 +281,8 @@ export function ShiftFormDialog({
 
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextInput
-              label="Shift Code *"
+              label="Shift Code"
+              required
               value={code}
               onChange={(e) => setCode(e.target.value ?? "")}
               onBlur={() => setCode((prev) => prev.toUpperCase())}
@@ -314,7 +316,8 @@ export function ShiftFormDialog({
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextInput
-              label="Start Time (HH:mm) *"
+              label="Start Time (HH:mm)"
+              required
               value={startTime}
               onChange={(e) => {
                 setStartTime(e.target.value);
@@ -326,7 +329,8 @@ export function ShiftFormDialog({
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextInput
-              label="End Time (HH:mm) *"
+              label="End Time (HH:mm)"
+              required
               value={endTime}
               onChange={(e) => {
                 setEndTime(e.target.value);

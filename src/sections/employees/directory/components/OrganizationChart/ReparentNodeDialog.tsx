@@ -278,13 +278,13 @@ export function ReparentNodeDialog({
           {/* New Parent Selection */}
           <Box sx={{ mb: 2 }}>
             <CustomSelect
-              label="Select New Reporting Manager / Parent Node *"
+              label="Select New Reporting Manager / Parent Node"
+              required
               placeholder="Search or select new manager..."
               options={parentOptions}
               value={selectedParentId}
               onChange={(val) => setSelectedParentId(String(val))}
               searchable
-              required
             />
           </Box>
         </DialogContent>
