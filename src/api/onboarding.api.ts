@@ -31,7 +31,48 @@ export interface EducationDetail {
   institutionName: string;
   yearOfPassing?: number;
   percentageOrCgpa?: string;
+  isCustom?: boolean;
+  boardCode?: string;
+  boardName?: string;
+  boardDescription?: string;
+  stateBoardState?: string;
+  otherBoardName?: string;
+  degreeDescription?: string;
 }
+
+export interface SchoolBoardOption {
+  code: string;
+  name: string;
+  description?: string;
+  requiresStateSelection?: boolean;
+}
+
+export interface StateBoardOption {
+  state: string;
+  boardName: string;
+  boardCode: string;
+}
+
+export interface EducationStreamCategory {
+  category: string;
+  degrees: string[];
+}
+
+export interface EducationOptionsResponse {
+  succeeded?: boolean;
+  message?: string;
+  data?: {
+    qualificationLevel?: string;
+    countryCode?: string;
+    searchQuery?: string;
+    totalMatches?: number;
+    categories?: EducationStreamCategory[];
+    allDegrees?: string[];
+    boardOptions?: SchoolBoardOption[];
+    stateBoards?: StateBoardOption[];
+  };
+}
+
 
 export interface Step1Payload {
   dateOfBirth: string;
@@ -69,8 +110,10 @@ export interface FamilyMember {
 }
 
 export interface Step2Payload {
+  isNotApplicable?: boolean;
   familyMembers: FamilyMember[];
 }
+
 
 export interface Step3Payload {
   bankName: string;
@@ -202,3 +245,34 @@ export const submitOnboardingStep5 = async (_payload: Step5Payload): Promise<Onb
     return { succeeded: false, message: msg };
   }
 };
+
+export const getEducationOptions = async (
+  qualificationLevel?: string,
+  countryCode: string = "IN",
+  search?: string
+): Promise<EducationOptionsResponse> => {
+  try {
+    const params: Record<string, string> = { countryCode };
+    if (qualificationLevel) {
+      params.qualificationLevel = qualificationLevel;
+    }
+    if (search && search.trim().length >= 2) {
+      params.search = search.trim();
+    }
+
+    const response = await axiosInstance.get<EducationOptionsResponse>(
+      "/onboarding/education-options",
+      { params }
+    );
+    return response.data;
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || "Failed to fetch education options";
+    return {
+      succeeded: false,
+      message: msg,
+      data: { categories: [], allDegrees: [], boardOptions: [], stateBoards: [] },
+    };
+  }
+};
+
+

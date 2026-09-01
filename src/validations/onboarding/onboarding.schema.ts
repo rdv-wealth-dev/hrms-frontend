@@ -15,7 +15,12 @@ export const emergencyContactSchema = z.object({
   name: z.string().trim().min(2, "Name must be 2-100 characters").max(100, "Max 100 characters"),
   relationship: z.string().trim().min(2, "Relationship must be 2-50 characters").max(50, "Max 50 characters"),
   phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  email: z.string().trim().min(1, "Emergency contact email is required").email("Invalid email address"),
+  email: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().trim().email("Invalid email address").optional()
+  ),
+
+
 });
 
 export const educationDetailSchema = z.object({
@@ -28,12 +33,25 @@ export const educationDetailSchema = z.object({
     "SECONDARY",
     "OTHER",
   ]),
-  degree: z.string().trim().max(150, "Max 150 characters").optional().or(z.literal("")),
+  degree: z.string().trim().min(1, "Degree is required").max(150, "Max 150 characters"),
   fieldOfStudy: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
-  institutionName: z.string().trim().max(200, "Max 200 characters").optional().or(z.literal("")),
-  yearOfPassing: z.number().int().min(1950, "Invalid passing year").max(2100, "Invalid passing year").optional(),
+  institutionName: z.string().trim().min(1, "Institution name is required").max(200, "Max 200 characters"),
+  yearOfPassing: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int("Passing year must be a whole number").min(1950, "Passing year must be 1950 or later").max(2100, "Invalid passing year").optional()
+  ),
   percentageOrCgpa: z.string().trim().max(50, "Max 50 characters").optional().or(z.literal("")),
+
+
+  isCustom: z.boolean().optional(),
+  boardCode: z.string().trim().optional().or(z.literal("")),
+  boardName: z.string().trim().optional().or(z.literal("")),
+  boardDescription: z.string().trim().optional().or(z.literal("")),
+  stateBoardState: z.string().trim().optional().or(z.literal("")),
+  otherBoardName: z.string().trim().optional().or(z.literal("")),
+  degreeDescription: z.string().trim().optional().or(z.literal("")),
 });
+
 
 export type EducationDetailFormData = z.infer<typeof educationDetailSchema>;
 
@@ -73,9 +91,8 @@ export const onboardingStep1Schema = z
         "SECONDARY",
         "OTHER",
       ])
-      .optional()
       .or(z.literal("")),
-    educationDetails: z.array(educationDetailSchema).optional(),
+    educationDetails: z.array(educationDetailSchema).min(1, "At least 1 education qualification is required"),
     previousEmployerName: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
     previousEmployerLastWorkingDate: z.string().optional().or(z.literal("")),
     pan: z
@@ -96,7 +113,7 @@ export const onboardingStep1Schema = z
       .or(z.literal("")),
     passportNo: z.string().trim().optional().or(z.literal("")),
     currentAddress: currentAddressSchema,
-    emergencyContact: z.array(emergencyContactSchema).min(1, "At least 1 emergency contact is required"),
+    emergencyContact: z.array(emergencyContactSchema).optional(),
   })
   .refine((data) => !!data.gender, {
     message: "Gender is required",
@@ -105,6 +122,10 @@ export const onboardingStep1Schema = z
   .refine((data) => !!data.maritalStatus, {
     message: "Marital status is required",
     path: ["maritalStatus"],
+  })
+  .refine((data) => !!data.highestQualification, {
+    message: "Highest qualification is required",
+    path: ["highestQualification"],
   })
   .refine(
     (data) => {
@@ -138,10 +159,22 @@ export const familyMemberSchema = z.object({
 });
 
 export const onboardingStep2Schema = z.object({
+  isNotApplicable: z.boolean(),
   familyMembers: z.array(familyMemberSchema),
-});
+}).refine(
+  (data) => {
+    if (data.isNotApplicable) return true;
+    return Array.isArray(data.familyMembers) && data.familyMembers.length > 0;
+  },
+  {
+    message: "Please add at least one family member or check 'Not Applicable' (NA) to proceed.",
+    path: ["familyMembers"],
+  }
+);
 
 export type OnboardingStep2FormData = z.infer<typeof onboardingStep2Schema>;
+
+
 
 // ── Step 3 Schema ──────────────────────────────────────────
 

@@ -31,7 +31,10 @@ export type TextInputProps = {
   maxLength?: number;
   min?: number;
   slotProps?: any;
+  InputProps?: any;
+  inputProps?: any;
   sx?: any;
+  [key: string]: any;
 };
 
 function TextInput({
@@ -55,8 +58,12 @@ function TextInput({
   maxLength,
   min,
   slotProps,
+  InputProps,
+  inputProps,
   sx,
 }: TextInputProps) {
+
+
   const [showPassword, setShowPassword] = useState(false);
 
   const isPassword = type === "password";
@@ -128,35 +135,40 @@ function TextInput({
         }
         slotProps?.htmlInput?.onInput?.(e);
       },
+      ...inputProps,
       ...slotProps?.htmlInput,
     },
-    input: isPassword
-      ? {
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowPassword((prev) => !prev)}
-                edge="end"
-                size="small"
-                tabIndex={-1}
-                disableRipple
-                sx={{
-                  color: showPassword ? "#6D5DF6" : "#9CA3AF",
-                  mr: 0.5,
-                  "&:hover": { color: "#6D5DF6", background: "transparent" },
-                }}
-              >
-                {showPassword ? (
-                  <VisibilityOutlinedIcon sx={{ fontSize: 19 }} />
-                ) : (
-                  <VisibilityOffOutlinedIcon sx={{ fontSize: 19 }} />
-                )}
-              </IconButton>
-            </InputAdornment>
-          ),
-          ...slotProps?.input,
-        }
-      : slotProps?.input,
+    input: {
+      ...InputProps,
+      ...(isPassword
+        ? {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  edge="end"
+                  size="small"
+                  tabIndex={-1}
+                  disableRipple
+                  sx={{
+                    color: showPassword ? "#6D5DF6" : "#9CA3AF",
+                    mr: 0.5,
+                    "&:hover": { color: "#6D5DF6", background: "transparent" },
+                  }}
+                >
+                  {showPassword ? (
+                    <VisibilityOutlinedIcon sx={{ fontSize: 19 }} />
+                  ) : (
+                    <VisibilityOffOutlinedIcon sx={{ fontSize: 19 }} />
+                  )}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }
+        : {}),
+      ...slotProps?.input,
+    },
+
     select: {
       MenuProps: {
         disableScrollLock: true,
@@ -218,6 +230,8 @@ function TextInput({
             backgroundColor: "#FFFFFF",
             fontSize: "14px",
             color: "#0F172A",
+            width: "100%",
+            boxSizing: "border-box",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             "& fieldset": {
               borderColor: "#E2E8F0",
@@ -238,9 +252,13 @@ function TextInput({
           "& .MuiOutlinedInput-input": {
             py: multiline ? "10px" : "8px",
             px: "14px",
+            pr: select ? "42px !important" : "14px",
             fontSize: "14px",
             color: "#0F172A",
             boxSizing: "border-box",
+            overflow: "hidden !important",
+            textOverflow: "ellipsis !important",
+            whiteSpace: "nowrap !important",
             "&[type='date']": {
               position: "relative",
               colorScheme: "light",
@@ -270,11 +288,21 @@ function TextInput({
             fontWeight: 400,
           },
           "& .MuiSelect-select": {
+            display: "block !important",
             py: "8px !important",
+            pl: "14px !important",
+            pr: "42px !important",
             minHeight: "22px !important",
-            display: "flex",
-            alignItems: "center",
-            boxSizing: "border-box",
+            boxSizing: "border-box !important",
+            overflow: "hidden !important",
+            textOverflow: "ellipsis !important",
+            whiteSpace: "nowrap !important",
+            width: "100% !important",
+          },
+          "& .MuiSelect-icon": {
+            right: "10px !important",
+            color: "#64748B",
+            pointerEvents: "none",
           },
           ...sx,
         };
@@ -316,7 +344,7 @@ function TextInput({
   }
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", minWidth: 0 }}>
       {label && (
         <Typography
           sx={{
