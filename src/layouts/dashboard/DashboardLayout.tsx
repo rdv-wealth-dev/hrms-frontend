@@ -320,10 +320,10 @@ function DashboardLayout() {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    background: "linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(192, 132, 252, 0.04) 100%), #FFFFFF",
+                    backgroundColor: "#F5F6FA",
                     color: "#1E1B4B",
                     overflow: "hidden",
-                    borderRight: "1px solid #EFE6F8",
+                    borderRight: "1px solid #E2E8F0",
                 }}
             >
                 {/* Logo */}
@@ -367,7 +367,7 @@ function DashboardLayout() {
                     )}
                 </Box>
 
-                <Divider sx={{ borderColor: "#EFE6F8" }} />
+                <Divider sx={{ borderColor: "#E2E8F0" }} />
 
                 {/* Nav Items with Premium Custom Light Scrollbar */}
                 <List
@@ -407,7 +407,7 @@ function DashboardLayout() {
                     {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
                 </List>
 
-                <Divider sx={{ borderColor: "#EFE6F8" }} />
+                <Divider sx={{ borderColor: "#E2E8F0" }} />
 
                 {/* User Footer Container */}
                 <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2, flexShrink: 0 }}>
@@ -415,8 +415,8 @@ function DashboardLayout() {
                         sx={{
                             p: isCollapsed ? 1 : 1.2,
                             borderRadius: 3,
-                            backgroundColor: "rgba(168, 85, 247, 0.04)",
-                            border: "1px solid #EFE6F8",
+                            backgroundColor: "#FFFFFF",
+                            border: "1px solid #E2E8F0",
                             boxShadow: "none",
                         }}
                     >
@@ -545,8 +545,8 @@ function DashboardLayout() {
                     display: { xs: "block", md: "none" },
                     "& .MuiDrawer-paper": {
                         width: 240,
-                        borderRight: "1px solid #EFE6F8",
-                        background: "linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(192, 132, 252, 0.04) 100%), #FFFFFF",
+                        borderRight: "1px solid #E2E8F0",
+                        backgroundColor: "#F5F6FA",
                     },
                 }}
             >
@@ -593,8 +593,8 @@ function DashboardLayout() {
                     display: { xs: "none", md: "block" },
                     "& .MuiDrawer-paper": {
                         width: sidebarWidth,
-                        borderRight: "1px solid #EFE6F8",
-                        background: "linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(192, 132, 252, 0.04) 100%), #FFFFFF",
+                        borderRight: "1px solid #E2E8F0",
+                        backgroundColor: "#F5F6FA",
                         boxSizing: "border-box",
                         transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         overflowX: "hidden",

@@ -344,11 +344,7 @@ export default function RolesListContent() {
 
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ p: 2 }}>
-                  <TableSkeleton rows={5} columns={5} />
-                </TableCell>
-              </TableRow>
+              <TableSkeleton rows={5} columns={5} />
             ) : filteredRoles.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} sx={{ p: 0 }}>

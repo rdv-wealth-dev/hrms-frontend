@@ -134,7 +134,7 @@ function ReadOnlyFormField({ label, value }: { label: string; value?: string | n
   if (!value) return null;
   return (
     <Box sx={{ mb: 1.5 }}>
-      <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700, uppercase: true, fontSize: "11px", letterSpacing: "0.5px" }}>
+      <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700, textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>
         {label}
       </Typography>
       <Box sx={{ p: 1.2, mt: 0.5, backgroundColor: "#F8FAFC", borderRadius: 2, border: "1px solid #E2E8F0" }}>
@@ -263,7 +263,7 @@ export default function OnboardingStep5Review({
             {personal ? (
               <>
                 {/* Identity & Basic Details */}
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", uppercase: true, letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
                   Identity &amp; Basic Information
                 </Typography>
                 <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -284,7 +284,7 @@ export default function OnboardingStep5Review({
                 {/* Parents' Details */}
                 {(personal.fatherName || personal.motherName) && (
                   <>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", uppercase: true, letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
                       Parents' Details
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -299,7 +299,7 @@ export default function OnboardingStep5Review({
                 {/* Address Information */}
                 {currentAddrStr && (
                   <>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", uppercase: true, letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
                       Address Information
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -314,7 +314,7 @@ export default function OnboardingStep5Review({
                 {/* Emergency Contacts */}
                 {personal.emergencyContact && personal.emergencyContact.length > 0 && (
                   <>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", uppercase: true, letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
                       Emergency Contacts
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -330,7 +330,7 @@ export default function OnboardingStep5Review({
                 {/* Identity Document Numbers */}
                 {(personal.pan || personal.aadhaar || personal.passportNo) && (
                   <>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", uppercase: true, letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
                       Identity Document Numbers
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -342,7 +342,7 @@ export default function OnboardingStep5Review({
                 )}
 
                 {/* Education & Qualifications */}
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", uppercase: true, letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: "#4F46E5", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", mb: 1.5 }}>
                   Education &amp; Qualifications
                 </Typography>
                 <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -359,7 +359,7 @@ export default function OnboardingStep5Review({
 
                 {personal.educationDetails && personal.educationDetails.length > 0 && (
                   <Box sx={{ p: 2, backgroundColor: "#F8FAFC", borderRadius: 2.5, border: "1px solid #E2E8F0" }}>
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", uppercase: true, display: "block", mb: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase", display: "block", mb: 1 }}>
                       Detailed Education Entries:
                     </Typography>
                     {personal.educationDetails.map((edu, i) => (
@@ -460,13 +460,13 @@ export default function OnboardingStep5Review({
             <Divider sx={{ mb: 2.5 }} />
 
             {docs ? (
-              <Grid container spacing={2} alignItems="center">
+              <Grid container spacing={2} sx={{ alignItems: "center" }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <ReadOnlyFormField label="Uploaded Files Count" value={`${docs.uploadedCount ?? 0} files uploaded`} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Box sx={{ mb: 1.5 }}>
-                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700, uppercase: true, fontSize: "11px", letterSpacing: "0.5px" }}>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700, textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>
                       Mandatory Required Documents
                     </Typography>
                     <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 0.8 }}>

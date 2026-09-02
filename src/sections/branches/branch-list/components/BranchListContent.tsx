@@ -391,19 +391,21 @@ function BranchListContent() {
             width: "100%",
             maxWidth: "100%",
             overflowX: "auto",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
             WebkitOverflowScrolling: "touch",
           }}
         >
-          <Table sx={{ minWidth: { xs: 900, sm: 1000, md: 1100 } }}>
+          <Table sx={{ width: "100%", tableLayout: "auto" }}>
             <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
               <TableRow>
-                <TableCell align="left" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Branch Info</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 220 }}>Location</TableCell>
-                <TableCell align="left" sx={{ fontWeight: 650, minWidth: 180 }}>Contact Details</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Work Policy</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 130, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 90, whiteSpace: "nowrap" }}>Status</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Actions</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Branch Info</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650 }}>Location</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650 }}>Contact Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650 }}>Work Policy</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Status</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

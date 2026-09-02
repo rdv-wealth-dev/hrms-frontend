@@ -388,6 +388,13 @@ function EducationRowItem({
                           {deg}
                         </MenuItem>
                       ))}
+                      {dField.value &&
+                        dField.value !== "CUSTOM_ENTRY" &&
+                        !specializationDegrees.includes(dField.value) && (
+                          <MenuItem key={dField.value} value={dField.value} sx={{ display: "none" }}>
+                            {dField.value}
+                          </MenuItem>
+                        )}
                     </TextInput>
                   )}
                 />

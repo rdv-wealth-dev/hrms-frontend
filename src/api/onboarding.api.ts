@@ -147,6 +147,8 @@ export interface OnboardingStatusResponse {
     step1Data?: Partial<Step1Payload>;
     step2Data?: Partial<Step2Payload>;
     step3Data?: Partial<Step3Payload>;
+    step4Data?: any;
+    step5Data?: any;
     missingDocuments?: string[];
     mandatoryDocumentTypes?: string[];
     customFieldDefinitions?: CustomFieldDefinition[];
