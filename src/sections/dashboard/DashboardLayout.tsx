@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box";
-
+import OrgSetupGuidanceWidget from "./components/OrgSetupGuidanceWidget";
 import DashboardHeader from "./components/DashboardHeader";
 import KpiSummaryCards from "./components/KpiSummaryCards";
 import AiWorkforceInsights from "./components/AiWorkforceInsights";
@@ -26,12 +26,9 @@ export function DashboardLayout({
   return (
     <Box sx={{ width: "100%", boxSizing: "border-box" }}>
       {/* 1. Header & Greeting */}
-      <DashboardHeader
-        userName={userName}
-        lastLoginAt={lastLoginAt}
-        lastLoginIp={lastLoginIp}
-        lastLoginDevice={lastLoginDevice}
-      />
+      <DashboardHeader userName={userName} lastLoginAt={lastLoginAt} lastLoginIp={lastLoginIp} lastLoginDevice={lastLoginDevice} />
+
+      <OrgSetupGuidanceWidget />
 
       {/* 2. KPI Summary Cards */}
       <KpiSummaryCards />

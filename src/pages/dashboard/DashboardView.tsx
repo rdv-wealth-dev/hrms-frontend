@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 
 import DailyPunchCard from "../../sections/attendance/components/DailyPunchCard";
 import DashboardLayout from "../../sections/dashboard/DashboardLayout";
-import OrgSetupGuidanceWidget from "../../sections/dashboard/components/OrgSetupGuidanceWidget";
 import CelebrationsKpiCard from "../../sections/dashboard/components/CelebrationsKpiCard";
 import MyTeamsWidget from "../../sections/teams/components/MyTeamsWidget";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -28,9 +27,6 @@ function DashboardView() {
           lastLoginIp={lastLoginIp}
           lastLoginDevice={lastLoginDevice}
         />
-
-        {/* Organization Setup Guidance Widget for Org Admin / HR Admin */}
-        <OrgSetupGuidanceWidget />
 
         {/* Daily Punch Card Widget */}
         {role !== "ORG_ADMIN" && (
