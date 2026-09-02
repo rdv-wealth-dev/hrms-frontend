@@ -523,6 +523,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextInput
                 label="PT State Code"
+                tooltip="Professional Tax (PT) State Code — 2-letter state code (e.g. MP for Madhya Pradesh, MH for Maharashtra, KA for Karnataka) used for state-wise PT payroll tax deduction calculations."
                 value={ptStateCode}
                 onChange={(e) => setPtStateCode(e.target.value ?? "")}
                 placeholder="e.g. KA"

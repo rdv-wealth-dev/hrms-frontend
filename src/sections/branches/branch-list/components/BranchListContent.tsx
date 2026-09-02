@@ -397,9 +397,9 @@ function BranchListContent() {
           <Table sx={{ minWidth: { xs: 900, sm: 1000, md: 1100 } }}>
             <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
               <TableRow>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Branch Info</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Branch Info</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650, minWidth: 220 }}>Location</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Contact Details</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650, minWidth: 180 }}>Contact Details</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Work Policy</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650, minWidth: 130, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650, minWidth: 90, whiteSpace: "nowrap" }}>Status</TableCell>
@@ -473,16 +473,16 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Location */}
-                    <TableCell sx={{ maxWidth: 260, wordBreak: "break-word" }}>
+                    <TableCell align="center" sx={{ maxWidth: 260, wordBreak: "break-word" }}>
                       {addressString ? (
-                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.8 }}>
-                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled", mt: 0.2, flexShrink: 0 }} />
-                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13, wordBreak: "break-word" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.8 }}>
+                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled", flexShrink: 0 }} />
+                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13, wordBreak: "break-word", textAlign: "center" }}>
                             {addressString}
                           </Typography>
                         </Box>
                       ) : (
-                        <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: 13 }}>
+                        <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: 13, textAlign: "center" }}>
                           No address specified
                         </Typography>
                       )}

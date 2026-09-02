@@ -4,14 +4,17 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
+import Tooltip from "@mui/material/Tooltip";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import type { UseFormRegisterReturn } from "react-hook-form";
 
 export type InputFormat = "aadhaar" | "pan" | "numeric" | "alphanumeric" | "uppercase";
 
 export type TextInputProps = {
   label?: string;
+  tooltip?: string;
   type?: string;
   format?: InputFormat;
   placeholder?: string;
@@ -39,6 +42,7 @@ export type TextInputProps = {
 
 function TextInput({
   label,
+  tooltip,
   type = "text",
   format,
   placeholder,
@@ -346,17 +350,31 @@ function TextInput({
   return (
     <Box sx={{ width: "100%", minWidth: 0 }}>
       {label && (
-        <Typography
-          sx={{
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "#334155",
-            mb: 0.6,
-            display: "block",
-          }}
-        >
-          {label} {required && <span style={{ color: "#EF4444" }}>*</span>}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, mb: 0.6 }}>
+          <Typography
+            component="span"
+            sx={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "#334155",
+            }}
+          >
+            {label} {required && <span style={{ color: "#EF4444" }}>*</span>}
+          </Typography>
+          {tooltip && (
+            <Tooltip title={tooltip} arrow placement="top">
+              <InfoOutlinedIcon
+                sx={{
+                  fontSize: 15,
+                  color: "#64748B",
+                  cursor: "pointer",
+                  transition: "color 0.2s ease",
+                  "&:hover": { color: "#6D5DF6" },
+                }}
+              />
+            </Tooltip>
+          )}
+        </Box>
       )}
 
       <TextField
