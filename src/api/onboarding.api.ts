@@ -275,4 +275,24 @@ export const getEducationOptions = async (
   }
 };
 
+export const skipOnboardingStep = async (step?: number): Promise<OnboardingStepResponse> => {
+  try {
+    const payload = step ? { step } : {};
+    const response = await axiosInstance.post<OnboardingStepResponse>(
+      "/onboarding/skip",
+      payload
+    );
+    return response.data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.error?.message ||
+      err?.response?.data?.message ||
+      err?.response?.data?.errors?.[0] ||
+      err?.message ||
+      "Failed to skip step";
+    return { succeeded: false, message: msg };
+  }
+};
+
+
 

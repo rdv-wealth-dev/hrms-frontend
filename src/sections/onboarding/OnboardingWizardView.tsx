@@ -25,6 +25,7 @@ import {
   submitOnboardingStep3,
   submitOnboardingStep4,
   submitOnboardingStep5,
+  skipOnboardingStep,
 } from "../../api/onboarding.api";
 import {
   type OnboardingStep1FormData,
@@ -102,6 +103,25 @@ export default function OnboardingWizardView() {
     };
     init();
   }, [navigate, showSnackbar, user?.phone]);
+
+  const handleSkipStep = async (stepNumber: number) => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await skipOnboardingStep(stepNumber);
+      if (res?.succeeded) {
+        showSnackbar(res?.message || `Step ${stepNumber} skipped`, "info");
+        const nextStep = res?.data?.nextStep || Math.min(stepNumber + 1, 4);
+        setActiveStep(nextStep - 1);
+      } else {
+        setStepError(res?.message || "Failed to skip step");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Failed to skip step");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleStep1Submit = async (data: OnboardingStep1FormData) => {
     setSubmitting(true);
@@ -277,6 +297,7 @@ export default function OnboardingWizardView() {
           <OnboardingStep1Personal
             initialValues={step1Data}
             onSubmitStep={handleStep1Submit}
+            onSkipStep={() => handleSkipStep(1)}
             loading={submitting}
           />
         )}
@@ -286,6 +307,7 @@ export default function OnboardingWizardView() {
             initialValues={step2Data}
             onSubmitStep={handleStep2Submit}
             onBack={() => setActiveStep(0)}
+            onSkipStep={() => handleSkipStep(2)}
             loading={submitting}
           />
         )}
@@ -295,6 +317,7 @@ export default function OnboardingWizardView() {
             initialValues={step3Data}
             onSubmitStep={handleStep3Submit}
             onBack={() => setActiveStep(1)}
+            onSkipStep={() => handleSkipStep(3)}
             loading={submitting}
           />
         )}
@@ -305,6 +328,7 @@ export default function OnboardingWizardView() {
             missingDocuments={missingDocs}
             onSubmitStep={handleStep4Submit}
             onBack={() => setActiveStep(2)}
+            onSkipStep={() => handleSkipStep(4)}
             loading={submitting}
             errorMsg={stepError}
           />

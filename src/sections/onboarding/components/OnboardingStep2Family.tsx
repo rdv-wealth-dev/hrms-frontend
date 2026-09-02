@@ -24,12 +24,15 @@ import {
 import TextInput from "../../../components/input/TextInput";
 import { formatToYYYYMMDD } from "../../../utils/format-date";
 
+import SkipStepButton from "./SkipStepButton";
+
 const RELATIONSHIPS = ["SPOUSE", "CHILD", "FATHER", "MOTHER", "SIBLING", "OTHER"] as const;
 
 interface OnboardingStep2Props {
   initialValues?: Partial<OnboardingStep2FormData>;
   onSubmitStep: (data: OnboardingStep2FormData) => Promise<void>;
   onBack: () => void;
+  onSkipStep?: () => void;
   loading: boolean;
 }
 
@@ -45,8 +48,10 @@ export default function OnboardingStep2Family({
   initialValues,
   onSubmitStep,
   onBack,
+  onSkipStep,
   loading,
 }: OnboardingStep2Props) {
+
   const {
     register,
     control,
@@ -249,7 +254,7 @@ export default function OnboardingStep2Family({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
@@ -258,15 +263,19 @@ export default function OnboardingStep2Family({
         >
           Back
         </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
-        >
-          {loading ? "Saving..." : "Save & Continue"}
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+          <SkipStepButton onSkip={onSkipStep} loading={loading} />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            endIcon={<ArrowForwardIcon />}
+            sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
+          >
+            {loading ? "Saving..." : "Save & Continue"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

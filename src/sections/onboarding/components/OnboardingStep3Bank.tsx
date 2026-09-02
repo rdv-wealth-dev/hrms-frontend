@@ -15,6 +15,7 @@ import {
   type OnboardingStep3FormData,
 } from "../../../validations/onboarding/onboarding.schema";
 import TextInput from "../../../components/input/TextInput";
+import SkipStepButton from "./SkipStepButton";
 
 const ACCOUNT_TYPES = [
   { value: "SALARY", label: "Salary Account" },
@@ -26,6 +27,7 @@ interface OnboardingStep3Props {
   initialValues?: Partial<OnboardingStep3FormData>;
   onSubmitStep: (data: OnboardingStep3FormData) => Promise<void>;
   onBack: () => void;
+  onSkipStep?: () => void;
   loading: boolean;
 }
 
@@ -40,8 +42,10 @@ export default function OnboardingStep3Bank({
   initialValues,
   onSubmitStep,
   onBack,
+  onSkipStep,
   loading,
 }: OnboardingStep3Props) {
+
   const {
     register,
     control,
@@ -118,7 +122,7 @@ export default function OnboardingStep3Bank({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
@@ -127,15 +131,19 @@ export default function OnboardingStep3Bank({
         >
           Back
         </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
-        >
-          {loading ? "Saving..." : "Save & Continue"}
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+          <SkipStepButton onSkip={onSkipStep} loading={loading} />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            endIcon={<ArrowForwardIcon />}
+            sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
+          >
+            {loading ? "Saving..." : "Save & Continue"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

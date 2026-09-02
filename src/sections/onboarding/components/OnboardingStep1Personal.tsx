@@ -66,12 +66,15 @@ const QUALIFICATION_LEVELS = [
   "OTHER",
 ] as const;
 
+import SkipStepButton from "./SkipStepButton";
+
 interface OnboardingStep1Props {
   initialValues?: Partial<OnboardingStep1FormData> & {
     customFields?: Record<string, any>;
   };
   customFieldDefinitions?: CustomFieldDefinition[];
   onSubmitStep: (data: OnboardingStep1FormData & { customFields?: Record<string, any> }) => Promise<void>;
+  onSkipStep?: () => void;
   loading: boolean;
 }
 
@@ -452,10 +455,10 @@ function EducationRowItem({
 }
 
 export default function OnboardingStep1Personal({
-
   initialValues,
   customFieldDefinitions: passedDefinitions,
   onSubmitStep,
+  onSkipStep,
   loading,
 }: OnboardingStep1Props) {
   const { customFields: fetchedDefinitions } = useCustomFields({ scope: "ORGANIZATION", autoFetch: !passedDefinitions });
@@ -993,7 +996,8 @@ export default function OnboardingStep1Personal({
       )}
 
       {/* Action Row */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+        <SkipStepButton onSkip={onSkipStep} loading={loading} />
         <Button
           type="button"
           onClick={handleSubmit((data) =>
@@ -1014,6 +1018,7 @@ export default function OnboardingStep1Personal({
             fontWeight: 700,
             textTransform: "none",
             fontSize: "15px",
+            width: { xs: "100%", sm: "auto" },
           }}
         >
           {loading ? "Saving..." : "Save & Continue"}

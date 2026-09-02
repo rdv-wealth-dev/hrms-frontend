@@ -18,12 +18,14 @@ import { uploadDocument, getEmployeeDocuments, type EmployeeDocument } from "../
 import { getDocumentDefinition, type DocumentDefinition } from "../../../utils/doc-helpers";
 
 import { useMandatoryDocuments } from "../../../hooks/useMandatoryDocuments";
+import SkipStepButton from "./SkipStepButton";
 
 interface OnboardingStep4Props {
   mandatoryDocumentTypes?: string[];
   missingDocuments?: string[];
   onSubmitStep: () => Promise<void>;
   onBack: () => void;
+  onSkipStep?: () => void;
   loading: boolean;
   errorMsg?: string | null;
 }
@@ -33,9 +35,11 @@ export default function OnboardingStep4Documents({
   missingDocuments,
   onSubmitStep,
   onBack,
+  onSkipStep,
   loading,
   errorMsg,
 }: OnboardingStep4Props) {
+
   const { docTypes, isLoading: docsLoading } = useMandatoryDocuments();
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
@@ -224,7 +228,7 @@ export default function OnboardingStep4Documents({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
@@ -233,15 +237,19 @@ export default function OnboardingStep4Documents({
         >
           Back
         </Button>
-        <Button
-          onClick={onSubmitStep}
-          variant="contained"
-          disabled={loading}
-          endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
-        >
-          {loading ? "Verifying..." : "Verify & Continue"}
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+          <SkipStepButton onSkip={onSkipStep} loading={loading} />
+          <Button
+            onClick={onSubmitStep}
+            variant="contained"
+            disabled={loading}
+            endIcon={<ArrowForwardIcon />}
+            sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
+          >
+            {loading ? "Verifying..." : "Verify & Continue"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
