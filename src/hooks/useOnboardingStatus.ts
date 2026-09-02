@@ -46,7 +46,9 @@ export function useOnboardingStatus() {
     }
   }, [fetchStatus, isOrgAdmin, isAuthenticated]);
 
-  const isProfileComplete = isOrgAdmin ? true : (statusData?.isProfileComplete ?? statusData?.onboardingComplete ?? false);
+  const isProfileComplete = isOrgAdmin
+    ? true
+    : Boolean(statusData?.onboardingComplete || statusData?.isProfileComplete);
   const phase: OnboardingPhase = isOrgAdmin ? "COMPLETE" : (statusData?.onboardingPhase ?? (isProfileComplete ? "COMPLETE" : "GRACE"));
   const completionPct = isOrgAdmin ? 100 : (statusData?.profileCompletionPct ?? (isProfileComplete ? 100 : 0));
 

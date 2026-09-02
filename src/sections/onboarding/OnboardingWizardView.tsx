@@ -26,6 +26,7 @@ import {
   submitOnboardingStep4,
   submitOnboardingStep5,
   skipOnboardingStep,
+  navigateOnboardingStep,
 } from "../../api/onboarding.api";
 import {
   type OnboardingStep1FormData,
@@ -65,6 +66,7 @@ export default function OnboardingWizardView() {
   const [step3Data, setStep3Data] = useState<Partial<OnboardingStep3FormData>>({});
   const [missingDocs, setMissingDocs] = useState<string[]>([]);
   const [mandatoryDocTypes, setMandatoryDocTypes] = useState<string[]>([]);
+  const [step5Data, setStep5Data] = useState<any>(null);
 
   useEffect(() => {
     if (role === "ORG_ADMIN") {
@@ -92,6 +94,7 @@ export default function OnboardingWizardView() {
           if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
           if (res.data.missingDocuments) setMissingDocs(res.data.missingDocuments);
           if (res.data.mandatoryDocumentTypes) setMandatoryDocTypes(res.data.mandatoryDocumentTypes);
+          if (res.data.step5Data) setStep5Data(res.data.step5Data);
         } else if (res.message) {
           setStepError(res.message);
         }
@@ -103,6 +106,19 @@ export default function OnboardingWizardView() {
     };
     init();
   }, [navigate, showSnackbar, user?.phone]);
+
+  const handleNavigateBack = async (targetStepNumber: number) => {
+    try {
+      const res = await navigateOnboardingStep(targetStepNumber);
+      if (res?.succeeded && res?.data?.currentStep) {
+        setActiveStep(res.data.currentStep - 1);
+      } else {
+        setActiveStep(targetStepNumber - 1);
+      }
+    } catch (err: any) {
+      setActiveStep(targetStepNumber - 1);
+    }
+  };
 
   const handleSkipStep = async (stepNumber: number) => {
     setSubmitting(true);
@@ -306,7 +322,7 @@ export default function OnboardingWizardView() {
           <OnboardingStep2Family
             initialValues={step2Data}
             onSubmitStep={handleStep2Submit}
-            onBack={() => setActiveStep(0)}
+            onBack={() => handleNavigateBack(1)}
             onSkipStep={() => handleSkipStep(2)}
             loading={submitting}
           />
@@ -316,7 +332,7 @@ export default function OnboardingWizardView() {
           <OnboardingStep3Bank
             initialValues={step3Data}
             onSubmitStep={handleStep3Submit}
-            onBack={() => setActiveStep(1)}
+            onBack={() => handleNavigateBack(2)}
             onSkipStep={() => handleSkipStep(3)}
             loading={submitting}
           />
@@ -327,7 +343,7 @@ export default function OnboardingWizardView() {
             mandatoryDocumentTypes={mandatoryDocTypes}
             missingDocuments={missingDocs}
             onSubmitStep={handleStep4Submit}
-            onBack={() => setActiveStep(2)}
+            onBack={() => handleNavigateBack(3)}
             onSkipStep={() => handleSkipStep(4)}
             loading={submitting}
             errorMsg={stepError}
@@ -336,8 +352,10 @@ export default function OnboardingWizardView() {
 
         {activeStep === 4 && (
           <OnboardingStep5Review
+            step5Data={step5Data}
             onSubmitStep={handleStep5Submit}
-            onBack={() => setActiveStep(3)}
+            onBack={() => handleNavigateBack(4)}
+            onNavigateToStep={(targetStep) => handleNavigateBack(targetStep)}
             loading={submitting}
             errorMsg={stepError}
           />

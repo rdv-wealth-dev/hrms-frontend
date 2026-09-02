@@ -996,7 +996,7 @@ export default function OnboardingStep1Personal({
       )}
 
       {/* Action Row */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <SkipStepButton onSkip={onSkipStep} loading={loading} />
         <Button
           type="button"

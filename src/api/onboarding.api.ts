@@ -264,6 +264,14 @@ export const getEducationOptions = async (
       "/onboarding/education-options",
       { params }
     );
+    if (response.data?.data) {
+      const rawData = response.data.data as any;
+      const rawItems = rawData.categories || rawData.degrees || [];
+      response.data.data.categories = rawItems.map((item: any) => ({
+        category: item.category || item.degree || "",
+        degrees: item.degrees || item.specialization || [],
+      }));
+    }
     return response.data;
   } catch (err: any) {
     const msg = err?.response?.data?.message || err?.message || "Failed to fetch education options";
@@ -290,6 +298,24 @@ export const skipOnboardingStep = async (step?: number): Promise<OnboardingStepR
       err?.response?.data?.errors?.[0] ||
       err?.message ||
       "Failed to skip step";
+    return { succeeded: false, message: msg };
+  }
+};
+
+export const navigateOnboardingStep = async (step: number): Promise<OnboardingStepResponse> => {
+  try {
+    const response = await axiosInstance.post<OnboardingStepResponse>(
+      "/onboarding/navigate",
+      { step }
+    );
+    return response.data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.error?.message ||
+      err?.response?.data?.message ||
+      err?.response?.data?.errors?.[0] ||
+      err?.message ||
+      "Failed to navigate step";
     return { succeeded: false, message: msg };
   }
 };
