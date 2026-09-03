@@ -20,9 +20,13 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import TextInput from "../../../components/input/TextInput";
 import { CreateTeamDialog, TeamsListContent } from "../../teams";
 import { VirtualizedTable } from "../../../components/table";
+import DeleteBranchDepartmentsDialog from "./DeleteBranchDepartmentsDialog";
+import DeleteSingleDepartmentDialog from "./DeleteSingleDepartmentDialog";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -238,6 +242,8 @@ function DepartmentContent() {
     const [activeTab, setActiveTab] = useState<"departments" | "teams">("departments");
     const [createOpen, setCreateOpen] = useState(false);
     const [createTeamOpen, setCreateTeamOpen] = useState(false);
+    const [deleteBranchDeptsOpen, setDeleteBranchDeptsOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
@@ -337,18 +343,33 @@ function DepartmentContent() {
                         <ApartmentOutlinedIcon
                             sx={{ fontSize: 32, color: "primary.main" }}
                         />
-                        <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
-                                Departments
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {total > 0 ? `${total} department${total !== 1 ? "s" : ""}` : "Manage your organisation's departments"}
-                            </Typography>
-                        </Box>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
+                            Departments
+                        </Typography>
                     </Box>
 
                     {/* Action Buttons */}
                     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", width: { xs: "100%", sm: "auto" } }}>
+                        {canUpdate && selectedBranchId && (
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                startIcon={<DeleteForeverOutlinedIcon />}
+                                onClick={() => setDeleteBranchDeptsOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2.5,
+                                    whiteSpace: "nowrap",
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Delete All Departments
+                            </Button>
+                        )}
+
                         {canCreateTeam && (
                             <Button
                                 variant="outlined"
@@ -542,17 +563,28 @@ function DepartmentContent() {
                                   {
                                       id: "actions",
                                       header: "Actions",
-                                      minWidth: 80,
+                                      minWidth: 100,
                                       align: "center" as const,
                                       sticky: "right" as const,
                                       cell: (dept: any) => (
-                                          <IconButton
-                                              size="small"
-                                              onClick={() => openEdit(dept)}
-                                              sx={{ color: "primary.main" }}
-                                          >
-                                              <EditOutlinedIcon fontSize="small" />
-                                          </IconButton>
+                                          <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+                                              <IconButton
+                                                  size="small"
+                                                  onClick={() => openEdit(dept)}
+                                                  sx={{ color: "primary.main" }}
+                                                  title="Edit Department"
+                                              >
+                                                  <EditOutlinedIcon fontSize="small" />
+                                              </IconButton>
+                                              <IconButton
+                                                  size="small"
+                                                  onClick={() => setDeleteTarget(dept)}
+                                                  sx={{ color: "error.main" }}
+                                                  title="Delete Department"
+                                              >
+                                                  <DeleteOutlineOutlinedIcon fontSize="small" />
+                                              </IconButton>
+                                          </Box>
                                       ),
                                   },
                               ]
@@ -622,6 +654,26 @@ function DepartmentContent() {
                 open={createTeamOpen}
                 defaultBranchId={selectedBranchId || branchId}
                 onClose={() => setCreateTeamOpen(false)}
+            />
+
+            {/* Delete All Branch Departments Dialog */}
+            <DeleteBranchDepartmentsDialog
+                open={deleteBranchDeptsOpen}
+                branchId={selectedBranchId || branchId}
+                onClose={() => setDeleteBranchDeptsOpen(false)}
+                onSuccess={() => {
+                    dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
+                }}
+            />
+
+            {/* Delete Single Department Dialog */}
+            <DeleteSingleDepartmentDialog
+                open={Boolean(deleteTarget)}
+                department={deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onSuccess={() => {
+                    dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
+                }}
             />
         </>
     );

@@ -175,6 +175,7 @@ function TextInput({
     },
 
     select: {
+      displayEmpty: true,
       MenuProps: {
         disableScrollLock: true,
         anchorOrigin: { vertical: "bottom", horizontal: "left" },

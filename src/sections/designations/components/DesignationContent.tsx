@@ -25,7 +25,11 @@ import TablePagination from "@mui/material/TablePagination";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import TextInput from "../../../components/input/TextInput";
+import DeleteResourceDialog from "../../../components/modal/DeleteResourceDialog";
+import { deleteDesignationsByBranch, deleteDesignationsByDepartment, deleteDesignation } from "../../../api/designation.api";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -71,6 +75,10 @@ function DesignationContent() {
 
   // Create dialog state
   const [createOpen, setCreateOpen] = useState(false);
+  const [deleteBranchDesgsOpen, setDeleteBranchDesgsOpen] = useState(false);
+  const [deleteDeptDesgsOpen, setDeleteDeptDesgsOpen] = useState(false);
+  const [deleteSingleTarget, setDeleteSingleTarget] = useState<Designation | null>(null);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>("");
   const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -172,6 +180,16 @@ function DesignationContent() {
     );
   };
 
+  const filteredDesignations = (designations ?? []).filter((d: any) => {
+    if (!selectedDepartmentId) return true;
+    const deptId = typeof d.departmentId === "object" ? d.departmentId?._id : d.departmentId;
+    const rawDeptId = d.department?._id || d.department;
+    return (
+      String(deptId ?? "") === String(selectedDepartmentId) ||
+      String(rawDeptId ?? "") === String(selectedDepartmentId)
+    );
+  });
+
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -188,37 +206,108 @@ function DesignationContent() {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <BadgeOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
-                Designations
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage job titles and levels within departments
-              </Typography>
-            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
+              Designations
+            </Typography>
           </Box>
 
-          {/* + Add Designation Button */}
-          {canCreate && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateOpen(true)}
-              sx={{
-                height: 40,
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: "10px",
-                px: 2.5,
-                backgroundColor: "primary.main",
-                boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                "&:hover": { backgroundColor: "primary.dark" },
-                width: { xs: "100%", sm: "auto" },
-              }}
-            >
-              Add Designation
-            </Button>
-          )}
+          {/* Actions Group — aligned right: Filter -> Delete Button -> Add Button */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: { xs: "flex-start", sm: "flex-end" },
+              gap: 1.5,
+              flexWrap: "wrap",
+              ml: "auto",
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
+            {/* 1. Department Filter Dropdown */}
+            <Box sx={{ width: { xs: "100%", sm: 200 } }}>
+              <TextInput
+                select
+                size="small"
+                value={selectedDepartmentId}
+                onChange={(e) => {
+                  setSelectedDepartmentId(e.target.value);
+                  setPage(0);
+                }}
+                slotProps={{ select: { displayEmpty: true } }}
+              >
+                <MenuItem value="">All Departments</MenuItem>
+                {departments.map((dept) => (
+                  <MenuItem key={dept._id} value={dept._id}>
+                    {dept.name}
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </Box>
+
+            {/* 2. Delete Button (Dept specific or Branch wide) */}
+            {canUpdate && selectedDepartmentId && (
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteForeverOutlinedIcon />}
+                onClick={() => setDeleteDeptDesgsOpen(true)}
+                sx={{
+                  height: 40,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: "10px",
+                  px: 2.5,
+                  whiteSpace: "nowrap",
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                Delete Dept Designations
+              </Button>
+            )}
+
+            {canUpdate && branchId && !selectedDepartmentId && (
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteForeverOutlinedIcon />}
+                onClick={() => setDeleteBranchDesgsOpen(true)}
+                sx={{
+                  height: 40,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: "10px",
+                  px: 2.5,
+                  whiteSpace: "nowrap",
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                Delete All Designations
+              </Button>
+            )}
+
+            {/* 3. Add Designation Button */}
+            {canCreate && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setCreateOpen(true)}
+                sx={{
+                  height: 40,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: "10px",
+                  px: 2.5,
+                  backgroundColor: "primary.main",
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  "&:hover": { backgroundColor: "primary.dark" },
+                  whiteSpace: "nowrap",
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                Add Designation
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {/* Error Banner (only when all dialogs are closed) */}
@@ -257,7 +346,7 @@ function DesignationContent() {
               </TableHead>
 
               <TableBody>
-                {(designations ?? []).length === 0 ? (
+                {filteredDesignations.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={canUpdate ? 6 : 5} align="center">
                       <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
@@ -290,7 +379,7 @@ function DesignationContent() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (designations ?? [])
+                  filteredDesignations
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((d) => (
                     <TableRow
@@ -326,14 +415,25 @@ function DesignationContent() {
                         />
                       </TableCell>
                       {canUpdate && (
-                        <TableCell>
-                          <IconButton
-                            size="small"
-                            onClick={() => openEdit(d)}
-                            sx={{ color: "primary.main" }}
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
+                        <TableCell align="center">
+                          <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => openEdit(d)}
+                              sx={{ color: "primary.main" }}
+                              title="Edit Designation"
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => setDeleteSingleTarget(d)}
+                              sx={{ color: "error.main" }}
+                              title="Delete Designation"
+                            >
+                              <DeleteOutlineOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
                         </TableCell>
                       )}
                     </TableRow>
@@ -344,7 +444,7 @@ function DesignationContent() {
             <TablePagination
               rowsPerPageOptions={[10, 25, 50, 100]}
               component="div"
-              count={(designations ?? []).length}
+              count={filteredDesignations.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={(_, newPage) => setPage(newPage)}
@@ -613,6 +713,67 @@ function DesignationContent() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete All Branch Designations Dialog */}
+      <DeleteResourceDialog
+        open={deleteBranchDesgsOpen}
+        title="Delete Branch Designations"
+        resourceName="all designations configured for this branch"
+        confirmLabel="Delete Designations"
+        onClose={() => setDeleteBranchDesgsOpen(false)}
+        onSuccess={() => {
+          dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
+        }}
+        onDelete={async (force) => {
+          const res = await deleteDesignationsByBranch(branchId, force);
+          return {
+            success: res?.success,
+            message: res?.message,
+            countMessage: `Successfully deleted ${res?.data?.deletedCount ?? 0} designation(s).`,
+          };
+        }}
+      />
+
+      {/* Delete All Department Designations Dialog */}
+      <DeleteResourceDialog
+        open={deleteDeptDesgsOpen}
+        title="Delete Department Designations"
+        resourceName={`all designations under "${departments.find((d) => d._id === selectedDepartmentId)?.name || "selected department"}"`}
+        confirmLabel="Delete Designations"
+        onClose={() => setDeleteDeptDesgsOpen(false)}
+        onSuccess={() => {
+          dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
+        }}
+        onDelete={async (force) => {
+          const res = await deleteDesignationsByDepartment(selectedDepartmentId, force);
+          return {
+            success: res?.success,
+            message: res?.message,
+            countMessage: `Successfully deleted ${res?.data?.deletedCount ?? 0} designation(s) for this department.`,
+          };
+        }}
+      />
+
+      {/* Delete Single Designation Dialog */}
+      <DeleteResourceDialog
+        open={Boolean(deleteSingleTarget)}
+        title="Delete Designation"
+        resourceName={`designation "${deleteSingleTarget?.name || ""}"`}
+        confirmLabel="Delete Designation"
+        onClose={() => setDeleteSingleTarget(null)}
+        onSuccess={() => {
+          dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
+        }}
+        onDelete={async (force) => {
+          if (!deleteSingleTarget?._id) return { success: false };
+          const res = await deleteDesignation(deleteSingleTarget._id, force);
+          return {
+            success: res?.success,
+            message: res?.message,
+            countMessage: `Designation "${deleteSingleTarget?.name}" deleted successfully.`,
+          };
+        }}
+      />
     </>
   );
 }

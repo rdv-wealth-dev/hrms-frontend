@@ -98,3 +98,80 @@ export const seedDefaultDesignations = async (branchId: string, departmentIds: s
   
   return true;
 };
+
+export interface DeleteBranchDesignationsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    message: string;
+    branchId: string;
+    deletedCount: number;
+  };
+}
+
+/**
+ * Delete all designations for a specific branch
+ * DELETE /api/v1/designations/branch/:branchId?force=boolean
+ */
+export const deleteDesignationsByBranch = async (
+  branchId: string,
+  force = false
+): Promise<DeleteBranchDesignationsResponse> => {
+  const url = `/designations/branch/${encodeURIComponent(branchId)}${force ? "?force=true" : "?force=false"}`;
+  const response = await axiosInstance.delete<DeleteBranchDesignationsResponse>(
+    url,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface DeleteDepartmentDesignationsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    message: string;
+    departmentId: string;
+    deletedCount: number;
+  };
+}
+
+/**
+ * Delete all designations for a specific department
+ * DELETE /api/v1/designations/department/:departmentId?force=boolean
+ */
+export const deleteDesignationsByDepartment = async (
+  departmentId: string,
+  force = false
+): Promise<DeleteDepartmentDesignationsResponse> => {
+  const url = `/designations/department/${encodeURIComponent(departmentId)}${force ? "?force=true" : "?force=false"}`;
+  const response = await axiosInstance.delete<DeleteDepartmentDesignationsResponse>(
+    url,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface DeleteSingleDesignationResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    message: string;
+    designationId: string;
+  };
+}
+
+/**
+ * Delete a single designation by ID
+ * DELETE /api/v1/designations/:id?force=boolean
+ */
+export const deleteDesignation = async (
+  id: string,
+  force = false
+): Promise<DeleteSingleDesignationResponse> => {
+  const url = `/designations/${encodeURIComponent(id)}${force ? "?force=true" : "?force=false"}`;
+  const response = await axiosInstance.delete<DeleteSingleDesignationResponse>(
+    url,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
