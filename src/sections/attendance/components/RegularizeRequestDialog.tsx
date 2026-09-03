@@ -162,8 +162,8 @@ export default function RegularizeRequestDialog({
     >
       <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <HistoryIcon sx={{ color: "#6D5DF6", fontSize: 24 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <HistoryIcon sx={{ color: "primary.main", fontSize: 24 }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Request Regularization
           </Typography>
         </Box>
@@ -182,7 +182,7 @@ export default function RegularizeRequestDialog({
               <Typography variant="caption" color="text.secondary">
                 Shift Date
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                 {formatDate(record.attendanceDate || "", { treatAsDateOnly: true })}
               </Typography>
             </Box>
@@ -213,7 +213,7 @@ export default function RegularizeRequestDialog({
                 <Checkbox
                   checked={reqCheckInChecked}
                   onChange={(e) => setReqCheckInChecked(e.target.checked)}
-                  sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                  sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                 />
               }
               label="Request Check-In Adjustment"
@@ -238,7 +238,7 @@ export default function RegularizeRequestDialog({
                 <Checkbox
                   checked={reqCheckOutChecked}
                   onChange={(e) => setReqCheckOutChecked(e.target.checked)}
-                  sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                  sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                 />
               }
               label="Request Check-Out Adjustment"
@@ -283,8 +283,8 @@ export default function RegularizeRequestDialog({
             disabled={submitting}
             variant="contained"
             sx={{
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               textTransform: "none",
               fontWeight: 600,
               px: 3,

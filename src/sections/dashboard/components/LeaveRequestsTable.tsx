@@ -40,9 +40,10 @@ export function LeaveRequestsTable() {
       sx={{
         p: { xs: 2.5, sm: 3 },
         borderRadius: 3.5,
-        backgroundColor: "#fff",
+        backgroundColor: "background.paper",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        border: "1px solid rgba(0,0,0,0.04)",
+        border: "1px solid",
+        borderColor: "divider",
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -52,7 +53,7 @@ export function LeaveRequestsTable() {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
             Leave Requests
           </Typography>
           {pendingCount > 0 && (
@@ -78,7 +79,7 @@ export function LeaveRequestsTable() {
           endIcon={<ArrowForwardOutlinedIcon sx={{ fontSize: "14px !important" }} />}
           sx={{
             textTransform: "none",
-            color: "#6D5DF6",
+            color: "primary.main",
             fontWeight: 600,
             fontSize: "0.8rem",
             p: 0,
@@ -103,8 +104,9 @@ export function LeaveRequestsTable() {
                 justifyContent: "space-between",
                 p: 1.5,
                 borderRadius: 2.5,
-                backgroundColor: "#F9FAFB",
-                border: "1px solid rgba(0,0,0,0.03)",
+                backgroundColor: "action.hover",
+                border: "1px solid",
+                borderColor: "divider",
                 transition: "all 0.2s ease",
                 "&:hover": {
                   backgroundColor: "#F3F4F6",
@@ -121,7 +123,7 @@ export function LeaveRequestsTable() {
                       variant="body2"
                       sx={{
                         fontWeight: 700,
-                        color: "#111827",
+                        color: "text.primary",
                         fontSize: "0.85rem",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -193,15 +195,16 @@ export function LeaveRequestsTable() {
       </Box>
 
       {/* Footer Link to Leave Management Page */}
-      <Box sx={{ pt: 2, mt: 1, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+      <Box sx={{ pt: 2, mt: 1, borderTop: "1px solid", borderColor: "divider" }}>
         <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
           Full leave requests and balance approvals are managed in{" "}
-          <span
+          <Box
+            component="span"
             onClick={() => navigate(paths.leaveApprovals)}
-            style={{ color: "#6D5DF6", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+            sx={{ color: "primary.main", fontWeight: 600, cursor: "pointer", textDecoration: "underline", display: "inline" }}
           >
             Leave Approvals
-          </span>
+          </Box>
         </Typography>
       </Box>
     </Card>

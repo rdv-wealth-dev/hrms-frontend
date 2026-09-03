@@ -57,7 +57,7 @@ function App() {
           justifyContent: "center",
         }}
       >
-        <CircularProgress sx={{ color: "#6D5DF6" }} />
+        <CircularProgress sx={{ color: "primary.main" }} />
       </Box>
     );
   }

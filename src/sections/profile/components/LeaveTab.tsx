@@ -218,8 +218,9 @@ export default function LeaveTab({
       <Card
         sx={{
           borderRadius: "16px",
-          border: "1px solid #E2E8F0",
-          backgroundColor: "#FFFFFF",
+          border: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "background.paper",
           boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
           overflow: "hidden",
         }}
@@ -237,7 +238,7 @@ export default function LeaveTab({
           }}
         >
           <Box>
-            <Typography sx={{ fontSize: "16px", fontWeight: 700, color: "#0F172A", lineHeight: 1.25 }}>
+            <Typography sx={{ fontSize: "16px", fontWeight: 700, color: "text.primary", lineHeight: 1.25 }}>
               My Leave Applications & History
             </Typography>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500, mt: 0.25, display: "block" }}>
@@ -255,12 +256,12 @@ export default function LeaveTab({
               onClick={() => setApplyLeaveDialogOpen(true)}
               sx={{
                 borderRadius: "10px",
-                borderColor: "#E2E8F0",
+                borderColor: "divider",
                 color: "#4F46E5",
                 fontWeight: 600,
                 fontSize: "13px",
                 textTransform: "none",
-                "&:hover": { borderColor: "#6D5DF6", backgroundColor: "#EEF2FF" },
+                "&:hover": { borderColor: "primary.main", backgroundColor: "primary.lighter" },
               }}
             >
               Apply Leave
@@ -284,7 +285,7 @@ export default function LeaveTab({
             >
               <EventNoteOutlinedIcon sx={{ fontSize: 24 }} />
             </Box>
-            <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
+            <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
               No leave applications recorded yet
             </Typography>
             <Typography variant="body2" sx={{ color: "#64748B", maxWidth: 380, mb: 1 }}>
@@ -298,12 +299,11 @@ export default function LeaveTab({
                 onClick={() => setApplyLeaveDialogOpen(true)}
                 sx={{
                   borderRadius: "10px",
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   fontWeight: 600,
                   fontSize: "13.5px",
                   textTransform: "none",
-                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                  "&:hover": { backgroundColor: "#5B4BEA" },
+                  "&:hover": { backgroundColor: "primary.dark" },
                 }}
               >
                 Apply Leave
@@ -358,7 +358,7 @@ export default function LeaveTab({
                       }}
                     >
                       <TableCell sx={{ py: 1.75, px: 2.5 }}>
-                        <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
+                        <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
                           {leaveTypeName}
                         </Typography>
                       </TableCell>
@@ -378,7 +378,7 @@ export default function LeaveTab({
                             backgroundColor: "#F1F5F9",
                             fontSize: "12px",
                             fontWeight: 700,
-                            color: "#0F172A",
+                            color: "text.primary",
                           }}
                         >
                           {daysCount} {daysCount === 1 ? "Day" : "Days"}

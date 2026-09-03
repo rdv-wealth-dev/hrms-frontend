@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -102,7 +103,7 @@ export function CustomSelect({
               return (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {selectedOption?.icon}
-                  <Typography variant="body2" sx={{ fontSize: "14px", color: "#0F172A", fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontSize: "14px", color: "text.primary", fontWeight: 500 }}>
                     {selectedOption?.label ?? selectedVal}
                   </Typography>
                 </Box>
@@ -122,15 +123,16 @@ export function CustomSelect({
                     maxHeight: searchable ? { xs: "235px !important", sm: "225px !important" } : { xs: "184px !important", sm: "176px !important" },
                     maxWidth: "calc(100vw - 32px)",
                     borderRadius: "12px",
-                    border: "1px solid #E2E8F0",
+                    border: "1px solid",
+                    borderColor: "divider",
                     boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
                     p: 0.5,
                     overflowY: "auto",
                     scrollbarWidth: "thin",
-                    scrollbarColor: "#CBD5E1 transparent",
+                    scrollbarColor: "divider transparent",
                     "&::-webkit-scrollbar": { width: "5px" },
                     "&::-webkit-scrollbar-thumb": {
-                      backgroundColor: "#CBD5E1",
+                      backgroundColor: "divider",
                       borderRadius: "4px",
                     },
                     "& .MuiMenuItem-root": {
@@ -144,9 +146,9 @@ export function CustomSelect({
                       borderRadius: "6px",
                       mx: 0.2,
                       my: 0.2,
-                      color: "#334155",
-                      "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
-                      "&.Mui-selected": { backgroundColor: "#EEF2FF", color: "#4F46E5", fontWeight: 600 },
+                      color: "text.primary",
+                      "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+                      "&.Mui-selected": { backgroundColor: "primary.lighter", color: "primary.main", fontWeight: 600 },
                     },
                   },
                 },
@@ -158,24 +160,24 @@ export function CustomSelect({
           "& .MuiOutlinedInput-root": {
             height: 40,
             borderRadius: "12px",
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             fontSize: "14px",
-            color: "#0F172A",
+            color: "text.primary",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             "& fieldset": {
-              borderColor: "#E2E8F0",
+              borderColor: "divider",
               borderWidth: "1.5px",
             },
             "&:hover fieldset": {
-              borderColor: "#CBD5E1",
+              borderColor: "neutral.300",
             },
             "&.Mui-focused": {
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "background.paper",
               "& fieldset": {
-                borderColor: "#6D5DF6",
+                borderColor: "primary.main",
                 borderWidth: "2px",
               },
-              boxShadow: "0 0 0 3px rgba(109, 93, 246, 0.12)",
+              boxShadow: (theme: any) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}`,
             },
           },
           ...sx,

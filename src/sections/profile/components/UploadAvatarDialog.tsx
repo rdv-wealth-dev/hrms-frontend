@@ -119,7 +119,7 @@ export default function UploadAvatarDialog({
       }}
     >
       <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           Upload Profile Picture
         </Typography>
         <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
@@ -171,7 +171,7 @@ export default function UploadAvatarDialog({
                   onChange={handleFileSelect}
                 />
                 <CloudUploadOutlinedIcon sx={{ fontSize: 44, color: "#6366F1", mb: 1, pointerEvents: "none" }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#0F172A", fontSize: "0.85rem", lineHeight: 1.3, pointerEvents: "none" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", fontSize: "0.85rem", lineHeight: 1.3, pointerEvents: "none" }}>
                   Click to select profile picture
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#64748B", mt: 0.8, fontSize: "0.72rem", pointerEvents: "none" }}>
@@ -277,8 +277,8 @@ export default function UploadAvatarDialog({
               textTransform: "none",
               fontWeight: 600,
               px: 3,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BE4" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? "Uploading..." : "Upload Picture"}

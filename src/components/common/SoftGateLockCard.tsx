@@ -52,20 +52,20 @@ export function SoftGateLockCard({
         <LockOutlinedIcon sx={{ fontSize: 32 }} />
       </Box>
 
-      <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", mb: 1 }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary", mb: 1 }}>
         {featureTitle}
       </Typography>
 
-      <Typography variant="body2" sx={{ color: "#6B7280", mb: 3, lineHeight: 1.6, px: { sm: 2 } }}>
+      <Typography variant="body2" sx={{ color: "text.secondary", mb: 3, lineHeight: 1.6, px: { sm: 2 } }}>
         {message}
       </Typography>
 
-      <Box sx={{ mb: 3.5, backgroundColor: "#FFFFFF", p: 2, borderRadius: 3, border: "1px solid #E5E7EB" }}>
+      <Box sx={{ mb: 3.5, backgroundColor: "background.paper", p: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, color: "#374151" }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: "text.primary" }}>
             Profile Completion Progress
           </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: "#6D5DF6" }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: "primary.main" }}>
             {completionPct}%
           </Typography>
         </Box>
@@ -75,9 +75,9 @@ export function SoftGateLockCard({
           sx={{
             height: 8,
             borderRadius: 4,
-            backgroundColor: "#F3F4F6",
+            backgroundColor: "action.hover",
             "& .MuiLinearProgress-bar": {
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               borderRadius: 4,
             },
           }}
@@ -95,10 +95,11 @@ export function SoftGateLockCard({
           borderRadius: 3,
           fontWeight: 700,
           textTransform: "none",
-          backgroundColor: "#6D5DF6",
+          backgroundColor: "primary.main",
+          color: "primary.contrastText",
           boxShadow: "0 10px 20px rgba(109, 93, 246, 0.25)",
           "&:hover": {
-            backgroundColor: "#5B4EB3",
+            backgroundColor: "primary.dark",
           },
         }}
       >

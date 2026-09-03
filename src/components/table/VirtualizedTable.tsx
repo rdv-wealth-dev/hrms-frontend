@@ -74,12 +74,12 @@ export function VirtualizedTable<T>({
           cursor: isClickable ? "pointer" : "default",
           transition: "background-color 0.15s ease",
           "&:hover": {
-            backgroundColor: "#F8FAFC",
+            backgroundColor: "action.hover",
           },
           "& td": {
-            borderColor: "#F1F5F9",
+            borderColor: "divider",
             fontSize: "13.5px",
-            color: "#334155",
+            color: "text.primary",
             py: 1.2,
           },
         }}
@@ -96,13 +96,13 @@ export function VirtualizedTable<T>({
                 ...(col.sticky === "left" && {
                   position: "sticky",
                   left: 0,
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "background.paper",
                   zIndex: 2,
                 }),
                 ...(col.sticky === "right" && {
                   position: "sticky",
                   right: 0,
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "background.paper",
                   zIndex: 2,
                 }),
               }}
@@ -119,10 +119,11 @@ export function VirtualizedTable<T>({
     <Card
       sx={{
         borderRadius: "16px",
-        border: "1px solid #E2E8F0",
+        border: "1px solid",
+        borderColor: "divider",
         boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
         overflow: "hidden",
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "background.paper",
         ...sx,
       }}
     >
@@ -134,7 +135,7 @@ export function VirtualizedTable<T>({
             : { overflowY: "visible" }),
           overflowX: "auto",
           scrollbarWidth: "thin",
-          scrollbarColor: "#CBD5E1 transparent",
+          scrollbarColor: "divider transparent",
           "&::-webkit-scrollbar": {
             width: "6px",
             height: "6px",
@@ -143,11 +144,8 @@ export function VirtualizedTable<T>({
             background: "transparent",
           },
           "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#CBD5E1",
+            backgroundColor: "divider",
             borderRadius: "6px",
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: "#94A3B8",
           },
           ...containerSx,
         }}
@@ -157,13 +155,13 @@ export function VirtualizedTable<T>({
             <TableRow
               sx={{
                 "& th": {
-                  backgroundColor: "#F8FAFC",
-                  color: "#475569",
+                  backgroundColor: "background.paper",
+                  color: "text.secondary",
                   fontWeight: 700,
                   fontSize: "12px",
                   textTransform: "uppercase",
                   letterSpacing: "0.5px",
-                  borderColor: "#E2E8F0",
+                  borderColor: "divider",
                   py: 1.6,
                   zIndex: 3,
                 },
@@ -179,13 +177,13 @@ export function VirtualizedTable<T>({
                     ...(col.sticky === "left" && {
                       position: "sticky",
                       left: 0,
-                      backgroundColor: "#F8FAFC",
+                      backgroundColor: "background.paper",
                       zIndex: 4,
                     }),
                     ...(col.sticky === "right" && {
                       position: "sticky",
                       right: 0,
-                      backgroundColor: "#F8FAFC",
+                      backgroundColor: "background.paper",
                       zIndex: 4,
                     }),
                   }}

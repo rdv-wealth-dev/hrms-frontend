@@ -18,7 +18,7 @@ function AuthHeading({
         variant="h3"
         sx={{
           fontWeight: 700,
-          color: "#111827",
+          color: "text.primary",
           fontSize: titleSize || { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
           letterSpacing: "-0.02em",
         }}
@@ -31,7 +31,7 @@ function AuthHeading({
           sx={{
             mt: 0.6,
             fontSize: { xs: "13px", sm: "14px" },
-            color: "#6B7280",
+            color: "text.secondary",
           }}
         >
           {subtitle}

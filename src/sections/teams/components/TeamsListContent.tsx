@@ -123,7 +123,7 @@ export function TeamsListContent() {
       case "TEMPORARY":
         return { bg: "#FFFBEB", color: "#B45309", border: "#FDE68A" };
       default:
-        return { bg: "#F1F5F9", color: "#475569", border: "#E2E8F0" };
+        return { bg: "action.hover", color: "text.secondary", border: "divider" };
     }
   };
 
@@ -165,8 +165,8 @@ export function TeamsListContent() {
               width: 40,
               height: 40,
               borderRadius: "10px",
-              backgroundColor: "rgba(109, 93, 246, 0.1)",
-              color: "#6D5DF6",
+              backgroundColor: "primary.lighter",
+              color: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -175,7 +175,7 @@ export function TeamsListContent() {
             <GroupsIcon sx={{ fontSize: 22 }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.2 }}>
               Teams & Squads Directory
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -195,9 +195,9 @@ export function TeamsListContent() {
               textTransform: "none",
               fontWeight: 600,
               borderRadius: "10px",
-              borderColor: "#E2E8F0",
-              color: "#475569",
-              "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
+              borderColor: "divider",
+              color: "text.secondary",
+              "&:hover": { backgroundColor: "action.hover", borderColor: "divider" },
             }}
           >
             Refresh
@@ -214,9 +214,9 @@ export function TeamsListContent() {
                 fontWeight: 600,
                 borderRadius: "10px",
                 px: 2.5,
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                "&:hover": { backgroundColor: "#5B4BEA" },
+                "&:hover": { backgroundColor: "primary.dark" },
                 width: { xs: "100%", sm: "auto" },
               }}
             >
@@ -232,9 +232,10 @@ export function TeamsListContent() {
           mb: 3,
           p: 2,
           borderRadius: "16px",
-          border: "1px solid #E2E8F0",
+          border: "1px solid",
+          borderColor: "divider",
           boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "background.paper",
         }}
       >
         <Grid container spacing={2} sx={{ alignItems: "center" }}>
@@ -330,7 +331,7 @@ export function TeamsListContent() {
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+          <CircularProgress size={36} sx={{ color: "primary.main" }} />
         </Box>
       ) : filteredTeams.length === 0 ? (
         <Box
@@ -338,7 +339,7 @@ export function TeamsListContent() {
             py: 8,
             px: 2,
             textAlign: "center",
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             borderRadius: "16px",
             border: "1px dashed #CBD5E1",
             display: "flex",
@@ -348,7 +349,7 @@ export function TeamsListContent() {
           }}
         >
           <GroupsIcon sx={{ fontSize: 56, color: "#94A3B8" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#1E293B" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             No Teams Found
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
@@ -364,7 +365,8 @@ export function TeamsListContent() {
               sx={{
                 mt: 1,
                 borderRadius: "10px",
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
+                "&:hover": { backgroundColor: "primary.dark" },
                 textTransform: "none",
                 fontWeight: 600,
               }}
@@ -398,13 +400,14 @@ export function TeamsListContent() {
                   }}
                   sx={{
                     borderRadius: "16px",
-                    border: "1px solid #E2E8F0",
+                    border: "1px solid",
+                    borderColor: "divider",
                     boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
                     cursor: "pointer",
                     transition: "all 0.2s ease-in-out",
                     "&:hover": {
                       boxShadow: "0 8px 24px rgba(15, 23, 42, 0.08)",
-                      borderColor: "#6D5DF6",
+                      borderColor: "primary.main",
                       transform: "translateY(-2px)",
                     },
                     display: "flex",
@@ -416,10 +419,10 @@ export function TeamsListContent() {
                     {/* Header: Name + Code + Type Badge + Edit Button */}
                     <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1, mb: 1.5 }}>
                       <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: "16px", color: "#0F172A", lineHeight: 1.3 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: "16px", color: "text.primary", lineHeight: 1.3 }}>
                           {team.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", letterSpacing: "0.5px" }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary", letterSpacing: "0.5px" }}>
                           {team.code}
                         </Typography>
                       </Box>
@@ -445,10 +448,10 @@ export function TeamsListContent() {
                               editDialog.open(team);
                             }}
                             sx={{
-                              color: "#6D5DF6",
+                              color: "primary.main",
                               p: 0.5,
                               borderRadius: "6px",
-                              "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.1)" },
+                              "&:hover": { backgroundColor: "primary.lighter" },
                             }}
                           >
                             <EditOutlinedIcon sx={{ fontSize: 18 }} />

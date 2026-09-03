@@ -164,7 +164,7 @@ export default function PayrollTab({
       {/* ── CARD 2: SALARY STRUCTURE & CTC PLAN ── */}
       <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", display: "flex", alignItems: "center", gap: 1 }}>
             <PaymentsOutlinedIcon sx={{ color: "#4F46E5" }} />
             Salary Structure & CTC Plan
           </Typography>
@@ -183,7 +183,7 @@ export default function PayrollTab({
         {salaryLoading ? (
           <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress size={28} sx={{ color: "#4F46E5" }} /></Box>
         ) : !salaryStructure ? (
-          <Box sx={{ textAlign: "center", py: 4, backgroundColor: "#F8FAFC", borderRadius: "10px", border: "1px dashed #E2E8F0" }}>
+          <Box sx={{ textAlign: "center", py: 4, backgroundColor: "action.hover", borderRadius: "10px", border: "1px dashed", borderColor: "divider" }}>
             <Typography variant="body2" sx={{ color: "#64748B" }}>
               No active salary structure assigned to this employee yet.
             </Typography>
@@ -234,9 +234,9 @@ export default function PayrollTab({
               <Grid container spacing={1.5}>
                 {salaryStructure?.lineItems?.map((item, idx) => (
                   <Grid key={item?.componentCode || idx} size={{ xs: 12, sm: 4 }}>
-                    <Box sx={{ p: 1.8, borderRadius: "8px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Box sx={{ p: 1.8, borderRadius: "8px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                           {item?.componentCode === "BASIC"
                             ? "Basic Salary"
                             : item?.componentCode === "HRA"
@@ -264,7 +264,7 @@ export default function PayrollTab({
       {/* ── CARD 1: BANK ACCOUNTS ── */}
       <Card sx={{ p: 3.5, borderRadius: "12px", border: "1px solid #E5E7EB" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", display: "flex", alignItems: "center", gap: 1 }}>
             <AccountBalanceOutlinedIcon sx={{ color: "#4F46E5" }} />
             Bank Accounts
           </Typography>
@@ -283,9 +283,9 @@ export default function PayrollTab({
           <Grid container spacing={2}>
             {bankAccounts.map((acc, index) => (
               <Grid key={acc.id || acc._id || index} size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
+                <Box sx={{ p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider", backgroundColor: "action.hover" }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{acc.bankName}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>{acc.bankName}</Typography>
                     {!isViewingOther && (
                       <IconButton size="small" onClick={() => { setBankError(null); setBankDeleteTarget(acc); }}>
                         <DeleteOutlinedIcon fontSize="small" />
@@ -321,7 +321,7 @@ export default function PayrollTab({
         }}
       >
         <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Delete Bank Account?
           </Typography>
           <IconButton onClick={() => setBankDeleteTarget(null)} size="small" sx={{ color: "#9CA3AF" }} disabled={bankDeleting}>
@@ -373,7 +373,7 @@ export default function PayrollTab({
         }}
       >
         <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Add Bank Account
           </Typography>
           <IconButton onClick={() => setBankDialogOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={bankSubmitting}>
@@ -444,8 +444,8 @@ export default function PayrollTab({
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BE4" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               px: 3,
             }}
           >

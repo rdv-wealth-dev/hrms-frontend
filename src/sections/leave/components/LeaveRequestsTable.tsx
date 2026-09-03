@@ -174,7 +174,7 @@ export default function LeaveRequestsTable({
                   color: isSelected ? "#FFFFFF" : "#475569",
                   transition: "all 0.15s ease",
                   "&:hover": {
-                    backgroundColor: isSelected ? "#4338CA" : "#E2E8F0",
+                    backgroundColor: isSelected ? "primary.dark" : "divider",
                   },
                 }}
               />
@@ -202,7 +202,7 @@ export default function LeaveRequestsTable({
                   color: isSelected ? "#FFFFFF" : "#475569",
                   transition: "all 0.15s ease",
                   "&:hover": {
-                    backgroundColor: isSelected ? "#4338CA" : "#E2E8F0",
+                    backgroundColor: isSelected ? "primary.dark" : "divider",
                   },
                 }}
               />
@@ -220,11 +220,12 @@ export default function LeaveRequestsTable({
               fontSize: "13px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
-              border: "1px solid #E2E8F0",
+              backgroundColor: "action.hover",
+              color: "text.secondary",
+              border: "1px solid",
+              borderColor: "divider",
               "&:hover": {
-                backgroundColor: "#E2E8F0",
+                backgroundColor: "divider",
               },
             }}
           >
@@ -275,7 +276,7 @@ export default function LeaveRequestsTable({
                   >
                     {initials}
                   </Avatar>
-                  <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
+                  <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
                     {empName}
                   </Typography>
                 </Box>
@@ -307,7 +308,7 @@ export default function LeaveRequestsTable({
             header: "DAYS",
             minWidth: 80,
             cell: (req) => (
-              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary" }}>
                 {req?.totalDays ? `${req.totalDays}d` : "1d"}
               </Typography>
             ),
@@ -369,7 +370,7 @@ export default function LeaveRequestsTable({
                       width: 28,
                       height: 28,
                       color: "#64748B",
-                      "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+                      "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
                     }}
                   >
                     <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />

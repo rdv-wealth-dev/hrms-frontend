@@ -48,9 +48,10 @@ export function UpcomingEventsWidget() {
       sx={{
         p: { xs: 2.5, sm: 3 },
         borderRadius: 3.5,
-        backgroundColor: "#fff",
+        backgroundColor: "background.paper",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        border: "1px solid rgba(0,0,0,0.04)",
+        border: "1px solid",
+        borderColor: "divider",
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -59,7 +60,7 @@ export function UpcomingEventsWidget() {
     >
       {/* Header */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
           Upcoming Events
         </Typography>
       </Box>
@@ -77,7 +78,7 @@ export function UpcomingEventsWidget() {
                 justifyContent: "space-between",
                 p: 1.25,
                 borderRadius: 2.5,
-                backgroundColor: "#F9FAFB",
+                backgroundColor: "action.hover",
                 transition: "all 0.2s ease",
                 "&:hover": {
                   backgroundColor: "#F3F4F6",
@@ -101,7 +102,7 @@ export function UpcomingEventsWidget() {
                   {config.icon}
                 </Box>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827", fontSize: "0.8125rem" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", fontSize: "0.8125rem" }}>
                     {evt.personName}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>

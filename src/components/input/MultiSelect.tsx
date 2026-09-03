@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
+import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -139,14 +140,14 @@ export function MultiSelect({
           px: 1.5,
           py: 0.5,
           borderRadius: "10px",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "background.paper",
           border: "1.5px solid",
-          borderColor: isOpen ? "#6D5DF6" : "#E2E8F0",
+          borderColor: isOpen ? "primary.main" : "divider",
           cursor: disabled ? "not-allowed" : "pointer",
           transition: "all 0.15s ease",
-          boxShadow: isOpen ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
+          boxShadow: isOpen ? (theme: any) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}` : "none",
           "&:hover": {
-            borderColor: disabled ? "#E2E8F0" : "#CBD5E1",
+            borderColor: disabled ? "divider" : "neutral.300",
           },
           ...sx,
         }}
@@ -157,7 +158,7 @@ export function MultiSelect({
             sx={{
               fontSize: "14px",
               fontWeight: safeValue.length > 0 ? 600 : 400,
-              color: safeValue.length > 0 ? "#0F172A" : "#94A3B8",
+              color: safeValue.length > 0 ? "text.primary" : "text.secondary",
             }}
           >
             {triggerDisplayText}
@@ -215,7 +216,9 @@ export function MultiSelect({
               maxWidth: "92vw",
               maxHeight: 320,
               borderRadius: "12px",
-              border: "1px solid #E2E8F0",
+              border: "1px solid",
+              borderColor: "divider",
+              backgroundColor: "background.paper",
               boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1)",
               display: "flex",
               flexDirection: "column",
@@ -225,7 +228,7 @@ export function MultiSelect({
         }}
       >
         {searchable && (
-          <Box sx={{ p: 1, borderBottom: "1px solid #F1F5F9" }}>
+          <Box sx={{ p: 1, borderBottom: "1px solid", borderColor: "divider" }}>
             <TextField
               size="small"
               fullWidth
@@ -247,15 +250,15 @@ export function MultiSelect({
           </Box>
         )}
 
-        <Box sx={{ px: 1, py: 0.5, borderBottom: "1px solid #F1F5F9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Box sx={{ px: 1, py: 0.5, borderBottom: "1px solid", borderColor: "divider", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={handleToggleSelectAll}>
             <Checkbox
               size="small"
               checked={allSelected}
               indeterminate={someSelected}
-              sx={{ p: 0.5, color: "#94A3B8", "&.Mui-checked": { color: "#6D5DF6" } }}
+              sx={{ p: 0.5, color: "text.secondary", "&.Mui-checked": { color: "primary.main" } }}
             />
-            <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#334155", ml: 0.5 }}>
+            <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "text.primary", ml: 0.5 }}>
               Select All
             </Typography>
           </Box>
@@ -293,16 +296,16 @@ export function MultiSelect({
                     cursor: "pointer",
                     userSelect: "none",
                     transition: "background-color 0.15s ease",
-                    backgroundColor: isChecked ? "#F5F3FF" : "transparent",
-                    "&:hover": { backgroundColor: "#F1F5F9" },
+                    backgroundColor: isChecked ? "primary.lighter" : "transparent",
+                    "&:hover": { backgroundColor: "action.hover" },
                   }}
                 >
                   <Checkbox
                     size="small"
                     checked={isChecked}
-                    sx={{ p: 0.5, mr: 1, color: "#94A3B8", "&.Mui-checked": { color: "#6D5DF6" } }}
+                    sx={{ p: 0.5, mr: 1, color: "text.secondary", "&.Mui-checked": { color: "primary.main" } }}
                   />
-                  <Typography noWrap sx={{ fontSize: "13.5px", fontWeight: isChecked ? 600 : 400, color: isChecked ? "#4F46E5" : "#0F172A" }}>
+                  <Typography noWrap sx={{ fontSize: "13.5px", fontWeight: isChecked ? 600 : 400, color: isChecked ? "primary.main" : "text.primary" }}>
                     {opt.label}
                   </Typography>
                 </Box>

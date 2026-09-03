@@ -594,9 +594,10 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           sx: {
             borderRadius: { xs: "12px", sm: "20px" },
             p: { xs: 2, sm: 3 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             maxHeight: "92vh",
             display: "flex",
             flexDirection: "column",
@@ -612,11 +613,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
               name={fullName}
               src={activeEmployee?.avatarUrl}
               size={48}
-              sx={{ border: "2px solid #6D5DF6", boxShadow: "0 2px 8px rgba(109, 93, 246, 0.2)" }}
+              sx={{ border: "2px solid", borderColor: "primary.main", boxShadow: "0 2px 8px rgba(109, 93, 246, 0.2)" }}
             />
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Typography sx={{ fontSize: { xs: "16px", sm: "19px" }, fontWeight: 700, color: "#0F172A" }}>
+                <Typography sx={{ fontSize: { xs: "16px", sm: "19px" }, fontWeight: 700, color: "text.primary" }}>
                   Edit {fullName}
                 </Typography>
                 {activeEmployee?.employeeCode && (
@@ -643,7 +644,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             sx={{
               color: "#64748B",
               borderRadius: "10px",
-              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             <CloseIcon sx={{ fontSize: 20 }} />
@@ -659,7 +660,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           sx={{
             mt: 2,
             minHeight: 44,
-            borderBottom: "1px solid #E2E8F0",
+            borderBottom: "1px solid",
+            borderColor: "divider",
             "& .MuiTab-root": {
               textTransform: "none",
               fontWeight: 600,
@@ -802,7 +804,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             {activeTab === 0 && (
               <Stack spacing={2.5}>
                 <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", display: "flex", alignItems: "center", gap: 1 }}>
-                  <BusinessOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                  <BusinessOutlinedIcon sx={{ fontSize: 20, color: "primary.main" }} />
                   Organizational Placement & Reporting Hierarchy
                 </Typography>
 
@@ -983,7 +985,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             {activeTab === 1 && (
               <Stack spacing={2.5}>
                 <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", display: "flex", alignItems: "center", gap: 1 }}>
-                  <PersonOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                  <PersonOutlinedIcon sx={{ fontSize: 20, color: "primary.main" }} />
                   Personal Information & Government Identity
                 </Typography>
 
@@ -1200,7 +1202,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             {activeTab === 2 && (
               <Stack spacing={2.5}>
                 <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", display: "flex", alignItems: "center", gap: 1 }}>
-                  <CalendarMonthOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                  <CalendarMonthOutlinedIcon sx={{ fontSize: 20, color: "primary.main" }} />
                   Employment Timeline & Statutory Flags
                 </Typography>
 
@@ -1247,7 +1249,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Grid>
 
                   <Grid size={12}>
-                    <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0", mt: 1 }}>
+                    <Box sx={{ p: 2, bgcolor: "action.hover", borderRadius: "12px", border: "1px solid", borderColor: "divider", mt: 1 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -1281,7 +1283,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                 {/* Current Address */}
                 <Box>
                   <Typography sx={{ fontSize: "14.5px", fontWeight: 700, color: "#1E293B", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    <HomeOutlinedIcon sx={{ fontSize: 20, color: "#6D5DF6" }} />
+                    <HomeOutlinedIcon sx={{ fontSize: 20, color: "primary.main" }} />
                     Current Residential Address
                   </Typography>
 
@@ -1347,7 +1349,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                 </Box>
 
                 {/* Permanent Address Toggle */}
-                <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                <Box sx={{ p: 2, bgcolor: "action.hover", borderRadius: "12px", border: "1px solid", borderColor: "divider" }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -1442,7 +1444,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       <DialogActions
         sx={{
           p: { xs: 1.5, sm: 2.5 },
-          borderTop: "1px solid #E2E8F0",
+          borderTop: "1px solid",
+          borderColor: "divider",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -1454,7 +1457,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           {activeTab > 0 && (
             <Button
               onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
-              sx={{ textTransform: "none", color: "#64748B", fontWeight: 600 }}
+              sx={{ textTransform: "none", color: "text.secondary", fontWeight: 600 }}
             >
               ← Previous Section
             </Button>
@@ -1462,7 +1465,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           {activeTab < 3 && (
             <Button
               onClick={() => setActiveTab((prev) => Math.min(3, prev + 1))}
-              sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+              sx={{ textTransform: "none", color: "primary.main", fontWeight: 600 }}
             >
               Next Section →
             </Button>
@@ -1480,9 +1483,9 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              backgroundColor: "action.hover",
+              color: "text.secondary",
+              "&:hover": { backgroundColor: "divider", color: "text.primary" },
             }}
           >
             Cancel
@@ -1499,9 +1502,9 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Save Changes"}

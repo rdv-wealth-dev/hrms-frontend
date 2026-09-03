@@ -292,9 +292,10 @@ export function AddTeamMemberDialog({
           sx: {
             borderRadius: { xs: "16px", sm: "20px" },
             p: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 1.5, sm: "auto" },
             width: { xs: "calc(100% - 24px)", sm: "100%" },
             overflow: "hidden",
@@ -311,7 +312,8 @@ export function AddTeamMemberDialog({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #F1F5F9",
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
@@ -320,8 +322,8 @@ export function AddTeamMemberDialog({
               width: 38,
               height: 38,
               borderRadius: "10px",
-              backgroundColor: isEditMode ? "rgba(109, 93, 246, 0.1)" : "rgba(16, 185, 129, 0.1)",
-              color: isEditMode ? "#6D5DF6" : "#10B981",
+              backgroundColor: isEditMode ? "primary.lighter" : "rgba(16, 185, 129, 0.1)",
+              color: isEditMode ? "primary.main" : "#10B981",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -330,10 +332,10 @@ export function AddTeamMemberDialog({
             {isEditMode ? <EditOutlinedIcon sx={{ fontSize: 22 }} /> : <PersonAddAlt1Icon sx={{ fontSize: 22 }} />}
           </Box>
           <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "#0F172A", lineHeight: 1.2 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "text.primary", lineHeight: 1.2 }}>
               {isEditMode ? "Edit Member Allocation & Role" : "Add Member to Squad"}
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748B" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
               {teamName ? `Managing member for ${teamName}` : "Configure member role and capacity allocation"}
             </Typography>
           </Box>
@@ -344,9 +346,9 @@ export function AddTeamMemberDialog({
           disabled={isSubmitting}
           size="small"
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 20 }} />
@@ -438,18 +440,19 @@ export function AddTeamMemberDialog({
                 sx={{
                   p: 1.5,
                   borderRadius: "12px",
-                  backgroundColor: "#F8FAFC",
-                  border: "1px solid #E2E8F0",
+                  backgroundColor: "action.hover",
+                  border: "1px solid",
+                  borderColor: "divider",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
                 <Box>
-                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#1E293B" }}>
+                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "text.primary" }}>
                     Primary Team Assignment
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
                     Set this team as the employee's primary squad assignment
                   </Typography>
                 </Box>
@@ -474,8 +477,9 @@ export function AddTeamMemberDialog({
           sx={{
             py: 1.75,
             px: 3,
-            borderTop: "1px solid #F1F5F9",
-            backgroundColor: "#FAFAFA",
+            borderTop: "1px solid",
+            borderColor: "divider",
+            backgroundColor: "action.hover",
             display: "flex",
             justifyContent: "flex-end",
             gap: 1.25,
@@ -491,9 +495,9 @@ export function AddTeamMemberDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              color: "#475569",
-              backgroundColor: "#F1F5F9",
-              "&:hover": { backgroundColor: "#E2E8F0" },
+              color: "text.secondary",
+              backgroundColor: "action.hover",
+              "&:hover": { backgroundColor: "divider" },
             }}
           >
             Cancel

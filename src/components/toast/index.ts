@@ -1,11 +1,16 @@
 import React from "react";
+import { useTheme } from "@mui/material/styles";
 import { toast } from "sonner";
 import type { AlertColor } from "@mui/material/Alert";
+import { themeConfig } from "../../theme/theme-config";
 
 export { ToastProvider } from "./ToastProvider";
 export { Toaster, toast } from "sonner";
 
 export function useToast() {
+  const theme = useTheme();
+  const primaryColor = theme?.palette?.primary?.main ?? themeConfig.palette.primary.main;
+
   const showToast = React.useCallback((message: string, severity: AlertColor = "success") => {
     switch (severity) {
       case "success":
@@ -26,11 +31,11 @@ export function useToast() {
       case "info":
       default:
         toast.info(message, {
-          style: { borderColor: "#6D5DF6" }
+          style: { borderColor: primaryColor }
         });
         break;
     }
-  }, []);
+  }, [primaryColor]);
 
   return { showToast, toast };
 }

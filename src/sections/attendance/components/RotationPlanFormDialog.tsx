@@ -152,9 +152,10 @@ export default function RotationPlanFormDialog({
           sx: {
             borderRadius: "20px",
             p: { xs: 2.5, sm: 3.5 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 2, sm: "auto" },
             width: { xs: "calc(100% - 32px)", sm: "100%" },
           },
@@ -162,7 +163,7 @@ export default function RotationPlanFormDialog({
       }}
     >
       <Box component="form" onSubmit={handleFormSubmit}>
-        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
           Create Rotation Plan
         </DialogTitle>
 
@@ -176,7 +177,7 @@ export default function RotationPlanFormDialog({
           <Grid container spacing={2.5}>
             {/* Plan Details */}
             <Grid size={12}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6", mb: 0.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "primary.main", mb: 0.5 }}>
                 Plan Details
               </Typography>
             </Grid>
@@ -219,7 +220,7 @@ export default function RotationPlanFormDialog({
 
             {/* Slots Configurations */}
             <Grid size={12} sx={{ mt: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#6D5DF6" }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "primary.main" }}>
                 Rotation Slots Sequence
               </Typography>
               <Button
@@ -231,9 +232,9 @@ export default function RotationPlanFormDialog({
                   textTransform: "none",
                   fontWeight: 600,
                   borderRadius: 2,
-                  borderColor: "#6D5DF6",
-                  color: "#6D5DF6",
-                  "&:hover": { borderColor: "#5B4BEA", backgroundColor: "rgba(109, 93, 246, 0.04)" }
+                  borderColor: "primary.main",
+                  color: "primary.main",
+                  "&:hover": { borderColor: "primary.dark", backgroundColor: "primary.lighter" }
                 }}
               >
                 Add Slot
@@ -257,7 +258,7 @@ export default function RotationPlanFormDialog({
                     <Grid container spacing={2} sx={{ alignItems: "center" }}>
                       {/* Slot Header */}
                       <Grid size={12} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#111827" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                           Slot {index + 1}
                         </Typography>
                         {slots.length > 2 && (
@@ -314,7 +315,7 @@ export default function RotationPlanFormDialog({
                                 <Checkbox
                                   checked={isChecked}
                                   size="small"
-                                  sx={{ p: 0.5, color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                                  sx={{ p: 0.5, color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                                 />
                                 <Typography variant="body2" sx={{ ml: 0.25, fontSize: 13, userSelect: "none", color: "#4B5563" }}>
                                   {day.substring(0, 3)}
@@ -341,12 +342,12 @@ export default function RotationPlanFormDialog({
             variant="contained"
             disabled={submitting}
             sx={{
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               textTransform: "none",
               fontWeight: 600,
               borderRadius: 2,
               px: 4,
-              "&:hover": { backgroundColor: "#5B4BEA" }
+              "&:hover": { backgroundColor: "primary.dark" }
             }}
           >
             {submitting ? (

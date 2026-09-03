@@ -89,7 +89,7 @@ export default function OrganizationStatutoryContent() {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
-        <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+        <CircularProgress size={40} sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -128,7 +128,7 @@ export default function OrganizationStatutoryContent() {
               p: 1.5,
               borderRadius: 2,
               backgroundColor: "rgba(109, 93, 246, 0.08)",
-              color: "#6D5DF6",
+              color: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -137,7 +137,7 @@ export default function OrganizationStatutoryContent() {
             <GavelOutlinedIcon sx={{ fontSize: 32 }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 750, color: "#111827" }}>
+            <Typography variant="h6" sx={{ fontWeight: 750, color: "text.primary" }}>
               Statutory Settings
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -216,7 +216,7 @@ export default function OrganizationStatutoryContent() {
                 )
               }
               sx={{
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 color: "#fff",
                 px: 4,
                 py: 1.5,
@@ -225,7 +225,7 @@ export default function OrganizationStatutoryContent() {
                 fontWeight: 600,
                 boxShadow: "0px 4px 12px rgba(109, 93, 246, 0.2)",
                 "&:hover": {
-                  backgroundColor: "#5B4EE4",
+                  backgroundColor: "primary.dark",
                   boxShadow: "0px 6px 16px rgba(109, 93, 246, 0.3)",
                 },
               }}

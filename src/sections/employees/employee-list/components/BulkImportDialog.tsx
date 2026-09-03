@@ -216,7 +216,7 @@ export default function BulkImportDialog({
       }}
     >
       <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           Bulk Import Employees
         </Typography>
         <IconButton onClick={handleClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
@@ -369,7 +369,7 @@ export default function BulkImportDialog({
                   size="small"
                   onClick={() => handleDownloadTemplate("xlsx")}
                   disabled={templateLoading}
-                  sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+                  sx={{ textTransform: "none", color: "primary.main", fontWeight: 600 }}
                 >
                   Download Excel Template
                 </Button>
@@ -377,7 +377,7 @@ export default function BulkImportDialog({
                   size="small"
                   onClick={() => handleDownloadTemplate("csv")}
                   disabled={templateLoading}
-                  sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+                  sx={{ textTransform: "none", color: "primary.main", fontWeight: 600 }}
                 >
                   Download CSV Template
                 </Button>
@@ -393,16 +393,17 @@ export default function BulkImportDialog({
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "2px dashed #6D5DF6",
+                  border: "2px dashed",
+                  borderColor: "primary.main",
                   borderRadius: "12px",
                   p: 4,
                   textAlign: "center",
                   cursor: "pointer",
-                  backgroundColor: "#F8FAFC",
+                  backgroundColor: "action.hover",
                   transition: "background-color 0.2s, border-color 0.2s",
                   "&:hover": {
-                    backgroundColor: "#F1F5F9",
-                    borderColor: "#5B4BE4",
+                    backgroundColor: "action.hover",
+                    borderColor: "primary.dark",
                   },
                 }}
               >
@@ -413,7 +414,7 @@ export default function BulkImportDialog({
                   style={{ display: "none" }}
                   onChange={handleFileChange}
                 />
-                <CloudUploadOutlinedIcon sx={{ fontSize: 48, color: "#6D5DF6", mb: 1 }} />
+                <CloudUploadOutlinedIcon sx={{ fontSize: 48, color: "primary.main", mb: 1 }} />
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#1F2937" }}>
                   Select or drag your spreadsheet file here
                 </Typography>
@@ -431,8 +432,9 @@ export default function BulkImportDialog({
                     justifyContent: "space-between",
                     p: 2,
                     borderRadius: "12px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "action.hover",
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -507,7 +509,8 @@ export default function BulkImportDialog({
             {/* Template Schema Help dropdown */}
             <Box
               sx={{
-                border: "1px solid #E2E8F0",
+                border: "1px solid",
+                borderColor: "divider",
                 borderRadius: "12px",
                 overflow: "hidden",
               }}
@@ -530,7 +533,7 @@ export default function BulkImportDialog({
                 {showHeaders ? <ExpandLessIcon sx={{ color: "#64748B" }} /> : <ExpandMoreIcon sx={{ color: "#64748B" }} />}
               </Box>
               <Collapse in={showHeaders}>
-                <Box sx={{ p: 2, borderTop: "1px solid #E2E8F0" }}>
+                <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
                   <Typography variant="caption" sx={{ display: "block", fontWeight: 700, mb: 1, color: "#1E293B" }}>
                     Mandatory Header Fields (Case/Space Flexible):
                   </Typography>
@@ -565,8 +568,8 @@ export default function BulkImportDialog({
             disabled={submitting || !file}
             variant="contained"
             sx={{
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4EE4" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               textTransform: "none",
               fontWeight: 600,
               px: 3,
@@ -591,7 +594,8 @@ function ChipItem({ label, required }: { label: string; required?: boolean }) {
         fontWeight: 600,
         backgroundColor: required ? "#FEF2F2" : "#F1F5F9",
         color: required ? "#991B1B" : "#475569",
-        border: required ? "1px solid #FCA5A5" : "1px solid #E2E8F0",
+        border: "1px solid",
+        borderColor: required ? "#FCA5A5" : "divider",
       }}
     >
       {label} {required && "*"}

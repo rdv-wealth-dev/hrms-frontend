@@ -684,9 +684,9 @@ function EmployeeListView() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <PeopleAltOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
+            <PeopleAltOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
                 All Employees
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -713,8 +713,8 @@ function EmployeeListView() {
                 height: 40,
                 borderRadius: "10px",
                 textTransform: "none",
-                borderColor: "#E2E8F0",
-                color: "#475569",
+                borderColor: "divider",
+                color: "text.secondary",
                 fontWeight: 600,
                 fontSize: "14px",
                 px: 2.5,
@@ -722,8 +722,8 @@ function EmployeeListView() {
                 whiteSpace: "nowrap",
                 flexShrink: 0,
                 "&:hover": {
-                  borderColor: "#CBD5E1",
-                  backgroundColor: "#F8FAFC",
+                  borderColor: "primary.main",
+                  backgroundColor: "action.hover",
                 },
               }}
             >
@@ -761,8 +761,8 @@ function EmployeeListView() {
                   height: 40,
                   borderRadius: "10px",
                   textTransform: "none",
-                  borderColor: "#6D5DF6",
-                  color: "#6D5DF6",
+                  borderColor: "primary.main",
+                  color: "primary.main",
                   fontWeight: 600,
                   fontSize: "14px",
                   px: 2.5,
@@ -770,8 +770,8 @@ function EmployeeListView() {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   "&:hover": {
-                    borderColor: "#5B4BEA",
-                    backgroundColor: "#F5F3FF",
+                    borderColor: "primary.dark",
+                    backgroundColor: "primary.lighter",
                   },
                 }}
               >
@@ -790,7 +790,7 @@ function EmployeeListView() {
                   height: 40,
                   borderRadius: "10px",
                   textTransform: "none",
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   color: "#FFFFFF",
                   fontWeight: 600,
                   fontSize: "14px",
@@ -800,7 +800,7 @@ function EmployeeListView() {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   "&:hover": {
-                    backgroundColor: "#5B4BEA",
+                    backgroundColor: "primary.dark",
                     boxShadow: "0 4px 12px rgba(109, 93, 246, 0.35)",
                   },
                 }}
@@ -843,19 +843,19 @@ function EmployeeListView() {
                 "& .MuiOutlinedInput-root": {
                   height: 40,
                   borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "background.paper",
                   fontSize: "14px",
-                  color: "#0F172A",
-                  "& fieldset": { borderColor: "#E2E8F0" },
-                  "&:hover fieldset": { borderColor: "#CBD5E1" },
-                  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
+                  color: "text.primary",
+                  "& fieldset": { borderColor: "divider" },
+                  "&:hover fieldset": { borderColor: "primary.main" },
+                  "&.Mui-focused fieldset": { borderColor: "primary.main" },
                 },
                 "& .MuiOutlinedInput-input": {
                   py: 0,
                   height: 40,
                   fontSize: "14px",
                   boxSizing: "border-box",
-                  color: "#0F172A",
+                  color: "text.primary",
                   "&::placeholder": {
                     color: "#94A3B8",
                     opacity: 1,
@@ -941,7 +941,7 @@ function EmployeeListView() {
                   alignItems: "center",
                 }}
               >
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             )}
             <PeopleHubTableView
@@ -1000,7 +1000,7 @@ function EmployeeListView() {
                   alignItems: "center",
                 }}
               >
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             )}
             <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
@@ -1052,15 +1052,15 @@ function EmployeeListView() {
                             label={emp.employeeCode || "—"}
                             size="small"
                             sx={{
-                              backgroundColor: "#EEF2FF",
-                              color: "#6D5DF6",
+                              backgroundColor: "primary.lighter",
+                              color: "primary.main",
                               fontWeight: 600,
                               fontSize: 12,
                             }}
                           />
                         </TableCell>
                         <TableCell
-                          sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
+                          sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "primary.main" }}
                           onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
                         >
                           {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
@@ -1125,7 +1125,7 @@ function EmployeeListView() {
                                     setEditTarget(emp);
                                     setEditOpen(true);
                                   }}
-                                  sx={{ color: "#6D5DF6" }}
+                                  sx={{ color: "primary.main" }}
                                 >
                                   <EditOutlinedIcon fontSize="small" />
                                 </IconButton>

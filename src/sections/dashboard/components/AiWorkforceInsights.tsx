@@ -50,14 +50,14 @@ export function AiWorkforceInsights() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AutoAwesomeOutlinedIcon sx={{ color: "#6D5DF6", fontSize: 22 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.1rem" }}>
+          <AutoAwesomeOutlinedIcon sx={{ color: "primary.main", fontSize: 22 }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.1rem" }}>
             AI Workforce Insights
           </Typography>
         </Box>
         <Button
           size="small"
-          sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}
+          sx={{ textTransform: "none", color: "primary.main", fontWeight: 600 }}
         >
           View All Insights
         </Button>
@@ -84,7 +84,9 @@ export function AiWorkforceInsights() {
                 p: 2.5,
                 borderRadius: 3,
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                border: "1px solid rgba(0,0,0,0.05)",
+                border: "1px solid",
+                borderColor: "divider",
+                backgroundColor: "background.paper",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -112,7 +114,7 @@ export function AiWorkforceInsights() {
                 >
                   {config.icon}
                 </Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827", mb: 0.5 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", mb: 0.5 }}>
                   {item.title}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8125rem", lineHeight: 1.45 }}>
@@ -130,7 +132,7 @@ export function AiWorkforceInsights() {
                   textTransform: "none",
                   fontWeight: 600,
                   fontSize: "0.8rem",
-                  color: "#6D5DF6",
+                  color: "primary.main",
                   "&:hover": { backgroundColor: "transparent", textDecoration: "underline" },
                 }}
               >

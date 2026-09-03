@@ -160,11 +160,11 @@ export function DocumentVerificationView() {
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 2 }}>
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", display: "flex", alignItems: "center", gap: 1 }}>
-              <DescriptionOutlinedIcon sx={{ color: "#6D5DF6" }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary", display: "flex", alignItems: "center", gap: 1 }}>
+              <DescriptionOutlinedIcon sx={{ color: "primary.main" }} />
               Document Verification
             </Typography>
-            <Typography variant="body2" sx={{ color: "#6B7280", mt: 0.5 }}>
+            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
               Review and verify employee documents
             </Typography>
           </Box>
@@ -172,10 +172,10 @@ export function DocumentVerificationView() {
 
         {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setError(null)}>{error}</Alert>}
 
-        <Card sx={{ borderRadius: 4, boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.04)", border: "1px solid #F1F5F9" }}>
+        <Card sx={{ borderRadius: 4, boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.04)", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper" }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-              <CircularProgress size={32} sx={{ color: "#6D5DF6" }} />
+              <CircularProgress size={32} sx={{ color: "primary.main" }} />
             </Box>
           ) : documents.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 8 }}>
@@ -217,8 +217,8 @@ export function DocumentVerificationView() {
                               sx={{
                                 width: 34,
                                 height: 34,
-                                backgroundColor: "#6D5DF6",
-                                color: "#FFFFFF",
+                                backgroundColor: "primary.main",
+                                color: "primary.contrastText",
                                 fontSize: "12px",
                                 fontWeight: 700,
                               }}
@@ -241,7 +241,7 @@ export function DocumentVerificationView() {
                         <TableCell sx={{ fontSize: 13, color: "#475569" }}>
                           {doc.fileName}
                         </TableCell>
-                        <TableCell sx={{ fontSize: 13, color: "#0F172A", fontWeight: 700, whiteSpace: "nowrap" }}>
+                        <TableCell sx={{ fontSize: 13, color: "text.primary", fontWeight: 700, whiteSpace: "nowrap" }}>
                           {formatDate(doc.createdAt)}
                         </TableCell>
                         <TableCell>
@@ -266,11 +266,11 @@ export function DocumentVerificationView() {
                                 size="small"
                                 onClick={() => handleView(doc)}
                                 sx={{
-                                  backgroundColor: "#F1F5F9",
-                                  color: "#6D5DF6",
+                                  backgroundColor: "action.hover",
+                                  color: "primary.main",
                                   width: 28,
                                   height: 28,
-                                  "&:hover": { backgroundColor: "#E2E8F0" },
+                                  "&:hover": { backgroundColor: "divider" },
                                 }}
                               >
                                 <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />

@@ -141,8 +141,9 @@ export default function PermissionMatrix({
           gap: 1.5,
           p: 1.5,
           borderRadius: "14px",
-          backgroundColor: "#F8FAFC",
-          border: "1px solid #E2E8F0",
+          backgroundColor: "action.hover",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <TextField
@@ -165,11 +166,11 @@ export default function PermissionMatrix({
             "& .MuiOutlinedInput-root": {
               height: 38,
               borderRadius: "10px",
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "background.paper",
               fontSize: "13.5px",
-              "& fieldset": { borderColor: "#E2E8F0" },
-              "&:hover fieldset": { borderColor: "#CBD5E1" },
-              "&.Mui-focused fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+              "& fieldset": { borderColor: "divider" },
+              "&:hover fieldset": { borderColor: "neutral.300" },
+              "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: "2px" },
             },
           }}
         />
@@ -187,9 +188,9 @@ export default function PermissionMatrix({
                 fontSize: "12.5px",
                 fontWeight: 600,
                 borderRadius: "8px",
-                borderColor: "#CBD5E1",
-                color: "#334155",
-                "&:hover": { borderColor: "#6D5DF6", backgroundColor: "rgba(109, 93, 246, 0.04)" },
+                borderColor: "divider",
+                color: "text.primary",
+                "&:hover": { borderColor: "primary.main", backgroundColor: "primary.lighter" },
               }}
             >
               Select All
@@ -227,9 +228,10 @@ export default function PermissionMatrix({
           sx={{
             fontWeight: 700,
             fontSize: "12px",
-            backgroundColor: selectedPermissions.length > 0 ? "rgba(109, 93, 246, 0.1)" : "#F1F5F9",
-            color: selectedPermissions.length > 0 ? "#6D5DF6" : "#64748B",
-            border: `1px solid ${selectedPermissions.length > 0 ? "rgba(109, 93, 246, 0.25)" : "#E2E8F0"}`,
+            backgroundColor: selectedPermissions.length > 0 ? "primary.lighter" : "action.hover",
+            color: selectedPermissions.length > 0 ? "primary.main" : "text.secondary",
+            border: "1px solid",
+            borderColor: selectedPermissions.length > 0 ? "primary.main" : "divider",
           }}
         />
       </Box>
@@ -254,8 +256,8 @@ export default function PermissionMatrix({
               sx={{
                 borderRadius: "14px",
                 border: "1px solid",
-                borderColor: selectedInModCount > 0 ? "#DAD7F2" : "#E2E8F0",
-                backgroundColor: selectedInModCount > 0 ? "#FAFAFE" : "#FFFFFF",
+                borderColor: selectedInModCount > 0 ? "primary.main" : "divider",
+                backgroundColor: "background.paper",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                 transition: "all 0.2s ease",
                 overflow: "hidden",
@@ -269,8 +271,9 @@ export default function PermissionMatrix({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  backgroundColor: selectedInModCount > 0 ? "rgba(109, 93, 246, 0.05)" : "#F8FAFC",
-                  borderBottom: "1px solid #E2E8F0",
+                  backgroundColor: selectedInModCount > 0 ? "primary.lighter" : "action.hover",
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -283,13 +286,13 @@ export default function PermissionMatrix({
                       disabled={disabled}
                       sx={{
                         p: 0.5,
-                        color: "#94A3B8",
-                        "&.Mui-checked": { color: "#6D5DF6" },
-                        "&.MuiCheckbox-indeterminate": { color: "#6D5DF6" },
+                        color: "text.secondary",
+                        "&.Mui-checked": { color: "primary.main" },
+                        "&.MuiCheckbox-indeterminate": { color: "primary.main" },
                       }}
                     />
                   )}
-                  <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+                  <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
                     {MODULE_TITLES[moduleKey] || moduleKey.toUpperCase()}
                   </Typography>
                 </Box>
@@ -300,8 +303,8 @@ export default function PermissionMatrix({
                     height: 20,
                     fontSize: "11px",
                     fontWeight: 700,
-                    backgroundColor: selectedInModCount > 0 ? "#6D5DF6" : "#E2E8F0",
-                    color: selectedInModCount > 0 ? "#FFFFFF" : "#64748B",
+                    backgroundColor: selectedInModCount > 0 ? "primary.main" : "action.hover",
+                    color: selectedInModCount > 0 ? "primary.contrastText" : "text.secondary",
                   }}
                 />
               </Box>
@@ -311,9 +314,9 @@ export default function PermissionMatrix({
                 {modPerms.map((perm) => {
                   const isChecked = selectedSet.has(perm.resource);
                   const actionStyle = ACTION_COLORS[perm.action] || {
-                    bg: "#F1F5F9",
-                    color: "#475569",
-                    border: "#E2E8F0",
+                    bg: "action.hover",
+                    color: "text.secondary",
+                    border: "divider",
                   };
 
                   return (
@@ -327,13 +330,13 @@ export default function PermissionMatrix({
                         px: 1.2,
                         py: 0.8,
                         borderRadius: "10px",
-                        backgroundColor: isChecked ? "rgba(109, 93, 246, 0.05)" : "transparent",
+                        backgroundColor: isChecked ? "primary.lighter" : "transparent",
                         border: "1px solid",
-                        borderColor: isChecked ? "rgba(109, 93, 246, 0.2)" : "transparent",
+                        borderColor: isChecked ? "primary.main" : "transparent",
                         cursor: readOnly || disabled ? "default" : "pointer",
                         transition: "all 0.15s ease",
                         "&:hover": {
-                          backgroundColor: readOnly || disabled ? undefined : "rgba(109, 93, 246, 0.08)",
+                          backgroundColor: readOnly || disabled ? undefined : "primary.lighter",
                         },
                       }}
                     >
@@ -346,8 +349,8 @@ export default function PermissionMatrix({
                             disabled={disabled}
                             sx={{
                               p: 0.2,
-                              color: "#CBD5E1",
-                              "&.Mui-checked": { color: "#6D5DF6" },
+                              color: "neutral.300",
+                              "&.Mui-checked": { color: "primary.main" },
                             }}
                           />
                         )}
@@ -356,7 +359,7 @@ export default function PermissionMatrix({
                             sx={{
                               fontSize: "13px",
                               fontWeight: isChecked ? 600 : 500,
-                              color: isChecked ? "#0F172A" : "#475569",
+                              color: isChecked ? "text.primary" : "text.secondary",
                               lineHeight: 1.3,
                             }}
                           >

@@ -130,11 +130,11 @@ export default function ChangePasswordView() {
               mb: 2,
             }}
           >
-            <LockResetOutlinedIcon sx={{ fontSize: 28, color: "#6D5DF6" }} />
+            <LockResetOutlinedIcon sx={{ fontSize: 28, color: "primary.main" }} />
           </Box>
           <Typography
             variant="h5"
-            sx={{ fontWeight: 700, color: "#0F172A", mb: 0.5 }}
+            sx={{ fontWeight: 700, color: "text.primary", mb: 0.5 }}
           >
             Set Your Password
           </Typography>

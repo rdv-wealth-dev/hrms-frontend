@@ -209,9 +209,10 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
           sx: {
             borderRadius: { xs: "16px", sm: "20px" },
             p: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 1.5, sm: "auto" },
             width: { xs: "calc(100% - 24px)", sm: "100%" },
             height: { xs: "90vh", sm: "84vh" },
@@ -230,15 +231,16 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
           px: { xs: 2, sm: 3 },
           fontWeight: 800,
           fontSize: { xs: "1.1rem", sm: "1.25rem" },
-          color: "#0F172A",
+          color: "text.primary",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #F1F5F9",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           flexShrink: 0,
         }}
       >
-        <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.1rem", sm: "1.25rem" }, color: "#0F172A" }}>
+        <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.1rem", sm: "1.25rem" }, color: "text.primary" }}>
           {mode === "create" ? "Create Branch" : "Update Branch"}
         </Typography>
         <IconButton
@@ -246,9 +248,9 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
           disabled={submitting}
           size="small"
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 20 }} />
@@ -461,7 +463,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                           size="small"
                           checked={isChecked}
                           onChange={() => handleWeeklyOffToggle(day)}
-                          sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                          sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                         />
                       }
                       label={<Typography variant="body2">{day}</Typography>}
@@ -490,7 +492,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                   <Checkbox
                     checked={pfApplicable}
                     onChange={(e) => setPfApplicable(e.target.checked)}
-                    sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                    sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                   />
                 }
                 label={<Typography variant="body2">PF Applicable</Typography>}
@@ -502,7 +504,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                   <Checkbox
                     checked={esiApplicable}
                     onChange={(e) => setEsiApplicable(e.target.checked)}
-                    sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                    sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                   />
                 }
                 label={<Typography variant="body2">ESI Applicable</Typography>}
@@ -514,7 +516,7 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
                   <Checkbox
                     checked={ptApplicable}
                     onChange={(e) => setPtApplicable(e.target.checked)}
-                    sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                    sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                   />
                 }
                 label={<Typography variant="body2">PT Applicable</Typography>}
@@ -538,8 +540,9 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
           sx={{
             py: 1.5,
             px: { xs: 2, sm: 3 },
-            borderTop: "1px solid #F1F5F9",
-            backgroundColor: "#FAFAFA",
+            borderTop: "1px solid",
+            borderColor: "divider",
+            backgroundColor: "action.hover",
             display: "flex",
             flexDirection: { xs: "column-reverse", sm: "row" },
             justifyContent: "flex-end",
@@ -557,10 +560,10 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              color: "#475569",
-              backgroundColor: "#F1F5F9",
+              color: "text.secondary",
+              backgroundColor: "action.hover",
               width: { xs: "100%", sm: "auto" },
-              "&:hover": { backgroundColor: "#E2E8F0" },
+              "&:hover": { backgroundColor: "divider" },
             }}
           >
             Cancel
@@ -575,10 +578,10 @@ function BranchFormDialog({ open, mode, initialValues, submitting, error, onClos
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
-              color: "#FFFFFF",
+              backgroundColor: "primary.main",
+              color: "primary.contrastText",
               width: { xs: "100%", sm: "auto" },
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? (

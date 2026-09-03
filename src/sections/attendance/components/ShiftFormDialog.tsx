@@ -243,9 +243,10 @@ export function ShiftFormDialog({
           sx: {
             borderRadius: "20px",
             p: { xs: 2.5, sm: 3.5 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 2, sm: "auto" },
             width: { xs: "calc(100% - 32px)", sm: "100%" },
             maxHeight: "90vh",
@@ -253,7 +254,7 @@ export function ShiftFormDialog({
         },
       }}
     >
-      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
         {mode === "create" ? "Create Custom Shift" : "Edit Shift Configuration"}
       </DialogTitle>
 

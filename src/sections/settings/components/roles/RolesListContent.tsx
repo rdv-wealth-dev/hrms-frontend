@@ -158,7 +158,8 @@ export default function RolesListContent() {
           p: { xs: 2, sm: 2.5 },
           borderRadius: "16px",
           backgroundColor: "#FFFFFF",
-          border: "1px solid #E2E8F0",
+          border: "1px solid",
+          borderColor: "divider",
           boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
         }}
       >
@@ -168,7 +169,7 @@ export default function RolesListContent() {
               p: 1.2,
               borderRadius: "12px",
               backgroundColor: "rgba(109, 93, 246, 0.1)",
-              color: "#6D5DF6",
+              color: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -177,7 +178,7 @@ export default function RolesListContent() {
             <SecurityOutlinedIcon sx={{ fontSize: 24 }} />
           </Box>
           <Box>
-            <Typography sx={{ fontSize: "18px", fontWeight: 800, color: "#0F172A" }}>
+            <Typography sx={{ fontSize: "18px", fontWeight: 800, color: "text.primary" }}>
               Roles & Permissions
             </Typography>
             <Typography sx={{ fontSize: "13px", color: "#64748B" }}>
@@ -198,9 +199,9 @@ export default function RolesListContent() {
               fontSize: "13.5px",
               px: 2.5,
               py: 1,
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4EB3" },
+              "&:hover": { backgroundColor: "primary.dark" },
               whiteSpace: "nowrap",
             }}
           >
@@ -232,7 +233,8 @@ export default function RolesListContent() {
           p: 1.5,
           borderRadius: "14px",
           backgroundColor: "#FFFFFF",
-          border: "1px solid #E2E8F0",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <TextField
@@ -257,9 +259,9 @@ export default function RolesListContent() {
               borderRadius: "10px",
               backgroundColor: "#F8FAFC",
               fontSize: "13.5px",
-              "& fieldset": { borderColor: "#E2E8F0" },
+              "& fieldset": { borderColor: "divider" },
               "&:hover fieldset": { borderColor: "#CBD5E1" },
-              "&.Mui-focused fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+              "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: "2px" },
             },
           }}
         />
@@ -275,9 +277,9 @@ export default function RolesListContent() {
               fontWeight: 700,
               fontSize: "12.5px",
               borderRadius: "8px",
-              backgroundColor: filterType === "ALL" ? "#6D5DF6" : "#F1F5F9",
+              backgroundColor: filterType === "ALL" ? "primary.main" : "#F1F5F9",
               color: filterType === "ALL" ? "#FFFFFF" : "#475569",
-              "&:hover": { backgroundColor: filterType === "ALL" ? "#5B4EB3" : "#E2E8F0" },
+              "&:hover": { backgroundColor: filterType === "ALL" ? "primary.dark" : "action.hover" },
             }}
           />
           <Chip
@@ -289,9 +291,9 @@ export default function RolesListContent() {
               fontWeight: 700,
               fontSize: "12.5px",
               borderRadius: "8px",
-              backgroundColor: filterType === "SYSTEM" ? "#6D5DF6" : "#F1F5F9",
+              backgroundColor: filterType === "SYSTEM" ? "primary.main" : "#F1F5F9",
               color: filterType === "SYSTEM" ? "#FFFFFF" : "#475569",
-              "&:hover": { backgroundColor: filterType === "SYSTEM" ? "#5B4EB3" : "#E2E8F0" },
+              "&:hover": { backgroundColor: filterType === "SYSTEM" ? "primary.dark" : "action.hover" },
             }}
           />
           <Chip
@@ -303,9 +305,9 @@ export default function RolesListContent() {
               fontWeight: 700,
               fontSize: "12.5px",
               borderRadius: "8px",
-              backgroundColor: filterType === "CUSTOM" ? "#6D5DF6" : "#F1F5F9",
+              backgroundColor: filterType === "CUSTOM" ? "primary.main" : "#F1F5F9",
               color: filterType === "CUSTOM" ? "#FFFFFF" : "#475569",
-              "&:hover": { backgroundColor: filterType === "CUSTOM" ? "#5B4EB3" : "#E2E8F0" },
+              "&:hover": { backgroundColor: filterType === "CUSTOM" ? "primary.dark" : "action.hover" },
             }}
           />
         </Box>
@@ -316,7 +318,8 @@ export default function RolesListContent() {
         component={Paper}
         sx={{
           borderRadius: "16px",
-          border: "1px solid #E2E8F0",
+          border: "1px solid",
+          borderColor: "divider",
           boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
           overflow: "hidden",
         }}
@@ -386,7 +389,7 @@ export default function RolesListContent() {
                             height: 36,
                             borderRadius: "10px",
                             backgroundColor: isSystem ? "rgba(109, 93, 246, 0.1)" : "rgba(16, 185, 129, 0.1)",
-                            color: isSystem ? "#6D5DF6" : "#10B981",
+                            color: isSystem ? "primary.main" : "#10B981",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -396,7 +399,7 @@ export default function RolesListContent() {
                           {isSystem ? <ShieldOutlinedIcon sx={{ fontSize: 19 }} /> : <SecurityOutlinedIcon sx={{ fontSize: 19 }} />}
                         </Box>
                         <Box>
-                          <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+                          <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
                             {role.name}
                           </Typography>
                           <Typography sx={{ fontSize: "11.5px", color: "#64748B", fontFamily: "monospace" }}>
@@ -416,7 +419,7 @@ export default function RolesListContent() {
                           fontSize: "11.5px",
                           fontWeight: 700,
                           backgroundColor: isSystem ? "rgba(109, 93, 246, 0.1)" : "rgba(16, 185, 129, 0.1)",
-                          color: isSystem ? "#6D5DF6" : "#059669",
+                          color: isSystem ? "primary.main" : "#059669",
                           borderRadius: "6px",
                         }}
                       />
@@ -435,7 +438,8 @@ export default function RolesListContent() {
                             backgroundColor: "#F1F5F9",
                             color: "#334155",
                             borderRadius: "6px",
-                            border: "1px solid #E2E8F0",
+                            border: "1px solid",
+                            borderColor: "divider",
                           }}
                         />
                       </Tooltip>
@@ -466,7 +470,7 @@ export default function RolesListContent() {
                             sx={{
                               color: "#64748B",
                               borderRadius: "8px",
-                              "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)", color: "#6D5DF6" },
+                              "&:hover": { backgroundColor: "primary.lighter", color: "primary.main" },
                             }}
                           >
                             <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
@@ -481,7 +485,7 @@ export default function RolesListContent() {
                               sx={{
                                 color: "#64748B",
                                 borderRadius: "8px",
-                                "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)", color: "#6D5DF6" },
+                                "&:hover": { backgroundColor: "primary.lighter", color: "primary.main" },
                               }}
                             >
                               <EditOutlinedIcon sx={{ fontSize: 18 }} />

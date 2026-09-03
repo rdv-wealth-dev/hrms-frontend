@@ -6,6 +6,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Tooltip from "@mui/material/Tooltip";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
+import { useTheme } from "@mui/material/styles";
 
 import TextInput from "./TextInput";
 import { MultiSelect } from "./MultiSelect";
@@ -25,6 +26,7 @@ export function DynamicFieldRenderer({
   onChange,
   error,
 }: DynamicFieldRendererProps) {
+  const theme = useTheme();
   const { isMobile } = useResponsive();
 
   if (!field || field.isActive === false) return null;
@@ -36,7 +38,7 @@ export function DynamicFieldRenderer({
   // Helper title bar with optional tooltip helper text
   const FieldLabelHeader = () => (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
-      <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
         {label} {isRequired && <span style={{ color: "#EF4444" }}>*</span>}
       </Typography>
       {field.helperText && (
@@ -85,7 +87,7 @@ export function DynamicFieldRenderer({
         >
           {options.map((opt) => {
             const isSelected = selectedVals.includes(opt.value);
-            const chipColor = opt.color || "#6D5DF6";
+            const chipColor = opt.color || theme.palette.primary.main;
 
             return (
               <Chip
@@ -102,11 +104,11 @@ export function DynamicFieldRenderer({
                   cursor: "pointer",
                   transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                   backgroundColor: isSelected ? chipColor : "transparent",
-                  color: isSelected ? "#FFFFFF" : "#334155",
-                  borderColor: isSelected ? chipColor : "#CBD5E1",
+                  color: isSelected ? "primary.contrastText" : "text.secondary",
+                  borderColor: isSelected ? chipColor : "divider",
                   boxShadow: isSelected ? `0 2px 8px ${chipColor}40` : "none",
                   "&:hover": {
-                    backgroundColor: isSelected ? chipColor : "rgba(109, 93, 246, 0.08)",
+                    backgroundColor: isSelected ? chipColor : "primary.lighter",
                     borderColor: chipColor,
                   },
                 }}

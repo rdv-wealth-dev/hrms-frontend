@@ -37,8 +37,9 @@ export default function LeavePolicyView() {
         sx={{
           p: 2.5,
           borderRadius: "16px",
-          border: "1px solid #E2E8F0",
-          backgroundColor: "#FFFFFF",
+          border: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "background.paper",
           display: "flex",
           flexDirection: { xs: "column", sm: "row" },
           alignItems: { xs: "flex-start", sm: "center" },
@@ -60,7 +61,7 @@ export default function LeavePolicyView() {
           <PolicyOutlinedIcon sx={{ fontSize: 24 }} />
         </Box>
         <Box>
-          <Typography sx={{ fontSize: "16px", fontWeight: 700, color: "#0F172A" }}>
+          <Typography sx={{ fontSize: "16px", fontWeight: 700, color: "text.primary" }}>
             Organization Leave Policy & Entitlements
           </Typography>
           <Typography sx={{ fontSize: "13px", color: "#64748B" }}>
@@ -79,7 +80,7 @@ export default function LeavePolicyView() {
           </Grid>
         ) : leaveTypes.length === 0 ? (
           <Grid size={12}>
-            <Card elevation={0} sx={{ p: 4, textAlign: "center", borderRadius: "16px", border: "1px solid #E2E8F0" }}>
+            <Card elevation={0} sx={{ p: 4, textAlign: "center", borderRadius: "16px", border: "1px solid", borderColor: "divider" }}>
               <Typography sx={{ color: "#64748B" }}>No active leave policies configured.</Typography>
             </Card>
           </Grid>
@@ -91,8 +92,9 @@ export default function LeavePolicyView() {
                 sx={{
                   p: 2.5,
                   borderRadius: "16px",
-                  border: "1px solid #E2E8F0",
-                  backgroundColor: "#FFFFFF",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  backgroundColor: "background.paper",
                   display: "flex",
                   flexDirection: "column",
                   gap: 1.5,
@@ -100,7 +102,7 @@ export default function LeavePolicyView() {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Typography sx={{ fontSize: "15px", fontWeight: 700, color: "#0F172A" }}>
+                  <Typography sx={{ fontSize: "15px", fontWeight: 700, color: "text.primary" }}>
                     {policy.name} ({policy.code})
                   </Typography>
                   <Chip
@@ -122,17 +124,17 @@ export default function LeavePolicyView() {
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, pt: 1, borderTop: "1px solid #F1F5F9" }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography sx={{ fontSize: "12px", color: "#64748B", fontWeight: 500 }}>Annual Quota:</Typography>
-                    <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A" }}>{policy.annualQuota} days</Typography>
+                    <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "text.primary" }}>{policy.annualQuota} days</Typography>
                   </Box>
 
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography sx={{ fontSize: "12px", color: "#64748B", fontWeight: 500 }}>Carry Forward Max:</Typography>
-                    <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A" }}>{policy.maxCarryForwardDays ?? 0} days</Typography>
+                    <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "text.primary" }}>{policy.maxCarryForwardDays ?? 0} days</Typography>
                   </Box>
 
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography sx={{ fontSize: "12px", color: "#64748B", fontWeight: 500 }}>Advance Notice:</Typography>
-                    <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A" }}>{policy.advanceNoticeDays ?? 0} day(s)</Typography>
+                    <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "text.primary" }}>{policy.advanceNoticeDays ?? 0} day(s)</Typography>
                   </Box>
 
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>

@@ -134,7 +134,7 @@ export function EmployeeDirectoryCardGrid({
               variant="subtitle1"
               sx={{
                 fontWeight: 800,
-                color: "#0F172A",
+                color: "text.primary",
                 lineHeight: 1.2,
                 fontSize: "15px",
                 mb: 0.5,
@@ -189,7 +189,7 @@ export function EmployeeDirectoryCardGrid({
 
               {/* Manager & Squad Badges */}
               {((emp as any).reportingManager || (emp as any).managerId) && (
-                <Typography variant="caption" sx={{ fontSize: "10.5px", color: "#6D5DF6", fontWeight: 700, display: "block" }}>
+                <Typography variant="caption" sx={{ fontSize: "10.5px", color: "primary.main", fontWeight: 700, display: "block" }}>
                   👔 Mgr: {(emp as any).reportingManager?.fullName || (emp as any).managerId?.fullName || "Assigned"}
                 </Typography>
               )}

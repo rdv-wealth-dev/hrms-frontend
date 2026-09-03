@@ -260,7 +260,7 @@ function EmployeeDirectoryView() {
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Unified Enterprise Page Header */}
         <PageHeader
-          icon={<PeopleAltOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          icon={<PeopleAltOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
           title="All Employees"
           subtitle={
             total > 0
@@ -291,7 +291,7 @@ function EmployeeDirectoryView() {
                   height: 40,
                   borderRadius: "10px",
                   textTransform: "none",
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   color: "#FFFFFF",
                   fontWeight: 600,
                   fontSize: "14px",
@@ -301,7 +301,7 @@ function EmployeeDirectoryView() {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   "&:hover": {
-                    backgroundColor: "#5B4BEA",
+                    backgroundColor: "primary.dark",
                     boxShadow: "0 4px 12px rgba(109, 93, 246, 0.35)",
                   },
                 }}
@@ -348,19 +348,19 @@ function EmployeeDirectoryView() {
                     "& .MuiOutlinedInput-root": {
                       height: 40,
                       borderRadius: "10px",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: "background.paper",
                       fontSize: "14px",
-                      color: "#0F172A",
-                      "& fieldset": { borderColor: "#E2E8F0" },
-                      "&:hover fieldset": { borderColor: "#CBD5E1" },
-                      "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
+                      color: "text.primary",
+                      "& fieldset": { borderColor: "divider" },
+                      "&:hover fieldset": { borderColor: "primary.main" },
+                      "&.Mui-focused fieldset": { borderColor: "primary.main" },
                     },
                     "& .MuiOutlinedInput-input": {
                       py: 0,
                       height: 40,
                       fontSize: "14px",
                       boxSizing: "border-box",
-                      color: "#0F172A",
+                      color: "text.primary",
                       "&::placeholder": {
                         color: "#94A3B8",
                         opacity: 1,
@@ -387,7 +387,7 @@ function EmployeeDirectoryView() {
             {/* Card Grid Design View */}
             {loading && displayedEmployees.length === 0 ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             ) : (
               <EmployeeDirectoryCardGrid

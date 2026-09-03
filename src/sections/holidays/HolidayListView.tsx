@@ -174,7 +174,7 @@ function HolidayFormDialog({
       }}
     >
       <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           {editingHoliday ? "Edit Holiday" : "Add New Holiday"}
         </Typography>
         <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
@@ -309,8 +309,8 @@ function HolidayFormDialog({
           disabled={isSubmitDisabled}
           variant="contained"
           sx={{
-            backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4BE4" },
+            backgroundColor: "primary.main",
+            "&:hover": { backgroundColor: "primary.dark" },
             textTransform: "none",
             fontWeight: 600,
             px: 3,
@@ -374,8 +374,8 @@ function SeedHolidaysDialog({
     >
       <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AutoAwesomeIcon sx={{ color: "#6D5DF6" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <AutoAwesomeIcon sx={{ color: "primary.main" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Seed Default Statutory Holidays
           </Typography>
         </Box>
@@ -409,10 +409,10 @@ function SeedHolidaysDialog({
           variant="contained"
           startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeIcon />}
           sx={{
-            backgroundColor: "#6D5DF6",
+            backgroundColor: "primary.main",
             textTransform: "none",
             fontWeight: 600,
-            "&:hover": { backgroundColor: "#5B4EE4" },
+            "&:hover": { backgroundColor: "primary.dark" },
             px: 3,
           }}
         >
@@ -648,7 +648,7 @@ export default function HolidayListView() {
 
           {/* Column 2: Centered Holidays Title */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, justifyContent: "center" }}>
-            <CalendarMonthOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
+            <CalendarMonthOutlinedIcon sx={{ fontSize: 36, color: "primary.main" }} />
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               Holidays
             </Typography>
@@ -660,15 +660,15 @@ export default function HolidayListView() {
               <>
                 <Button
                   variant="outlined"
-                  startIcon={<AutoAwesomeIcon sx={{ color: "#6D5DF6" }} />}
+                  startIcon={<AutoAwesomeIcon sx={{ color: "primary.main" }} />}
                   onClick={handleOpenSeed}
                   sx={{
-                    borderColor: "#6D5DF6",
-                    color: "#6D5DF6",
+                    borderColor: "primary.main",
+                    color: "primary.main",
                     textTransform: "none",
                     fontWeight: 600,
                     borderRadius: 2,
-                    "&:hover": { borderColor: "#5B4EE4", backgroundColor: "#F5F3FF" },
+                    "&:hover": { borderColor: "primary.dark", backgroundColor: "primary.lighter" },
                   }}
                 >
                   Seed Defaults
@@ -678,11 +678,11 @@ export default function HolidayListView() {
                   startIcon={<AddIcon />}
                   onClick={handleOpenCreate}
                   sx={{
-                    backgroundColor: "#6D5DF6",
+                    backgroundColor: "primary.main",
                     textTransform: "none",
                     fontWeight: 600,
                     borderRadius: 2,
-                    "&:hover": { backgroundColor: "#5B4EE4" },
+                    "&:hover": { backgroundColor: "primary.dark" },
                   }}
                 >
                   Add Holiday
@@ -773,7 +773,7 @@ export default function HolidayListView() {
               />
             ) : branchCalendar.loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             ) : (
               <Alert severity="warning">Select a valid branch to view its monthly interactive calendar.</Alert>
@@ -798,7 +798,7 @@ export default function HolidayListView() {
               />
             ) : mySchedule.loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             ) : (
               <Alert severity="info">No personal schedule found for this period.</Alert>
@@ -811,7 +811,7 @@ export default function HolidayListView() {
           <>
         {isDataLoading && displayHolidaysList.length === 0 ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+            <CircularProgress sx={{ color: "primary.main" }} />
           </Box>
         ) : error && !formDialog.isOpen ? (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -841,10 +841,10 @@ export default function HolidayListView() {
                 startIcon={<AddIcon />}
                 onClick={handleOpenCreate}
                 sx={{
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   textTransform: "none",
                   fontWeight: 600,
-                  "&:hover": { backgroundColor: "#5B4EE4" },
+                  "&:hover": { backgroundColor: "primary.dark" },
                 }}
               >
                 Create New Holiday
@@ -921,7 +921,7 @@ export default function HolidayListView() {
                             size="small"
                             onClick={(e) => handleOpenMenu(e, type)}
                             title="Actions"
-                            sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#F1F5F9" } }}
+                            sx={{ color: "text.secondary", "&:hover": { color: "primary.main", backgroundColor: "action.hover" } }}
                           >
                             <MoreVertIcon fontSize="small" />
                           </IconButton>
@@ -989,7 +989,7 @@ export default function HolidayListView() {
             handleCloseMenu();
           }}
         >
-          <ListItemIcon sx={{ color: "#6D5DF6", minWidth: "32px !important" }}>
+          <ListItemIcon sx={{ color: "primary.main", minWidth: "32px !important" }}>
             <EditOutlinedIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary={<Typography variant="body2" sx={{ fontWeight: 500 }}>Edit</Typography>} />

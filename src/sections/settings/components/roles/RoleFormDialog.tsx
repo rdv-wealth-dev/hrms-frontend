@@ -37,12 +37,12 @@ const inputFieldSx = {
     borderRadius: "12px",
     backgroundColor: "#F8FAFC",
     fontSize: "14px",
-    color: "#0F172A",
-    "& fieldset": { borderColor: "#E2E8F0" },
+    color: "text.primary",
+    "& fieldset": { borderColor: "divider" },
     "&:hover fieldset": { borderColor: "#CBD5E1" },
     "&.Mui-focused": {
       backgroundColor: "#FFFFFF",
-      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+      "& fieldset": { borderColor: "primary.main", borderWidth: "2px" },
     },
   },
 };
@@ -206,9 +206,10 @@ export default function RoleFormDialog({
           sx: {
             borderRadius: "20px",
             p: { xs: 2.5, sm: 3.5 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             maxHeight: "92vh",
             display: "flex",
             flexDirection: "column",
@@ -227,7 +228,7 @@ export default function RoleFormDialog({
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography sx={{ fontSize: "20px", fontWeight: 800, color: "#0F172A" }}>
+          <Typography sx={{ fontSize: "20px", fontWeight: 800, color: "text.primary" }}>
             {isViewOnly ? "View Role & Permissions" : isEditing ? "Edit Custom Role" : "Create Custom Role"}
           </Typography>
           {role?.isSystemRole && (
@@ -238,7 +239,7 @@ export default function RoleFormDialog({
                 fontSize: "11px",
                 fontWeight: 700,
                 backgroundColor: "rgba(109, 93, 246, 0.1)",
-                color: "#6D5DF6",
+                color: "primary.main",
                 borderRadius: "6px",
               }}
             />
@@ -251,7 +252,7 @@ export default function RoleFormDialog({
           sx={{
             color: "#64748B",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 20 }} />
@@ -279,7 +280,7 @@ export default function RoleFormDialog({
           {/* Form Header Information */}
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
             <Box>
-              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 0.8 }}>
                 Role Name *
               </Typography>
               <TextField
@@ -295,7 +296,7 @@ export default function RoleFormDialog({
             </Box>
 
             <Box>
-              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+              <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 0.8 }}>
                 Role Slug (Identifier) *
               </Typography>
               <TextField
@@ -316,7 +317,7 @@ export default function RoleFormDialog({
           </Box>
 
           <Box>
-            <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+            <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 0.8 }}>
               Description
             </Typography>
             <TextField
@@ -334,13 +335,13 @@ export default function RoleFormDialog({
 
           {/* Permission Matrix Section */}
           <Box sx={{ pt: 1 }}>
-            <Typography sx={{ fontSize: "15px", fontWeight: 800, color: "#0F172A", mb: 1.5 }}>
+            <Typography sx={{ fontSize: "15px", fontWeight: 800, color: "text.primary", mb: 1.5 }}>
               Assigned System Permissions
             </Typography>
 
             {loadingPerms ? (
               <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 6 }}>
-                <CircularProgress size={32} sx={{ color: "#6D5DF6" }} />
+                <CircularProgress size={32} sx={{ color: "primary.main" }} />
               </Box>
             ) : (
               <PermissionMatrix
@@ -360,7 +361,8 @@ export default function RoleFormDialog({
             p: 0,
             pt: 2.5,
             mt: 2,
-            borderTop: "1px solid #E2E8F0",
+            borderTop: "1px solid",
+            borderColor: "divider",
             display: "flex",
             justifyContent: "flex-end",
             gap: 1.5,
@@ -378,7 +380,7 @@ export default function RoleFormDialog({
               textTransform: "none",
               backgroundColor: "#F1F5F9",
               color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             {isViewOnly ? "Close" : "Cancel"}
@@ -396,9 +398,9 @@ export default function RoleFormDialog({
                 fontSize: "14px",
                 fontWeight: 600,
                 textTransform: "none",
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
-                "&:hover": { backgroundColor: "#5B4EB3" },
+                "&:hover": { backgroundColor: "primary.dark" },
               }}
             >
               {submitting ? (

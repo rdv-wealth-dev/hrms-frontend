@@ -50,11 +50,11 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
             color: "#64748B",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             "&.Mui-selected": {
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               color: "#FFFFFF",
               boxShadow: "0 2px 6px rgba(109, 93, 246, 0.35)",
               "&:hover": {
-                backgroundColor: "#5B4BEA",
+                backgroundColor: "primary.dark",
               },
             },
             "&:hover": {

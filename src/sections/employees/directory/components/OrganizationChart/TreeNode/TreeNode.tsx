@@ -42,10 +42,10 @@ export default function TreeNode({
             px: 1.5,
             py: 0.3,
             borderRadius: "20px",
-            backgroundColor: expanded ? "#F1F5F9" : "#6D5DF6",
-            color: expanded ? "#475569" : "#FFFFFF",
+            backgroundColor: expanded ? "action.hover" : "primary.main",
+            color: expanded ? "text.secondary" : "#FFFFFF",
             border: "1px solid",
-            borderColor: expanded ? "#CBD5E1" : "#6D5DF6",
+            borderColor: expanded ? "divider" : "primary.main",
             display: "flex",
             alignItems: "center",
             gap: 0.5,
@@ -54,7 +54,7 @@ export default function TreeNode({
             boxShadow: "0 2px 4px rgba(0,0,0,0.06)",
             transition: "all 0.15s ease-in-out",
             "&:hover": {
-              backgroundColor: expanded ? "#E2E8F0" : "#5B4BEA",
+              backgroundColor: expanded ? "divider" : "primary.dark",
             },
           }}
         >

@@ -15,9 +15,10 @@ export function RecruitmentPipelineFunnel() {
       sx={{
         p: { xs: 2.5, sm: 3 },
         borderRadius: 3.5,
-        backgroundColor: "#fff",
+        backgroundColor: "background.paper",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        border: "1px solid rgba(0,0,0,0.04)",
+        border: "1px solid",
+        borderColor: "divider",
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -26,10 +27,10 @@ export function RecruitmentPipelineFunnel() {
     >
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
           Recruitment Pipeline
         </Typography>
-        <Button size="small" sx={{ textTransform: "none", color: "#6D5DF6", fontWeight: 600 }}>
+        <Button size="small" sx={{ textTransform: "none", color: "primary.main", fontWeight: 600 }}>
           View All Jobs ({metrics.totalOpenJobs})
         </Button>
       </Box>
@@ -80,7 +81,8 @@ export function RecruitmentPipelineFunnel() {
           alignItems: "center",
           pt: 2,
           mt: 2,
-          borderTop: "1px solid rgba(0,0,0,0.06)",
+          borderTop: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Box>
@@ -88,7 +90,7 @@ export function RecruitmentPipelineFunnel() {
             Time to Hire
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
               {metrics.timeToHire}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", color: "#10B981" }}>
@@ -105,7 +107,7 @@ export function RecruitmentPipelineFunnel() {
             Time to Fill
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
               {metrics.timeToFill}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", color: "#10B981" }}>
@@ -122,7 +124,7 @@ export function RecruitmentPipelineFunnel() {
             Offer Acceptance
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
               {metrics.offerAcceptance}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", color: "#10B981" }}>

@@ -10,7 +10,7 @@ function UnauthorizedScreen() {
     <Box
       sx={{
         alignItems: "center",
-        bgcolor: "#fff",
+        bgcolor: "background.default",
         display: "flex",
         flexDirection: "column",
         gap: 1.5,
@@ -27,7 +27,7 @@ function UnauthorizedScreen() {
     >
       <Typography
         sx={{
-          color: "#e5e7eb",
+          color: "divider",
           fontSize: { xs: 80, md: 120 },
           fontWeight: 900,
           lineHeight: 1,
@@ -37,11 +37,11 @@ function UnauthorizedScreen() {
         403
       </Typography>
 
-      <Typography sx={{ color: "#111827", fontSize: 22, fontWeight: 700, mt: 1 }}>
+      <Typography sx={{ color: "text.primary", fontSize: 22, fontWeight: 700, mt: 1 }}>
         Forbidden
       </Typography>
 
-      <Typography sx={{ color: "#6b7280", fontSize: 14, maxWidth: 380 }}>
+      <Typography sx={{ color: "text.secondary", fontSize: 14, maxWidth: 380 }}>
         You don&apos;t have permission to access this page. Please contact
         your administrator if you think this is a mistake.
       </Typography>
@@ -55,8 +55,9 @@ function UnauthorizedScreen() {
           px: 3,
           textTransform: "none",
           fontWeight: 600,
-          backgroundColor: "#6D5DF6",
-          "&:hover": { backgroundColor: "#5B4BEA" },
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
+          "&:hover": { bgcolor: "primary.dark" },
         }}
       >
         Go Back

@@ -157,15 +157,15 @@ export default function OrganizationChart() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AccountTreeOutlinedIcon sx={{ color: "#6D5DF6", fontSize: 22 }} />
-          <Typography sx={{ fontWeight: 700, fontSize: "16px", color: "#0F172A" }}>
+          <AccountTreeOutlinedIcon sx={{ color: "primary.main", fontSize: 22 }} />
+          <Typography sx={{ fontWeight: 700, fontSize: "16px", color: "text.primary" }}>
             Live Organizational Hierarchy
           </Typography>
         </Box>
 
         {/* Zoom & View Controls */}
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          <ButtonGroup size="small" variant="outlined" sx={{ bgcolor: "#FFFFFF", borderRadius: "10px" }}>
+          <ButtonGroup size="small" variant="outlined" sx={{ bgcolor: "background.paper", borderRadius: "10px" }}>
             <Tooltip title="Zoom Out">
               <IconButton size="small" onClick={handleZoomOut} disabled={zoomLevel <= 0.6}>
                 <ZoomOutIcon sx={{ fontSize: 18 }} />
@@ -178,7 +178,7 @@ export default function OrganizationChart() {
                 px: 1.5,
                 fontWeight: 700,
                 fontSize: "12px",
-                color: "#475569",
+                color: "text.secondary",
                 minWidth: 54,
                 textTransform: "none",
               }}
@@ -196,7 +196,7 @@ export default function OrganizationChart() {
             <IconButton
               size="small"
               onClick={handleZoomReset}
-              sx={{ bgcolor: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: "8px" }}
+              sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "8px" }}
             >
               <RestartAltIcon sx={{ fontSize: 18 }} />
             </IconButton>
@@ -207,7 +207,7 @@ export default function OrganizationChart() {
               size="small"
               onClick={fetchHierarchy}
               disabled={loading}
-              sx={{ bgcolor: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: "8px" }}
+              sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "8px" }}
             >
               <RefreshIcon sx={{ fontSize: 18 }} />
             </IconButton>
@@ -224,14 +224,15 @@ export default function OrganizationChart() {
           maxHeight: "78vh",
           p: { xs: 2, sm: 4 },
           borderRadius: "20px",
-          backgroundColor: "#F8FAFC",
-          border: "1px solid #E2E8F0",
+          backgroundColor: "action.hover",
+          border: "1px solid",
+          borderColor: "divider",
           overflow: "auto",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           position: "relative",
-          backgroundImage: "radial-gradient(#E2E8F0 1px, transparent 1px)",
+          backgroundImage: (theme: any) => `radial-gradient(${theme.palette.divider} 1px, transparent 1px)`,
           backgroundSize: "24px 24px",
         }}
       >
@@ -253,7 +254,7 @@ export default function OrganizationChart() {
         ) : treeData.length === 0 ? (
           <Box sx={{ py: 12, textAlign: "center" }}>
             <AccountTreeOutlinedIcon sx={{ fontSize: 48, color: "#94A3B8", mb: 1 }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
               No Hierarchy Data Found
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400, mt: 0.5 }}>

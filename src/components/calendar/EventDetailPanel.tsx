@@ -58,7 +58,7 @@ export function EventDetailPanel({ open, day, onClose }: EventDetailPanelProps) 
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <EventAvailableIcon sx={{ color: "#6D5DF6" }} />
+          <EventAvailableIcon sx={{ color: "primary.main" }} />
           <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "16px" }}>
             Day Details
           </Typography>
@@ -68,9 +68,9 @@ export function EventDetailPanel({ open, day, onClose }: EventDetailPanelProps) 
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ borderTop: "1px solid #E5E7EB", pt: 2, pb: 3 }}>
+      <DialogContent dividers sx={{ borderTop: "1px solid", borderColor: "divider", pt: 2, pb: 3 }}>
         {/* Date Header */}
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827", mb: 0.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary", mb: 0.5 }}>
           {formattedDate}
         </Typography>
 
@@ -164,7 +164,7 @@ export function EventDetailPanel({ open, day, onClose }: EventDetailPanelProps) 
                 >
                   <Icon sx={{ color: iconColor, mt: 0.2 }} />
                   <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.2 }}>
                       {evt.employeeName}
                     </Typography>
                     <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>

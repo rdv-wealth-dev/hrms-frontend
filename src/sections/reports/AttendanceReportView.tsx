@@ -576,9 +576,9 @@ export default function AttendanceReportView() {
 
   if (isEmployeeRole) {
     return (
-      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "background.default", minHeight: "100vh" }}>
         <PageHeader
-          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
           title="My Attendance"
         />
         <AttendanceTab hideTabs={true} />
@@ -588,10 +588,10 @@ export default function AttendanceReportView() {
 
   return (
     <>
-      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "background.default", minHeight: "100vh" }}>
         {/* Unified Enterprise Page Header */}
         <PageHeader
-          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
           title="Attendance"
           subtitle="Real-time workforce attendance tracking"
           action={
@@ -607,9 +607,9 @@ export default function AttendanceReportView() {
                   textTransform: "none",
                   fontWeight: 600,
                   fontSize: "14px",
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                  "&:hover": { backgroundColor: "#5B4BEA" },
+                  "&:hover": { backgroundColor: "primary.dark" },
                 }}
               >
                 Mark Attendance

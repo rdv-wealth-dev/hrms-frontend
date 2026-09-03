@@ -218,7 +218,7 @@ function EducationRowItem({
         borderRadius: 2.5,
         mb: 2,
         backgroundColor: "rgba(248, 250, 252, 0.6)",
-        borderColor: "#E2E8F0",
+        borderColor: "divider",
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -380,7 +380,7 @@ function EducationRowItem({
                       <MenuItem value="">
                         {selectedStreamCategory ? "Select Specialization..." : "Select Stream First"}
                       </MenuItem>
-                      <MenuItem value="CUSTOM_ENTRY" sx={{ color: "#6366F1", fontWeight: 700, borderBottom: "1px solid #E2E8F0" }}>
+                      <MenuItem value="CUSTOM_ENTRY" sx={{ color: "#6366F1", fontWeight: 700, borderBottom: "1px solid", borderColor: "divider" }}>
                         ➕ Enter Custom Degree (Manual Entry)
                       </MenuItem>
                       {specializationDegrees.map((deg) => (
@@ -520,10 +520,10 @@ export default function OnboardingStep1Personal({
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
       {/* 1. Personal Information */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
           <PersonOutlinedIcon sx={{ color: "#6366F1" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             1. Personal Details
           </Typography>
         </Box>
@@ -639,10 +639,10 @@ export default function OnboardingStep1Personal({
       </Paper>
 
       {/* 2. Parents' Details */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
           <FamilyRestroomIcon sx={{ color: "#6366F1" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             2. Parents' Information
           </Typography>
         </Box>
@@ -689,11 +689,11 @@ export default function OnboardingStep1Personal({
       </Paper>
 
       {/* 3. Higher Education & Qualification History */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <SchoolOutlinedIcon sx={{ color: "#6366F1" }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               3. Education & Qualifications
             </Typography>
           </Box>
@@ -757,10 +757,10 @@ export default function OnboardingStep1Personal({
       </Paper>
 
       {/* 4. Previous Employment History */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
           <BusinessCenterOutlinedIcon sx={{ color: "#6366F1" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             4. Previous Employment
           </Typography>
         </Box>
@@ -788,10 +788,10 @@ export default function OnboardingStep1Personal({
       </Paper>
 
       {/* 5. Statutory Documents & Identity */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
           <BadgeOutlinedIcon sx={{ color: "#6366F1" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             5. Identity & Statutory Details
           </Typography>
         </Box>
@@ -837,10 +837,10 @@ export default function OnboardingStep1Personal({
       </Paper>
 
       {/* 6. Current Address */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
           <HomeOutlinedIcon sx={{ color: "#6366F1" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             6. Current Residential Address
           </Typography>
         </Box>
@@ -892,11 +892,11 @@ export default function OnboardingStep1Personal({
       </Paper>
 
       {/* 7. Emergency Contacts */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <ContactEmergencyOutlinedIcon sx={{ color: "#6366F1" }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               7. Emergency Contacts
             </Typography>
           </Box>
@@ -969,10 +969,10 @@ export default function OnboardingStep1Personal({
 
       {/* 8. Dynamic Custom Fields Section */}
       {activeDefinitions && activeDefinitions.length > 0 && (
-        <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
             <TuneIcon sx={{ color: "#6366F1" }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               8. Additional Information
             </Typography>
           </Box>

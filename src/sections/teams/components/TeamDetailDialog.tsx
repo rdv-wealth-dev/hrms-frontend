@@ -158,7 +158,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
       case "TEMPORARY":
         return { bg: "#FFFBEB", color: "#B45309", border: "#FDE68A" };
       default:
-        return { bg: "#F1F5F9", color: "#475569", border: "#E2E8F0" };
+        return { bg: "action.hover", color: "text.secondary", border: "divider" };
     }
   };
 
@@ -212,9 +212,10 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
           sx: {
             borderRadius: { xs: "16px", sm: "20px" },
             p: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 1.5, sm: "auto" },
             width: { xs: "calc(100% - 24px)", sm: "100%" },
             maxHeight: { xs: "92vh", sm: "88vh" },
@@ -234,8 +235,9 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #F1F5F9",
-          backgroundColor: "#FFFFFF",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "background.paper",
           flexShrink: 0,
         }}
       >
@@ -258,7 +260,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
           </Box>
           <Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap", mb: 0.25 }}>
-              <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.2rem", sm: "1.4rem" }, color: "#0F172A", lineHeight: 1.2 }}>
+              <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.2rem", sm: "1.4rem" }, color: "text.primary", lineHeight: 1.2 }}>
                 {team?.name || "Team Details"}
               </Typography>
               {team?.code && (
@@ -303,12 +305,13 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
           onClick={onClose}
           size="small"
           sx={{
-            color: "#64748B",
-            border: "1px solid #E2E8F0",
+            color: "text.secondary",
+            border: "1px solid",
+            borderColor: "divider",
             borderRadius: "10px",
             width: 36,
             height: 36,
-            "&:hover": { backgroundColor: "#F8FAFC", color: "#0F172A", borderColor: "#CBD5E1" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary", borderColor: "divider" },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -342,7 +345,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
 
         {loading ? (
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 8, gap: 1.5 }}>
-            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+            <CircularProgress size={36} sx={{ color: "primary.main" }} />
             <Typography variant="body2" color="text.secondary">
               Fetching team metadata and member assignments...
             </Typography>
@@ -358,8 +361,9 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                   sx={{
                     p: 2,
                     borderRadius: "14px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#FFFFFF",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "background.paper",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -370,10 +374,10 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                     boxSizing: "border-box",
                   }}
                 >
-                  <Typography variant="caption" noWrap sx={{ color: "#64748B", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
+                  <Typography variant="caption" noWrap sx={{ color: "text.secondary", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
                     Department
                   </Typography>
-                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }} title={deptName || "N/A"}>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "text.primary", fontSize: "14px" }} title={deptName || "N/A"}>
                     {deptName || "N/A"}
                   </Typography>
                 </Paper>
@@ -386,8 +390,9 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                   sx={{
                     p: 2,
                     borderRadius: "14px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#FFFFFF",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "background.paper",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -398,10 +403,10 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                     boxSizing: "border-box",
                   }}
                 >
-                  <Typography variant="caption" noWrap sx={{ color: "#64748B", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
+                  <Typography variant="caption" noWrap sx={{ color: "text.secondary", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
                     Branch Location
                   </Typography>
-                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }} title={branchName || "Global"}>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "text.primary", fontSize: "14px" }} title={branchName || "Global"}>
                     {branchName || "Global"}
                   </Typography>
                 </Paper>
@@ -414,8 +419,9 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                   sx={{
                     p: 2,
                     borderRadius: "14px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#FFFFFF",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "background.paper",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -427,7 +433,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
-                    <Typography variant="caption" noWrap sx={{ color: "#64748B", fontWeight: 600, fontSize: "12px" }}>
+                    <Typography variant="caption" noWrap sx={{ color: "text.secondary", fontWeight: 600, fontSize: "12px" }}>
                       Team Lead
                     </Typography>
                     {canUpdateTeam && (
@@ -436,9 +442,10 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                         onClick={() => setChangeLeadOpen(true)}
                         sx={{
                           p: 0.35,
-                          color: "#0F172A",
-                          backgroundColor: "#F8FAFC",
-                          border: "1px solid #E2E8F0",
+                          color: "text.primary",
+                          backgroundColor: "action.hover",
+                          border: "1px solid",
+                          borderColor: "divider",
                           borderRadius: "6px",
                           "&:hover": { backgroundColor: "#EEF2FF", color: "#6366F1", borderColor: "#C7D2FE" },
                         }}
@@ -448,7 +455,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                       </IconButton>
                     )}
                   </Box>
-                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }} title={leadFullName || "Unassigned"}>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 800, color: "text.primary", fontSize: "14px" }} title={leadFullName || "Unassigned"}>
                     {leadFullName || "Unassigned"}
                   </Typography>
                 </Paper>
@@ -461,8 +468,9 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                   sx={{
                     p: 2,
                     borderRadius: "14px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#FFFFFF",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "background.paper",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -473,13 +481,13 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                     boxSizing: "border-box",
                   }}
                 >
-                  <Typography variant="caption" noWrap sx={{ color: "#64748B", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
+                  <Typography variant="caption" noWrap sx={{ color: "text.secondary", display: "block", fontWeight: 600, fontSize: "12px", mb: 0.5 }}>
                     Leave Cap &amp; Members
                   </Typography>
                   <Typography
                     variant="body2"
                     noWrap
-                    sx={{ fontWeight: 800, color: "#0F172A", fontSize: "14px" }}
+                    sx={{ fontWeight: 800, color: "text.primary", fontSize: "14px" }}
                     title={`Max ${team?.maxConcurrentLeaves ?? "N/A"} | ${members.length} Members`}
                   >
                     Max {team?.maxConcurrentLeaves ?? "N/A"} | {members.length} Members
@@ -569,7 +577,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                 >
                   <GroupsIcon sx={{ fontSize: 18 }} />
                 </Box>
-                <Typography sx={{ fontSize: "14px", fontWeight: 800, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <Typography sx={{ fontSize: "14px", fontWeight: 800, color: "text.primary", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   ASSIGNED TEAM MEMBERS ({members.length})
                 </Typography>
                 {team?.isCrossFunctional && (
@@ -615,7 +623,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                 </Typography>
               </Box>
             ) : (
-              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: "14px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
+              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: "14px", border: "1px solid", borderColor: "divider", overflow: "hidden" }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ backgroundColor: "#F8FAFC" }}>
@@ -664,7 +672,7 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                               <CustomAvatar name={memberName} size={36} fontSize="13px" />
                               <Box>
-                                <Typography sx={{ fontSize: "13.5px", fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+                                <Typography sx={{ fontSize: "13.5px", fontWeight: 800, color: "text.primary", lineHeight: 1.2 }}>
                                   {memberName}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: "#64748B", fontSize: "12px" }}>
@@ -713,9 +721,10 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                                     width: 32,
                                     height: 32,
                                     borderRadius: "8px",
-                                    border: "1px solid #E2E8F0",
+                                    border: "1px solid",
+                                    borderColor: "divider",
                                     color: "#6366F1",
-                                    backgroundColor: "#FFFFFF",
+                                    backgroundColor: "background.paper",
                                     "&:hover": { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE" },
                                   }}
                                   title="Edit Member"
@@ -729,9 +738,10 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
                                     width: 32,
                                     height: 32,
                                     borderRadius: "8px",
-                                    border: "1px solid #E2E8F0",
+                                    border: "1px solid",
+                                    borderColor: "divider",
                                     color: "#EF4444",
-                                    backgroundColor: "#FFFFFF",
+                                    backgroundColor: "background.paper",
                                     "&:hover": { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
                                   }}
                                   title="Remove Member"
@@ -752,11 +762,11 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
             {/* Showing X of Y members pagination / count indicator */}
             {members.length > 0 && (
               <Box sx={{ mt: 2.5, mb: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                <Box sx={{ height: "1px", backgroundColor: "#E2E8F0", width: 80 }} />
-                <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500, fontSize: "12.5px" }}>
+                <Box sx={{ height: "1px", backgroundColor: "divider", width: 80 }} />
+                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500, fontSize: "12.5px" }}>
                   Showing {members.length} of {members.length} members
                 </Typography>
-                <Box sx={{ height: "1px", backgroundColor: "#E2E8F0", width: 80 }} />
+                <Box sx={{ height: "1px", backgroundColor: "divider", width: 80 }} />
               </Box>
             )}
 
@@ -858,10 +868,11 @@ export function TeamDetailDialog({ open, teamId, onClose, onEdit, onDelete }: Te
             fontSize: "14px",
             fontWeight: 600,
             textTransform: "none",
-            color: "#475569",
-            backgroundColor: "#FFFFFF",
-            border: "1px solid #E2E8F0",
-            "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
+            color: "text.secondary",
+            backgroundColor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            "&:hover": { backgroundColor: "action.hover", borderColor: "divider" },
           }}
         >
           Close

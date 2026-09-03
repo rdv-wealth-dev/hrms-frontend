@@ -187,9 +187,9 @@ function DesignationContent() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <BadgeOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
+            <BadgeOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Designations
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -210,9 +210,9 @@ function DesignationContent() {
                 fontWeight: 600,
                 borderRadius: "10px",
                 px: 2.5,
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                "&:hover": { backgroundColor: "#5B4BEA" },
+                "&:hover": { backgroundColor: "primary.dark" },
                 width: { xs: "100%", sm: "auto" },
               }}
             >
@@ -262,7 +262,7 @@ function DesignationContent() {
                     <TableCell colSpan={canUpdate ? 6 : 5} align="center">
                       <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
                         <BadgeOutlinedIcon sx={{ fontSize: 54, color: "#9CA3AF" }} />
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
                           No Designations Configured Yet
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
@@ -278,8 +278,8 @@ function DesignationContent() {
                                 borderRadius: 2,
                                 textTransform: "none",
                                 fontWeight: 600,
-                                backgroundColor: "#6D5DF6",
-                                "&:hover": { backgroundColor: "#5B4BEA" },
+                                backgroundColor: "primary.main",
+                                "&:hover": { backgroundColor: "primary.dark" },
                               }}
                             >
                               Create Designation
@@ -306,8 +306,8 @@ function DesignationContent() {
                           label={d?.code ?? ""}
                           size="small"
                           sx={{
-                            backgroundColor: "#EEF2FF",
-                            color: "#6D5DF6",
+                            backgroundColor: "primary.lighter",
+                            color: "primary.main",
                             fontWeight: 600,
                             fontSize: 12,
                           }}
@@ -330,7 +330,7 @@ function DesignationContent() {
                           <IconButton
                             size="small"
                             onClick={() => openEdit(d)}
-                            sx={{ color: "#6D5DF6" }}
+                            sx={{ color: "primary.main" }}
                           >
                             <EditOutlinedIcon fontSize="small" />
                           </IconButton>
@@ -353,8 +353,9 @@ function DesignationContent() {
                 setPage(0);
               }}
               sx={{
-                borderTop: "1px solid #E2E8F0",
-                color: "#475569",
+                borderTop: "1px solid",
+                borderColor: "divider",
+                color: "text.secondary",
                 "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
                   fontSize: "13px",
                   fontWeight: 500,
@@ -386,16 +387,17 @@ function DesignationContent() {
             sx: {
               borderRadius: "20px",
               p: { xs: 2.5, sm: 3.5 },
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "background.paper",
               boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-              border: "1px solid #E2E8F0",
+              border: "1px solid",
+              borderColor: "divider",
               mx: { xs: 2, sm: "auto" },
               width: { xs: "calc(100% - 32px)", sm: "100%" },
             },
           },
         }}
       >
-        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
           Create Designation
         </DialogTitle>
 
@@ -469,9 +471,9 @@ function DesignationContent() {
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              backgroundColor: "action.hover",
+              color: "text.secondary",
+              "&:hover": { backgroundColor: "divider", color: "text.primary" },
             }}
           >
             Cancel
@@ -487,9 +489,9 @@ function DesignationContent() {
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Create"}
@@ -519,16 +521,17 @@ function DesignationContent() {
             sx: {
               borderRadius: "20px",
               p: { xs: 2.5, sm: 3.5 },
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "background.paper",
               boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-              border: "1px solid #E2E8F0",
+              border: "1px solid",
+              borderColor: "divider",
               mx: { xs: 2, sm: "auto" },
               width: { xs: "calc(100% - 32px)", sm: "100%" },
             },
           },
         }}
       >
-        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
           Update Designation
         </DialogTitle>
 
@@ -583,9 +586,9 @@ function DesignationContent() {
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              backgroundColor: "action.hover",
+              color: "text.secondary",
+              "&:hover": { backgroundColor: "divider", color: "text.primary" },
             }}
           >
             Cancel
@@ -601,9 +604,9 @@ function DesignationContent() {
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Update"}

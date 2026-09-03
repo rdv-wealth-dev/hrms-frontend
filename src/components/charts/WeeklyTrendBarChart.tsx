@@ -61,7 +61,7 @@ export default function WeeklyTrendBarChart({
     >
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
           Weekly Attendance Trend
         </Typography>
       </Box>
@@ -158,7 +158,7 @@ export default function WeeklyTrendBarChart({
                   sx={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: isHovered ? "#111827" : "#6B7280",
+                    color: isHovered ? "text.primary" : "text.secondary",
                     textAlign: "center",
                     mt: 1,
                     height: 20,

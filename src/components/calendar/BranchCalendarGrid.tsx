@@ -153,7 +153,7 @@ export function BranchCalendarGrid({
         }}
       >
         <Box>
-          <Typography variant={compact ? "subtitle1" : "h6"} sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant={compact ? "subtitle1" : "h6"} sx={{ fontWeight: 700, color: "text.primary" }}>
             {branchName ? `${branchName} — Calendar` : "Branch Calendar"}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ fontSize: compact ? "12px" : "14px" }}>
@@ -203,7 +203,7 @@ export function BranchCalendarGrid({
         >
           <Paper elevation={0} sx={{ p: 1.5, borderRadius: 2.5, border: "1px solid #E5E7EB", backgroundColor: "#FAFAFA" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <EventAvailableIcon sx={{ color: "#6D5DF6", fontSize: 20 }} />
+              <EventAvailableIcon sx={{ color: "primary.main", fontSize: 20 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary">Total Days</Typography>
                 <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1 }}>{dynamicSummary.totalDays}</Typography>
@@ -355,7 +355,7 @@ export function BranchCalendarGrid({
                 cursor: onDayClick || hasEvents ? "pointer" : "default",
                 transition: "all 0.15s ease",
                 "&:hover": {
-                  borderColor: isToday ? "#DC2626" : "#6D5DF6",
+                  borderColor: isToday ? "error.main" : "primary.main",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   transform: "translateY(-1px)",
                 },
@@ -374,7 +374,7 @@ export function BranchCalendarGrid({
                       ? "#4338CA"
                       : isWeekOff
                       ? "#B45309"
-                      : "#111827",
+                      : "text.primary",
                   }}
                 >
                   {dateNum}
@@ -422,9 +422,10 @@ export function BranchCalendarGrid({
                       height: 18,
                       fontSize: "10px",
                       fontWeight: 600,
-                      backgroundColor: "#F1F5F9",
-                      color: "#334155",
-                      border: "1px solid #E2E8F0",
+                      backgroundColor: "action.hover",
+                      color: "text.primary",
+                      border: "1px solid",
+                      borderColor: "divider",
                       maxWidth: { sm: 90, md: 140 },
                     }}
                   />

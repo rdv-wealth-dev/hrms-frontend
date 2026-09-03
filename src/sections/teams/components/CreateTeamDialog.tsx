@@ -353,9 +353,10 @@ export function CreateTeamDialog({
           sx: {
             borderRadius: { xs: "16px", sm: "20px" },
             p: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 1.5, sm: "auto" },
             width: { xs: "calc(100% - 24px)", sm: "100%" },
             maxHeight: { xs: "92vh", sm: "88vh" },
@@ -375,7 +376,8 @@ export function CreateTeamDialog({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #F1F5F9",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           flexShrink: 0,
         }}
       >
@@ -385,8 +387,8 @@ export function CreateTeamDialog({
               width: 38,
               height: 38,
               borderRadius: "10px",
-              backgroundColor: isUpdateMode ? "rgba(16, 185, 129, 0.1)" : "rgba(109, 93, 246, 0.1)",
-              color: isUpdateMode ? "#10B981" : "#6D5DF6",
+              backgroundColor: isUpdateMode ? "rgba(16, 185, 129, 0.1)" : "primary.lighter",
+              color: isUpdateMode ? "#10B981" : "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -395,10 +397,10 @@ export function CreateTeamDialog({
             {isUpdateMode ? <EditOutlinedIcon sx={{ fontSize: 22 }} /> : <GroupsRoundedIcon sx={{ fontSize: 22 }} />}
           </Box>
           <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.05rem", sm: "1.2rem" }, color: "#0F172A", lineHeight: 1.2 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.05rem", sm: "1.2rem" }, color: "text.primary", lineHeight: 1.2 }}>
               {isUpdateMode ? "Edit Team Information" : "Create New Team / Squad"}
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748B", fontSize: "12px" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "12px" }}>
               {isUpdateMode
                 ? "Update squad details, capacity limits, and reporting lines"
                 : "Define a collaborative squad under a parent department"}
@@ -411,9 +413,9 @@ export function CreateTeamDialog({
           disabled={isSubmitting}
           size="small"
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 20 }} />
@@ -629,18 +631,19 @@ export function CreateTeamDialog({
                 sx={{
                   p: 1.5,
                   borderRadius: "12px",
-                  backgroundColor: "#F8FAFC",
-                  border: "1px solid #E2E8F0",
+                  backgroundColor: "action.hover",
+                  border: "1px solid",
+                  borderColor: "divider",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
                 <Box>
-                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#1E293B" }}>
+                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "text.primary" }}>
                     Cross-Functional Squad
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
                     Allow members from different parent departments to join this squad
                   </Typography>
                 </Box>
@@ -678,8 +681,9 @@ export function CreateTeamDialog({
           sx={{
             py: 1.75,
             px: { xs: 2, sm: 3 },
-            borderTop: "1px solid #F1F5F9",
-            backgroundColor: "#FAFAFA",
+            borderTop: "1px solid",
+            borderColor: "divider",
+            backgroundColor: "action.hover",
             display: "flex",
             flexDirection: { xs: "column-reverse", sm: "row" },
             justifyContent: "flex-end",
@@ -697,10 +701,10 @@ export function CreateTeamDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              color: "#475569",
-              backgroundColor: "#F1F5F9",
+              color: "text.secondary",
+              backgroundColor: "action.hover",
               width: { xs: "100%", sm: "auto" },
-              "&:hover": { backgroundColor: "#E2E8F0" },
+              "&:hover": { backgroundColor: "divider" },
             }}
           >
             Cancel

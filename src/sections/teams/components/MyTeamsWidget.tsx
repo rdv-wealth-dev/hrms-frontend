@@ -52,8 +52,9 @@ export function MyTeamsWidget() {
       sx={{
         p: { xs: 2.5, sm: 3 },
         borderRadius: "16px",
-        border: "1px solid #E2E8F0",
-        backgroundColor: "#FFFFFF",
+        border: "1px solid",
+        borderColor: "divider",
+        backgroundColor: "background.paper",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
       }}
     >
@@ -65,8 +66,8 @@ export function MyTeamsWidget() {
               width: 36,
               height: 36,
               borderRadius: "10px",
-              backgroundColor: "rgba(109, 93, 246, 0.1)",
-              color: "#6D5DF6",
+              backgroundColor: "primary.lighter",
+              color: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -75,7 +76,7 @@ export function MyTeamsWidget() {
             <GroupsIcon sx={{ fontSize: 20 }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem", lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "text.primary", fontSize: "1.05rem", lineHeight: 1.2 }}>
               My Squads & Teams
             </Typography>
             <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -158,12 +159,13 @@ export function MyTeamsWidget() {
                   sx={{
                     p: 2,
                     borderRadius: "12px",
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "action.hover",
                     transition: "all 0.2s ease-in-out",
                     "&:hover": {
-                      borderColor: "#CBD5E1",
-                      backgroundColor: "#FFFFFF",
+                      borderColor: "primary.main",
+                      backgroundColor: "background.paper",
                       boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.05)",
                     },
                   }}
@@ -171,7 +173,7 @@ export function MyTeamsWidget() {
                   {/* Top Row: Team Name & Primary Badge */}
                   <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1, mb: 1 }}>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700, color: "#0F172A" }}>
+                      <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700, color: "text.primary" }}>
                         {tName}
                       </Typography>
                       {tCode && (
@@ -199,16 +201,17 @@ export function MyTeamsWidget() {
                         fontWeight: 700,
                         fontSize: "10px",
                         height: 22,
-                        backgroundColor: roleInTeam === "LEAD" ? "#ECFDF5" : "#F1F5F9",
-                        color: roleInTeam === "LEAD" ? "#047857" : "#475569",
-                        border: roleInTeam === "LEAD" ? "1px solid #A7F3D0" : "1px solid #E2E8F0",
+                        backgroundColor: roleInTeam === "LEAD" ? "#ECFDF5" : "action.hover",
+                        color: roleInTeam === "LEAD" ? "#047857" : "text.secondary",
+                        border: "1px solid",
+                        borderColor: roleInTeam === "LEAD" ? "#A7F3D0" : "divider",
                       }}
                     />
 
                     {lName && (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                        <PersonIcon sx={{ fontSize: 14, color: "#64748B" }} />
-                        <Typography variant="caption" sx={{ color: "#475569", fontWeight: 600 }}>
+                        <PersonIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                           Lead: {lName}
                         </Typography>
                       </Box>
@@ -218,10 +221,10 @@ export function MyTeamsWidget() {
                   {/* Bottom Row: Allocation Progress Bar */}
                   <Box sx={{ mt: 1.25 }}>
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
-                      <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                         Capacity Allocation
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "#0F172A", fontWeight: 700 }}>
+                      <Typography variant="caption" sx={{ color: "text.primary", fontWeight: 700 }}>
                         {allocPct}%
                       </Typography>
                     </Box>
@@ -231,7 +234,7 @@ export function MyTeamsWidget() {
                       sx={{
                         height: 6,
                         borderRadius: 3,
-                        backgroundColor: "#E2E8F0",
+                        backgroundColor: "divider",
                         "& .MuiLinearProgress-bar": {
                           backgroundColor: allocPct >= 80 ? "#10B981" : allocPct >= 50 ? "#3B82F6" : "#F59E0B",
                           borderRadius: 3,

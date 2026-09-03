@@ -249,7 +249,7 @@ export default function OnboardingWizardView() {
       <PageWrapper>
         {/* Header */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A" }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
             Employee Onboarding Wizard
           </Typography>
           <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
@@ -258,14 +258,14 @@ export default function OnboardingWizardView() {
         </Box>
 
         {/* Stepper Header Card */}
-        <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
           {/* Mobile Step Indicator */}
           <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 1 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4F46E5" }}>
                 Step {activeStep + 1} of {STEPS.length}
               </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: "#0F172A" }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: "text.primary" }}>
                 {STEPS[activeStep]}
               </Typography>
             </Box>

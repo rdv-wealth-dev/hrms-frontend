@@ -202,8 +202,8 @@ export default function CelebrationsKpiCard() {
 
   if (loading && !calendarData) {
     return (
-      <Card sx={{ p: 3, display: "flex", justifyContent: "center", alignItems: "center", minHeight: 145 }}>
-        <CircularProgress size={28} sx={{ color: "#6D5DF6" }} />
+      <Card sx={{ p: 3, display: "flex", justifyContent: "center", alignItems: "center", minHeight: 145, backgroundColor: "background.paper" }}>
+        <CircularProgress size={28} sx={{ color: "primary.main" }} />
       </Card>
     );
   }
@@ -237,8 +237,9 @@ export default function CelebrationsKpiCard() {
     <Card
       sx={{
         p: 1.5,
-        backgroundColor: "#FFFFFF",
-        border: "1px solid #E2E8F0",
+        backgroundColor: "background.paper",
+        border: "1px solid",
+        borderColor: "divider",
         borderRadius: "16px",
         boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
         position: "relative",
@@ -394,18 +395,19 @@ export default function CelebrationsKpiCard() {
                 sx={{
                   p: 1.8,
                   borderRadius: 2,
-                  border: "1px solid #E2E8F0",
-                  backgroundColor: "#F8FAFC",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  backgroundColor: "action.hover",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                 }}
               >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                     {h.holidayName || h.offReason || "Holiday"}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748B" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
                     {new Date(h.date).toLocaleDateString(undefined, { weekday: "long" })}
                   </Typography>
                 </Box>

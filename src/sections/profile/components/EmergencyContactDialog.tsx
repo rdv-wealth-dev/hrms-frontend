@@ -68,7 +68,7 @@ export default function EmergencyContactDialog({
       }}
     >
       <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           Add Emergency Contact
         </Typography>
         <IconButton onClick={onClose} size="small" sx={{ color: "#9CA3AF" }} disabled={submitting}>
@@ -125,8 +125,8 @@ export default function EmergencyContactDialog({
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BE4" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               px: 3,
             }}
           >

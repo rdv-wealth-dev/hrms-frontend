@@ -107,11 +107,11 @@ function SettingsView() {
                       cursor: "pointer",
                       borderRadius: 1.5,
                       backgroundColor: isActive ? "#EEF2FF" : "transparent",
-                      color: isActive ? "#6D5DF6" : "#4B5563",
+                      color: isActive ? "primary.main" : "text.secondary",
                       transition: "all 0.2s ease",
                       "&:hover": {
                         backgroundColor: isActive ? "#EEF2FF" : "#F3F4F6",
-                        color: isActive ? "#6D5DF6" : "#111827",
+                        color: isActive ? "primary.main" : "text.primary",
                       },
                     }}
                   >
@@ -140,7 +140,7 @@ function SettingsView() {
 
         {/* Page Title Row */}
         <Box sx={{ mb: { xs: 2, md: 3 } }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", fontSize: { xs: "1.1rem", md: "1.4rem" } }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary", fontSize: { xs: "1.1rem", md: "1.4rem" } }}>
             Settings &amp; Administration
           </Typography>
         </Box>
@@ -195,7 +195,7 @@ function SettingsView() {
                       flexShrink: 0,
                       width: 28,
                       minWidth: 28,
-                      color: "#6D5DF6",
+                      color: "primary.main",
                       opacity: 0.9,
                       transition: "all 0.2s ease",
 
@@ -207,7 +207,7 @@ function SettingsView() {
                       },
 
                       "&:hover": {
-                        backgroundColor: "rgba(109, 93, 246, 0.08)",
+                        backgroundColor: "primary.lighter",
                       },
                     },
 
@@ -260,12 +260,12 @@ function SettingsView() {
                     },
 
                     "& .Mui-selected": {
-                      color: "#6D5DF6 !important",
+                      color: "primary.main !important",
                       fontWeight: 700,
                     },
 
                     "& .MuiTabs-indicator": {
-                      backgroundColor: "#6D5DF6",
+                      backgroundColor: "primary.main",
                       height: 3,
                       borderRadius: "3px 3px 0 0",
                     },

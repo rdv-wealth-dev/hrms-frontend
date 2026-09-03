@@ -189,9 +189,10 @@ export function ChangeTeamLeadDialog({
           sx: {
             borderRadius: { xs: "16px", sm: "20px" },
             p: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 1.5, sm: "auto" },
             width: { xs: "calc(100% - 24px)", sm: "100%" },
             overflow: "hidden",
@@ -208,7 +209,8 @@ export function ChangeTeamLeadDialog({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #F1F5F9",
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
@@ -227,10 +229,10 @@ export function ChangeTeamLeadDialog({
             <PersonIcon sx={{ fontSize: 22 }} />
           </Box>
           <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "#0F172A", lineHeight: 1.2 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "text.primary", lineHeight: 1.2 }}>
               Change Team Lead
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748B" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
               {teamName ? `Reassign squad leadership for ${teamName}` : "Reassign squad leadership to another employee"}
             </Typography>
           </Box>
@@ -241,9 +243,9 @@ export function ChangeTeamLeadDialog({
           disabled={isSubmitting}
           size="small"
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 20 }} />
@@ -266,17 +268,18 @@ export function ChangeTeamLeadDialog({
                 sx={{
                   p: 1.75,
                   borderRadius: "12px",
-                  backgroundColor: "#F8FAFC",
-                  border: "1px solid #E2E8F0",
+                  backgroundColor: "action.hover",
+                  border: "1px solid",
+                  borderColor: "divider",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
-                <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 600 }}>
+                <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600 }}>
                   Current Team Lead:
                 </Typography>
-                <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
+                <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 700 }}>
                   {currentLeadName || "Currently Unassigned"}
                 </Typography>
               </Box>
@@ -302,8 +305,9 @@ export function ChangeTeamLeadDialog({
           sx={{
             py: 1.75,
             px: 3,
-            borderTop: "1px solid #F1F5F9",
-            backgroundColor: "#FAFAFA",
+            borderTop: "1px solid",
+            borderColor: "divider",
+            backgroundColor: "action.hover",
             display: "flex",
             justifyContent: "flex-end",
             gap: 1.25,
@@ -319,9 +323,9 @@ export function ChangeTeamLeadDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              color: "#475569",
-              backgroundColor: "#F1F5F9",
-              "&:hover": { backgroundColor: "#E2E8F0" },
+              color: "text.secondary",
+              backgroundColor: "action.hover",
+              "&:hover": { backgroundColor: "divider" },
             }}
           >
             Cancel

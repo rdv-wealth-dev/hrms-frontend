@@ -52,13 +52,13 @@ export function NudgeReminderModal({
         >
           <WarningAmberOutlinedIcon sx={{ fontSize: 32 }} />
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           Onboarding Reminder
         </Typography>
       </DialogTitle>
 
       <DialogContent sx={{ textAlign: "center", px: 3, py: 1 }}>
-        <Typography variant="body2" sx={{ color: "#6B7280", lineHeight: 1.6 }}>
+        <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.6 }}>
           Your check-in was successfully recorded! However, your profile is currently{" "}
           <strong>{completionPct}% complete</strong>. Please complete your onboarding steps soon to avoid feature locks.
         </Typography>
@@ -75,8 +75,8 @@ export function NudgeReminderModal({
             borderRadius: 2.5,
             fontWeight: 700,
             textTransform: "none",
-            backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4EB3" },
+            backgroundColor: "primary.main",
+            "&:hover": { backgroundColor: "primary.dark" },
           }}
         >
           Complete Profile Now
@@ -84,7 +84,7 @@ export function NudgeReminderModal({
         <Button
           fullWidth
           onClick={onClose}
-          sx={{ textTransform: "none", color: "#6B7280", fontWeight: 500 }}
+          sx={{ textTransform: "none", color: "text.secondary", fontWeight: 500 }}
         >
           Remind Me Later
         </Button>

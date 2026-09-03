@@ -51,14 +51,14 @@ const inputFieldSx = {
   "& .MuiOutlinedInput-root": {
     height: 44,
     borderRadius: "12px",
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "action.hover",
     fontSize: "14px",
-    color: "#0F172A",
-    "& fieldset": { borderColor: "#E2E8F0" },
-    "&:hover fieldset": { borderColor: "#CBD5E1" },
+    color: "text.primary",
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "primary.main" },
     "&.Mui-focused": {
-      backgroundColor: "#FFFFFF",
-      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+      backgroundColor: "background.paper",
+      "& fieldset": { borderColor: "primary.main", borderWidth: "2px" },
     },
   },
   "& .MuiOutlinedInput-input": {
@@ -255,9 +255,10 @@ export default function ManageRoleDialog({
           sx: {
             borderRadius: "20px",
             p: 3,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
           },
         },
       }}
@@ -272,7 +273,7 @@ export default function ManageRoleDialog({
           justifyContent: "space-between",
         }}
       >
-        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "#0F172A" }}>
+        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "text.primary" }}>
           Manage System Role
         </Typography>
         <IconButton
@@ -280,9 +281,9 @@ export default function ManageRoleDialog({
           size="small"
           disabled={submitting}
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -296,19 +297,19 @@ export default function ManageRoleDialog({
 
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress size={28} sx={{ color: "#6D5DF6" }} />
+              <CircularProgress size={28} sx={{ color: "primary.main" }} />
             </Box>
           ) : (
             employee && (
               <>
-                <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-                  <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
+                <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "action.hover", border: "1px solid", borderColor: "divider" }}>
+                  <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "text.primary", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
                     Employee Profile
                   </Typography>
-                  <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+                  <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
                     {employee.firstName} {employee.lastName} ({employee.employeeCode})
                   </Typography>
-                  <Typography sx={{ fontSize: "13px", color: "#64748B" }}>
+                  <Typography sx={{ fontSize: "13px", color: "text.secondary" }}>
                     {employee.email}
                   </Typography>
                 </Box>
@@ -316,10 +317,10 @@ export default function ManageRoleDialog({
                 {userAccount && (
                   <>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary" }}>
                         Current Role:
                       </Typography>
-                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#6D5DF6" }}>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "primary.main" }}>
                         {ROLE_LABELS[userAccount.role] || userAccount.role}
                       </Typography>
                     </Box>
@@ -337,7 +338,7 @@ export default function ManageRoleDialog({
                     )}
 
                     <Box>
-                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+                      <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 0.8 }}>
                         Assign New System Role
                       </Typography>
                       <TextField
@@ -368,7 +369,7 @@ export default function ManageRoleDialog({
                     {/* Rule A: Render multi-select branches dropdown ONLY when role is BRANCH_ADMIN */}
                     {selectedRole === ROLES.BRANCH_ADMIN && (
                       <Box sx={{ mt: 0.5 }}>
-                        <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+                        <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 0.8 }}>
                           Assigned Branches (Required for Branch Admin) *
                         </Typography>
                         <FormControl fullWidth size="small" error={selectedBranchIds.length === 0}>
@@ -412,9 +413,9 @@ export default function ManageRoleDialog({
                                   <Checkbox
                                     checked={isChecked}
                                     size="small"
-                                    sx={{ color: "#6D5DF6", "&.Mui-checked": { color: "#6D5DF6" } }}
+                                    sx={{ color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                                   />
-                                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#0F172A" }}>
+                                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "text.primary" }}>
                                     {b.name} ({b.code})
                                   </Typography>
                                 </MenuItem>
@@ -447,9 +448,9 @@ export default function ManageRoleDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              backgroundColor: "action.hover",
+              color: "text.secondary",
+              "&:hover": { backgroundColor: "divider", color: "text.primary" },
             }}
           >
             Cancel
@@ -465,9 +466,9 @@ export default function ManageRoleDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4EB3" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Update Role"}

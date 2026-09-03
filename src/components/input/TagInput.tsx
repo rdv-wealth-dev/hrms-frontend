@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
-import type { SxProps, Theme } from "@mui/material/styles";
+import { alpha, type SxProps, type Theme } from "@mui/material/styles";
 
 export interface TagInputProps {
   label?: string;
@@ -83,8 +83,9 @@ export function TagInput({
         sx={{
           minHeight: 44,
           borderRadius: "12px",
-          backgroundColor: disabled ? "#F8FAFC" : "#FFFFFF",
-          border: error ? "1.5px solid #EF4444" : "1.5px solid #E2E8F0",
+          backgroundColor: disabled ? "action.hover" : "background.paper",
+          border: "1.5px solid",
+          borderColor: error ? "error.main" : "divider",
           p: "6px 10px",
           display: "flex",
           flexWrap: "wrap",
@@ -92,11 +93,11 @@ export function TagInput({
           gap: 0.8,
           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           "&:hover": {
-            borderColor: error ? "#EF4444" : "#CBD5E1",
+            borderColor: error ? "error.main" : "neutral.300",
           },
           "&:focus-within": {
-            borderColor: error ? "#EF4444" : "#6D5DF6",
-            boxShadow: error ? "0 0 0 3px rgba(239, 68, 68, 0.12)" : "0 0 0 3px rgba(109, 93, 246, 0.12)",
+            borderColor: error ? "error.main" : "primary.main",
+            boxShadow: error ? "0 0 0 3px rgba(239, 68, 68, 0.12)" : (theme: any) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}`,
           },
         }}
       >
@@ -108,16 +109,17 @@ export function TagInput({
             size="small"
             sx={{
               borderRadius: "8px",
-              backgroundColor: "#EEF2FF",
-              color: "#4F46E5",
+              backgroundColor: "primary.lighter",
+              color: "primary.main",
               fontWeight: 600,
               fontSize: "12px",
-              border: "1px solid #C7D2FE",
+              border: "1px solid",
+              borderColor: "divider",
               "& .MuiChip-deleteIcon": {
-                color: "#6366F1",
+                color: "primary.main",
                 fontSize: 16,
                 "&:hover": {
-                  color: "#4338CA",
+                  color: "primary.dark",
                 },
               },
             }}
@@ -143,7 +145,7 @@ export function TagInput({
             "& .MuiInputBase-input": {
               p: 0.5,
               fontSize: "13.5px",
-              color: "#0F172A",
+              color: "text.primary",
               "&::placeholder": {
                 color: "#94A3B8",
                 opacity: 1,

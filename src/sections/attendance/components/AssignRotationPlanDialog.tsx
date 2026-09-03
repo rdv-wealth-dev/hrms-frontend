@@ -118,9 +118,10 @@ export default function AssignRotationPlanDialog({
           sx: {
             borderRadius: "20px",
             p: { xs: 2.5, sm: 3.5 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 2, sm: "auto" },
             width: { xs: "calc(100% - 32px)", sm: "100%" },
           },
@@ -128,7 +129,7 @@ export default function AssignRotationPlanDialog({
       }}
     >
       <Box component="form" onSubmit={handleFormSubmit}>
-        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
           Assign Rotation Plan
         </DialogTitle>
 
@@ -229,7 +230,7 @@ export default function AssignRotationPlanDialog({
               textTransform: "none",
               backgroundColor: "#F1F5F9",
               color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             Cancel
@@ -245,9 +246,9 @@ export default function AssignRotationPlanDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? (

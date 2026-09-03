@@ -203,9 +203,10 @@ export function ManualAttendanceDialog({
           sx: {
             borderRadius: "20px",
             p: 3,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
           },
         },
       }}
@@ -220,7 +221,7 @@ export function ManualAttendanceDialog({
           justifyContent: "space-between",
         }}
       >
-        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "#0F172A" }}>
+        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "text.primary" }}>
           Record Manual Attendance
         </Typography>
         <IconButton
@@ -230,7 +231,7 @@ export function ManualAttendanceDialog({
           sx={{
             color: "#64748B",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -245,11 +246,11 @@ export function ManualAttendanceDialog({
 
           {/* 1. Employee Field */}
           {employee ? (
-            <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
+            <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "action.hover", border: "1px solid", borderColor: "divider" }}>
+              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "text.primary", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
                 Employee Profile
               </Typography>
-              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
                 {employee.firstName} {employee.lastName} ({employee.employeeCode})
               </Typography>
             </Box>
@@ -317,9 +318,9 @@ export function ManualAttendanceDialog({
                           "& .MuiOutlinedInput-root": {
                             borderRadius: "10px",
                             backgroundColor: "#FFFFFF",
-                            "& fieldset": { borderColor: "#E2E8F0" },
+                            "& fieldset": { borderColor: "divider" },
                             "&:hover fieldset": { borderColor: "#CBD5E1" },
-                            "&.Mui-focused fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+                            "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: "2px" },
                           },
                           "& .MuiFormHelperText-root": {
                             mx: 0,
@@ -414,7 +415,7 @@ export function ManualAttendanceDialog({
               textTransform: "none",
               backgroundColor: "#F1F5F9",
               color: "#475569",
-              "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             Cancel
@@ -430,9 +431,9 @@ export function ManualAttendanceDialog({
               fontSize: "14px",
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Record Attendance"}

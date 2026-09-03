@@ -227,7 +227,7 @@ function LoginView() {
               input: {
                 endAdornment: checkEmailLoading ? (
                   <InputAdornment position="end" sx={{ mr: 0.5 }}>
-                    <CircularProgress size={20} sx={{ color: "#6D5DF6" }} />
+                    <CircularProgress size={20} sx={{ color: "primary.main" }} />
                   </InputAdornment>
                 ) : null,
               },
@@ -263,7 +263,7 @@ function LoginView() {
                         {...field}
                         checked={field.value ?? false}
                         size="small"
-                        sx={{ color: "#CBD5E1", "&.Mui-checked": { color: "#6D5DF6" } }}
+                        sx={{ color: "neutral.300", "&.Mui-checked": { color: "primary.main" } }}
                       />
                     }
                     label={

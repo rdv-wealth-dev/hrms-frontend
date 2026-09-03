@@ -197,7 +197,7 @@ export function PeopleHubTableView({
                     {initials}
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
                       {fullName}
                     </Typography>
                     <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500, fontSize: "12px", display: "block" }}>
@@ -209,7 +209,7 @@ export function PeopleHubTableView({
                 <IconButton
                   size="small"
                   onClick={(e) => handleOpenMenu(e, emp)}
-                  sx={{ color: "#64748B", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                  sx={{ color: "text.secondary", backgroundColor: "action.hover", border: "1px solid", borderColor: "divider", "&:hover": { color: "primary.main", backgroundColor: "primary.lighter" } }}
                 >
                   <MoreVertIcon fontSize="small" />
                 </IconButton>
@@ -269,7 +269,7 @@ export function PeopleHubTableView({
                       gap: 1.5,
                       cursor: "pointer",
                       width: "fit-content",
-                      "&:hover .emp-name": { color: "#6D5DF6" },
+                      "&:hover .emp-name": { color: "primary.main" },
                     }}
                   >
                     <Avatar
@@ -290,7 +290,7 @@ export function PeopleHubTableView({
                       className="emp-name"
                       sx={{
                         fontWeight: 700,
-                        color: "#0F172A",
+                        color: "text.primary",
                         lineHeight: 1.2,
                         whiteSpace: "nowrap",
                         transition: "color 0.15s ease",
@@ -413,7 +413,7 @@ export function PeopleHubTableView({
                 <IconButton
                   size="small"
                   onClick={(e) => handleOpenMenu(e, emp)}
-                  sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                  sx={{ color: "text.secondary", "&:hover": { color: "primary.main", backgroundColor: "primary.lighter" } }}
                 >
                   <MoreVertIcon fontSize="small" />
                 </IconButton>

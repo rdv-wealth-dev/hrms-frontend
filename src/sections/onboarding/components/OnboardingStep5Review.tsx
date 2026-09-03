@@ -137,7 +137,7 @@ function ReadOnlyFormField({ label, value }: { label: string; value?: string | n
       <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700, textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>
         {label}
       </Typography>
-      <Box sx={{ p: 1.2, mt: 0.5, backgroundColor: "#F8FAFC", borderRadius: 2, border: "1px solid #E2E8F0" }}>
+      <Box sx={{ p: 1.2, mt: 0.5, backgroundColor: "action.hover", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
         <Typography variant="body2" sx={{ fontWeight: 600, color: "#1E293B" }}>
           {value}
         </Typography>
@@ -187,11 +187,11 @@ export default function OnboardingStep5Review({
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
       {/* Header Banner */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 4 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3, textAlign: "center" }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 4 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3, textAlign: "center" }}>
         <Box sx={{ display: "inline-flex", p: 2, borderRadius: "50%", backgroundColor: isAllComplete ? "#EEF2FF" : "#FEF3C7", color: isAllComplete ? "#4F46E5" : "#D97706", mb: 2 }}>
           {isAllComplete ? <CheckCircleIcon sx={{ fontSize: 48 }} /> : <WarningAmberIcon sx={{ fontSize: 48 }} />}
         </Box>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mb: 1 }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 1 }}>
           5. Master Profile Review &amp; Confirmation
         </Typography>
         <Typography variant="body2" sx={{ color: "#64748B", maxWidth: 600, mx: "auto" }}>
@@ -249,12 +249,12 @@ export default function OnboardingStep5Review({
       {review && (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mb: 3 }}>
           {/* SECTION 1 — 👤 Personal, Address & Education */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
               <Box sx={{ p: 1, borderRadius: 2, backgroundColor: "#EEF2FF", color: "#6366F1" }}>
                 <PersonIcon fontSize="small" />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Section 1: Personal, Address &amp; Education Details
               </Typography>
             </Box>
@@ -358,7 +358,7 @@ export default function OnboardingStep5Review({
                 </Grid>
 
                 {personal.educationDetails && personal.educationDetails.length > 0 && (
-                  <Box sx={{ p: 2, backgroundColor: "#F8FAFC", borderRadius: 2.5, border: "1px solid #E2E8F0" }}>
+                  <Box sx={{ p: 2, backgroundColor: "action.hover", borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
                     <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase", display: "block", mb: 1 }}>
                       Detailed Education Entries:
                     </Typography>
@@ -378,12 +378,12 @@ export default function OnboardingStep5Review({
           </Paper>
 
           {/* SECTION 2 — 👨‍👩‍👧 Family & Dependents */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
               <Box sx={{ p: 1, borderRadius: 2, backgroundColor: "#F0FDF4", color: "#16A34A" }}>
                 <FamilyRestroomIcon fontSize="small" />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Section 2: Family Details &amp; Dependents
               </Typography>
             </Box>
@@ -399,7 +399,7 @@ export default function OnboardingStep5Review({
                   <Grid key={i} size={{ xs: 12, sm: 6 }}>
                     <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, backgroundColor: "#F8FAFC" }}>
                       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
                           {fam.fullName}
                         </Typography>
                         <Chip label={fam.relationship} size="small" sx={{ backgroundColor: "#DCFCE7", color: "#15803D", fontWeight: 700, fontSize: "11px" }} />
@@ -424,12 +424,12 @@ export default function OnboardingStep5Review({
           </Paper>
 
           {/* SECTION 3 — 🏦 Bank Account Information */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-              <Box sx={{ p: 1, borderRadius: 2, backgroundColor: "#FFF7ED", color: "#EA580C" }}>
+              <Box sx={{ p: 1, borderRadius: 2, backgroundColor: "warning.light", color: "warning.dark" }}>
                 <AccountBalanceIcon fontSize="small" />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Section 3: Bank Account Information
               </Typography>
             </Box>
@@ -448,12 +448,12 @@ export default function OnboardingStep5Review({
           </Paper>
 
           {/* SECTION 4 — 📄 Mandatory Documents Verification */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-              <Box sx={{ p: 1, borderRadius: 2, backgroundColor: "#FAF5FF", color: "#9333EA" }}>
+              <Box sx={{ p: 1, borderRadius: 2, backgroundColor: "secondary.light", color: "secondary.main" }}>
                 <DescriptionIcon fontSize="small" />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Section 4: Mandatory Documents Status
               </Typography>
             </Box>
@@ -489,12 +489,12 @@ export default function OnboardingStep5Review({
       )}
 
       {/* SECTION 5 — ✍️ Declaration & Confirmation */}
-      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ maxWidth: 650, mx: "auto", p: 2.5, backgroundColor: "#F8FAFC", borderRadius: 2.5, border: "1px dashed #CBD5E1" }}>
           <FormControlLabel
             control={<Checkbox {...register("confirmed")} defaultChecked sx={{ color: "#6366F1", "&.Mui-checked": { color: "#4F46E5" } }} />}
             label={
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A", fontSize: "0.88rem" }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", fontSize: "0.88rem" }}>
                 I confirm that all information provided during this onboarding process is accurate, complete, and true to the best of my knowledge.
               </Typography>
             }

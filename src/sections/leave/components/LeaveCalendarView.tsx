@@ -70,7 +70,7 @@ export default function LeaveCalendarView({ requests }: LeaveCalendarViewProps) 
       <Card sx={{ p: { xs: 1.5, sm: 2.5, md: 3 } }}>
         {!calendarData && loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+            <CircularProgress sx={{ color: "primary.main" }} />
           </Box>
         ) : error ? (
           <Alert severity="error" sx={{ borderRadius: 2 }}>
@@ -103,7 +103,7 @@ export default function LeaveCalendarView({ requests }: LeaveCalendarViewProps) 
 
       {/* Title separator */}
       <Box sx={{ mt: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A" }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "text.primary" }}>
           Scheduled Team Leaves — {monthLabel}
         </Typography>
       </Box>
@@ -130,7 +130,7 @@ export default function LeaveCalendarView({ requests }: LeaveCalendarViewProps) 
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={req._id}>
                 <Card sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+                    <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
                       {empName}
                     </Typography>
                     <Chip

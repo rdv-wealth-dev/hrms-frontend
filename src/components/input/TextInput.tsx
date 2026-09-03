@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -155,9 +156,9 @@ function TextInput({
                   tabIndex={-1}
                   disableRipple
                   sx={{
-                    color: showPassword ? "#6D5DF6" : "#9CA3AF",
+                    color: showPassword ? "primary.main" : "text.secondary",
                     mr: 0.5,
-                    "&:hover": { color: "#6D5DF6", background: "transparent" },
+                    "&:hover": { color: "primary.main", background: "transparent" },
                   }}
                 >
                   {showPassword ? (
@@ -188,15 +189,15 @@ function TextInput({
               maxHeight: { xs: "184px !important", sm: "176px !important" },
               maxWidth: "calc(100vw - 32px)",
               borderRadius: "12px",
-              border: "1px solid #E2E8F0",
+              border: "1px solid",
+              borderColor: "divider",
               boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
               overflowY: "auto",
               scrollbarWidth: "thin",
-              scrollbarColor: "#CBD5E1 transparent",
+              scrollbarColor: "divider transparent",
               "&::-webkit-scrollbar": { width: "5px" },
               "&::-webkit-scrollbar-track": { background: "transparent" },
-              "&::-webkit-scrollbar-thumb": { background: "#CBD5E1", borderRadius: "10px" },
-              "&::-webkit-scrollbar-thumb:hover": { background: "#94A3B8" },
+              "&::-webkit-scrollbar-thumb": { backgroundColor: "divider", borderRadius: "10px" },
               "& .MuiMenuItem-root": {
                 fontSize: { xs: "13.5px", sm: "14px" },
                 minHeight: { xs: "44px !important", sm: "40px !important" },
@@ -208,9 +209,9 @@ function TextInput({
                 borderRadius: "6px",
                 mx: 0.5,
                 my: 0.2,
-                color: "#334155",
-                "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
-                "&.Mui-selected": { backgroundColor: "#EEF2FF", color: "#4F46E5", fontWeight: 600 },
+                color: "text.primary",
+                "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+                "&.Mui-selected": { backgroundColor: "primary.lighter", color: "primary.main", fontWeight: 600 },
               },
             },
           },
@@ -231,26 +232,26 @@ function TextInput({
           "& .MuiOutlinedInput-root": {
             minHeight: multiline ? "auto" : 40,
             borderRadius: "12px",
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             fontSize: "14px",
-            color: "#0F172A",
+            color: "text.primary",
             width: "100%",
             boxSizing: "border-box",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             "& fieldset": {
-              borderColor: "#E2E8F0",
+              borderColor: "divider",
               borderWidth: "1.5px",
             },
             "&:hover fieldset": {
-              borderColor: "#CBD5E1",
+              borderColor: "neutral.300",
             },
             "&.Mui-focused": {
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "background.paper",
               "& fieldset": {
-                borderColor: "#6D5DF6",
+                borderColor: "primary.main",
                 borderWidth: "2px",
               },
-              boxShadow: "0 0 0 3px rgba(109, 93, 246, 0.12)",
+              boxShadow: (theme: any) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}`,
             },
           },
           "& .MuiOutlinedInput-input": {
@@ -258,7 +259,7 @@ function TextInput({
             px: "14px",
             pr: select ? "42px !important" : "14px",
             fontSize: "14px",
-            color: "#0F172A",
+            color: "text.primary",
             boxSizing: "border-box",
             overflow: "hidden !important",
             textOverflow: "ellipsis !important",
@@ -274,13 +275,13 @@ function TextInput({
                 transition: "all 0.15s ease",
                 "&:hover": {
                   filter: "invert(0.1)",
-                  backgroundColor: "rgba(109, 93, 246, 0.08)",
+                  backgroundColor: "primary.lighter",
                 },
               },
             },
             "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active": {
-              WebkitBoxShadow: "0 0 0 1000px #FFFFFF inset !important",
-              WebkitTextFillColor: "#0F172A !important",
+              WebkitBoxShadow: (theme: any) => `0 0 0 1000px ${theme.palette.background.paper} inset !important`,
+              WebkitTextFillColor: "currentColor !important",
               transition: "background-color 5000s ease-in-out 0s",
               borderRadius: "12px",
             },
@@ -366,10 +367,10 @@ function TextInput({
               <InfoOutlinedIcon
                 sx={{
                   fontSize: 15,
-                  color: "#64748B",
+                  color: "text.secondary",
                   cursor: "pointer",
                   transition: "color 0.2s ease",
-                  "&:hover": { color: "#6D5DF6" },
+                  "&:hover": { color: "primary.main" },
                 }}
               />
             </Tooltip>

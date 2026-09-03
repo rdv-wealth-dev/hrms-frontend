@@ -237,7 +237,7 @@ function OrganizationProfileContent() {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
-        <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+        <CircularProgress size={40} sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -280,7 +280,7 @@ function OrganizationProfileContent() {
                   p: 1.5,
                   borderRadius: 2,
                   backgroundColor: "rgba(109, 93, 246, 0.08)",
-                  color: "#6D5DF6",
+                  color: "primary.main",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -289,7 +289,7 @@ function OrganizationProfileContent() {
                 <BusinessOutlinedIcon sx={{ fontSize: 32 }} />
               </Box>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 750, color: "#111827" }}>
+                <Typography variant="h6" sx={{ fontWeight: 750, color: "text.primary" }}>
                   Basic Details
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -427,7 +427,7 @@ function OrganizationProfileContent() {
               height: "100%",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
               Corporate Address
             </Typography>
             <Divider />
@@ -498,7 +498,7 @@ function OrganizationProfileContent() {
               height: "100%",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
               Branding & Support
             </Typography>
             <Divider />
@@ -547,8 +547,8 @@ function OrganizationProfileContent() {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <LanguageOutlinedIcon sx={{ color: "#6D5DF6" }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+              <LanguageOutlinedIcon sx={{ color: "primary.main" }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
                 Locale & Regional Settings
               </Typography>
             </Box>
@@ -679,8 +679,8 @@ function OrganizationProfileContent() {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <GavelOutlinedIcon sx={{ color: "#6D5DF6" }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+              <GavelOutlinedIcon sx={{ color: "primary.main" }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
                 Statutory Registration Identifiers
               </Typography>
             </Box>
@@ -748,7 +748,7 @@ function OrganizationProfileContent() {
                   )
                 }
                 sx={{
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   color: "#fff",
                   px: 4,
                   py: 1.5,
@@ -757,7 +757,7 @@ function OrganizationProfileContent() {
                   fontWeight: 600,
                   boxShadow: "0px 4px 12px rgba(109, 93, 246, 0.2)",
                   "&:hover": {
-                    backgroundColor: "#5B4EE4",
+                    backgroundColor: "primary.dark",
                     boxShadow: "0px 6px 16px rgba(109, 93, 246, 0.3)",
                   },
                 }}

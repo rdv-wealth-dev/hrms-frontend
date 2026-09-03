@@ -448,7 +448,7 @@ export default function EmployeeCreateView() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <PersonAddOutlinedIcon color="primary" sx={{ fontSize: 32 }} />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Add New Employee
               </Typography>
               <Typography variant="body2" color="text.secondary">

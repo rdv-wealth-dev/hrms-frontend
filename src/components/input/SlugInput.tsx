@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
@@ -111,17 +112,18 @@ export default function SlugInput({
           height: 40,
           minHeight: 40,
           borderRadius: "12px",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "background.paper",
           overflow: "hidden",
-          border: error
-            ? "1.5px solid #EF4444"
+          border: "1.5px solid",
+          borderColor: error
+            ? "error.main"
             : isFocused
-            ? "2px solid #6D5DF6"
-            : "1.5px solid #E2E8F0",
-          boxShadow: isFocused ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
+            ? "primary.main"
+            : "divider",
+          boxShadow: isFocused ? (theme: any) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}` : "none",
           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           "&:hover": {
-            borderColor: error ? "#EF4444" : isFocused ? "#6D5DF6" : "#CBD5E1",
+            borderColor: error ? "error.main" : isFocused ? "primary.main" : "neutral.300",
           },
         }}
       >
@@ -131,9 +133,10 @@ export default function SlugInput({
             display: "flex",
             alignItems: "center",
             px: 1.8,
-            backgroundColor: "#F1F5F9",
-            borderRight: "1.5px solid #E2E8F0",
-            color: "#64748B",
+            backgroundColor: "action.hover",
+            borderRight: "1.5px solid",
+            borderColor: "divider",
+            color: "text.secondary",
             fontWeight: 500,
             fontSize: "13.5px",
             userSelect: "none",
@@ -160,7 +163,7 @@ export default function SlugInput({
             outline: "none",
             backgroundColor: "transparent",
             fontSize: "14px",
-            color: "#0F172A",
+            color: "text.primary",
             fontFamily: "inherit",
             "&::placeholder": {
               color: "#94A3B8",
@@ -232,10 +235,10 @@ export default function SlugInput({
                     fontSize: "11px",
                     height: 22,
                     cursor: "pointer",
-                    backgroundColor: "#F1F5F9",
-                    color: "#475569",
+                    backgroundColor: "action.hover",
+                    color: "text.secondary",
                     fontWeight: 600,
-                    "&:hover": { backgroundColor: "#6D5DF6", color: "#fff" },
+                    "&:hover": { backgroundColor: "primary.main", color: "primary.contrastText" },
                   }}
                 />
               ))}

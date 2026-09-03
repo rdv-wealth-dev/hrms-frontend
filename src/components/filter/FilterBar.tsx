@@ -42,18 +42,18 @@ export interface FilterBarProps {
 const COMMON_INPUT_SX = {
   height: 40,
   borderRadius: "10px",
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "background.paper",
   fontSize: "14px",
-  color: "#0F172A",
-  "& fieldset": { borderColor: "#E2E8F0" },
-  "&:hover fieldset": { borderColor: "#CBD5E1" },
-  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
+  color: "text.primary",
+  "& fieldset": { borderColor: "divider" },
+  "&:hover fieldset": { borderColor: "neutral.300" },
+  "&.Mui-focused fieldset": { borderColor: "primary.main" },
   "& .MuiOutlinedInput-input": {
     py: 0,
     height: 40,
     fontSize: "14px",
     boxSizing: "border-box",
-    color: "#0F172A",
+    color: "text.primary",
   },
 };
 
@@ -267,13 +267,14 @@ export default function FilterBar({
                 textTransform: "none",
                 fontSize: "14px",
                 fontWeight: isPanelOpen || isSelected ? 600 : 500,
-                backgroundColor: isPanelOpen || isSelected ? "#F5F3FF" : "#FFFFFF",
-                color: isPanelOpen || isSelected ? "#6D5DF6" : "#334155",
-                border: isPanelOpen || isSelected ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                backgroundColor: isPanelOpen || isSelected ? "primary.lighter" : "background.paper",
+                color: isPanelOpen || isSelected ? "primary.main" : "text.secondary",
+                border: "1.5px solid",
+                borderColor: isPanelOpen || isSelected ? "primary.main" : "divider",
                 boxShadow: isPanelOpen ? "0 0 0 3px rgba(109, 93, 246, 0.12)" : "none",
                 "&:hover": {
-                  backgroundColor: isPanelOpen || isSelected ? "#F5F3FF" : "#F8FAFC",
-                  borderColor: "#6D5DF6",
+                  backgroundColor: isPanelOpen || isSelected ? "primary.lighter" : "action.hover",
+                  borderColor: "primary.main",
                 },
                 transition: "all 0.15s ease-in-out",
               }}
@@ -298,9 +299,9 @@ export default function FilterBar({
               textTransform: "none",
               fontWeight: 600,
               fontSize: "13px",
-              color: "#64748B",
+              color: "text.secondary",
               px: 1.5,
-              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             Reset Filters
@@ -317,8 +318,9 @@ export default function FilterBar({
               mt: 1.5,
               p: 2.5,
               borderRadius: "14px",
-              border: "1px solid #E2E8F0",
-              backgroundColor: "#FFFFFF",
+              border: "1px solid",
+              borderColor: "divider",
+              backgroundColor: "background.paper",
               boxShadow: "0 4px 16px rgba(0,0,0,0.04)",
             }}
           >
@@ -353,7 +355,7 @@ export default function FilterBar({
                         const allVals = (activeField.options || []).map((o) => o.value).filter((v) => v !== "ALL");
                         if (onFilterChange) onFilterChange(activeField.key, allVals);
                       }}
-                      sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", py: 0.2, px: 0.8, color: "#6D5DF6" }}
+                      sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", py: 0.2, px: 0.8, color: "primary.main" }}
                     >
                       Select All
                     </Button>
@@ -374,8 +376,8 @@ export default function FilterBar({
                 size="small"
                 onClick={() => setActivePanelKey(null)}
                 sx={{
-                  color: "#64748B",
-                  "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+                  color: "text.secondary",
+                  "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
                 }}
               >
                 <CloseIcon sx={{ fontSize: 18 }} />
@@ -478,13 +480,14 @@ export default function FilterBar({
                             textTransform: "none",
                             fontSize: "13.5px",
                             fontWeight: isAllSelected ? 600 : 500,
-                            backgroundColor: isAllSelected ? "#6D5DF6" : "#FFFFFF",
-                            color: isAllSelected ? "#FFFFFF" : "#334155",
-                            border: isAllSelected ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                            backgroundColor: isAllSelected ? "primary.main" : "background.paper",
+                            color: isAllSelected ? "primary.contrastText" : "text.secondary",
+                            border: "1.5px solid",
+                            borderColor: isAllSelected ? "primary.main" : "divider",
                             boxShadow: isAllSelected ? "0 2px 8px rgba(109, 93, 246, 0.25)" : "none",
                             "&:hover": {
-                              backgroundColor: isAllSelected ? "#5B4BEA" : "#F8FAFC",
-                              borderColor: "#6D5DF6",
+                              backgroundColor: isAllSelected ? "primary.dark" : "action.hover",
+                              borderColor: "primary.main",
                             },
                           }}
                         >
@@ -515,13 +518,14 @@ export default function FilterBar({
                                 textTransform: "none",
                                 fontSize: "13.5px",
                                 fontWeight: isSelected ? 600 : 500,
-                                backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
-                                color: isSelected ? "#FFFFFF" : "#334155",
-                                border: isSelected ? "1.5px solid #6D5DF6" : "1px solid #E2E8F0",
+                                backgroundColor: isSelected ? "primary.main" : "background.paper",
+                                color: isSelected ? "primary.contrastText" : "text.secondary",
+                                border: "1.5px solid",
+                                borderColor: isSelected ? "primary.main" : "divider",
                                 boxShadow: isSelected ? "0 2px 8px rgba(109, 93, 246, 0.25)" : "none",
                                 "&:hover": {
-                                  backgroundColor: isSelected ? "#5B4BEA" : "#F8FAFC",
-                                  borderColor: "#6D5DF6",
+                                  backgroundColor: isSelected ? "primary.dark" : "action.hover",
+                                  borderColor: "primary.main",
                                 },
                               }}
                             >
@@ -559,13 +563,14 @@ export default function FilterBar({
                           textTransform: "none",
                           fontSize: "13.5px",
                           fontWeight: isSelected ? 600 : 500,
-                          backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
-                          color: isSelected ? "#FFFFFF" : "#334155",
-                          border: isSelected ? "1px solid #6D5DF6" : "1px solid #E2E8F0",
+                          backgroundColor: isSelected ? "primary.main" : "background.paper",
+                          color: isSelected ? "primary.contrastText" : "text.secondary",
+                          border: "1px solid",
+                          borderColor: isSelected ? "primary.main" : "divider",
                           boxShadow: isSelected ? "0 2px 8px rgba(109, 93, 246, 0.25)" : "none",
                           "&:hover": {
-                            backgroundColor: isSelected ? "#5B4BEA" : "#F8FAFC",
-                            borderColor: isSelected ? "#5B4BEA" : "#CBD5E1",
+                            backgroundColor: isSelected ? "primary.dark" : "action.hover",
+                            borderColor: isSelected ? "primary.dark" : "divider",
                           },
                           transition: "all 0.15s ease-in-out",
                         }}

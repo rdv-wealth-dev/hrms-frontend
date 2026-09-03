@@ -22,7 +22,7 @@ interface LeaveBalanceDetailsDialogProps {
 }
 
 const LEAVE_TYPE_COLOR_MAP: Record<string, { bg: string; color: string; border: string }> = {
-  CL: { bg: "rgba(109, 93, 246, 0.08)", color: "#6D5DF6", border: "rgba(109, 93, 246, 0.2)" },
+  CL: { bg: "primary.lighter", color: "primary.main", border: "primary.lighter" },
   SL: { bg: "rgba(239, 68, 68, 0.08)", color: "#EF4444", border: "rgba(239, 68, 68, 0.2)" },
   EL: { bg: "rgba(16, 185, 129, 0.08)", color: "#10B981", border: "rgba(16, 185, 129, 0.2)" },
   PL: { bg: "rgba(16, 185, 129, 0.08)", color: "#10B981", border: "rgba(16, 185, 129, 0.2)" },
@@ -121,9 +121,10 @@ export default function LeaveBalanceDetailsDialog({
           sx: {
             borderRadius: "20px",
             p: { xs: 2.5, sm: 3 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
           },
         },
       }}
@@ -145,7 +146,7 @@ export default function LeaveBalanceDetailsDialog({
             sx={{
               width: 42,
               height: 42,
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               color: "#FFFFFF",
               fontSize: "14px",
               fontWeight: 700,
@@ -154,7 +155,7 @@ export default function LeaveBalanceDetailsDialog({
             {initials}
           </Avatar>
           <Box>
-            <Typography sx={{ fontSize: { xs: "15px", sm: "18px" }, fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: { xs: "15px", sm: "18px" }, fontWeight: 700, color: "text.primary", lineHeight: 1.2 }}>
               Leave Balance Details
             </Typography>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>
@@ -169,7 +170,7 @@ export default function LeaveBalanceDetailsDialog({
           sx={{
             color: "#64748B",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -201,7 +202,7 @@ export default function LeaveBalanceDetailsDialog({
                 width: 44,
                 height: 44,
                 borderRadius: "12px",
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 color: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
@@ -215,7 +216,7 @@ export default function LeaveBalanceDetailsDialog({
               <Typography sx={{ fontSize: "11px", fontWeight: 600, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 Total Available Balance
               </Typography>
-              <Typography sx={{ fontSize: { xs: "1.35rem", sm: "1.5rem" }, fontWeight: 700, color: "#0F172A" }}>
+              <Typography sx={{ fontSize: { xs: "1.35rem", sm: "1.5rem" }, fontWeight: 700, color: "text.primary" }}>
                 {totalAvailable} <Typography component="span" sx={{ fontSize: "13px", fontWeight: 600, color: "#64748B" }}>Days Remaining</Typography>
               </Typography>
             </Box>
@@ -226,7 +227,7 @@ export default function LeaveBalanceDetailsDialog({
               <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block" }}>
                 Allocated
               </Typography>
-              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
                 {totalAllocated} Days
               </Typography>
             </Box>
@@ -246,7 +247,7 @@ export default function LeaveBalanceDetailsDialog({
           sx={{
             fontSize: "14px",
             fontWeight: 600,
-            color: "#0F172A",
+            color: "text.primary",
             mb: 2,
             display: "flex",
             alignItems: "center",
@@ -255,7 +256,7 @@ export default function LeaveBalanceDetailsDialog({
             textAlign: "center",
           }}
         >
-          <CheckCircleOutlinedIcon sx={{ fontSize: 18, color: "#6D5DF6" }} />
+          <CheckCircleOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
           Leave Type Quota & Balance Breakdown
         </Typography>
 
@@ -280,8 +281,9 @@ export default function LeaveBalanceDetailsDialog({
                   sx={{
                     p: 1.5,
                     borderRadius: 2.5,
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#FFFFFF",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "background.paper",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -298,7 +300,7 @@ export default function LeaveBalanceDetailsDialog({
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.75, mb: 0.75, flexWrap: "wrap" }}>
-                    <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "#0F172A" }}>
+                    <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "text.primary" }}>
                       {item.name}
                     </Typography>
                     <Chip
@@ -316,7 +318,7 @@ export default function LeaveBalanceDetailsDialog({
 
                   {/* Centered Numbers Breakdown */}
                   <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 0.75 }}>
-                    <Typography sx={{ fontSize: "1.1rem", fontWeight: 700, color: "#0F172A" }}>
+                    <Typography sx={{ fontSize: "1.1rem", fontWeight: 700, color: "text.primary" }}>
                       {item.available}
                     </Typography>
                     <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#64748B" }}>
@@ -331,7 +333,7 @@ export default function LeaveBalanceDetailsDialog({
 
                   {/* Centered Footer Notes */}
                   {item.carriedForward > 0 && (
-                    <Typography variant="caption" sx={{ color: "#6D5DF6", fontSize: "10px", fontWeight: 600, display: "block", mt: 0.5 }}>
+                    <Typography variant="caption" sx={{ color: "primary.main", fontSize: "10px", fontWeight: 600, display: "block", mt: 0.5 }}>
                       Includes {item.carriedForward} carried-forward days
                     </Typography>
                   )}

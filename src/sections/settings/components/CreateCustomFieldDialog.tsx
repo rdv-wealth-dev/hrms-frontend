@@ -180,7 +180,7 @@ export function CreateCustomFieldDialog({
         }}
       >
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A" }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "text.primary" }}>
             Add New Custom Field
           </Typography>
           <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -315,7 +315,7 @@ export function CreateCustomFieldDialog({
 
           {/* Toggles */}
           <Grid size={{ xs: 12 }}>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, p: 1.5, borderRadius: 2, backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, p: 1.5, borderRadius: 2, backgroundColor: "action.hover", border: "1px solid", borderColor: "divider" }}>
               <FormControlLabel
                 control={<Switch checked={isRequired} onChange={(e) => setIsRequired(e.target.checked)} color="primary" />}
                 label={<Typography variant="body2" sx={{ fontWeight: 600 }}>Required Field</Typography>}
@@ -334,10 +334,10 @@ export function CreateCustomFieldDialog({
           {/* Dynamic Options List Builder (for SELECT or MULTI_SELECT) */}
           {(fieldType === "SELECT" || fieldType === "MULTI_SELECT") && (
             <Grid size={{ xs: 12 }}>
-              <Box sx={{ mt: 1, p: 2, borderRadius: 3, border: "1px solid #E2E8F0", backgroundColor: "#FAFAFA" }}>
+              <Box sx={{ mt: 1, p: 2, borderRadius: 3, border: "1px solid", borderColor: "divider", backgroundColor: "#FAFAFA" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
                       Field Options ({options.length})
                     </Typography>
                     <Chip label="Pills / Select Items" size="small" sx={{ fontSize: 10, fontWeight: 700, backgroundColor: "#EEF2FF", color: "#4F46E5" }} />
@@ -346,7 +346,7 @@ export function CreateCustomFieldDialog({
                     size="small"
                     startIcon={<AddIcon />}
                     onClick={handleAddOption}
-                    sx={{ textTransform: "none", fontWeight: 600, color: "#6D5DF6" }}
+                    sx={{ textTransform: "none", fontWeight: 600, color: "primary.main" }}
                   >
                     Add Option
                   </Button>

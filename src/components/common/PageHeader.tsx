@@ -20,7 +20,7 @@ export function PageHeader({
   title,
   subtitle,
   icon,
-  iconBg = "rgba(109, 93, 246, 0.1)",
+  iconBg = "primary.lighter",
   action,
   viewSwitcher,
   extra,

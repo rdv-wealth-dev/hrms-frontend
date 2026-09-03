@@ -136,7 +136,7 @@ export default function LeaveApprovalsView() {
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 1.5 }}>
-          <PolicyOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
+          <PolicyOutlinedIcon sx={{ fontSize: 36, color: "primary.main" }} />
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               Leave Approvals
@@ -157,7 +157,7 @@ export default function LeaveApprovalsView() {
         {/* List Content */}
         {loading && pendingRequests.length === 0 ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+            <CircularProgress sx={{ color: "primary.main" }} />
           </Box>
         ) : pendingRequests.length === 0 ? (
           <Paper
@@ -203,7 +203,7 @@ export default function LeaveApprovalsView() {
                       <TableRow key={request._id} hover>
                         {/* Employee */}
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                             {empName}
                           </Typography>
                           <Typography variant="caption" sx={{ color: "text.secondary" }}>

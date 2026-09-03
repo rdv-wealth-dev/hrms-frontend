@@ -69,7 +69,7 @@ export function DashboardHeader({
         variant="h4"
         sx={{
           fontWeight: 800,
-          color: "#111827",
+          color: "text.primary",
           fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" },
           lineHeight: 1.3,
         }}

@@ -31,7 +31,7 @@ export function RecentEmployeesTable() {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
             Recent Employees
           </Typography>
           <Box
@@ -55,7 +55,7 @@ export function RecentEmployeesTable() {
           endIcon={<ArrowForwardOutlinedIcon sx={{ fontSize: "14px !important" }} />}
           sx={{
             textTransform: "none",
-            color: "#6D5DF6",
+            color: "primary.main",
             fontWeight: 600,
             fontSize: "0.8rem",
             p: 0,
@@ -98,7 +98,7 @@ export function RecentEmployeesTable() {
                     variant="body2"
                     sx={{
                       fontWeight: 700,
-                      color: "#111827",
+                      color: "text.primary",
                       fontSize: "0.85rem",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -130,12 +130,13 @@ export function RecentEmployeesTable() {
       <Box sx={{ pt: 2, mt: 1, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
         <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
           Manage all team profiles and organization hierarchy in{" "}
-          <span
+          <Box
+            component="span"
             onClick={() => navigate(paths.employees.directory)}
-            style={{ color: "#6D5DF6", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+            sx={{ color: "primary.main", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
           >
             Employee Directory
-          </span>
+          </Box>
         </Typography>
       </Box>
     </Card>

@@ -161,9 +161,10 @@ export function ReparentNodeDialog({
           sx: {
             borderRadius: { xs: "12px", sm: "18px" },
             p: { xs: 2, sm: 3 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
           },
         },
       }}
@@ -176,8 +177,8 @@ export function ReparentNodeDialog({
                 width: 40,
                 height: 40,
                 borderRadius: "10px",
-                backgroundColor: "rgba(109, 93, 246, 0.1)",
-                color: "#6D5DF6",
+                backgroundColor: "primary.lighter",
+                color: "primary.main",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -186,7 +187,7 @@ export function ReparentNodeDialog({
               <AccountTreeOutlinedIcon sx={{ fontSize: 22 }} />
             </Box>
             <Box>
-              <Typography sx={{ fontSize: "17px", fontWeight: 700, color: "#0F172A" }}>
+              <Typography sx={{ fontSize: "17px", fontWeight: 700, color: "text.primary" }}>
                 Change Reporting Line (Reparent)
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: "13px" }}>
@@ -200,9 +201,9 @@ export function ReparentNodeDialog({
             size="small"
             disabled={submitting}
             sx={{
-              color: "#64748B",
+              color: "text.secondary",
               borderRadius: "8px",
-              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             <CloseIcon sx={{ fontSize: 20 }} />
@@ -223,22 +224,23 @@ export function ReparentNodeDialog({
             sx={{
               p: 2,
               borderRadius: "12px",
-              backgroundColor: "#F8FAFC",
-              border: "1px solid #E2E8F0",
+              backgroundColor: "action.hover",
+              border: "1px solid",
+              borderColor: "divider",
               mb: 2.5,
             }}
           >
-            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", mb: 1, display: "block" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", mb: 1, display: "block" }}>
               Selected Node to Reparent
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 <CustomAvatar name={nodeName} src={node?.assignedEmployee?.avatarUrl} size={42} />
                 <Box>
-                  <Typography sx={{ fontWeight: 700, fontSize: "15px", color: "#0F172A" }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: "15px", color: "text.primary" }}>
                     {nodeName}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#6D5DF6", fontWeight: 600 }}>
+                  <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 600 }}>
                     {nodeTitle} {nodeDept ? `• ${nodeDept}` : ""}
                   </Typography>
                 </Box>
@@ -293,7 +295,8 @@ export function ReparentNodeDialog({
           sx={{
             p: 0,
             pt: 2.5,
-            borderTop: "1px solid #E2E8F0",
+            borderTop: "1px solid",
+            borderColor: "divider",
             display: "flex",
             justifyContent: "flex-end",
             gap: 1.5,
@@ -307,10 +310,10 @@ export function ReparentNodeDialog({
               borderRadius: "10px",
               px: 2.5,
               textTransform: "none",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
+              backgroundColor: "action.hover",
+              color: "text.secondary",
               fontWeight: 600,
-              "&:hover": { backgroundColor: "#E2E8F0" },
+              "&:hover": { backgroundColor: "divider" },
             }}
           >
             Cancel
@@ -326,10 +329,10 @@ export function ReparentNodeDialog({
               borderRadius: "10px",
               px: 3,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               fontWeight: 700,
               boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? <CircularProgress size={18} color="inherit" /> : "Confirm Move"}

@@ -70,15 +70,16 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
         width: { xs: 260, sm: 290 },
         p: 2,
         borderRadius: "16px",
-        backgroundColor: "#FFFFFF",
-        border: "1px solid #E2E8F0",
+        backgroundColor: "background.paper",
+        border: "1px solid",
+        borderColor: "divider",
         boxShadow: "0 4px 14px rgba(15, 23, 42, 0.05)",
         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         position: "relative",
         "&:hover": {
           transform: "translateY(-3px)",
           boxShadow: "0 12px 24px -4px rgba(109, 93, 246, 0.15)",
-          borderColor: "#6D5DF6",
+          borderColor: "primary.main",
         },
       }}
     >
@@ -102,7 +103,7 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
                 sx={{
                   fontWeight: 700,
                   fontSize: "14.5px",
-                  color: isVacant ? "#94A3B8" : "#0F172A",
+                  color: isVacant ? "text.secondary" : "text.primary",
                   lineHeight: 1.2,
                 }}
               >
@@ -113,7 +114,7 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
                 variant="caption"
                 sx={{
                   fontWeight: 600,
-                  color: "#6D5DF6",
+                  color: "primary.main",
                   fontSize: "12.5px",
                   display: "block",
                   mt: 0.2,
@@ -132,7 +133,7 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
               color: "#94A3B8",
               p: 0.5,
               borderRadius: "8px",
-              "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
             }}
           >
             <MoreVertIcon sx={{ fontSize: 18 }} />
@@ -167,8 +168,8 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
                 px: 1,
                 py: 0.3,
                 borderRadius: "12px",
-                backgroundColor: "rgba(109, 93, 246, 0.08)",
-                color: "#6D5DF6",
+                backgroundColor: "primary.lighter",
+                color: "primary.main",
               }}
             >
               <GroupsOutlinedIcon sx={{ fontSize: 14 }} />
@@ -190,7 +191,8 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
             sx: {
               borderRadius: "12px",
               boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-              border: "1px solid #E2E8F0",
+              border: "1px solid",
+              borderColor: "divider",
               minWidth: 200,
             },
           },
@@ -209,7 +211,7 @@ export default function EmployeeCard({ employee, onReparent }: EmployeeCardProps
 
         {canUpdateOrgTree && (
           <MenuItem onClick={handleReparentClick}>
-            <ListItemIcon sx={{ minWidth: 28, color: "#6D5DF6" }}>
+            <ListItemIcon sx={{ minWidth: 28, color: "primary.main" }}>
               <AccountTreeOutlinedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText

@@ -65,8 +65,8 @@ export default function OnboardingStep3Bank({
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 2.5 }}>
           3. Bank Account Details
         </Typography>
 

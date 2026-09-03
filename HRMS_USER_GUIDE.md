@@ -496,10 +496,243 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 ---
 
 ### **3.3 Employee Profile Tabs**
-* **Route**: `/employees/profile/:id`
-* **Testing Steps**:
-  * Click on any employee row to open their 360-degree profile.
-  * Test tab navigation: **Overview**, **Personal Info**, **Attendance Log**, **Leave History**, **Documents**, **Payroll**.
+
+* **Routes**: `/profile` (Self Profile), `/employees/:id` (Employee 360° Profile)
+* **Overview**: Comprehensive employee profile hub providing a 360-degree view of employee personal details, organizational placement, reporting hierarchy, attendance logs, leave balances, bank accounts, salary structure, and uploaded verification documents. Features 6 active primary tabs (**Overview**, **Personal**, **Attendance**, **Leave**, **Payroll**, **Documents**), live profile picture cropping/uploading, emergency contact management, leave application, bank account linking, and salary structure assignment.
+
+---
+
+🧭 **How to Get Here**:
+* **Self Profile**: After logging in, click **My Profile** (with the `<PersonIcon />`) located at the bottom of the left sidebar navigation. This navigates directly to `/profile` (defaulting to `/profile?tab=overview`). Accessible to all logged-in users regardless of role.
+* **Employee 360° Profile**: Click **Employees** in the left sidebar (under main navigation), select **Directory** or **Employee List** (`/employees/directory`), and click on any employee row/card. This opens `/employees/:id`. Accessing another employee's profile requires `employee.read` permission.
+
+---
+
+### 📝 Step-by-Step Field Guide: Profile Actions & Modals (By Section Tab)
+
+#### 🔷 A. Overview Section Tab (`?tab=overview`)
+
+##### 1. 📷 Upload Profile Picture (Avatar) Dialog
+* **Trigger**: Hover over or click the blue edit pencil icon (`<EditOutlinedIcon />`) at the bottom-right of the avatar frame on the hero header card.
+* **Modal**: `UploadAvatarDialog.tsx`
+* **Fields & Controls**:
+  * **Image File Input**: Click the circular upload zone or **Change Photo** link. Accepts `.png`, `.jpg`, `.jpeg`, `.webp` image files up to **5MB**. Selecting an invalid file type displays `"Invalid file type. Please select an image file (PNG, JPG, WEBP)."`. Exceeding 5MB displays `"File size exceeds 5MB limit. Please select a smaller image."`.
+  * **Interactive Image Cropper**: Renders a circular cropping canvas (`CROP_SIZE = 220px`). Drag the photo within the frame to position.
+  * **Zoom Controls**: Use the zoom slider, **Zoom In** (`+`), **Zoom Out** (`-`), mouse wheel scroll, or **Reset** (🔄) button to scale the image between `1.0x` and `3.0x`.
+  * **Submit Button (`Upload Picture`)**: Generates a 400x400 PNG crop canvas and submits via `PATCH /api/v1/employees/me/avatar` (or `PATCH /api/v1/employees/:id/avatar`). On success, dispatches toast `"Profile picture updated successfully"` and updates the header avatar across the app.
+
+##### 2. 💡 Add Skill or Expertise Modal
+* **Trigger**: Click **+ Add Skill** chip on the **Skills & Expertise** card inside the **Overview** tab (`?tab=overview`).
+* **Modal**: Built-in `Dialog` in `OverviewTab.tsx`
+* **Fields & Controls**:
+  * **Skill Name**: Text input for technical or domain skill (e.g. `Docker`, `Python`, `TypeScript`).
+  * **Submit Button (`Add Skill`)**: Appends skill chip to local profile state and displays toast `"Skill added to profile"`.
+
+---
+
+#### 🔷 B. Personal Section Tab (`?tab=personal`)
+
+##### 3. ✏️ Edit Personal Details & Address Modal
+* **Trigger**: Click **Edit Details** at the top right of the **Personal Information** card inside the **Personal** tab (`?tab=personal`).
+* **Modal**: Built-in `Dialog` in `ProfileView.tsx`
+* **Fields & Controls**:
+  * **Phone Number**: Plain text input. Enter a 10-digit mobile number (e.g. `9876543210`). Optional.
+  * **Date of Birth**: Native date picker (`YYYY-MM-DD`). E.g. `1995-08-15`. Optional.
+  * **Gender**: Dropdown select with options `MALE`, `FEMALE`, `OTHER`. Optional.
+  * **Country Code**: Text input for 2-letter ISO country code (e.g. `IN`). Defaults to `IN`.
+  * **Address Line 1**: Text input for street/house address (e.g. `123 MG Road, Koramangala`). Optional.
+  * **City**: Text input for city (e.g. `Bangalore`). Optional.
+  * **State**: Text input for state (e.g. `Karnataka`). Optional.
+  * **Pincode / Zip**: Text input for postal code (e.g. `560001`). Optional.
+  * **Submit Button (`Save Changes`)**: Submits payload to `PATCH /api/v1/employees/me`. Displays toast `"Personal details and address updated successfully"`.
+
+##### 4. 🚨 Add Emergency Contact Modal
+* **Trigger**: Click **Add Contact** (`+`) at the top right of the **Emergency Contacts** card in the **Personal** tab (`?tab=personal`).
+* **Modal**: `EmergencyContactDialog.tsx`
+* **Fields & Controls**:
+  * **Full Name** (`name`): Exact text input. Required. E.g. `Anita Nair`.
+  * **Relationship** (`relationship`): Exact text input. Required. E.g. `Mother`, `Father`, `Spouse`.
+  * **Phone Number** (`phone`): Numeric phone input. Auto-strips non-digits (`replace(/\D/g, "")`) and caps at 10 digits. Required. E.g. `9876500001`.
+  * **Submit Button (`Save Contact`)**: Appends contact to `emergencyContacts` array and updates profile via `PATCH /api/v1/employees/me`. Displays toast `"Emergency contact added successfully"`.
+
+---
+
+#### 🔷 C. Attendance Section Tab (`?tab=attendance`)
+
+##### 5. ⏰ Attendance Log & Calendar View
+* **Trigger**: Click the **Attendance** tab (`?tab=attendance`).
+* **Controls & Views**:
+  * **Date Range Filters**: **From Date** (defaults to 1st of current month `YYYY-MM-01`) and **To Date** (defaults to current date `YYYY-MM-DD`).
+  * **View Switcher**: Toggle between **List View** (structured table with columns Date, Status, Check In, Check Out, Worked Hours, Actions) and **Calendar View** (FullCalendar interactive grid color-coded by status: Green = Present, Orange = Late/Half Day, Red = Absent, Blue = On Leave).
+  * **Monthly Summary Card**: Displays statistics for the selected period (Total Working Days, Days Present, Days Late, Days Absent, Leaves Taken, Total Worked Hours).
+  * **Attendance Record Detail Modal**: Click any log row in List View or event block in Calendar View to open detailed punch logs, IP/location metadata, and regularization status.
+
+##### 6. ➕ Manual Attendance Entry Modal
+* **Trigger**: Click **+ Manual Entry** button in **Attendance** tab (visible only if user holds `attendance.create` permission).
+* **Modal**: `ManualAttendanceDialog.tsx`
+* **Fields & Controls**:
+  * **Date**: Date picker (`YYYY-MM-DD`). E.g. `2025-06-10`. Required.
+  * **Punch In Time**: Time picker (`HH:mm`). E.g. `09:15 AM`. Required.
+  * **Punch Out Time**: Time picker (`HH:mm`). E.g. `06:30 PM`. Required.
+  * **Attendance Status**: Select dropdown with options `PRESENT`, `LATE`, `HALF_DAY`, `ABSENT`. Required.
+  * **Notes / Reason**: Text input for admin override justification. Optional.
+  * **Submit Button (`Save Log`)**: Submits payload to `POST /api/v1/attendance/manual`. Displays toast `"Attendance record added successfully"`.
+
+##### 7. 📝 Regularize Attendance Request Modal
+* **Trigger**: Click **Regularize** button on any attendance log entry row or click **+ Regularize Request** in the **Attendance** tab (`?tab=attendance`).
+* **Modal**: `RegularizeRequestDialog.tsx`
+* **Fields & Controls**:
+  * **Target Attendance Date**: Pre-filled or date picker (`YYYY-MM-DD`). E.g. `2025-06-15`. Required.
+  * **Requested Check-In Time**: Time picker (`HH:mm`). E.g. `09:00 AM`. Required.
+  * **Requested Check-Out Time**: Time picker (`HH:mm`). E.g. `06:00 PM`. Required.
+  * **Reason for Regularization**: Textarea input explaining reason (e.g. `Forgot to punch in due to client meeting`). Required.
+  * **Submit Button (`Submit Request`)**: Submits payload to `POST /api/v1/attendance/regularize`. Displays toast `"Regularization request submitted successfully"`.
+
+---
+
+#### 🔷 D. Leave Section Tab (`?tab=leave`)
+
+##### 8. 🌴 Leave Balances & Requests Overview
+* **Trigger**: Click the **Leave** tab (`?tab=leave`).
+* **Components**:
+  * **Leave Balances Grid**: Displays available leave balances by policy type (e.g. *Casual Leave*, *Sick Leave*, *Earned Leave*) with available days count and total quota.
+  * **My Leave Applications Table**: Displays submitted leave requests with columns `LEAVE TYPE`, `DATES`, `DAYS`, `REASON`, `STATUS` (`PENDING`, `APPROVED`, `REJECTED`, `CANCELLED`).
+
+##### 9. 📝 Apply for Leave Modal
+* **Trigger**: Click **Apply Leave** (`+`) button at the top right of the **Leave** tab (`?tab=leave`).
+* **Modal**: `ApplyLeaveDialog.tsx`
+* **Fields & Controls**:
+  * **Leave Type**: Select dropdown displaying available leave policies and balances (e.g. `Casual Leave (CL) — Balance: 10`). Required.
+  * **From Date**: Native date picker (`YYYY-MM-DD`). E.g. `2025-07-10`. Required.
+  * **From Session**: Select dropdown with options `Full Day` (`FULL_DAY`), `First Half` (`FIRST_HALF`), `Second Half` (`SECOND_HALF`). Defaults to `FULL_DAY`.
+  * **To Date**: Native date picker (`YYYY-MM-DD`). E.g. `2025-07-12`. Required.
+  * **To Session**: Select dropdown with options `Full Day` (`FULL_DAY`), `First Half` (`FIRST_HALF`), `Second Half` (`SECOND_HALF`). Defaults to `FULL_DAY`.
+  * **Reason for Leave**: Textarea input explaining leave reason (minimum 5 characters). Required. Entering less than 5 characters displays red error text: `"Reason must be at least 5 characters long."`.
+  * **Submit Button (`Submit`)**: Submits payload to `POST /api/v1/leave/requests`. Displays toast `"Leave application submitted successfully!"`.
+
+---
+
+#### 🔷 E. Documents Section Tab (`?tab=documents`)
+
+##### 10. 📄 Upload Verification Document Modal
+* **Trigger**: Click **Upload Document** at the top right of the **Documents** tab (`?tab=documents`).
+* **Modal**: `DocumentsTab.tsx`
+* **Fields & Controls**:
+  * **Document Type**: Select dropdown with options: `PAN Card` (`PAN`), `Aadhaar Card` (`AADHAAR`), `Passport` (`PASSPORT`), `Driving License` (`DRIVING_LICENSE`), `Offer Letter` (`OFFER_LETTER`), `Resume` (`RESUME`), `Degree` (`DEGREE`), `Experience Letter` (`EXPERIENCE`), `Other` (`OTHER`). Defaults to `PAN`. Required.
+  * **Select File**: File input accepting `.jpg`, `.jpeg`, `.pdf` formats. Required. Selecting unsupported file types displays red alert: `"Only JPG, JPEG, and PDF files are allowed."`.
+  * **Submit Button (`Upload`)**: Uploads multipart form data to `POST /api/v1/documents`. Displays toast `"Document uploaded — awaiting HR verification"`.
+
+---
+
+#### 🔷 F. Payroll Section Tab (`?tab=payroll`)
+
+##### 11. 🏦 Add Bank Account Modal
+* **Trigger**: Click **Add Bank Account** at the top right of the **Bank Accounts** card inside the **Payroll** tab (`?tab=payroll`).
+* **Modal**: Built-in `Dialog` in `PayrollTab.tsx`
+* **Fields & Controls**:
+  * **Bank Name**: Text input for official bank name (e.g. `State Bank of India`). Required.
+  * **Account Number**: Text input for bank account number (8–20 digits, e.g. `1234567890`). Required.
+  * **IFSC Code**: Text input for 11-character IFSC code (e.g. `SBIN0001234`). Required. Auto-converts input to uppercase.
+  * **Account Type**: Select dropdown with options `Salary` (`SALARY`), `Savings` (`SAVINGS`), `Current` (`CURRENT`). Defaults to `SALARY`.
+  * **Set as primary account**: Toggle switch (`isPrimary`). Defaults to `false`.
+  * **Submit Button (`Save`)**: Submits payload to `POST /api/v1/employees/me/bank-accounts` (or `POST /api/v1/employees/:id/bank-accounts`). Displays toast `"Bank account added successfully"`.
+
+##### 12. 💰 Assign / Revise Salary Structure Modal
+* **Trigger**: Click **Assign Salary Structure** or **Revise Salary Structure** button in the **Payroll** tab (`?tab=payroll`). Available only to `ORG_ADMIN`, `HR_ADMIN`, `isSuperAdmin`, or users holding `payroll.create`, `payroll.run`, or `employee.update` permissions.
+* **Modal**: `SalaryStructureDialog.tsx`
+* **Fields & Controls**:
+  * **Annual CTC (₹)** (`ctcAnnual`): Number input for annual compensation (e.g. `1200000`). Required. Typing automatically calculates:
+    * **Calculated Gross Monthly**: $\text{Annual CTC} / 12$ (e.g. ₹1,00,000 / mo).
+    * **Basic Salary (Monthly)**: 50% of monthly gross (e.g. ₹50,000).
+    * **HRA (Monthly)**: 25% of monthly gross (e.g. ₹25,000).
+    * **Special Allowance (Monthly)**: Remaining balance (e.g. ₹25,000).
+  * **Currency**: Select dropdown with options `INR (₹)`, `USD ($)`, `EUR (€)`, `GBP (£)`. Defaults to `INR`.
+  * **Basic Salary (Monthly)**: Override input for basic component.
+  * **HRA (Monthly)**: Override input for House Rent Allowance component.
+  * **Special Allowance (Monthly)**: Override input for Special Allowance component.
+  * **Submit Button (`Save Salary Structure`)**: Submits payload to `POST /api/v1/payroll/structures`. Displays toast `"Salary structure assigned successfully!"`.
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Tab Navigation & Query Sync** | Click any profile tab (**Overview**, **Personal**, **Attendance**, **Leave**, **Payroll**, **Documents**) | URL updates with query parameter (e.g. `/profile?tab=leave`). Selected tab renders wrapped in `<Suspense>` fallback loader. | [`ProfileView.tsx:L108-L111`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L108-L111) |
+| **Upload Avatar** | Select PNG image $\le 5\text{MB}$, adjust zoom slider to `1.2x`, click **Upload Picture** | API `PATCH /api/v1/employees/me/avatar` returns 200. Toast displays `"Profile picture updated successfully"`. Header avatar updates with cache-busting timestamp `?t=...`. | [`ProfileView.tsx:L143-L153`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L143-L153), [`UploadAvatarDialog.tsx:L99-L103`](file:///d:/hrms/src/sections/profile/components/UploadAvatarDialog.tsx#L99-L103) |
+| **Add Skill** | Click **+ Add Skill**, enter `Docker`, click **Add Skill** | Skill chip added to Overview card, toast displays `"Skill added to profile"`. | [`OverviewTab.tsx:L521-L528`](file:///d:/hrms/src/sections/profile/components/OverviewTab.tsx#L521-L528) |
+| **Edit Personal Details** | Click **Edit Details**, update phone to `9876543210` & city to `Bangalore`, click **Save Changes** | API `PATCH /api/v1/employees/me` returns 200. Modal closes, profile reloads, and toast displays `"Personal details and address updated successfully"`. | [`ProfileView.tsx:L267-L271`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L267-L271) |
+| **Add Emergency Contact** | Click **Add Contact**, enter Name: `Anita Nair`, Relationship: `Mother`, Phone: `9876500001`, click **Save Contact** | API `PATCH /api/v1/employees/me` appends contact. Modal closes and toast displays `"Emergency contact added successfully"`. | [`PersonalTab.tsx:L61-L65`](file:///d:/hrms/src/sections/profile/components/PersonalTab.tsx#L61-L65) |
+| **Attendance Date Filter & Switcher** | Select date range & toggle to **Calendar View** | Attendance logs reload for range. FullCalendar renders color-coded event badges (Green/Orange/Red/Blue). | [`AttendanceTab.tsx:L71-L115`](file:///d:/hrms/src/sections/profile/components/AttendanceTab.tsx#L71-L115) |
+| **Manual Attendance Entry** | Click **+ Manual Entry**, pick date & times, click **Save Log** | API `POST /api/v1/attendance/manual` returns 200. Toast displays `"Attendance record added successfully"`. Log is saved to database. | [`AttendanceTab.tsx:L58-L60`](file:///d:/hrms/src/sections/profile/components/AttendanceTab.tsx#L58-L60) |
+| **Submit Attendance Regularization** | Click **Regularize** on a log row, enter reason & times, click **Submit Request** | API `POST /api/v1/attendance/regularize` returns 200. Toast displays `"Regularization request submitted successfully"`. Request appears in **Regularization Requests** sub-tab as `PENDING`. | [`AttendanceTab.tsx:L63-L65`](file:///d:/hrms/src/sections/profile/components/AttendanceTab.tsx#L63-L65) |
+| **Apply for Leave** | Click **Apply Leave**, select Casual Leave, pick dates, enter reason $\ge 5$ chars, click **Submit** | API `POST /api/v1/leave/requests` creates request. Modal closes and toast displays `"Leave application submitted successfully!"`. Request appears in My Leave Applications table with status `PENDING`. | [`LeaveTab.tsx:L67-L114`](file:///d:/hrms/src/sections/profile/components/LeaveTab.tsx#L67-L114), [`ApplyLeaveDialog.tsx:L56-L67`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L56-L67) |
+| **Upload Document** | Select type `PAN Card`, choose PDF file, click **Upload** | API `POST /api/v1/documents` uploads file. Dialog closes, input resets, and toast displays `"Document uploaded — awaiting HR verification"`. | [`DocumentsTab.tsx:L103-L114`](file:///d:/hrms/src/sections/profile/components/DocumentsTab.tsx#L103-L114) |
+| **Add Bank Account** | Click **Add Bank Account**, enter Bank: `SBI`, Account: `1234567890`, IFSC: `SBIN0001234`, click **Save** | API `POST /api/v1/employees/me/bank-accounts` returns 200. Dialog closes and toast displays `"Bank account added successfully"`. | [`PayrollTab.tsx:L113-L130`](file:///d:/hrms/src/sections/profile/components/PayrollTab.tsx#L113-L130) |
+| **Assign Salary Structure** | Click **Assign Salary Structure**, enter Annual CTC `1200000`, click **Save Salary Structure** | API `POST /api/v1/payroll/structures` saves structure with components (Basic: 6,00,000, HRA: 3,00,000, Special Allowance: 3,00,000). Toast displays `"Salary structure assigned successfully!"`. | [`SalaryStructureDialog.tsx:L111-L123`](file:///d:/hrms/src/sections/profile/components/SalaryStructureDialog.tsx#L111-L123) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field | Trigger Condition | Expected Error Message | Source / File Reference |
+| :--- | :--- | :--- | :--- |
+| **Avatar File Type** | Select a non-image file (e.g. `document.txt` or `file.pdf`) in avatar upload dialog | `"Invalid file type. Please select an image file (PNG, JPG, WEBP)."` | Frontend [`UploadAvatarDialog.tsx:L62`](file:///d:/hrms/src/sections/profile/components/UploadAvatarDialog.tsx#L62) |
+| **Avatar File Size** | Select an image file larger than 5MB | `"File size exceeds 5MB limit. Please select a smaller image."` | Frontend [`UploadAvatarDialog.tsx:L66`](file:///d:/hrms/src/sections/profile/components/UploadAvatarDialog.tsx#L66) |
+| **Leave Reason Length** | Enter a leave reason shorter than 5 characters (e.g. `Sick`) in Apply Leave modal | `"Reason must be at least 5 characters long."` | Frontend [`ApplyLeaveDialog.tsx:L189`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L189) |
+| **Leave Application Mandatories** | Leave Leave Type, From Date, or To Date empty | **Submit** button remains disabled (`disabled={!leaveTypeId || ...}`) | Frontend [`ApplyLeaveDialog.tsx:L199`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L199) |
+| **Document File Extension** | Select a `.docx` or `.png` file in Document Upload dialog | `"Only JPG, JPEG, and PDF files are allowed."` | Frontend [`DocumentsTab.tsx:L86`](file:///d:/hrms/src/sections/profile/components/DocumentsTab.tsx#L86) |
+| **Emergency Contact Fields** | Leave Name, Relationship, or Phone blank | **Save Contact** button remains disabled (`disabled={!isValid}`) | Frontend [`EmergencyContactDialog.tsx:L124`](file:///d:/hrms/src/sections/profile/components/EmergencyContactDialog.tsx#L124) |
+| **Regularization Reason** | Submit regularization request without a reason | Submit button blocked by `!reason.trim()` check | Frontend [`RegularizeRequestDialog.tsx`](file:///d:/hrms/src/sections/attendance/components/RegularizeRequestDialog.tsx) |
+| **Bank Account Mandatory Fields** | Leave Bank Name, Account Number, or IFSC Code blank | **Save** button remains disabled (`disabled={!bankName.trim() || ...}`) | Frontend [`PayrollTab.tsx:L443`](file:///d:/hrms/src/sections/profile/components/PayrollTab.tsx#L443) |
+| **IFSC Code Format** | Send invalid IFSC string (e.g. `12345`) via API payload | `"Invalid IFSC code format (e.g. HDFC0000123)"` | Backend Zod DTO [`employee.dto.ts:L256`](file:///d:/hrms/hrms-backend/src/modules/employee/dto/employee.dto.ts#L256) |
+| **Salary Annual CTC** | Clear Annual CTC or enter `0` and click **Save Salary Structure** | `"Please enter a valid Annual CTC."` | Frontend [`SalaryStructureDialog.tsx:L97`](file:///d:/hrms/src/sections/profile/components/SalaryStructureDialog.tsx#L97) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Account Without Employee Link** | User account lacks an associated employee record (`user.employeeId` is undefined) and attempts avatar upload | Red alert banner displays: `"Your account does not have an employee profile linked. Please contact your administrator."` | [`ProfileView.tsx:L139-L167`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L139-L167) |
+| **Unauthorized Profile Fetch (401)** | JWT token expires while loading `/profile` | Axios interceptor handles redirect to `/auth/login`. | [`axios.ts`](file:///d:/hrms/src/utils/axios.ts) |
+| **Employee Profile Not Found (404)** | Navigate to `/employees/invalid-id` for a deleted employee ID | Profile fetch fails; page gracefully falls back to empty profile state without crashing. | [`ProfileView.tsx:L248-L251`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L248-L251) |
+| **Leave Application Failure (500)** | Server responds with 500 or insufficient leave balance | Red alert banner displays inside Apply Leave dialog displaying server error message. Dialog remains open for correction. | [`ApplyLeaveDialog.tsx:L105-L107`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L105-L107) |
+| **Attendance Log Fetch Failure (500)** | API `GET /attendance/my-history` fails | Red alert banner renders in Attendance tab: `"Failed to load attendance records."` | [`AttendanceTab.tsx:L75`](file:///d:/hrms/src/sections/profile/components/AttendanceTab.tsx#L75) |
+| **Document Upload Server Failure (500)** | Server responds with 500 during file upload | Red alert banner displays inside dialog: `res.message` or `"Failed to upload document"`. Dialog stays open for retry. | [`DocumentsTab.tsx:L106-L116`](file:///d:/hrms/src/sections/profile/components/DocumentsTab.tsx#L106-L116) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access Profile? | Tab & Feature Restrictions | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Yes | Full access to self profile (`/profile`) and all employee 360° profiles (`/employees/:id`). Can view/edit personal info, assign salary structures, upload avatars, apply/approve leaves, and manage documents. | [`ProfileView.tsx:L91-L93`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L91-L93), [`PayrollTab.tsx:L159-L160`](file:///d:/hrms/src/sections/profile/components/PayrollTab.tsx#L159-L160) |
+| **`HR_ADMIN`** | ✅ Yes | Full access to self profile and all employee 360° profiles. Can view/edit details, manage bank accounts, apply/approve leaves, and assign/revise salary structures. | [`ProfileView.tsx:L91-L93`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L91-L93), [`PayrollTab.tsx:L159-L160`](file:///d:/hrms/src/sections/profile/components/PayrollTab.tsx#L159-L160) |
+| **`EMPLOYEE`** | ✅ Self Only | Access to `/profile` (Self Profile). Access to view other employees' 360° profiles (`/employees/:id`) requires `employee.read` permission. When viewing other profiles, **Edit Details**, **Add Emergency Contact**, **Upload Document**, **Add Bank Account**, and **Apply Leave** buttons are hidden (`!isViewingOther`). **Attendance** tab is hidden when viewing other employees unless `attendance.read` or `attendance.create` permission is granted (`canViewAttendance`). | [`ProfileView.tsx:L92`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L92), [`PersonalTab.tsx:L83`](file:///d:/hrms/src/sections/profile/components/PersonalTab.tsx#L83), [`DocumentsTab.tsx:L125`](file:///d:/hrms/src/sections/profile/components/DocumentsTab.tsx#L125), [`PayrollTab.tsx:L271`](file:///d:/hrms/src/sections/profile/components/PayrollTab.tsx#L271) |
+| **`MANAGER`** | ✅ Self & Team | Full access to self profile. Can view team member 360° profiles if granted `employee.read`. Salary assignment button in **Payroll** tab is visible only if holding `payroll.create`, `payroll.run`, or `employee.update` permissions. | [`PayrollTab.tsx:L159-L160`](file:///d:/hrms/src/sections/profile/components/PayrollTab.tsx#L159-L160) |
+| **`LEADERSHIP`** | ✅ Yes | Can view self profile and employee profiles. Action buttons to edit personal info, bank accounts, or documents are restricted when viewing other employees (`isViewingOther: true`). | [`PersonalTab.tsx:L83`](file:///d:/hrms/src/sections/profile/components/PersonalTab.tsx#L83) |
+| **`BRANCH_ADMIN`** | ✅ Yes | Full access to self profile and branch employee profiles. | [`ProfileView.tsx:L92`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L92) |
+| **`PRODUCT_MANAGER`** | ✅ Yes | Access to self profile and employee profiles based on permissions. | [`ProfileView.tsx:L92`](file:///d:/hrms/src/sections/profile/ProfileView.tsx#L92) |
+
+---
+
+### Step 3 — Flag List (Uncertainties & Rule Mismatches)
+
+1. **Frontend vs Backend Validation Discrepancies:**
+   * **IFSC Code Regex Rule**:
+     * **Frontend** `addBankAccount` form (`PayrollTab.tsx:L107`) checks `!ifscCode.trim()` (allowing any string format).
+     * **Backend DTO** (`employee.dto.ts:L256`) strictly validates IFSC using regex `/^[A-Z]{4}0[A-Z0-9]{6}$/` (e.g. `SBIN0001234`). If a user inputs `SBI123`, the frontend accepts it, but the backend rejects it with `"Invalid IFSC code format (e.g. HDFC0000123)"`.
+   * **Document Allowed File Types**:
+     * **Frontend** `handleFileSelect` (`DocumentsTab.tsx:L85`) allows `.jpg`, `.jpeg`, `.pdf`.
+     * **Backend DTO** (`document.dto.ts`) validates MIME types (`image/jpeg`, `application/pdf`).
+
+2. **Placeholder / Coming Soon Features:**
+   * **AI Insights Banner & Actions**: In `OverviewTab.tsx:L444-L476` and `ProfileView.tsx:L674-L705`, the **AI Summary**, **Generate Review**, **Generate Promotion Summary**, **Recommend Training**, **Schedule 1:1**, and **Send Recognition** buttons display a snackbar warning `"AI Action [...] is coming soon!"`.
+   * **Performance, Learning, Assets, Timeline, Notes, Activity Tabs**: In `ProfileView.tsx:L709-L718`, selecting these tabs renders a placeholder card stating `"[Tab Name] Section — Detailed [Tab Name] information for [User] is loaded into this section."`.
+
+3. **Attendance Tab Visibility Gating:**
+   * `ProfileView.tsx:L92` checks `canViewAttendance = !isViewingOther || hasPermission("attendance.read") || hasPermission("attendance.create")`. If an employee views another employee's profile without attendance permissions and tries to navigate to `?tab=attendance`, `useEffect` automatically redirects them back to `?tab=overview`.
 
 ---
 

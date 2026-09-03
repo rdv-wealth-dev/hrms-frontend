@@ -93,10 +93,11 @@ export default function EmployeeAttendanceTable({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "1px solid #F3F4F6",
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1rem" }}>
           Employee Attendance
         </Typography>
         <Button
@@ -107,13 +108,14 @@ export default function EmployeeAttendanceTable({
             textTransform: "none",
             fontWeight: 600,
             fontSize: "0.825rem",
-            color: "#4B5563",
+            color: "text.secondary",
             borderRadius: 2,
             px: 1.5,
             py: 0.5,
-            border: "1px solid #E5E7EB",
-            backgroundColor: "#FFFFFF",
-            "&:hover": { backgroundColor: "#F9FAFB", borderColor: "#D1D5DB" },
+            border: "1px solid",
+            borderColor: "divider",
+            backgroundColor: "background.paper",
+            "&:hover": { backgroundColor: "action.hover" },
           }}
         >
           Export
@@ -179,7 +181,7 @@ export default function EmployeeAttendanceTable({
                   </TableCell>
 
                   <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                       {row?.employeeCode ?? "--"}
                     </Typography>
                   </TableCell>
@@ -191,7 +193,7 @@ export default function EmployeeAttendanceTable({
                         src={row?.avatarUrl}
                         size={34}
                       />
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                         {row?.employeeName ?? "N/A"}
                       </Typography>
                     </Box>

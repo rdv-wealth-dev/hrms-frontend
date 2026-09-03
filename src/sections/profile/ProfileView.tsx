@@ -415,7 +415,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                     flexWrap: "wrap",
                   }}
                 >
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary", fontSize: "1.55rem", wordBreak: "break-word" }}>
                     {displayName}
                   </Typography>
                 </Box>
@@ -512,10 +512,10 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 startIcon={<DownloadOutlinedIcon />}
                 variant="outlined"
                 sx={{
-                  borderColor: "#E2E8F0",
-                  color: "#475569",
+                  borderColor: "divider",
+                  color: "text.secondary",
                   px: 2,
-                  "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
+                  "&:hover": { backgroundColor: "action.hover", borderColor: "primary.main" },
                   flexGrow: { xs: 1, sm: 0 },
                 }}
               >
@@ -559,7 +559,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         </Grid>
 
         {/* Horizontal Navigation Tabs Bar */}
-        <Box sx={{ borderBottom: "1px solid #E2E8F0", mb: 3, width: "100%", maxWidth: "100%" }}>
+        <Box sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 3, width: "100%", maxWidth: "100%" }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
@@ -607,7 +607,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
         {/* Tab content screens wrapped in Suspense for optimization */}
         <Suspense fallback={
-          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", display: "flex", justify: "center", alignItems: "center", minHeight: 200 }}>
+          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper", display: "flex", justify: "center", alignItems: "center", minHeight: 200 }}>
             <CircularProgress sx={{ color: "#4F46E5" }} />
           </Card>
         }>
@@ -683,7 +683,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               }}
             >
               <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 48, mb: 2 }} />
-              <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mb: 1 }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 1 }}>
                 AI Insights & Summary
               </Typography>
               <Chip
@@ -708,7 +708,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           {/* Generic Content Fallback for remaining/placeholder tabs */}
           {!["overview", "personal", "documents", "payroll", "leave", "attendance", "ai-insights"].includes(activeTab) && (
              <Card sx={{ p: 5, textAlign: "center" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 1, textTransform: "capitalize" }}>
                 {activeTab} Section
               </Typography>
               <Typography variant="body2" sx={{ color: "#64748B" }}>
@@ -746,7 +746,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         }}
       >
         <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 3, pt: 2, pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Edit Personal Details & Address
           </Typography>
           <IconButton onClick={() => setEditProfileOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={personalDetailsUpdater.submitting}>
@@ -871,9 +871,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 textTransform: "none",
                 fontWeight: 600,
                 borderRadius: "8px",
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 px: 3,
-                "&:hover": { backgroundColor: "#5B4CE5" },
+                "&:hover": { backgroundColor: "primary.dark" },
               }}
             >
               {personalDetailsUpdater.submitting ? "Saving..." : "Save Changes"}

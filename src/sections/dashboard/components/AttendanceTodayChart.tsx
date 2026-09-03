@@ -27,7 +27,7 @@ export function AttendanceTodayChart() {
     >
       {/* Header */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
           Attendance Today
         </Typography>
 
@@ -103,7 +103,7 @@ export function AttendanceTodayChart() {
             textTransform: "none",
             fontWeight: 600,
             fontSize: "0.8rem",
-            color: "#6D5DF6",
+            color: "primary.main",
             "&:hover": { backgroundColor: "transparent", textDecoration: "underline" },
           }}
         >

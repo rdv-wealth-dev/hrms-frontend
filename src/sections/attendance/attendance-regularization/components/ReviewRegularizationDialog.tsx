@@ -126,7 +126,7 @@ function ReviewRegularizationDialog({
           pb: 1,
         }}
       >
-        <Typography variant="h6" component="h2" sx={{ fontWeight: 700, color: "#111827" }}>
+        <Typography variant="h6" component="h2" sx={{ fontWeight: 700, color: "text.primary" }}>
           Review Regularization Request
         </Typography>
         <IconButton
@@ -147,7 +147,7 @@ function ReviewRegularizationDialog({
         )}
 
         {/* Request Details */}
-        <Box sx={{ backgroundColor: "#F8FAFC", p: 2.5, borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+        <Box sx={{ backgroundColor: "#F8FAFC", p: 2.5, borderRadius: "12px", border: "1px solid", borderColor: "divider" }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#334155", mb: 2 }}>
             Employee & Attendance Details
           </Typography>
@@ -157,7 +157,7 @@ function ReviewRegularizationDialog({
               <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>
                 Employee
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                 {employeeName} ({employeeCode})
               </Typography>
             </Grid>
@@ -165,7 +165,7 @@ function ReviewRegularizationDialog({
               <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>
                 Attendance Date
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                 {formatDate(request?.attendanceDate)}
               </Typography>
             </Grid>

@@ -159,9 +159,10 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
           sx: {
             borderRadius: { xs: "16px", sm: "20px", md: "24px" },
             p: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 1.5, sm: "auto" },
             width: { xs: "calc(100% - 24px)", sm: "calc(100% - 48px)", md: "100%" },
             maxHeight: { xs: "90vh", sm: "88vh" },
@@ -177,8 +178,8 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
         sx={{
           m: 0,
           p: { xs: 2.5, sm: 3 },
-          background: "linear-gradient(135deg, #6D5DF6 0%, #4634E2 100%)",
-          color: "#FFFFFF",
+          background: (theme: any) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          color: "primary.contrastText",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -361,8 +362,9 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
         sx={{
           px: { xs: 2.5, sm: 3.5 },
           py: 2,
-          borderTop: "1px solid #E2E8F0",
-          backgroundColor: "#F8FAFC",
+          borderTop: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "action.hover",
           display: "flex",
           flexDirection: { xs: "column-reverse", sm: "row" },
           gap: { xs: 1, sm: 0 },
@@ -372,7 +374,7 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
           onClick={onClose}
           disabled={submitting}
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             fontWeight: 600,
             textTransform: "none",
             width: { xs: "100%", sm: "auto" },
@@ -387,8 +389,8 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
           disabled={submitting}
           startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <RocketLaunchOutlinedIcon />}
           sx={{
-            backgroundColor: "#6D5DF6",
-            color: "#FFFFFF",
+            backgroundColor: "primary.main",
+            color: "primary.contrastText",
             fontWeight: 700,
             px: 3,
             py: 1,
@@ -396,7 +398,7 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
             textTransform: "none",
             boxShadow: "0 4px 14px rgba(109, 93, 246, 0.35)",
             "&:hover": {
-              backgroundColor: "#5B4EB8",
+              backgroundColor: "primary.dark",
             },
             width: { xs: "100%", sm: "auto" },
           }}

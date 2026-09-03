@@ -7,7 +7,7 @@ type PrimaryButtonProps = {
   children: ReactNode;
   loading?: boolean;
   disabled?: boolean;
-  onClick?: MouseEventHandler<HTMLButtonElement>; // ✅ added
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 };
 
 function PrimaryButton({
@@ -15,7 +15,7 @@ function PrimaryButton({
   children,
   loading = false,
   disabled = false,
-  onClick, // ✅ added
+  onClick,
 }: PrimaryButtonProps) {
   return (
     <Button
@@ -23,18 +23,18 @@ function PrimaryButton({
       fullWidth
       variant="contained"
       disabled={loading || disabled}
-      onClick={onClick} // ✅ added
+      onClick={onClick}
       sx={{
         height: { xs: "42px", sm: "46px" },
         borderRadius: "12px",
-        backgroundColor: "#6D5DF6",
+        bgcolor: "primary.main",
+        color: "primary.contrastText",
         fontWeight: 600,
         textTransform: "none",
-        boxShadow:
-          "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
 
         "&:hover": {
-          backgroundColor: "#6D5DF6",
+          bgcolor: "primary.dark",
           opacity: 0.95,
           transform: loading ? "none" : "scale(1.01)",
         },
@@ -44,8 +44,8 @@ function PrimaryButton({
         },
 
         "&.Mui-disabled": {
-          backgroundColor: "#6D5DF6",
-          color: "#fff",
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
           opacity: 0.7,
         },
       }}

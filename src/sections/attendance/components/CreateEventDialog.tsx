@@ -87,8 +87,8 @@ export default function CreateEventDialog({
       slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5, pb: 1 }}>
-        <CalendarMonthIcon sx={{ color: "#6D5DF6" }} />
-        <Typography component="span" variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <CalendarMonthIcon sx={{ color: "primary.main" }} />
+        <Typography component="span" variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           Create Calendar Event
         </Typography>
       </DialogTitle>
@@ -155,8 +155,8 @@ export default function CreateEventDialog({
               textTransform: "none",
               fontWeight: 600,
               borderRadius: 2,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BE5" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {submitting ? "Creating..." : "Save Event"}

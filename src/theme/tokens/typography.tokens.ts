@@ -8,14 +8,14 @@ export const typographyTokens = {
     fontSize: { xs: "1.2rem", sm: "1.375rem" }, // 22px
     fontWeight: 700,
     lineHeight: 1.25,
-    color: "#0F172A",
+    color: "text.primary",
     letterSpacing: "-0.01em",
   },
   pageSubtitle: {
     fontSize: "0.84375rem", // 13.5px
     fontWeight: 400,
     lineHeight: 1.4,
-    color: "#64748B",
+    color: "text.secondary",
   },
 
   // ── Section & Modal Headers ────────────────────────────────
@@ -23,12 +23,12 @@ export const typographyTokens = {
     fontSize: "0.9375rem", // 15px
     fontWeight: 600,
     lineHeight: 1.35,
-    color: "#0F172A",
+    color: "text.primary",
   },
   dialogTitle: {
     fontSize: { xs: "1rem", sm: "1.125rem" }, // 18px
     fontWeight: 700,
-    color: "#0F172A",
+    color: "text.primary",
     lineHeight: 1.25,
   },
 
@@ -37,14 +37,14 @@ export const typographyTokens = {
     fontSize: { xs: "1.5rem", sm: "1.75rem" }, // 28px
     fontWeight: 700,
     lineHeight: 1.1,
-    color: "#0F172A",
+    color: "text.primary",
   },
   kpiLabel: {
     fontSize: "0.6875rem", // 11px
     fontWeight: 700,
     letterSpacing: "0.5px",
     textTransform: "uppercase" as const,
-    color: "#64748B",
+    color: "text.secondary",
   },
 
   // ── Tables & Grids ─────────────────────────────────────────
@@ -53,17 +53,17 @@ export const typographyTokens = {
     fontWeight: 700,
     letterSpacing: "0.5px",
     textTransform: "uppercase" as const,
-    color: "#64748B",
+    color: "text.secondary",
   },
   tableCell: {
     fontSize: "0.84375rem", // 13.5px
     fontWeight: 400,
-    color: "#1E293B",
+    color: "text.primary",
   },
   tableCellPrimary: {
     fontSize: "0.84375rem", // 13.5px
     fontWeight: 600,
-    color: "#0F172A",
+    color: "text.primary",
   },
 
   // ── Body & Captions ────────────────────────────────────────
@@ -71,18 +71,18 @@ export const typographyTokens = {
     fontSize: "0.875rem", // 14px
     fontWeight: 400,
     lineHeight: 1.5,
-    color: "#1E293B",
+    color: "text.primary",
   },
   bodyMedium: {
     fontSize: "0.875rem", // 14px
     fontWeight: 500,
     lineHeight: 1.5,
-    color: "#1E293B",
+    color: "text.primary",
   },
   caption: {
     fontSize: "0.75rem", // 12px
     fontWeight: 400,
-    color: "#64748B",
+    color: "text.secondary",
   },
   badge: {
     fontSize: "0.6875rem", // 11px

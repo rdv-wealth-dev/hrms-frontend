@@ -27,14 +27,14 @@ const inputFieldSx = {
   "& .MuiOutlinedInput-root": {
     height: 44,
     borderRadius: "12px",
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "action.hover",
     fontSize: "14px",
-    color: "#0F172A",
-    "& fieldset": { borderColor: "#E2E8F0" },
-    "&:hover fieldset": { borderColor: "#CBD5E1" },
+    color: "text.primary",
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "primary.main" },
     "&.Mui-focused": {
-      backgroundColor: "#FFFFFF",
-      "& fieldset": { borderColor: "#6D5DF6", borderWidth: "2px" },
+      backgroundColor: "background.paper",
+      "& fieldset": { borderColor: "primary.main", borderWidth: "2px" },
     },
   },
   "& .MuiOutlinedInput-input": {
@@ -124,9 +124,10 @@ export default function CreditCompOffDialog({
           sx: {
             borderRadius: "20px",
             p: 3,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
           },
         },
       }}
@@ -141,7 +142,7 @@ export default function CreditCompOffDialog({
           justifyContent: "space-between",
         }}
       >
-        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "#0F172A" }}>
+        <Typography sx={{ fontSize: "18px", fontWeight: 700, color: "text.primary" }}>
           Credit Comp-Off Balance
         </Typography>
         <IconButton
@@ -149,9 +150,9 @@ export default function CreditCompOffDialog({
           size="small"
           disabled={submitting}
           sx={{
-            color: "#64748B",
+            color: "text.secondary",
             borderRadius: "10px",
-            "&:hover": { backgroundColor: "#F1F5F9", color: "#0F172A" },
+            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -161,18 +162,18 @@ export default function CreditCompOffDialog({
       <DialogContent sx={{ p: 0, pr: 2, mr: -1, display: "flex", flexDirection: "column", gap: 2 }}>
         {error && <Alert severity="error" sx={{ borderRadius: "10px" }}>{error}</Alert>}
 
-        <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-          <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
+        <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "action.hover", border: "1px solid", borderColor: "divider" }}>
+          <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "text.primary", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.5 }}>
             Employee Profile
           </Typography>
-          <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>
+          <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "text.primary" }}>
             {employeeName}
           </Typography>
         </Box>
 
         {/* Work Date */}
         <Box>
-          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 0.8 }}>
+          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 0.8 }}>
             Work Date
           </Typography>
           <TextField
@@ -189,7 +190,7 @@ export default function CreditCompOffDialog({
 
         {/* Earned Source Format Pills */}
         <Box>
-          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0F172A", mb: 1 }}>
+          <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "text.primary", mb: 1 }}>
             Earned Source
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
@@ -204,14 +205,15 @@ export default function CreditCompOffDialog({
                 px: 1.5,
                 fontSize: "13px",
                 fontWeight: sourceType === "PUBLIC_HOLIDAY" ? 600 : 500,
-                backgroundColor: sourceType === "PUBLIC_HOLIDAY" ? "#EEF2FF" : "#FFFFFF",
-                color: sourceType === "PUBLIC_HOLIDAY" ? "#6D5DF6" : "#475569",
-                border: sourceType === "PUBLIC_HOLIDAY" ? "1.5px solid #6D5DF6" : "1px solid #CBD5E1",
+                backgroundColor: sourceType === "PUBLIC_HOLIDAY" ? "primary.lighter" : "background.paper",
+                color: sourceType === "PUBLIC_HOLIDAY" ? "primary.main" : "text.secondary",
+                border: sourceType === "PUBLIC_HOLIDAY" ? "1.5px solid" : "1px solid",
+                borderColor: sourceType === "PUBLIC_HOLIDAY" ? "primary.main" : "divider",
                 boxShadow: sourceType === "PUBLIC_HOLIDAY" ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
                 transition: "all 0.15s ease",
                 "&:hover": {
-                  backgroundColor: sourceType === "PUBLIC_HOLIDAY" ? "#E0E7FF" : "#F8FAFC",
-                  borderColor: sourceType === "PUBLIC_HOLIDAY" ? "#6D5DF6" : "#94A3B8",
+                  backgroundColor: sourceType === "PUBLIC_HOLIDAY" ? "primary.lighter" : "action.hover",
+                  borderColor: "primary.main",
                 },
               }}
             />
@@ -226,14 +228,15 @@ export default function CreditCompOffDialog({
                 px: 1.5,
                 fontSize: "13px",
                 fontWeight: sourceType === "WEEKEND_WORK" ? 600 : 500,
-                backgroundColor: sourceType === "WEEKEND_WORK" ? "#EEF2FF" : "#FFFFFF",
-                color: sourceType === "WEEKEND_WORK" ? "#6D5DF6" : "#475569",
-                border: sourceType === "WEEKEND_WORK" ? "1.5px solid #6D5DF6" : "1px solid #CBD5E1",
+                backgroundColor: sourceType === "WEEKEND_WORK" ? "primary.lighter" : "background.paper",
+                color: sourceType === "WEEKEND_WORK" ? "primary.main" : "text.secondary",
+                border: sourceType === "WEEKEND_WORK" ? "1.5px solid" : "1px solid",
+                borderColor: sourceType === "WEEKEND_WORK" ? "primary.main" : "divider",
                 boxShadow: sourceType === "WEEKEND_WORK" ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
                 transition: "all 0.15s ease",
                 "&:hover": {
-                  backgroundColor: sourceType === "WEEKEND_WORK" ? "#E0E7FF" : "#F8FAFC",
-                  borderColor: sourceType === "WEEKEND_WORK" ? "#6D5DF6" : "#94A3B8",
+                  backgroundColor: sourceType === "WEEKEND_WORK" ? "primary.lighter" : "action.hover",
+                  borderColor: "primary.main",
                 },
               }}
             />
@@ -252,9 +255,9 @@ export default function CreditCompOffDialog({
             fontSize: "14px",
             fontWeight: 600,
             textTransform: "none",
-            backgroundColor: "#F1F5F9",
-            color: "#475569",
-            "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+            backgroundColor: "action.hover",
+            color: "text.secondary",
+            "&:hover": { backgroundColor: "divider", color: "text.primary" },
           }}
         >
           Cancel
@@ -270,9 +273,9 @@ export default function CreditCompOffDialog({
             fontSize: "14px",
             fontWeight: 600,
             textTransform: "none",
-            backgroundColor: "#6D5DF6",
+            backgroundColor: "primary.main",
             boxShadow: "0 4px 12px rgba(109, 93, 246, 0.25)",
-            "&:hover": { backgroundColor: "#5B4EB3" },
+            "&:hover": { backgroundColor: "primary.dark" },
           }}
         >
           {submitting ? <CircularProgress size={18} color="inherit" /> : "Credit Comp-Off"}

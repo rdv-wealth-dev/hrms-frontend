@@ -151,7 +151,7 @@ export function CustomFieldsSettingsTab() {
   const getWidgetBadge = (widget?: string) => {
     switch (widget) {
       case "RADIO_GROUP":
-        return { label: "Radio Pills", bg: "rgba(109, 93, 246, 0.1)", color: "#6D5DF6" };
+        return { label: "Radio Pills", bg: "rgba(109, 93, 246, 0.1)", color: "primary.main" };
       case "PILL_SELECT":
         return { label: "Pill Selector", bg: "#F0FDF4", color: "#166534" };
       case "DROPDOWN":
@@ -193,7 +193,7 @@ export function CustomFieldsSettingsTab() {
                 p: 1.5,
                 borderRadius: 2,
                 backgroundColor: "rgba(109, 93, 246, 0.08)",
-                color: "#6D5DF6",
+                color: "primary.main",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -202,7 +202,7 @@ export function CustomFieldsSettingsTab() {
               <TuneIcon sx={{ fontSize: 32 }} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 750, color: "#111827" }}>
+              <Typography variant="h6" sx={{ fontWeight: 750, color: "text.primary" }}>
                 Dynamic Custom Fields Engine
               </Typography>
             </Box>
@@ -213,7 +213,7 @@ export function CustomFieldsSettingsTab() {
             startIcon={<AddIcon />}
             onClick={() => setCreateDialogOpen(true)}
             sx={{
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               color: "#fff",
               px: 3,
               py: 1.2,
@@ -222,7 +222,7 @@ export function CustomFieldsSettingsTab() {
               fontWeight: 600,
               boxShadow: "0px 4px 12px rgba(109, 93, 246, 0.2)",
               "&:hover": {
-                backgroundColor: "#5B4EE4",
+                backgroundColor: "primary.dark",
                 boxShadow: "0px 6px 16px rgba(109, 93, 246, 0.3)",
               },
               width: { xs: "100%", sm: "auto" },
@@ -243,7 +243,7 @@ export function CustomFieldsSettingsTab() {
         {/* Content Section */}
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
-            <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+            <CircularProgress size={40} sx={{ color: "primary.main" }} />
           </Box>
         ) : fields.length === 0 ? (
           /* Empty State */
@@ -261,7 +261,8 @@ export function CustomFieldsSettingsTab() {
               onClick={() => setCreateDialogOpen(true)}
               sx={{
                 borderRadius: 2.5,
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
+                "&:hover": { backgroundColor: "primary.dark" },
                 textTransform: "none",
                 fontWeight: 600,
                 px: 3,
@@ -284,13 +285,14 @@ export function CustomFieldsSettingsTab() {
                   sx={{
                     p: 2.5,
                     borderRadius: 2.5,
-                    border: "1px solid #E2E8F0",
-                    backgroundColor: "#F8FAFC",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "action.hover",
                   }}
                 >
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1.5 }}>
                     <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 750, color: "#111827" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 750, color: "text.primary" }}>
                         {field.fieldLabel}
                       </Typography>
                       <Chip
@@ -300,7 +302,7 @@ export function CustomFieldsSettingsTab() {
                           fontFamily: "monospace",
                           fontWeight: 700,
                           fontSize: 11,
-                          backgroundColor: "#E2E8F0",
+                          backgroundColor: "action.hover",
                           color: "#334155",
                           borderRadius: "6px",
                           mt: 0.5,
@@ -356,7 +358,7 @@ export function CustomFieldsSettingsTab() {
                   </Box>
 
                   {/* Reorder Action Row for Mobile */}
-                  <Box sx={{ display: "flex", gap: 1, pt: 1.5, borderTop: "1px solid #E2E8F0" }}>
+                  <Box sx={{ display: "flex", gap: 1, pt: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
                     <Button
                       size="small"
                       startIcon={<ArrowUpwardIcon />}
@@ -386,7 +388,7 @@ export function CustomFieldsSettingsTab() {
           </Box>
         ) : (
           /* 🖥️ Enterprise Desktop & Tablet Data Table */
-          <TableContainer sx={{ overflowX: "auto", borderRadius: 2, border: "1px solid #E2E8F0" }}>
+          <TableContainer sx={{ overflowX: "auto", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
             <Table sx={{ minWidth: 800 }}>
               <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
                 <TableRow>
@@ -429,7 +431,7 @@ export function CustomFieldsSettingsTab() {
                       </TableCell>
 
                       {/* Field Label */}
-                      <TableCell sx={{ py: 1.5, fontWeight: 700, color: "#0F172A", fontSize: 14 }}>
+                      <TableCell sx={{ py: 1.5, fontWeight: 700, color: "text.primary", fontSize: 14 }}>
                         {field.fieldLabel}
                         {field.helperText && (
                           <Typography variant="caption" sx={{ color: "#64748B", display: "block", fontWeight: 400 }}>

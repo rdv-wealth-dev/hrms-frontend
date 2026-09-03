@@ -149,7 +149,7 @@ function BranchListContent() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <ApartmentOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
+          <ApartmentOutlinedIcon sx={{ fontSize: 36, color: "primary.main" }} />
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               Branches
@@ -166,11 +166,11 @@ function BranchListContent() {
             startIcon={<AddIcon />}
             onClick={handleOpenCreate}
             sx={{
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               textTransform: "none",
               fontWeight: 600,
               borderRadius: 2,
-              "&:hover": { backgroundColor: "#5B4EE4" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             Add Branch
@@ -353,7 +353,7 @@ function BranchListContent() {
       {/* Loading & Error States */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
-          <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+          <CircularProgress size={40} sx={{ color: "primary.main" }} />
         </Box>
       )}
 
@@ -444,7 +444,8 @@ function BranchListContent() {
                       sx={{
                         transition: "all 0.2s ease",
                         ...(isSelected && {
-                          borderLeft: "4px solid #6D5DF6",
+                          borderLeft: "4px solid",
+                          borderLeftColor: "primary.main",
                           pl: "12px !important",
                         }),
                       }}
@@ -578,7 +579,7 @@ function BranchListContent() {
                         <IconButton
                           size="small"
                           onClick={() => calendarDialog.open(branch)}
-                          sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                          sx={{ color: "primary.main", "&:hover": { backgroundColor: "primary.lighter" } }}
                           title="View Branch Calendar"
                         >
                           <CalendarMonthIcon fontSize="small" />
@@ -589,7 +590,7 @@ function BranchListContent() {
                             <IconButton
                               size="small"
                               onClick={() => seedDialog.open(branch)}
-                              sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                              sx={{ color: "primary.main", "&:hover": { backgroundColor: "primary.lighter" } }}
                               title="Seed Master Data (Leave Types & Shifts)"
                             >
                               <AutoAwesomeIcon fontSize="small" />
@@ -598,7 +599,7 @@ function BranchListContent() {
                             <IconButton
                               size="small"
                               onClick={() => handleOpenEdit(branch)}
-                              sx={{ color: "#6D5DF6" }}
+                              sx={{ color: "primary.main" }}
                               title="Edit Branch"
                             >
                               <EditOutlinedIcon fontSize="small" />

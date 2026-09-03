@@ -168,7 +168,7 @@ function RegularizationListPage() {
       <Box sx={{ p: { xs: 2, md: 3 }, width: "100%" }}>
         {/* Unified Enterprise Page Header */}
         <PageHeader
-          icon={<CalendarMonthOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          icon={<CalendarMonthOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
           title="Attendance Regularizations"
           action={
             <Button
@@ -183,7 +183,7 @@ function RegularizationListPage() {
                 fontWeight: 600,
                 alignSelf: { xs: "stretch", sm: "auto" },
                 justifyContent: "center",
-                "&:hover": { borderColor: "#6D5DF6", color: "#6D5DF6", backgroundColor: "#F5F3FF" },
+                "&:hover": { borderColor: "primary.main", color: "primary.main", backgroundColor: "primary.lighter" },
               }}
             >
               Refresh
@@ -200,7 +200,7 @@ function RegularizationListPage() {
         {/* Content Section */}
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+            <CircularProgress sx={{ color: "primary.main" }} />
           </Box>
         ) : requests.length === 0 ? (
           <Box
@@ -267,7 +267,7 @@ function RegularizationListPage() {
                           sx={{
                             width: 38,
                             height: 38,
-                            backgroundColor: "#6D5DF6",
+                            backgroundColor: "primary.main",
                             color: "#FFFFFF",
                             fontSize: "12px",
                             fontWeight: 700,
@@ -276,7 +276,7 @@ function RegularizationListPage() {
                           {initials}
                         </Avatar>
                         <Box>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.2 }}>
                             {empName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
@@ -360,13 +360,13 @@ function RegularizationListPage() {
                           }}
                           sx={{
                             mt: 0.5,
-                            backgroundColor: "#6D5DF6",
+                            backgroundColor: "primary.main",
                             color: "#FFFFFF",
                             textTransform: "none",
                             fontWeight: 600,
                             borderRadius: "8px",
                             boxShadow: "none",
-                            "&:hover": { backgroundColor: "#5B4EB3", boxShadow: "none" },
+                            "&:hover": { backgroundColor: "primary.dark", boxShadow: "none" },
                           }}
                         >
                           Review Request
@@ -417,7 +417,7 @@ function RegularizationListPage() {
                           >
                             {initials}
                           </Avatar>
-                          <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#0F172A", lineHeight: 1.2 }}>
+                          <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary", lineHeight: 1.2 }}>
                             {empName}
                           </Typography>
                         </Box>
@@ -508,7 +508,7 @@ function RegularizationListPage() {
                               sx={{
                                 color: isPending ? "#4F46E5" : "#64748B",
                                 backgroundColor: isPending ? "#EEF2FF" : "#F1F5F9",
-                                "&:hover": { backgroundColor: isPending ? "#E0E7FF" : "#E2E8F0" },
+                                "&:hover": { backgroundColor: isPending ? "#E0E7FF" : "action.hover" },
                               }}
                             >
                               {isPending ? <RateReviewOutlinedIcon fontSize="small" /> : <VisibilityOutlinedIcon fontSize="small" />}

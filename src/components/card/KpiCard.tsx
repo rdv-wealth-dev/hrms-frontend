@@ -227,7 +227,7 @@ export function KpiCard({
                 sx={{
                   fontSize: isSmall ? "8px" : "10.5px",
                   fontWeight: 700,
-                  color: "#0F172A",
+                  color: "text.primary",
                   textAlign: "center",
                   lineHeight: 1,
                   zIndex: 1,
@@ -268,7 +268,7 @@ export function KpiCard({
             variant="h4"
             sx={{
               fontWeight: 600,
-              color: "#0F172A",
+              color: "text.primary",
               fontSize: { xs: "1.75rem", sm: "2rem" },
               lineHeight: 1.15,
               letterSpacing: "-0.5px",

@@ -80,10 +80,10 @@ export default function OnboardingStep2Family({
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               2. Family Members &amp; Dependents
             </Typography>
             <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
@@ -120,7 +120,7 @@ export default function OnboardingStep2Family({
             mb: 2.5,
             borderRadius: 2.5,
             backgroundColor: isNotApplicable ? "#F5F3FF" : "#F8FAFC",
-            borderColor: isNotApplicable ? "#818CF8" : "#E2E8F0",
+            borderColor: isNotApplicable ? "primary.main" : "divider",
             transition: "all 0.2s ease",
           }}
         >

@@ -6,6 +6,7 @@ import ButtonGroup from "@mui/material/ButtonGroup";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useTheme } from "@mui/material/styles";
 
 import { DASHBOARD_MOCK_DATA, type WorkforceOverviewPoint } from "../mock/dashboard-data";
 
@@ -42,6 +43,7 @@ function getSmoothPath(pts: Point[]): string {
 }
 
 export function WorkforceOverviewChart() {
+  const theme = useTheme();
   const [timeframe, setTimeframe] = useState<TimeframeOption>("6M");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -105,7 +107,7 @@ export function WorkforceOverviewChart() {
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
         <Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1.05rem" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
               Workforce Overview
             </Typography>
             <Tooltip title="Tracks total headcount, new hires, and exits over time." arrow>
@@ -235,7 +237,7 @@ export function WorkforceOverviewChart() {
                   x={x}
                   y={svgHeight - 10}
                   textAnchor="middle"
-                  fill={isHovered ? "#111827" : "#6B7280"}
+                  fill={isHovered ? theme.palette.text.primary : theme.palette.text.secondary}
                   fontSize="11px"
                   fontWeight={isHovered ? "700" : "500"}
                 >
@@ -339,7 +341,7 @@ export function WorkforceOverviewChart() {
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
             Avg Headcount
           </Typography>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
             {avgHeadcount.toLocaleString()}
           </Typography>
         </Box>

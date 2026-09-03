@@ -241,8 +241,9 @@ export function EmployeeMatrixDetailDrawer({
           sx={{
             py: 2.5,
             px: 3,
-            backgroundColor: "#FFFFFF",
-            borderBottom: "1px solid #E2E8F0",
+            backgroundColor: "background.paper",
+            borderBottom: "1px solid",
+            borderColor: "divider",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -251,7 +252,7 @@ export function EmployeeMatrixDetailDrawer({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <CustomAvatar name={empName} size={44} fontSize="16px" />
             <Box>
-              <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "#0F172A", lineHeight: 1.2 }}>
+              <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "text.primary", lineHeight: 1.2 }}>
                 {empName} {empCode}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
@@ -276,14 +277,14 @@ export function EmployeeMatrixDetailDrawer({
           </Typography>
 
           {/* Layer 1: Reporting Manager (HR / Administrative Line) */}
-          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-                <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(109, 93, 246, 0.1)", color: "#6D5DF6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "primary.lighter", color: "primary.main", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <PersonIcon sx={{ fontSize: 18 }} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.2 }}>
                     1. Reporting Manager (HR / Admin Line)
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -297,7 +298,7 @@ export function EmployeeMatrixDetailDrawer({
                   size="small"
                   startIcon={<EditOutlinedIcon sx={{ fontSize: 14 }} />}
                   onClick={() => setChangeManagerOpen(true)}
-                  sx={{ textTransform: "none", fontWeight: 700, fontSize: "12px", color: "#6D5DF6" }}
+                  sx={{ textTransform: "none", fontWeight: 700, fontSize: "12px", color: "primary.main" }}
                 >
                   Change
                 </Button>
@@ -308,7 +309,7 @@ export function EmployeeMatrixDetailDrawer({
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <CustomAvatar name={managerName} size={30} fontSize="11px" />
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                     {managerName}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -321,14 +322,14 @@ export function EmployeeMatrixDetailDrawer({
           </Paper>
 
           {/* Layer 2: Team Lead & Squad (Agile Line) */}
-          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
                 <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(16, 185, 129, 0.1)", color: "#10B981", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <GroupsIcon sx={{ fontSize: 18 }} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.2 }}>
                     2. Team Lead & Squad (Agile Sprint Line)
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -344,24 +345,24 @@ export function EmployeeMatrixDetailDrawer({
 
             <Box sx={{ p: 1.5, borderRadius: "10px", backgroundColor: "#F8FAFC", border: "1px solid #F1F5F9" }}>
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                   {employee.team || "Bangalore Backend Core Squad"}
                 </Typography>
                 <Chip label={employee.roleInTeam || "DEVELOPER"} size="small" sx={{ fontWeight: 700, fontSize: "10px", height: 20, backgroundColor: "#F1F5F9", color: "#475569" }} />
               </Box>
-              <LinearProgress variant="determinate" value={100} sx={{ height: 5, borderRadius: 3, backgroundColor: "#E2E8F0", "& .MuiLinearProgress-bar": { backgroundColor: "#10B981" } }} />
+              <LinearProgress variant="determinate" value={100} sx={{ height: 5, borderRadius: 3, backgroundColor: "divider", "& .MuiLinearProgress-bar": { backgroundColor: "#10B981" } }} />
             </Box>
           </Paper>
 
           {/* Layer 3: Senior Dev / Mentor (Code Review & Matrix Route) */}
-          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
                 <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(14, 165, 233, 0.1)", color: "#0EA5E9", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <CodeIcon sx={{ fontSize: 18 }} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.2 }}>
                     3. Senior Dev / Technical Reviewer (PR Route)
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#64748B" }}>
@@ -386,7 +387,7 @@ export function EmployeeMatrixDetailDrawer({
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <CustomAvatar name="Rohan Mehta" size={30} fontSize="11px" />
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                     Rohan Mehta (Senior Dev)
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#0EA5E9", fontWeight: 600 }}>
@@ -399,13 +400,13 @@ export function EmployeeMatrixDetailDrawer({
           </Paper>
 
           {/* Layer 4: Executive Lineage (Org Chart Line) */}
-          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF" }}>
+          <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 1.5 }}>
               <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(245, 158, 11, 0.1)", color: "#F59E0B", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <AccountTreeIcon sx={{ fontSize: 18 }} />
               </Box>
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.2 }}>
                   4. Executive Hierarchy Lineage
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#64748B" }}>

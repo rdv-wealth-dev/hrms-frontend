@@ -98,7 +98,7 @@ export const DeleteShiftDialog: React.FC<DeleteShiftDialogProps> = ({
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <DeleteOutlinedIcon sx={{ color: "#DC2626" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Delete Shift?
           </Typography>
         </Box>

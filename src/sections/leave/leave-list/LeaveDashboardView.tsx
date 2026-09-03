@@ -74,17 +74,17 @@ function LeaveDetailDialog({
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: "12px !important" }}>
         <Box>
           <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700 }}>EMPLOYEE</Typography>
-          <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>{empName}</Typography>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{empName}</Typography>
         </Box>
 
         <Box>
           <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700 }}>LEAVE TYPE</Typography>
-          <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>{request?.leaveTypeId?.name || "Leave"}</Typography>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{request?.leaveTypeId?.name || "Leave"}</Typography>
         </Box>
 
         <Box>
           <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700 }}>PERIOD</Typography>
-          <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>
             {new Date(request.fromDate).toLocaleDateString()} - {new Date(request.toDate).toLocaleDateString()} ({request.totalDays || 1} day(s))
           </Typography>
         </Box>
@@ -350,7 +350,7 @@ export default function LeaveDashboardView() {
     return (
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         <PageHeader
-          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
           title="My Leaves"
         />
         <LeaveTab isViewingOther={false} user={user} />
@@ -363,7 +363,7 @@ export default function LeaveDashboardView() {
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Unified Enterprise Page Header */}
         <PageHeader
-          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "#6D5DF6" }} />}
+          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
           title="Leave Management"
           subtitle="Manage team leave, balances, and approvals"
           action={
@@ -373,7 +373,7 @@ export default function LeaveDashboardView() {
                 startIcon={<AddIcon />}
                 onClick={handleOpenApply}
                 sx={{
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   textTransform: "none",
                   fontWeight: 600,
                   fontSize: "14px",
@@ -381,7 +381,7 @@ export default function LeaveDashboardView() {
                   px: 2.5,
                   height: 40,
                   boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                  "&:hover": { backgroundColor: "#5B4BEA" },
+                  "&:hover": { backgroundColor: "primary.dark" },
                   width: { xs: "100%", sm: "auto" },
                 }}
               >
@@ -473,7 +473,7 @@ export default function LeaveDashboardView() {
             />
 
             {/* Navigation Tabs Bar */}
-            <Box sx={{ borderBottom: 1, borderColor: "#E2E8F0", mb: 3 }}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
               <Tabs
                 value={tabValue}
                 onChange={(_, val) => setTabValue(val)}

@@ -134,8 +134,9 @@ export default function LeaveBalancesGrid({
               sx={{
                 p: 2.5,
                 borderRadius: "20px",
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #E2E8F0",
+                backgroundColor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -188,8 +189,9 @@ export default function LeaveBalancesGrid({
             sx={{
               p: 2.5,
               borderRadius: "20px",
-              backgroundColor: "#FFFFFF",
-              border: "1px solid #E2E8F0",
+              backgroundColor: "background.paper",
+              border: "1px solid",
+              borderColor: "divider",
               boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
               display: "flex",
               flexDirection: { xs: "column", sm: "row" },
@@ -225,7 +227,7 @@ export default function LeaveBalancesGrid({
                   sx={{
                     fontSize: "15px",
                     fontWeight: 700,
-                    color: "#0F172A",
+                    color: "text.primary",
                     lineHeight: 1.2,
                     mb: 0.25,
                   }}

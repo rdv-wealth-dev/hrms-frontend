@@ -223,9 +223,9 @@ export default function ShiftContent() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <ScheduleOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
+          <ScheduleOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
               Shift Master
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -253,8 +253,8 @@ export default function ShiftContent() {
             sx={{
               borderRadius: 2,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             {activeTab === 2
@@ -273,8 +273,8 @@ export default function ShiftContent() {
           onChange={(_, newValue) => setActiveTab(newValue)}
           sx={{
             "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "14px" },
-            "& .MuiTabs-indicator": { backgroundColor: "#6D5DF6" },
-            "& .MuiTab-root.Mui-selected": { color: "#6D5DF6" }
+            "& .MuiTabs-indicator": { backgroundColor: "primary.main" },
+            "& .MuiTab-root.Mui-selected": { color: "primary.main" }
           }}
         >
           <Tab label="Shifts List" />
@@ -300,7 +300,7 @@ export default function ShiftContent() {
       {activeTab === 0 && (
         loadingShifts ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+            <CircularProgress size={36} sx={{ color: "primary.main" }} />
           </Box>
         ) : shifts.length === 0 ? (
           <Box
@@ -350,7 +350,7 @@ export default function ShiftContent() {
                   <TableRow key={shift._id} hover>
                     <TableCell>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                           {shift.name}
                         </Typography>
                         {shift.isDefault && (
@@ -360,7 +360,7 @@ export default function ShiftContent() {
                             sx={{
                               height: 20,
                               fontSize: "0.75rem",
-                              backgroundColor: "#6D5DF6",
+                              backgroundColor: "primary.main",
                               color: "#fff",
                             }}
                           />
@@ -397,7 +397,7 @@ export default function ShiftContent() {
                             <IconButton
                               size="small"
                               onClick={() => handleOpenEditShift(shift)}
-                              sx={{ color: "#64748B", "&:hover": { color: "#6D5DF6", backgroundColor: "#EEF2FF" } }}
+                              sx={{ color: "#64748B", "&:hover": { color: "primary.main", backgroundColor: "primary.lighter" } }}
                             >
                               <EditOutlinedIcon fontSize="small" />
                             </IconButton>
@@ -431,7 +431,7 @@ export default function ShiftContent() {
       {activeTab === 1 && (
         loadingAssignments ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+            <CircularProgress size={36} sx={{ color: "primary.main" }} />
           </Box>
         ) : assignments.length === 0 ? (
           <Box
@@ -476,7 +476,7 @@ export default function ShiftContent() {
               <TableBody>
                 {assignments.map((row) => (
                   <TableRow key={row.employeeId} hover>
-                    <TableCell sx={{ fontWeight: 600, color: "#111827" }}>
+                    <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
                       {row.name}
                     </TableCell>
                     <TableCell>
@@ -521,7 +521,7 @@ export default function ShiftContent() {
       {activeTab === 2 && (
         loadingPlans ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress size={36} sx={{ color: "#6D5DF6" }} />
+            <CircularProgress size={36} sx={{ color: "primary.main" }} />
           </Box>
         ) : rotationPlans.length === 0 ? (
           <Box
@@ -575,7 +575,7 @@ export default function ShiftContent() {
                   {rotationPlans.map((plan) => (
                     <TableRow key={plan._id} hover>
                       <TableCell sx={{ verticalAlign: "top" }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                           {plan.name}
                         </Typography>
                         {plan.description && (
@@ -589,8 +589,8 @@ export default function ShiftContent() {
                           label={plan.cycleDuration}
                           size="small"
                           sx={{
-                            backgroundColor: "rgba(109, 93, 246, 0.08)",
-                            color: "#6D5DF6",
+                            backgroundColor: "primary.lighter",
+                            color: "primary.main",
                             fontWeight: 600,
                             fontSize: "0.75rem"
                           }}
@@ -646,7 +646,7 @@ export default function ShiftContent() {
                   }}
                 >
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
                       {plan.name}
                     </Typography>
                     <Chip
@@ -654,8 +654,8 @@ export default function ShiftContent() {
                       size="small"
                       sx={{
                         height: 20,
-                        backgroundColor: "rgba(109, 93, 246, 0.08)",
-                        color: "#6D5DF6",
+                        backgroundColor: "primary.lighter",
+                        color: "primary.main",
                         fontWeight: 600,
                         fontSize: "0.7rem"
                       }}
