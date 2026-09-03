@@ -53,8 +53,11 @@ export default function DeleteBranchDepartmentsDialog({
           `Successfully deleted ${deptsCount} department(s) and ${desigCount} designation(s).`,
           "success"
         );
+        setConflictError(null);
+        setSubmitting(false);
         onSuccess();
-        handleClose();
+        onClose();
+        return;
       } else {
         setConflictError(res?.message ?? "Failed to delete departments.");
       }

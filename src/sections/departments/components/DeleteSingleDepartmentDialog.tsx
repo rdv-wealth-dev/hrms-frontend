@@ -51,8 +51,11 @@ export default function DeleteSingleDepartmentDialog({
           `Department "${department.name}" and ${desigCount} associated designation(s) deleted successfully.`,
           "success"
         );
+        setConflictError(null);
+        setSubmitting(false);
         onSuccess();
-        handleClose();
+        onClose();
+        return;
       } else {
         setConflictError(res?.message ?? "Failed to delete department.");
       }

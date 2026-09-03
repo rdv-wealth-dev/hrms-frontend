@@ -38,7 +38,6 @@ export default function DeleteResourceDialog({
   const handleClose = () => {
     if (submitting) return;
     setConflictError(null);
-    setSubmitting(false);
     onClose();
   };
 
@@ -48,10 +47,15 @@ export default function DeleteResourceDialog({
 
     try {
       const res = await onDelete(force);
-      if (res?.success) {
-        showToast(res.countMessage || res.message || "Deleted successfully.", "success");
+      const isSuccess = res?.success !== false;
+
+      if (isSuccess) {
+        setConflictError(null);
+        setSubmitting(false);
+        showToast(res?.countMessage || res?.message || "Deleted successfully.", "success");
         onSuccess();
-        handleClose();
+        onClose();
+        return;
       } else {
         setConflictError(res?.message ?? "Failed to delete resource.");
       }
