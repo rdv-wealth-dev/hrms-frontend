@@ -27,7 +27,12 @@ export function usePermissions() {
   const hasPermission = useCallback(
     (perm: string): boolean => {
       if (isSuperAdmin) return true;
-      if ((role === "MANAGER" || role === "PRODUCT_MANAGER") && (perm === "attendance.approve" || perm === "leave.approve" || perm === "attendance.read")) return true;
+      const isManagerOrLead =
+        role === "MANAGER" ||
+        role === "PRODUCT_MANAGER" ||
+        role === "TEAM_LEADER" ||
+        (role as string) === "TEAM_LEAD";
+      if (isManagerOrLead && (perm === "attendance.approve" || perm === "leave.approve" || perm === "attendance.read")) return true;
       return permissions.includes(perm);
     },
     [isSuperAdmin, role, permissions]

@@ -161,6 +161,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
   const [teamId, setTeamId] = useState<string>("");
   const [managerId, setManagerId] = useState<string>("");
   const [secondaryManagerIds, setSecondaryManagerIds] = useState<string[]>([]);
+  const [secondaryManagerOpen, setSecondaryManagerOpen] = useState(false);
   const [role, setRole] = useState<string>("EMPLOYEE");
   const [employeeType, setEmployeeType] = useState<string>("FULL_TIME");
 
@@ -922,8 +923,16 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       onChange={(e) => {
                         const val = e.target.value;
                         setSecondaryManagerIds(typeof val === "string" ? val.split(",") : val);
+                        setSecondaryManagerOpen(false);
                       }}
-                      slotProps={{ select: { multiple: true } }}
+                      slotProps={{
+                        select: {
+                          multiple: true,
+                          open: secondaryManagerOpen,
+                          onOpen: () => setSecondaryManagerOpen(true),
+                          onClose: () => setSecondaryManagerOpen(false),
+                        },
+                      }}
                       disabled={!branchId || !departmentId}
                     >
                       {eligibleManagers?.map((m) => (

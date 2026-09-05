@@ -81,7 +81,16 @@ export default function OnboardingStep2Family({
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
       <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: 1.5,
+            mb: 2.5,
+          }}
+        >
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               2. Family Members &amp; Dependents
@@ -91,6 +100,7 @@ export default function OnboardingStep2Family({
             </Typography>
           </Box>
           <Button
+            variant="outlined"
             size="small"
             startIcon={<AddIcon />}
             disabled={isNotApplicable}
@@ -106,7 +116,16 @@ export default function OnboardingStep2Family({
                 isNominee: false,
               })
             }
-            sx={{ textTransform: "none", fontWeight: 600 }}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              borderRadius: "8px",
+              px: 2,
+              py: 0.75,
+              alignSelf: { xs: "flex-start", sm: "auto" },
+            }}
           >
             Add Family Member
           </Button>

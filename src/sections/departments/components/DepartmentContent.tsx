@@ -234,7 +234,7 @@ function DepartmentContent() {
 
     const branchId = useActiveBranchId();
     const [selectedBranchId, setSelectedBranchId] = useState<string>(branchId || "");
-    
+
     const { hasPermission, canCreateTeam } = usePermissions();
     const canCreate = hasPermission("department.create");
     const canUpdate = hasPermission("department.update");
@@ -469,149 +469,130 @@ function DepartmentContent() {
                         )}
 
 
-                {/* Department Table */}
-                <VirtualizedTable<any>
-                    data={(departments ?? []).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-                    loading={loading}
-                    maxHeight="none"
-                    minWidth={600}
-                    estimateRowHeight={52}
-                    rowKey={(dept, index) => dept?._id || `dept-${index}`}
-                    emptyState={
-                        <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
-                            <ApartmentOutlinedIcon sx={{ fontSize: 54, color: "#9CA3AF" }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
-                                No Departments Configured Yet
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, textAlign: "center" }}>
-                                Click "Create Department" to set up your organization's first department.
-                            </Typography>
-                            {canCreate && (
-                                <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => setCreateOpen(true)}
-                                        startIcon={<AddIcon />}
-                                        sx={{
-                                            borderRadius: 2,
-                                            textTransform: "none",
-                                            fontWeight: 600,
-                                            backgroundColor: "primary.main",
-                                            "&:hover": { backgroundColor: "primary.dark" },
-                                        }}
-                                    >
-                                        Create Department
-                                    </Button>
+                        {/* Department Table */}
+                        <VirtualizedTable<any>
+                            data={(departments ?? []).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+                            loading={loading}
+                            maxHeight="none"
+                            minWidth={720}
+                            estimateRowHeight={52}
+                            rowKey={(dept, index) => dept?._id || `dept-${index}`}
+                            emptyState={
+                                <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
+                                    <ApartmentOutlinedIcon sx={{ fontSize: 54, color: "#9CA3AF" }} />
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
+                                        No Departments Configured Yet
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, textAlign: "center" }}>
+                                        Click "Create Department" to set up your organization's first department.
+                                    </Typography>
+
                                 </Box>
-                            )}
-                        </Box>
-                    }
-                    columns={[
-                        {
-                            id: "name",
-                            header: "Name",
-                            minWidth: 150,
-                            sticky: "left",
-                            cell: (dept) => (
-                                <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-                                    {dept?.name ?? "—"}
-                                </Typography>
-                            ),
-                        },
-                        {
-                            id: "code",
-                            header: "Code",
-                            minWidth: 100,
-                            cell: (dept) => (
-                                <Chip
-                                    label={dept?.code ?? ""}
-                                    size="small"
-                                    sx={{
-                                        backgroundColor: "primary.lighter",
-                                        color: "primary.main",
-                                        fontWeight: 600,
-                                        fontSize: 12,
-                                    }}
-                                />
-                            ),
-                        },
-                        {
-                            id: "description",
-                            header: "Description",
-                            minWidth: 200,
-                            cell: (dept) => (
-                                <Typography sx={{ color: "#6B7280", fontSize: 13 }}>
-                                    {dept?.description || "—"}
-                                </Typography>
-                            ),
-                        },
-                        {
-                            id: "status",
-                            header: "Status",
-                            minWidth: 100,
-                            cell: (dept) => (
-                                <Chip
-                                    label={dept?.isActive ? "Active" : "Inactive"}
-                                    size="small"
-                                    color={dept?.isActive ? "success" : "default"}
-                                    variant="outlined"
-                                />
-                            ),
-                        },
-                        ...(canUpdate
-                            ? [
-                                  {
-                                      id: "actions",
-                                      header: "Actions",
-                                      minWidth: 100,
-                                      align: "center" as const,
-                                      sticky: "right" as const,
-                                      cell: (dept: any) => (
-                                          <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                                              <IconButton
-                                                  size="small"
-                                                  onClick={() => openEdit(dept)}
-                                                  sx={{ color: "primary.main" }}
-                                                  title="Edit Department"
-                                              >
-                                                  <EditOutlinedIcon fontSize="small" />
-                                              </IconButton>
-                                              <IconButton
-                                                  size="small"
-                                                  onClick={() => setDeleteTarget(dept)}
-                                                  sx={{ color: "error.main" }}
-                                                  title="Delete Department"
-                                              >
-                                                  <DeleteOutlineOutlinedIcon fontSize="small" />
-                                              </IconButton>
-                                          </Box>
-                                      ),
-                                  },
-                              ]
-                            : []),
-                    ]}
-                />
-                <TablePagination
-                    rowsPerPageOptions={[10, 25, 50, 100]}
-                    component="div"
-                    count={(departments ?? []).length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(_, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
-                    sx={{
-                        borderTop: "1px solid",
-                        borderColor: "divider",
-                        color: "text.secondary",
-                        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
-                            fontSize: "13px",
-                            fontWeight: 500,
-                        },
-                    }}
-                />
+                            }
+                            columns={[
+                                {
+                                    id: "name",
+                                    header: "Name",
+                                    minWidth: 150,
+                                    cell: (dept) => (
+                                        <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+                                            {dept?.name ?? "—"}
+                                        </Typography>
+                                    ),
+                                },
+                                {
+                                    id: "code",
+                                    header: "Code",
+                                    minWidth: 100,
+                                    cell: (dept) => (
+                                        <Chip
+                                            label={dept?.code ?? ""}
+                                            size="small"
+                                            sx={{
+                                                backgroundColor: "primary.lighter",
+                                                color: "primary.main",
+                                                fontWeight: 600,
+                                                fontSize: 12,
+                                            }}
+                                        />
+                                    ),
+                                },
+                                {
+                                    id: "description",
+                                    header: "Description",
+                                    minWidth: 200,
+                                    cell: (dept) => (
+                                        <Typography sx={{ color: "#6B7280", fontSize: 13 }}>
+                                            {dept?.description || "—"}
+                                        </Typography>
+                                    ),
+                                },
+                                {
+                                    id: "status",
+                                    header: "Status",
+                                    minWidth: 100,
+                                    cell: (dept) => (
+                                        <Chip
+                                            label={dept?.isActive ? "Active" : "Inactive"}
+                                            size="small"
+                                            color={dept?.isActive ? "success" : "default"}
+                                            variant="outlined"
+                                        />
+                                    ),
+                                },
+                                ...(canUpdate
+                                    ? [
+                                        {
+                                            id: "actions",
+                                            header: "Actions",
+                                            minWidth: 100,
+                                            align: "center" as const,
+                                            cell: (dept: any) => (
+                                                <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => openEdit(dept)}
+                                                        sx={{ color: "primary.main" }}
+                                                        title="Edit Department"
+                                                    >
+                                                        <EditOutlinedIcon fontSize="small" />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => setDeleteTarget(dept)}
+                                                        sx={{ color: "error.main" }}
+                                                        title="Delete Department"
+                                                    >
+                                                        <DeleteOutlineOutlinedIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Box>
+                                            ),
+                                        },
+                                    ]
+                                    : []),
+                            ]}
+                        />
+                        <TablePagination
+                            rowsPerPageOptions={[10, 25, 50, 100]}
+                            component="div"
+                            count={(departments ?? []).length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={(_, newPage) => setPage(newPage)}
+                            onRowsPerPageChange={(e) => {
+                                setRowsPerPage(parseInt(e.target.value, 10));
+                                setPage(0);
+                            }}
+                            sx={{
+                                borderTop: "1px solid",
+                                borderColor: "divider",
+                                color: "text.secondary",
+                                "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                                    fontSize: "13px",
+                                    fontWeight: 500,
+                                },
+                            }}
+                        />
                     </>
                 )}
             </Box>

@@ -97,6 +97,7 @@ export default function EmployeeCreateView() {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
   const [formValidationError, setFormValidationError] = useState<string | null>(null);
+  const [secondaryManagerOpen, setSecondaryManagerOpen] = useState(false);
 
   const [rolesList, setRolesList] = useState<RoleItem[]>(DEFAULT_FALLBACK_ROLES);
 
@@ -574,9 +575,17 @@ export default function EmployeeCreateView() {
                       onChange={(e) => {
                         const val = e.target.value;
                         setValue("secondaryManagerIds", typeof val === "string" ? val.split(",") : val);
+                        setSecondaryManagerOpen(false);
                       }}
                       error={errors.secondaryManagerIds?.message}
-                      slotProps={{ select: { multiple: true } }}
+                      slotProps={{
+                        select: {
+                          multiple: true,
+                          open: secondaryManagerOpen,
+                          onOpen: () => setSecondaryManagerOpen(true),
+                          onClose: () => setSecondaryManagerOpen(false),
+                        },
+                      }}
                       disabled={!selectedBranchId || !selectedDepartmentId}
                     >
                       {eligibleManagers?.map((m) => (
@@ -754,7 +763,7 @@ export default function EmployeeCreateView() {
                     <TextInput
                       label="Account Number"
                       format="numeric"
-                      maxLength={20}
+                      maxLength={13}
                       placeholder="e.g. 50100432109876"
                       registration={register("bankAccount.accountNumber")}
                       error={errors.bankAccount?.accountNumber?.message}

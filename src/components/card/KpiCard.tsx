@@ -164,7 +164,7 @@ export function KpiCard({
         }}
       >
         {/* 1. Header Row: Title & (Icon Badge or Circular Progress Ring) */}
-        <Box sx={{ display: "flex", alignItems: isSmall ? "flex-start" : "center", justifyContent: "space-between", gap: 1, mb: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1, mb: 1.5 }}>
           <Typography
             variant="caption"
             sx={{
@@ -366,7 +366,8 @@ export default function KpiCardsGrid({ items, mb = 3 }: KpiCardsGridProps) {
         gridTemplateColumns: {
           xs: "1fr",
           sm: "repeat(2, 1fr)",
-          md: `repeat(${Math.min(items.length, 4)}, 1fr)`,
+          md: "repeat(2, 1fr)",
+          lg: `repeat(${Math.min(items.length, 4)}, 1fr)`,
         },
         gap: 2.5,
         mb,

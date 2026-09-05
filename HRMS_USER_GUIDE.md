@@ -1,6 +1,11 @@
 # 🚀 Enterprise HRMS — UI Navigation & Feature Testing Guide
 
-Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This document provides a comprehensive step-by-step walkthrough for operating, navigating, and testing every module, user interface flow, and **form validation rule** within the application.
+> [!NOTE]
+> **🧭 How Navigation Works in This Guide**
+> 
+> * **The Left Sidebar**: This is the primary vertical menu on the left side of your screen. It lists main feature areas (such as **People**, **Attendance**, **Leave Management**, and **Holiday**).
+> * **Nested Menus & Tabs**: Some instructions tell you to click a main menu item first, then select a specific sub-item or tab across the top of the page (for example: *Click **Leave Management** in the left sidebar, then click the **Requests** tab*).
+> * **Technical Page Addresses**: You will see technical addresses in parentheses throughout this guide, such as `(/employees/directory)` or `(/leave)`. These are provided strictly as reference paths for QA testers and software developers cross-checking against the code. You do **not** need to type these addresses — simply follow the click-by-click instructions.
 
 ---
 
@@ -17,20 +22,18 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 4. [Attendance & Time Tracking](#4-attendance--time-tracking)
 5. [Leave & Approvals Management](#5-leave--approvals-management)
 6. [Holidays & Branch Calendars](#6-holidays--branch-calendars)
-7. [Organization & Master Data Administration](#7-organization--master-data-administration)
-8. [Roles & Permissions Administration](#8-roles--permissions-administration)
-9. [Onboarding & Document Verification](#9-onboarding--document-verification)
+7. [Document Verification](#7-document-verification)
+8. [Organization & Master Data Administration](#8-organization--master-data-administration)
+9. [Roles & Permissions Administration](#9-roles--permissions-administration)
+10. [Employee Onboarding](#10-employee-onboarding)
 
 ---
 
 ## 1. 🔐 Authentication & Account Setup
 
 ### **1.1 Sign Up / User Registration**
-* **Route**: `/signup` (wrapped in `<GuestGuard>`)
-* **Overview**: Multi-field company workspace registration form with auto-sanitized workspace URL generation (alphanumeric), real-time URL availability check, country-aware phone validation, and work email verification.
-* **Access Control**: Guest-Only (`GuestGuard`). Logged-in users attempting to access `/signup` are automatically redirected to `/dashboard`.
 * **Testing Steps**:
-  1. Navigate to `/signup` (ensure you are logged out).
+  1. Open your web browser and go to the HRMS sign-up page.
   2. Enter **Company Name** (e.g. `Creater Tech`) — verify **Workspace URL** auto-generates as `creatertech` (clean alphanumeric, without hyphens or spaces).
   3. Select **Team Size** from the dropdown menu (e.g. `11 – 50 employees`).
   4. Enter **First Name** and **Last Name**.
@@ -111,11 +114,9 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 ---
 
 ### **1.2 Login Page**
-* **Route**: `/login` (wrapped in `<GuestGuard>`)
-* **Overview**: Secure authentication screen featuring real-time email domain/SSO detection, workspace branding auto-discovery, lockout rate-limiting with live countdown timer, and automated post-login redirect priority dispatch.
-* **Access Control**: Guest-Only (`GuestGuard`). Logged-in users attempting to access `/login` are automatically redirected to `/dashboard`.
+* **Route**: Login screen (`/login`)
 * **Testing Steps**:
-  1. Navigate to `/login` (ensure you are logged out).
+  1. Open your web browser and go to the HRMS login page.
   2. Enter your registered **Company Email** (e.g., `admin@company.com`). Notice the 500ms debounced email check: if workspace branding exists, the company logo and name appear dynamically above the heading.
   3. Enter your **Password**.
   4. (Optional) Check **Remember this device** to issue a 30-day persistent session token.
@@ -179,9 +180,9 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 ---
 
 ### **1.3 Password Recovery & Account Activation**
-* **Routes**: `/auth/forgot-password`, `/auth/reset-password`, `/auth/verify-email`, `/auth/activate`
+* **Routes**: Password Recovery screens (`/auth/forgot-password`, `/auth/reset-password`, `/auth/verify-email`)
 * **Testing Steps**:
-  1. Click **Forgot Password?** on the login page.
+  1. On the login screen, click the **Forgot Password?** link located below the password field (`/auth/forgot-password`).
   2. Enter your registered email address and submit.
 * **⚠️ Validation Errors to Test**:
   * Leaving email blank triggers `"Email is required"`.
@@ -191,11 +192,11 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 
 ## 2. 📊 Main Dashboard & Quick Widgets
 
-* **Route**: `/dashboard` (wrapped in `<AuthGuard>`)
+* **Route**: Main Dashboard screen (`/dashboard`)
 * **Overview**: Centralized command center providing real-time workforce metrics, AI-driven insights, interactive attendance charts, pending leave requests, team widgets, and organization setup guidance.
 * **Access Control**: Authenticated users only (`AuthGuard`). Redirects unauthenticated guests to `/login`.
 * **Testing Steps**:
-  1. Log in to the application and navigate to `/dashboard`.
+  1. Log in to the application. You will land directly on the **Main Dashboard** screen (`/dashboard`). Alternatively, click **Dashboard** in the top section of the left sidebar.
   2. Observe top header greeting displaying user's first name, last login timestamp, IP address, and login device.
   3. Review top KPI cards (*Total Employees*, *Present Today*, *Leave Requests Pending*, *Upcoming Celebrations*).
   4. (If logged in as `ORG_ADMIN` or `HR_ADMIN` with an incomplete workspace setup) Observe the **Organization Initial Setup Required** banner displaying current progress (0–3 steps completed). Click **Complete Initial Setup** to open the modal wizard.
@@ -206,12 +207,12 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 
 ### **2.1 Organization Setup Wizard Dialog**
 
-🧭 **How to Get Here**: After logging in, click **Dashboard** in the left sidebar (the top menu item under main navigation). This takes you to `/dashboard`. If you are logged in as an administrator (`ORG_ADMIN` or `HR_ADMIN`) and your organization setup is incomplete (i.e. Head Office branch, departments, or designations have not yet been created), the purple **Organization Initial Setup Required 🎉** banner will appear near the top of the dashboard page. Click **Complete Initial Setup** on the right side of this banner to open the setup wizard modal dialog (`AdminSetupWizardDialog`). If you do not see this banner, your organization structure is already fully configured or your role does not have setup permissions — see the Role-Based Access table below.
+🧭 **How to Get Here**: After logging in, click **Dashboard** in the top section of the left sidebar (icon: `<DashboardIcon />`). This takes you to the **Main Dashboard** screen (`/dashboard`). If you are logged in as an administrator (`ORG_ADMIN` or `HR_ADMIN`) and your organization setup is incomplete (i.e. Head Office branch, departments, or designations have not yet been created), the purple **Organization Initial Setup Required 🎉** banner will appear near the top of the dashboard page. Click **Complete Initial Setup** on the right side of this banner to open the setup wizard modal dialog (`AdminSetupWizardDialog`). If you do not see this banner, your organization structure is already fully configured or your role does not have setup permissions — see the Role-Based Access table below.
 
 * **Route**: `/dashboard` (Modal overlay: `AdminSetupWizardDialog`)
 * **Overview**: Interactive setup wizard allowing company administrators to configure organization locales (country, timezone, currency, fiscal year) and automatically seed Head Office branch, default departments, designations, shifts, and statutory national holidays into the database.
 * **Testing Steps**:
-  1. Log in as `ORG_ADMIN` or `HR_ADMIN` and navigate to `/dashboard`.
+  1. Log in as `ORG_ADMIN` or `HR_ADMIN`. On the Main Dashboard screen (`/dashboard`), locate the setup banner.
   2. Locate the **Organization Initial Setup Required 🎉** card and click **Complete Initial Setup**.
   3. Verify the setup modal opens with pre-filled default locale values fetched from your tenant organization.
   4. Fill or adjust the 8 configuration fields (**Country Code**, **Timezone**, **Base Currency**, **Fiscal Year Start**, **Employee Count Range**, **Industry**, **Phone Number**, **Admin Job Title**).
@@ -317,11 +318,12 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 
 ## 3. 👥 Employee Directory & People Hub
 
-* **Routes**: `/employees/directory`, `/employees/create`, `/employees/profile/:id`
+* **Routes**: Employee Directory (`/employees/directory`), Add Employee (`/employees/create`), Profile View (`/employees/profile/:id`)
 * **Overview**: Complete workforce management hub with dual view modes (Table & Card Grid).
 
 ### **3.1 Directory View & Filters**
-* **Route**: `/employees/directory`
+* **Route**: Employee Directory screen (`/employees/directory`)
+🧭 **How to Get Here**: Click **People** in the left sidebar (under top navigation group, icon: `<PeopleIcon />`). This opens the **Employee Directory** screen (`/employees/directory`).
 * **Features & Testing**:
   1. **View Mode Switcher**:
      * Click **Grid View** icon to display employee cards with profile avatars.
@@ -334,12 +336,12 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 
 ### **3.2 Add New Employee Form**
 
-🧭 **How to Get Here**: After logging in, click **Employees** in the left sidebar (under main navigation, with the workforce icon). This takes you to `/employees/list` (or `/employees/directory`). Click the **Add Employee** button at the top right of the employee directory view, or navigate directly to `/employees/create`. If you do not see the **Employees** menu item or the **Add Employee** button, your role does not have `employee.read` or `employee.create` permissions — see the Role-Based Access table below.
+🧭 **How to Get Here**: After logging in: 1. Click **People** in the left sidebar (under top navigation group, icon: `<PeopleIcon />`). This opens the **Employee Directory** screen (`/employees/directory`). 2. Click the **`[ + Add Employee ]`** button in the top-right corner of the screen. This opens the **Add New Employee** form (`/employees/create`). If you do not see the **Employees** menu item or the **Add Employee** button, your role does not have `employee.read` or `employee.create` permissions — see the Role-Based Access table below.
 
 * **Route**: `/employees/create` (wrapped in `<RoleGuard permission="employee.create">`)
 * **Overview**: Comprehensive multi-card employee onboarding form featuring 7 structured cards, cascading organizational placement (Branch → Department → Designation → Eligible Managers), international phone formatting, bank account setup, and automatic salary structure mapping.
 * **Testing Steps**:
-  1. Log in as `ORG_ADMIN` or `HR_ADMIN` and navigate to `/employees/create`.
+  1. Log in as `ORG_ADMIN` or `HR_ADMIN`, click **People** in the left sidebar (`/employees/directory`), then click **`[ + Add Employee ]`** (`/employees/create`).
   2. Complete **Card 1: Organizational Placement**: Select **Branch Location** (STEP 1). Observe that **Department** (STEP 2) unlocks. Select a Department; observe that **Designation** (STEP 3) and **Primary Reporting Manager** (STEP 5) populate with branch-and-department-filtered options. Select Designation and System Security Role (STEP 7).
   3. Complete **Card 2: Basic Information & Contact**: Enter **First Name**, **Last Name**, **Work Email Address**, and **Mobile Number**.
   4. Complete **Card 3: Employment Details & Schedule**: Select **Employee Type** (defaults to `Full-Time`) and **Joining Date** (`YYYY-MM-DD`).
@@ -740,37 +742,286 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 
 * **Routes**: `/attendance`, `/reports`, `/attendance/regularizations`
 
-### **4.1 Real-Time Check-In / Check-Out**
-* **Route**: `/attendance`
-* **Testing Steps**:
-  1. Click the **Punch In** button.
-  2. Observe current timestamp and location log update.
-  3. Click **Punch Out** at end of test.
+### **4.1 Real-Time Check-In / Check-Out (Daily Punch Card)**
+
+* **Route**: `/dashboard` *(Note: Navigating to `/attendance` directly auto-redirects to `/profile?tab=attendance`)*
+* **Source Component**: [`DailyPunchCard.tsx`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx)
+* **API Calls**: `GET /api/v1/attendance/me/today`, `POST /api/v1/attendance/me/punch/web`, `GET /api/v1/attendance/shifts`
+
+🧭 **How to Get Here**:
+After logging in, click **Dashboard** in the left sidebar (under the main navigation group, icon: `<DashboardIcon />`). This takes you to `/dashboard`. The **Daily Attendance Punch Card** sits at the top of the main dashboard page. If your profile is incomplete, the card will display a profile completion lock screen instead — see the Role-Based Access & Lock Restrictions table below.
+
+---
+
+#### 📝 Interactive Controls & Button-by-Button Field Guide
+
+The Daily Punch Card is a dynamic, multi-state interactive control that guides the user through their daily work shift. Below is the field-by-field breakdown of every control, indicator, and button on the card:
+
+| Element / Control Label | Expected Format & Type | Required / Optional | State Dependencies & Interactive UI Behavior |
+| :--- | :--- | :---: | :--- |
+| **Live Digital Clock** | Digital time display (`HH:MM:SS AM/PM TimeZone`), e.g. `09:30:15 AM IST` | Indicator | Continuously updates every 1 second (`1000ms`) using locale-aware formatting (`Intl.DateTimeFormat`). Displays current weekday, date, month, and year below the clock. |
+| **Geofence Verified Chip** | Status badge (`#DCFCE7` background, green text) | Indicator | Displays green location icon (`<LocationOnIcon />`) confirming client browser geolocation verification capability. |
+| **Shift Status Chip** | Dynamic badge | Indicator | Displays real-time status:<br>• `Not Clocked In` (Grey) — Before first check-in.<br>• `Active Shift` (Green) — Punched in & actively working.<br>• `On Break` (Orange) — Currently on break.<br>• `Shift Completed` (Indigo) — Punched out for the day. |
+| **`[ Clock In ]` Button** | Primary Action Button (Solid Indigo `#6D5DF6`) | Click Action | **Visible when**: User has not clocked in today.<br>**Behavior**: Clicking prompts browser for HTML5 Geolocation coordinates (`longitude`, `latitude`), resolves default shift ID (`/attendance/shifts`), and submits `type: "CHECK_IN"`. Button shows spinner (`"Clocking In..."`).<br>**Result**: Displays green alert `"Checked in successfully!"`, status chip changes to `Active Shift`, and card displays shift start timestamp. If profile completion is in NUDGE phase, pops open **Nudge Reminder Modal**. |
+| **Check-In Recorded Box** | Info Box (Green dashed border) | Indicator | **Visible when**: Active shift is running.<br>**Content**: Displays `<CheckCircleOutlinedIcon />` and text: *"Check-In Recorded — Shift started at HH:MM AM/PM today."* |
+| **`[ Break Out ]` Button** | Secondary Action Button (Orange `#F59E0B`) | Click Action | **Visible when**: User is in an `Active Shift`.<br>**Behavior**: Submits `type: "BREAK_OUT"`. Button shows spinner (`"Processing..."`).<br>**Result**: Displays green alert `"Took a break successfully!"`, status chip changes to `On Break`, card transitions to On Break info box. |
+| **`[ Resume Shift ]` Button** | Action Button (Green `#10B981`) | Click Action | **Visible when**: User is currently `On Break`.<br>**Behavior**: Submits `type: "BREAK_IN"`. Button shows spinner (`"Resuming..."`).<br>**Result**: Displays green alert `"Resumed shift successfully!"`, status chip returns to `Active Shift`. |
+| **`[ Clock Out ]` Button** | Danger Action Button (Red `#EF4444`) | Click Action | **Visible when**: User is in an `Active Shift` (side-by-side with Break Out).<br>**Behavior**: Submits `type: "CHECK_OUT"`. Button shows spinner (`"Clocking Out..."`).<br>**Result**: Displays green alert `"Checked out successfully!"`, status chip changes to `Shift Completed`, and card locks into **Shift Summary** mode. |
+| **Shift Summary Card** | Summary Box (Indigo border) | Indicator | **Visible when**: Shift is completed (`hasCheckedOut`).<br>**Content**: Displays:<br>• **Clock In**: Start time + `Late` chip if `isLate: true`.<br>• **Clock Out**: End time + `Early` chip if `isCheckOutEarly: true`.<br>• **Worked Hours**: Computed duration (e.g. `8h 30m`). |
+| **`[ Complete Profile ]` Button** | Warning Action Button (Primary Indigo) | Click Action | **Visible when**: User profile is incomplete (`isBlocked: true`).<br>**Behavior**: Clicking navigates directly to `/onboarding`. All punch buttons remain hidden until required profile sections are completed. |
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Initial Clock In** | 1. Open `/dashboard`<br>2. Confirm status chip reads `Not Clocked In`<br>3. Click **`[ Clock In ]`**. | Button shows spinner (`"Clocking In..."`). Green alert banner displays `"Checked in successfully!"`. Status chip updates to `Active Shift`. Check-In Recorded box displays `Shift started at [HH:MM AM/PM] today.` | [`DailyPunchCard.tsx:L105-L110`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L105-L110) |
+| **Start Break** | 1. During an active shift, click **`[ Break Out ]`**. | Button shows spinner (`"Processing..."`). Green alert banner displays `"Took a break successfully!"`. Status chip changes to `On Break`. Card renders Currently On Break box displaying break start time. | [`DailyPunchCard.tsx:L155-L161`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L155-L161) |
+| **Resume Shift** | 1. While on break, click **`[ Resume Shift ]`**. | Button shows spinner (`"Resuming..."`). Green alert banner displays `"Resumed shift successfully!"`. Status chip returns to `Active Shift`. Action buttons revert to `Break Out` and `Clock Out`. | [`DailyPunchCard.tsx:L177-L183`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L177-L183) |
+| **Clock Out** | 1. During an active shift, click **`[ Clock Out ]`**. | Button shows spinner (`"Clocking Out..."`). Green alert banner displays `"Checked out successfully!"`. Status chip changes to `Shift Completed`. Card renders **Shift Summary** with Clock In, Clock Out, and Worked Hours (`formatWorkedTime`). | [`DailyPunchCard.tsx:L133-L137`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L133-L137) |
+| **Nudge Modal Trigger** | 1. Clock in as an employee with profile in NUDGE phase. | Green alert appears AND **Nudge Reminder Modal** pops open displaying profile completion percentage (e.g. `45%`) with option to complete profile or dismiss. | [`DailyPunchCard.tsx:L110-L114`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L110-L114) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field / DTO Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Punch Type Enum (`PunchDto`)** | Send invalid punch type string to `POST /api/v1/attendance/me/punch/web` | Backend Zod schema validation fails: `"Invalid enum value. Expected 'CHECK_IN' \| 'BREAK_OUT' \| 'BREAK_IN' \| 'CHECK_OUT'"` | [`attendance.dto.ts:L7`](file:///d:/hrms/hrms-backend/src/modules/attendance/dto/attendance.dto.ts#L7) |
+| **Latitude Range (`PunchDto`)** | Send latitude < -90 or > 90 | Backend Zod schema validation fails: `"Number must be greater than or equal to -90"` or `"Number must be less than or equal to 90"` | [`attendance.dto.ts:L8`](file:///d:/hrms/hrms-backend/src/modules/attendance/dto/attendance.dto.ts#L8) |
+| **Longitude Range (`PunchDto`)** | Send longitude < -180 or > 180 | Backend Zod schema validation fails: `"Number must be greater than or equal to -180"` or `"Number must be less than or equal to 180"` | [`attendance.dto.ts:L9`](file:///d:/hrms/hrms-backend/src/modules/attendance/dto/attendance.dto.ts#L9) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Duplicate Clock In (400)** | Attempting to clock in when already checked in | Red inline Alert banner displays server error message: `err.response.data.message` (e.g., `"Already checked in for today"`). Button spinner stops and error can be dismissed via `x` icon. | [`DailyPunchCard.tsx:L119-L121`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L119-L121) |
+| **Duplicate Clock Out (400)** | Attempting to clock out when session is already closed | Red inline Alert banner displays server error message: `err.response.data.message` (e.g., `"Already checked out for today"`). | [`DailyPunchCard.tsx:L140-L142`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L140-L142) |
+| **Shift Window Rejection (400)** | Punching in before allowed shift start time when `rejectEarlyPunch: true` | Red inline Alert banner displays: `"Early check-in not allowed for this shift"`. | [`attendance.service.ts:L142`](file:///d:/hrms/hrms-backend/src/modules/attendance/services/attendance.service.ts#L142) |
+| **Hard Profile Lock (403)** | User profile is incomplete (`PROFILE_INCOMPLETE_HARD`) | `useProfileBlockDetect` catches the 403 response (`isBlocked: true`). Punch card replaces clock buttons with a lock screen showing `<LockOutlinedIcon />`, title `"Profile Incomplete"`, pending section chips, and a **`[ Complete Profile ]`** button. | [`DailyPunchCard.tsx:L299-L372`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L299-L372) |
+| **Network / Server Error (500)** | Server responds with 500 or connection times out | Red inline Alert banner displays: `"Something went wrong during check-in"` (or `check-out` / `break-out` / `break-in`). | [`DailyPunchCard.tsx:L120`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L120) |
+| **Geolocation Unsupported / Denied** | Browser geolocation permission is blocked | `getLocation()` safely returns `null`. Punch request proceeds with `undefined` coordinates without crashing the UI. | [`DailyPunchCard.tsx:L41-L48`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L41-L48) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access Punch Card? | Role-Specific Behavior & Restrictions | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28) |
+| **`HR_ADMIN`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28) |
+| **`BRANCH_ADMIN`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28) |
+| **`LEADERSHIP`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28) |
+| **`MANAGER`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28) |
+| **`PRODUCT_MANAGER`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28) |
+| **`EMPLOYEE`** | ✅ Yes | Can view daily punch card on `/dashboard` and record self attendance punches. Access is strictly self-service (stamped via `req.context.userId`). If profile is incomplete, profile completion lock activates. | [`DailyPunchCard.tsx:L28`](file:///d:/hrms/src/sections/attendance/components/DailyPunchCard.tsx#L28), [`attendance.routes.ts:L37`](file:///d:/hrms/hrms-backend/src/modules/attendance/attendance.routes.ts#L37) |
 
 ---
 
 ### **4.2 Attendance Reports & Punch Log Table**
+
 * **Route**: `/reports`
-* **Features & Testing**:
-  1. **Date Range Filter**: Select **From Date** and **To Date** to filter attendance entries.
-  2. **Punch Log Data Table**:
-     * Verify table headers: `S.NO.`, `EMPLOYEE CODE`, `EMPLOYEE NAME`, `PUNCH LOG`, `PUNCH DATE`.
-     * Verify **NO internal vertical scrollbar** (smooth natural height with 10 rows per page).
-     * Click **Export** to download the CSV report.
-  3. **Row Detail Modal**: Click on any row to open the **Attendance Details** modal.
+* **Source Component**: [`AttendanceReportView.tsx`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx)
+* **API Calls**: `GET /api/v1/attendance/report`, `GET /api/v1/departments`, `GET /api/v1/designations`, `GET /api/v1/branches`, `GET /api/v1/attendance/shifts`
+* **Permission Guard**: `report.read` (gated via `<RoleGuard permission="report.read">`)
+
+🧭 **How to Get Here**:
+After logging in, click **Attendance Report** in the left sidebar (under the main navigation group, icon: `<AssessmentIcon />`). This takes you to `/reports`. Note: This page requires the `report.read` permission. If an Employee without `report.read` attempts to access this page, they are redirected or presented with their personal attendance history (`<AttendanceTab hideTabs={true} />`).
 
 ---
 
-### **4.3 Attendance Regularization Requests**
+#### 📝 Interactive Controls, Filters & Component Guide
+
+The Attendance Report page provides high-level workforce KPIs, trend analytics, multi-select filter bars, and a granular punch log data table. Below is the comprehensive field-by-field breakdown of every filter, visual chart component, and table element:
+
+##### 1. Filter Bar & Search Controls
+| Element / Control Label | Expected Format & Type | Required / Optional | Filter Dependencies & Interactive UI Behavior |
+| :--- | :--- | :---: | :--- |
+| **Search Input** | Text input (`searchPlaceholder="Search employees..."`), e.g. `EMP-001` or `John` | Optional | Typing filters the punch log table live by matching employee code or full name (`searchQuery`). Resets pagination to page 1 (`clientPage: 0`). |
+| **Date Range (`fromDate` / `toDate`)** | Date range picker (`YYYY-MM-DD`), e.g. `2026-09-01` to `2026-09-30` | Optional | Defaults `fromDate` to 1st day of current year (`YYYY-01-01`) and `toDate` to today (`todayStr`). Changing dates refetches punch logs from `GET /api/v1/attendance/report`. |
+| **Branch Filter** | Multi-select dropdown (`branchId`) | Optional | Populated dynamically from `GET /api/v1/branches`. Defaults to `All Branches`. Selecting specific branches filters punch logs by employee branch ID. |
+| **Departments Filter** | Multi-select dropdown (`departmentId`) | Optional | Populated dynamically from `GET /api/v1/departments`. Defaults to `All Departments`. Multi-select dropdown filtering records by department. |
+| **Designation Filter** | Multi-select dropdown (`designationId`) | Optional | Populated dynamically from `GET /api/v1/designations`. Defaults to `All Designations`. Multi-select dropdown filtering records by designation. |
+| **Status Filter** | Multi-select dropdown (`status`) | Optional | Dropdown options: `Present` (`PRESENT`), `Absent` (`ABSENT`), `Late` (`LATE`), `Half Day` (`HALF_DAY`), `On Leave` (`ON_LEAVE`), `Holiday` (`HOLIDAY`), `Week Off` (`WEEK_OFF`). Defaults to `All Statuses`. |
+| **`[ Reset Filters ]` Button** | Action Button | Click Action | Resets search query, clears date ranges, resets all dropdown filters to `ALL`, and resets table pagination to page 1. |
+| **`[ Mark Attendance ]` Button** | Primary Action Button (Indigo `#6D5DF6`) | Click Action | **Visible when**: User holds `attendance.create` permission.<br>**Behavior**: Clicking opens **Manual Attendance Dialog** (`ManualAttendanceDialog.tsx`) to manually insert an employee attendance log. |
+
+##### 2. 📊 Weekly Attendance Trend Bar Chart (`WeeklyTrendBarChart.tsx`)
+* **Header**: `"Weekly Attendance Trend"`
+* **Y-Axis & Scale**: Renders dynamic Y-axis scale ticks (`0`, `25%`, `50%`, `75%`, `effectiveMax`) with dashed horizontal gridlines. Scale maximum is computed dynamically from max present count (`Math.max(...counts)`).
+* **Bar Visuals**: Displays 7 vertical columns representing attendance counts for the last 7 days leading up to today (`Today`, `Sep 2`, `Sep 1`, etc.). Bars render in solid red (`#EF4444`) with rounded top corners.
+* **Hover & Tooltip Behavior**: Hovering over a bar highlights it in darker red (`#DC2626`) with a scale effect (`transform: scaleY(1.03)`) and reveals an interactive tooltip:
+  * **Present Days**: Displays `"[Date]: [Count] Present"` (e.g. `"Today: 32 Present"`).
+  * **Weekend / Off Days**: Displays `"[Date]: 0 Present (Sunday - Week Off)"` or `"0 Present (Saturday - Week Off)"`.
+
+##### 3. 📈 Today's Status Breakdown & AI Insight Card (`TodayStatusBreakdownCard.tsx`)
+* **Header**: Displays dynamic localized date title (e.g. `"Today – 03 Sep 2026"`).
+* **Status Distribution Progress Bars**: Features 5 horizontal MUI `<LinearProgress>` bars showing headcount and percentage distribution for today:
+  * **On Time**: Green bar (`#10B981`) showing on-time check-in count.
+  * **Late**: Orange bar (`#F59E0B`) showing late check-in count (punched after shift start + grace period).
+  * **WFH**: Primary Indigo bar (`#6D5DF6`) showing remote workforce count.
+  * **Absent**: Red bar (`#EF4444`) showing absent count.
+  * **On Leave**: Purple bar (`#8B5CF6`) showing employees on approved leave.
+* **AI Insight Widget**: Displays AI spark icon (`<AutoAwesomeIcon />`), `"Coming Soon"` chip, and analytical trend snippet (*"Attendance dip on Fridays averages 8.2% above weekly average..."*). Includes `Explain`, `Save`, and `Dismiss` chips (`Dismiss` hides the widget).
+
+##### 4. 📋 Employee Attendance Table (`EmployeeAttendanceTable.tsx`)
+* **Header & Export Action**: Card title `"Employee Attendance"` with right-aligned **`[ Export ]`** button (`<FileDownloadOutlinedIcon />`) that downloads current client-filtered rows as a CSV file (`Employee_Attendance_Today.csv`).
+* **Virtualized Body & Performance**: Rendered using `<VirtualizedTableBody>` with `estimateRowHeight={56}` and `minWidth={650}` for smooth rendering of large punch datasets without vertical scrollbar clutter.
+* **Columns**:
+  1. `S.NO.`: Continuous 1-based row index calculated across pages (`startIndex + index + 1`).
+  2. `EMPLOYEE CODE`: Displays employee code badge (e.g. `EMP-001`) or `--`.
+  3. `EMPLOYEE NAME`: Displays employee circular avatar (`CustomAvatar`) + full name.
+  4. `PUNCH LOG`: Formatted 12-hour timestamp (e.g. `09:15 AM`) or `--`.
+  5. `PUNCH DATE`: Formatted date (e.g. `03 09 26`) or `--`.
+* **Row Click Action**: Clicking any row highlights it (`#F9FAFB`) and opens the **Attendance Details Modal** displaying record status badge, check-in, check-out, and worked duration.
+* **Pagination Controls**: MUI `<TablePagination>` footer providing `10`, `25`, `50`, `100` rows per page options. Default: `25` rows per page.
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Load Attendance Report** | 1. Open `/reports`<br>2. Observe page header, KPI cards, and punch log table. | Page title displays `"Attendance"` with subtitle `"Real-time workforce attendance tracking"`. Top KPI cards calculate workforce Present Rate, Absent Count, Late Count, and WFH Count. | [`AttendanceReportView.tsx:L593-L622`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L593-L622) |
+| **Search Employee Punch Logs** | 1. Type `EMP-005` in search bar. | Punch log table filters live to show only rows matching `EMP-005`. Table page resets to 1. | [`AttendanceReportView.tsx:L498-L530`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L498-L530) |
+| **Filter by Status & Branch** | 1. Select Status: `Late`<br>2. Select Branch: `Headquarters`. | Table updates to show only `LATE` punch log entries registered under `Headquarters` branch. | [`AttendanceReportView.tsx:L500-L527`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L500-L527) |
+| **View Attendance Detail Modal** | 1. Click on any row in the Punch Log table. | Modal title displays `"Attendance Details"`. Renders Status Chip, First Check In, Last Check Out, and Worked Hours. | [`AttendanceReportView.tsx:L750-L790`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L750-L790) |
+| **Export CSV Report** | 1. Click **`[ Export ]`** button above table. | Browser downloads `Employee_Attendance_Today.csv` file containing `S.No`, `Employee Code`, `Employee Name`, `Punch Log`, and `Punch Date`. | [`EmployeeAttendanceTable.tsx:L51-L77`](file:///d:/hrms/src/components/table/EmployeeAttendanceTable.tsx#L51-L77) |
+| **Change Rows Per Page** | 1. Select `50` in Table Pagination dropdown. | Table expands to display up to 50 rows per page. | [`AttendanceReportView.tsx:L735-L745`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L735-L745) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field / Query Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Date Format (`AttendanceReportQueryDto`)** | Send invalid date string (e.g. `01-09-2026`) in `fromDate` or `toDate` API call | Backend Zod schema validation fails: `"Date must be in YYYY-MM-DD format"` | [`common.validator.ts:L94`](file:///d:/hrms/hrms-backend/src/shared/validators/common.validator.ts#L94) |
+| **Branch ID Format (`AttendanceReportQueryDto`)** | Send malformed MongoDB ID string in `branchId` | Backend Zod schema validation fails: `"Invalid ID format"` | [`common.validator.ts:L7`](file:///d:/hrms/hrms-backend/src/shared/validators/common.validator.ts#L7) |
+| **Page Size Limit (`AttendanceReportQueryDto`)** | Request `pageSize` > 100 in API query | Backend Zod schema validation fails: `"Page size cannot exceed 100"` | [`common.validator.ts:L24`](file:///d:/hrms/hrms-backend/src/shared/validators/common.validator.ts#L24) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Unauthorized Access (403)** | User without `report.read` navigates to `/reports` | Router `<RoleGuard permission="report.read">` blocks access. `AttendanceReportView.tsx` renders fallback employee view `<AttendanceTab hideTabs={true} />` titled `"My Attendance"`. | [`AttendanceReportView.tsx:L577-L587`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L577-L587) |
+| **Server Error on Report Fetch (500)** | Backend DB connection failure during `GET /attendance/report` | Red inline Alert banner displays: `err.response.data.message` or `"Failed to load attendance report"`. | [`AttendanceReportView.tsx:L189-L191`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L189-L191) |
+| **Empty Table Results** | Filter criteria returns 0 records | Punch Log table renders 0 rows with Table Pagination showing `0 of 0`. | [`AttendanceReportView.tsx:L734`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L734) |
+| **Missing Employee Name Fallback** | Attendance record has deleted or unlinked employee | Table displays employee name fallback `"Employee"` or `"N/A"` and employee code `--` without throwing a runtime NullPointerException. | [`AttendanceReportView.tsx:L438`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L438) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access `/reports`? | Access Scope & Feature Restrictions | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Full Access | Full access to `/reports`. Can view organization-wide attendance, filter by branch/dept/designation, export CSV, and click **`[ Mark Attendance ]`** (`canMarkAttendance: true`). | [`AttendanceReportView.tsx:L111-L113`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L111-L113) |
+| **`HR_ADMIN`** | ✅ Full Access | Full access to `/reports`. Can view organization-wide attendance, filter records, export CSV, and mark manual attendance (`canMarkAttendance: true`). | [`AttendanceReportView.tsx:L113-L117`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L113-L117) |
+| **`BRANCH_ADMIN`** | ✅ Branch Scope | Access to `/reports`. Branch filter options are restricted to their assigned branch (`canReadBranches: true`). | [`AttendanceReportView.tsx:L116-L133`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L116-L133) |
+| **`LEADERSHIP`** | ✅ Read-Only | Access to `/reports`. Can view attendance KPIs, trends, and punch table. **`[ Mark Attendance ]`** button is hidden (`canMarkAttendance: false`). | [`AttendanceReportView.tsx:L598`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L598) |
+| **`MANAGER`** | ✅ Team Scope | Access to `/reports` (via `report.read`). Can view attendance punch logs for team members. Mark Attendance button is visible only if granted `attendance.create`. | [`AttendanceReportView.tsx:L598`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L598) |
+| **`PRODUCT_MANAGER`** | ✅ Permission-Based | Access determined by `report.read` and `attendance.create` permissions. | [`AttendanceReportView.tsx:L110-L117`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L110-L117) |
+| **`EMPLOYEE`** | ❌ Restricted | **Sidebar Navigation**: `"Attendance Report"` sidebar item is hidden (`permission: "report.read"`).<br>**Direct Route Access**: Navigating to `/reports` triggers `isEmployeeRole = true` fallback, rendering self attendance view (`<AttendanceTab hideTabs={true} />`) titled `"My Attendance"`. Cannot view organization-wide punch logs or mark manual attendance. | [`DashboardLayout.tsx:L74`](file:///d:/hrms/src/layouts/dashboard/DashboardLayout.tsx#L74), [`AttendanceReportView.tsx:L577-L587`](file:///d:/hrms/src/sections/reports/AttendanceReportView.tsx#L577-L587) |
+
+---
+
+### **4.3 Attendance Regularization Requests & HR Approvals**
+
 * **Route**: `/attendance/regularizations`
-* **Testing Steps**:
-  1. Click **+ Request Regularization**.
-  2. Select Date, Missed Punch Type (Check In / Check Out), Reason, and submit.
-* **⚠️ Validation Errors to Test**:
-  | Field | Trigger Condition | Expected Error Message |
-  | :--- | :--- | :--- |
-  | **Reason** | Blank or < 10 chars | `"Please enter a detailed reason (at least 10 characters)"` |
-  | **Date** | Future date selected | `"Regularization date cannot be in the future"` |
+* **Source Component**: [`RegularizationListPage.tsx`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx), [`ReviewRegularizationDialog.tsx`](file:///d:/hrms/src/sections/attendance/attendance-regularization/components/ReviewRegularizationDialog.tsx), [`RegularizeRequestDialog.tsx`](file:///d:/hrms/src/sections/attendance/components/RegularizeRequestDialog.tsx)
+* **API Calls**: `GET /api/v1/attendance/regularizations/pending`, `PATCH /api/v1/attendance/regularizations/:id/review`, `GET /api/v1/attendance/regularizations/me`, `POST /api/v1/attendance/regularizations`
+
+🧭 **How to Get Here**:
+After logging in as **HR Admin**, **Branch Admin**, or **Manager**, click **Regularization** in the left sidebar (under top navigation group, icon: `<CalendarMonthIcon />`). This opens `/attendance/regularizations`.
+* **Sidebar Menu Permission**: Guarded by `permission: "leave.read"`.
+* **HR / Admin / Manager View**: Renders the organization or branch pending regularization review queue (`getPendingRegularizationRequests`).
+* **Employee View**: If accessed by an `EMPLOYEE` role, renders their personal regularization request history (`getMyRegularizationRequests`).
+
+---
+
+#### 📝 Step-by-Step HR Review Guide & Interactive Control Breakdown
+
+As an HR Admin or Manager, the Regularization page allows you to inspect pending attendance correction requests submitted by employees, review their requested check-in/out adjustments and reasons, and approve or reject the request. Below is the field-by-field breakdown of the queue table and the review dialog:
+
+##### 1. HR Regularizations Queue Table (`RegularizationListPage.tsx`)
+
+| Element / Column Header | Format & Type | HR Action & Interactive UI Behavior |
+| :--- | :--- | :--- |
+| **Page Header & `[ Refresh ]` Button** | Header Bar | Displays calendar icon and title **"Attendance Regularizations"**. Clicking the top-right **`[ Refresh ]`** button manually refetches the latest pending request queue. |
+| **`EMPLOYEE`** | Avatar + Name | Displays employee circular avatar (with profile picture or colored initials) and full name (e.g. `Uttam Kumar`, `Ajay Reynolds`). |
+| **`ATTENDANCE DATE`** | Date (`Medium Format`) | Displays the target shift date requested for correction (e.g. `Aug 17, 2026`). |
+| **`REQUESTED CHECK IN`** | 12-Hour Time (Green text) | Displays requested check-in timestamp (e.g. `10:00 AM`) or `—` if unadjusted. |
+| **`REQUESTED CHECK OUT`** | 12-Hour Time (Green text) | Displays requested check-out timestamp (e.g. `07:30 PM`) or `—` if unadjusted. |
+| **`REASON`** | Text string | Displays the employee's submitted explanation for the correction (e.g. `gdfgdgrgdr`, `sjhfvsjdui`). |
+| **`STATUS`** | Status Chip Badge | Displays yellow **`Pending`** chip badge (`#FEF3C7` background) for requests awaiting review. |
+| **`ACTIONS`** | Action Icon Button | Renders a blue square review icon button (`<RateReviewOutlinedIcon />`). Hovering displays tooltip `"Review Request"`. Clicking opens the **Review Regularization Request** dialog. |
+
+##### 2. HR Review Regularization Request Modal (`ReviewRegularizationDialog.tsx`)
+
+| Element / Field Label | Expected Format & Type | Required / Optional | HR Reviewer Behavior & Execution Logic |
+| :--- | :--- | :---: | :--- |
+| **Employee & Attendance Details** | Info Card Grid | Display Only | Displays a shaded summary card containing:<br>• **Employee**: Full name and employee code in parentheses (e.g. `Uttam Kumar (EMP-007)`).<br>• **Attendance Date**: Shift date being regularized (e.g. `Aug 17, 2026`).<br>• **Requested Check In**: Green text timestamp (e.g. `10:00 AM`).<br>• **Requested Check Out**: Green text timestamp (e.g. `07:30 PM`).<br>• **Reason for Correction**: Italicized quote of employee's reason (`"gdfgdgrgdr"`). |
+| **Reviewer Comments** | Multiline Text Field (`rows={3}`) | Optional | Text area with placeholder `"Provide comments for approval or rejection..."`. Allows HR to type notes for approval verification or rejection justification. |
+| **`[ Cancel ]` Button** | Secondary Text Button | Click Action | Dismisses the review dialog without saving or making changes to the request. |
+| **`[ Reject Request ]` Button** | Outlined Danger Button (Red `#FCA5A5`) | Click Action | Sends `PATCH /api/v1/attendance/regularizations/:id/review` with `status: "REJECTED"` and reviewer comments. Updates request status chip to **`Rejected`** (Red) and closes dialog. Attendance record remains unchanged. |
+| **`[ Approve Request ]` Button** | Solid Success Button (Green `#10B981`) | Click Action | Sends `PATCH /api/v1/attendance/regularizations/:id/review` with `status: "APPROVED"` and reviewer comments.<br>**Automatic Backend Effects on Approval**:<br>1. Injects manual session punch logs (`SessionType.CHECK_IN` / `CHECK_OUT`, `PunchSource.MANUAL`).<br>2. Recalculates total `workedMinutes` from session pairings.<br>3. Recalculates attendance status (`PRESENT`, `LATE`, `HALF_DAY`), `isLate`, and `isCheckOutEarly`.<br>4. Marks attendance record with `isRegularized: true`.<br>5. Updates request status to **`Approved`** (Green) and refreshes queue table. |
+
+##### 3. Employee Request Submission Dialog (`RegularizeRequestDialog.tsx` — Reference)
+*(Note: Used by Employees to submit requests prior to HR review)*
+* **Check-In / Check-Out Checkboxes**: Selects which punch time to adjust (`Requested Check-In Time` / `Requested Check-Out Time`).
+* **Reason for Regularization**: Multiline text input requiring minimum 10 characters explaining the correction requirement.
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Load HR Review Queue** | 1. Log in as **HR Admin** or **Manager**.<br>2. Click **Regularization** in left sidebar. | Navigates to `/attendance/regularizations`. Header displays `"Attendance Regularizations"`. Table lists all pending regularization requests with employee names, dates, requested times, reasons, and yellow `Pending` chips. | [`RegularizationListPage.tsx:L73-L99`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L99) |
+| **Open Review Dialog** | 1. Locate employee row (e.g. `Uttam Kumar`).<br>2. Click the blue **Review Request** icon button under **ACTIONS**. | Opens **Review Regularization Request** modal. Summary card displays employee code `Uttam Kumar (EMP-007)`, requested times `10:00 AM` / `07:30 PM`, and reason `"gdfgdgrgdr"`. | [`ReviewRegularizationDialog.tsx:L95-L140`](file:///d:/hrms/src/sections/attendance/attendance-regularization/components/ReviewRegularizationDialog.tsx#L95-L140) |
+| **Approve Request (HR Action)** | 1. Inside Review modal, enter optional Reviewer Comments (e.g. `"Approved after shift verification"`).<br>2. Click **`[ Approve Request ]`** (Solid Green button). | Modal closes. Request status updates to **`Approved`** (Green chip). Backend automatically injects manual punch sessions, recalculates worked hours, updates shift status, and sets `isRegularized: true`. | [`ReviewRegularizationDialog.tsx:L40-L54`](file:///d:/hrms/src/sections/attendance/attendance-regularization/components/ReviewRegularizationDialog.tsx#L40-L54), [`regularization.service.ts:L95-L156`](file:///d:/hrms/hrms-backend/src/modules/attendance/services/regularization.service.ts#L95-L156) |
+| **Reject Request (HR Action)** | 1. Inside Review modal, enter Reviewer Comments (e.g. `"Biometric log mismatch"`).<br>2. Click **`[ Reject Request ]`** (Outlined Red button). | Modal closes. Request status updates to **`Rejected`** (Red chip). Original employee attendance record remains untouched. | [`ReviewRegularizationDialog.tsx:L40-L54`](file:///d:/hrms/src/sections/attendance/attendance-regularization/components/ReviewRegularizationDialog.tsx#L40-L54) |
+| **Manual Queue Refresh** | 1. Click top-right **`[ Refresh ]`** button. | Queue re-fetches immediately, updating table entries and clearance status. | [`RegularizationListPage.tsx:L174-L191`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L174-L191) |
+| **Auto Queue Polling** | 1. Leave page open on HR dashboard. | Queue automatically polls backend every **15 seconds** and refetches whenever browser window regains focus, introducing new employee requests in real time. | [`RegularizationListPage.tsx:L115-L127`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L115-L127) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field / Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Already Reviewed Request (400)** | Submitting an approval or rejection for a request that was already reviewed in another session | Red inline Alert displays: `"This request has already been reviewed"` | [`regularization.service.ts:L84-L86`](file:///d:/hrms/hrms-backend/src/modules/attendance/services/regularization.service.ts#L84-L86) |
+| **No Time Selected (Employee Submission)** | Employee submits regularization without checking Check-In or Check-Out checkbox | Red inline Alert displays: `"Please select at least one check-in or check-out time to adjust."` | [`RegularizeRequestDialog.tsx:L87-L90`](file:///d:/hrms/src/sections/attendance/components/RegularizeRequestDialog.tsx#L87-L90) |
+| **Short Reason (Employee Submission)** | Employee enters reason with fewer than 10 characters | Red inline Alert displays: `"Please provide a detailed reason (minimum 10 characters)."` | [`RegularizeRequestDialog.tsx:L92-L95`](file:///d:/hrms/src/sections/attendance/components/RegularizeRequestDialog.tsx#L92-L95) |
+| **Duplicate Pending Request (409)** | Employee submits a second request for an attendance record already pending review | Red inline Alert displays: `"You already have a pending request for this attendance record"` | [`regularization.service.ts:L47-L50`](file:///d:/hrms/hrms-backend/src/modules/attendance/services/regularization.service.ts#L47-L50) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Request Not Found (404)** | Regularization request was deleted before HR review | Red inline Alert displays: `"Regularization request not found"`. | [`regularization.service.ts:L83`](file:///d:/hrms/hrms-backend/src/modules/attendance/services/regularization.service.ts#L83) |
+| **Server Review Error (500)** | Database failure during review submission | Red inline Alert displays: `err.response.data.message` or `"Failed to submit review"`. | [`ReviewRegularizationDialog.tsx:L55-L60`](file:///d:/hrms/src/sections/attendance/attendance-regularization/components/ReviewRegularizationDialog.tsx#L55-L60) |
+| **Empty Pending Queue** | No regularization requests require HR review | Displays empty queue state card with icon `<HistoryEduOutlinedIcon />`, title `"All Caught Up!"`, and subtext `"There are no pending regularization requests requiring your review."` | [`RegularizationListPage.tsx:L220-L228`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L220-L228) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access Queue? | HR Review Actions & Access Rights | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`HR_ADMIN`** | ✅ Full HR Access | Full access to pending regularization queue (`getPendingRequests`). Can review, approve, or reject any employee request. | [`RegularizationListPage.tsx:L73-L97`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L97) |
+| **`ORG_ADMIN`** | ✅ Full Access | Full access to pending regularization queue (`getPendingRequests`). Can review, approve, or reject requests across all branches. | [`RegularizationListPage.tsx:L73-L97`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L97) |
+| **`BRANCH_ADMIN`** | ✅ Branch Scope | Views pending regularization queue filtered to their assigned branch (`findPendingForBranch`). Can review, approve, or reject branch requests. | [`RegularizationListPage.tsx:L73-L97`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L97), [`regularization.service.ts:L77`](file:///d:/hrms/hrms-backend/src/modules/attendance/services/regularization.service.ts#L77) |
+| **`LEADERSHIP`** | ✅ Review Access | Views pending regularization queue and can review employee requests. | [`RegularizationListPage.tsx:L73-L97`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L97) |
+| **`MANAGER`** | ✅ Team Scope | Views pending regularization queue for team members (`findPendingForBranch`). Can review, approve, or reject requests. | [`RegularizationListPage.tsx:L73-L97`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L97) |
+| **`PRODUCT_MANAGER`** | ✅ Review Access | Views pending regularization queue and can review requests. | [`RegularizationListPage.tsx:L73-L97`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L73-L97) |
+| **`EMPLOYEE`** | ❌ Review Disabled | Views only self-submitted request history (`getMyRegularizationRequests`). Review icon buttons are hidden and replaced with **REQUESTED ON** dates. Cannot approve or reject requests. | [`RegularizationListPage.tsx:L65-L72`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L65-L72), [`RegularizationListPage.tsx:L495-L499`](file:///d:/hrms/src/sections/attendance/attendance-regularization/RegularizationListPage.tsx#L495-L499) |
 
 ---
 
@@ -779,114 +1030,377 @@ Welcome to the **Enterprise HRMS User Operating & Feature Testing Guide**. This 
 * **Routes**: `/leave`, `/leave/approvals`
 
 ### **5.1 Leave Dashboard & Request Submission**
+
 * **Route**: `/leave`
-* **Testing Steps**:
-  1. Inspect **Leave Balance Cards** (Casual Leave, Sick Leave, Earned Leave).
-  2. Click **+ Apply Leave**.
-  3. Select **Leave Type**, **Start Date**, **End Date**, and enter **Reason**.
-  4. Click **Submit Application**.
-* **⚠️ Validation Errors to Test**:
-  | Field | Trigger Condition | Expected Error Message |
-  | :--- | :--- | :--- |
-  | **Leave Type** | Unselected | `"Please select a leave type"` |
-  | **Dates** | End Date < Start Date | `"End date cannot be earlier than start date"` |
-  | **Reason** | Leave blank | `"Reason is required"` |
-  | **Balance** | Requested days > Balance | `"Insufficient leave balance for the selected leave type"` |
+* **Source Component**: [`LeaveDashboardView.tsx`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx), [`ApplyLeaveDialog.tsx`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx), [`LeaveBalancesGrid.tsx`](file:///d:/hrms/src/sections/leave/leave-balance/LeaveBalancesGrid.tsx), [`LeaveRequestsTable.tsx`](file:///d:/hrms/src/sections/leave/components/LeaveRequestsTable.tsx)
+* **API Calls**: `GET /api/v1/leave/balances/me`, `GET /api/v1/leave/types`, `POST /api/v1/leave/requests`, `GET /api/v1/leave/requests/me`, `GET /api/v1/leave/report`, `GET /api/v1/leave/comp-off/balances/me`
+
+🧭 **How to Get Here**:
+After logging in, click **Leave Management** in the left sidebar (under top navigation group, icon: `<PolicyIcon />`). This takes you to `/leave`.
+* **Sidebar Menu Permission**: Guarded by `permission: "leave.read"`.
+* **Employee View**: Logged in as an `EMPLOYEE` (or user without `leave.approve`/`leave.read`), renders personal leave dashboard (`<LeaveTab isViewingOther={false} user={user} />`) titled `"My Leaves"`.
+* **Manager / HR / Admin View**: Logged in as HR, Manager, or Admin, renders full `<LeaveDashboardView />` with header `"Leave Management"`, **`[ + Apply Leave ]`** button, 4 KPI cards, and 4 navigation tabs (`Requests`, `Balances`, `Calendar`, `Policy`). If profile is incomplete (`PROFILE_INCOMPLETE_HARD`), renders Profile Verification lock screen.
+
+---
+
+#### 📝 Interactive Controls, Tabs & Dialog Field Guide
+
+The Leave Dashboard provides workforce leave analytics, leave balance grids, interactive leave calendars, and a leave application modal. Below is the field-by-field breakdown of every control, navigation tab, and modal input:
+
+##### 1. Navigation Tabs Bar (`LeaveDashboardView.tsx`)
+| Tab Name | Tab Index | Content & Interactive UI Behavior |
+| :--- | :---: | :--- |
+| **`Requests`** | `0` (Default) | Renders `<LeaveRequestsTable />` listing all team and personal leave requests with status badges (`PENDING`, `APPROVED`, `REJECTED`), employee details, date periods, total days, and quick action buttons (`Approve`, `Reject`, `View Details`). |
+| **`Balances`** | `1` | Renders `<LeaveBalancesGrid />` displaying organization employee leave balance cards with stat columns for **Annual**, **Sick**, and **Casual** leave balances. |
+| **`Calendar`** | `2` | Renders `<LeaveCalendarView />` displaying an interactive monthly workforce leave calendar. |
+| **`Policy`** | `3` | Renders `<LeavePolicyView />` displaying organization leave policies, accrual rules, and sandwich policy details. |
+
+##### 2. Apply Leave Dialog Modal (`ApplyLeaveDialog.tsx`)
+
+| Element / Control Label | Expected Format & Type | Required / Optional | Selection Dependencies & Interactive UI Behavior |
+| :--- | :--- | :---: | :--- |
+| **Leave Type** | Select Dropdown (`TextInput select`) | Required | Populated dynamically from employee leave balances (`balances` prop). Displays `${leaveType.name} (${leaveType.code}) — Balance: ${available}` (e.g. `Casual Leave (CL) — Balance: 3`). Defaults to first available balance. |
+| **From Date** | Date Input (`type="date"`), e.g. `2026-09-10` | Required | Standard ISO date picker (`YYYY-MM-DD`). |
+| **From Session** | Select Dropdown (`TextInput select`) | Optional (Default: `Full Day`) | Options: `Full Day` (`FULL_DAY`), `First Half` (`FIRST_HALF`), `Second Half` (`SECOND_HALF`). |
+| **To Date** | Date Input (`type="date"`), e.g. `2026-09-12` | Required | Standard ISO date picker (`YYYY-MM-DD`). Must be greater than or equal to `From Date`. |
+| **To Session** | Select Dropdown (`TextInput select`) | Optional (Default: `Full Day`) | Options: `Full Day` (`FULL_DAY`), `First Half` (`FIRST_HALF`), `Second Half` (`SECOND_HALF`). |
+| **Reason for Leave** | Multiline Text Field (`rows={2}`) | Required | Text area with placeholder `"Please enter a detailed reason (minimum 5 characters)..."`. Minimum 5 characters required. Displays live error helper string if 1 to 4 chars typed (`"Reason must be at least 5 characters long."`). |
+| **`[ Submit ]` Button** | Primary Action Button (Indigo `#6D5DF6`) | Click Action | **Disabled when**: `submitting`, `!leaveTypeId`, `!fromDate`, `!toDate`, or `reason.trim().length < 5`.<br>**Behavior**: Dispatches `applyLeaveRequest()`, sets spinner (`submitting: true`), closes modal on success, and reloads leave balances. |
+| **`[ Cancel ]` Button** | Secondary Button (Text button) | Click Action | Dismisses the dialog without submitting changes. |
+
+##### 3. Leave Request Details Modal (`LeaveDetailDialog`)
+* **Trigger**: Clicking **View Details** or preview row on `<LeaveRequestsTable />`.
+* **Content**: Displays Employee Name, Leave Type Name, Date Period & Total Days, Reason, and Status badge.
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Open Apply Leave Dialog** | 1. Open `/leave`<br>2. Click **`[ + Apply Leave ]`** button in page header. | Dialog opens titled `"Apply for Leave"`. Leave Type dropdown populates with active balances (e.g. `Casual Leave (CL) — Balance: 3`). | [`LeaveDashboardView.tsx:L243-L246`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L243-L246), [`ApplyLeaveDialog.tsx:L77-L126`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L77-L126) |
+| **Submit Leave Request** | 1. Select Leave Type: `Casual Leave`.<br>2. Select From Date: `2026-09-10`, To Date: `2026-09-12`.<br>3. Enter Reason: `"Family function in native place"`.<br>4. Click **`[ Submit ]`**. | Modal closes. Redux dispatches `applyLeaveRequest`. Success toast appears, leave balances reload, and request enters `Leave Requests` table with status `PENDING`. | [`ApplyLeaveDialog.tsx:L56-L67`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L56-L67), [`LeaveDashboardView.tsx:L228-L241`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L228-L241) |
+| **Switch Navigation Tabs** | 1. Click **Balances** tab.<br>2. Click **Calendar** tab.<br>3. Click **Policy** tab. | Tab indicator glides to selected tab. Renders `<LeaveBalancesGrid />` with employee quota stat columns, `<LeaveCalendarView />` monthly calendar grid, and `<LeavePolicyView />` rule cards respectively. | [`LeaveDashboardView.tsx:L476-L536`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L476-L536) |
+| **Quick Approve Leave Request** | 1. On `Requests` tab, locate pending request.<br>2. Click **Approve** action button. | Snackbar alert displays `"Leave request approved for [Employee Name]"`. Request status updates to `APPROVED` (Green) and backend confirms balance deduction. | [`LeaveDashboardView.tsx:L275-L297`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L275-L297) |
+| **Preview Request Details** | 1. Click row or details icon on any leave request. | Opens `LeaveDetailDialog` modal showing employee name, leave type, period, total days, reason text, and colored status badge. | [`LeaveDashboardView.tsx:L59-L111`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L59-L111) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field / Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Short Reason (< 5 Chars)** | Enter 1 to 4 characters in Reason field | Helper error string appears below input: `"Reason must be at least 5 characters long."`. Submit button remains disabled. | [`ApplyLeaveDialog.tsx:L189`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L189) |
+| **Date Order Constraint (`CreateLeaveRequestDto`)** | Select `To Date` prior to `From Date` (e.g. From: `2026-09-10`, To: `2026-09-05`) | Backend Zod/Service validation fails: `"toDate cannot be before fromDate"` | [`leave-request.service.ts:L78`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L78) |
+| **Advance Notice Violation** | Apply for a leave type requiring notice without meeting notice days | Backend validation fails: `"This leave type requires at least [X] days advance notice"` | [`leave-request.service.ts:L84-L87`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L84-L87) |
+| **Consecutive Days Limit** | Request days exceeding `maxConsecutiveDays` limit for selected leave type | Backend validation fails: `"Maximum [X] consecutive days allowed for this leave type"` | [`leave-request.service.ts:L103-L106`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L103-L106) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Hard Profile Lock (403)** | User profile is incomplete (`PROFILE_INCOMPLETE_HARD`) | `useProfileBlockDetect` catches block error (`isProfileBlocked: true`). Page replaces leave dashboard with Profile Verification card featuring `<LockOutlinedIcon />`, title `"Access Restricted — Profile Verification Required"`, pending section chips, and a **`[ Go to Profile Setup ]`** button linking to `/onboarding`. | [`LeaveDashboardView.tsx:L394-L464`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L394-L464) |
+| **Unlinked Employee Account (404)** | User account has no linked `employeeId` record in database | Backend returns 404 error: `"No employee record is linked to this account"`. Red inline Alert banner displays error in dialog. | [`leave-request.service.ts:L59`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L59) |
+| **Server Error on Submit (500)** | Backend DB connection error during leave application | Red inline Alert displays in dialog: `error` message string. | [`ApplyLeaveDialog.tsx:L104-L108`](file:///d:/hrms/src/sections/leave/leave-apply/ApplyLeaveDialog.tsx#L104-L108) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access `/leave`? | Access Scope & Page Behavior | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Full Access | Full access to `/leave`. Views organization-wide leave requests (`getLeaveReport`), employee balances grid, and policy cards. Note: `[ + Apply Leave ]` button is hidden for `ORG_ADMIN` (`role !== "ORG_ADMIN"`). | [`LeaveDashboardView.tsx:L370`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L370) |
+| **`HR_ADMIN`** | ✅ Full Access | Full access to `/leave`. Can click **`[ + Apply Leave ]`**, view team requests, manage balances, and approve/reject leave requests (`canApproveLeaves: true`). | [`LeaveDashboardView.tsx:L370-L390`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L370-L390) |
+| **`BRANCH_ADMIN`** | ✅ Branch Scope | Access to `/leave`. Can click **`[ + Apply Leave ]`**, view branch employee leave requests, and approve/reject branch requests. | [`LeaveDashboardView.tsx:L370-L390`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L370-L390) |
+| **`LEADERSHIP`** | ✅ Read & Approve | Access to `/leave`. Can view leave requests, balances, calendar, and approve/reject team leave applications. | [`LeaveDashboardView.tsx:L134-L136`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L134-L136) |
+| **`MANAGER`** | ✅ Team Scope | Access to `/leave`. Can apply for self leave, view team leave requests, and approve/reject team leave applications (`canApproveLeaves: true`). | [`LeaveDashboardView.tsx:L134-L136`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L134-L136) |
+| **`PRODUCT_MANAGER`** | ✅ Permission-Based | Access determined by `leave.read` and `leave.approve` permissions. | [`LeaveDashboardView.tsx:L134-L136`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L134-L136) |
+| **`EMPLOYEE`** | ✅ Self Service | Page renders personal leave view (`<LeaveTab isViewingOther={false} user={user} />`) titled `"My Leaves"`. Can view personal leave balances and submit self leave applications. Cannot view organization-wide leave reports or approve team requests. | [`LeaveDashboardView.tsx:L349-L359`](file:///d:/hrms/src/sections/leave/leave-list/LeaveDashboardView.tsx#L349-L359) |
 
 ---
 
 ### **5.2 Leave Approvals Queue (Manager View)**
+
 * **Route**: `/leave/approvals`
-* **Testing Steps**:
-  1. View pending leave requests from team members.
-  2. Click **Approve** (green button) or **Reject** (red button).
-  3. Optional: Add reviewer comments in the confirmation dialog.
+* **Source Component**: [`LeaveApprovalsView.tsx`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx), [`leave-request.service.ts`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts)
+* **API Calls**: `GET /api/v1/leave/requests/pending`, `PATCH /api/v1/leave/requests/:id/review`
+
+🧭 **How to Get Here**:
+After logging in as a **Manager**, **HR Admin**, **Branch Admin**, or **Org Admin**:
+1. Click **Leave Management** in the left sidebar (under top navigation group, icon: `<PolicyIcon />`).
+2. On the Leave Management page, ensure the **`Requests`** tab is selected (default tab). This displays the team leave request table with **`Approve`** and **`Reject`** action buttons.
+
+* **Role Access Restriction**: Users logged in as an `EMPLOYEE` (or without `leave.approve` permission) will not see team approval controls and will only see their own personal leave history.
+
+---
+
+#### 📝 Interactive Controls & Review Modal Field Guide
+
+The Leave Approvals queue allows managers and administrators to review pending workforce leave applications, inspect leave durations and employee reasons, and approve or reject requests with optional reviewer notes. Below is the field-by-field breakdown of the queue table and the review dialog:
+
+##### 1. Pending Leave Approvals Table (`LeaveApprovalsView.tsx`)
+
+| Element / Column Header | Format & Type | Manager Action & Interactive UI Behavior |
+| :--- | :--- | :--- |
+| **Page Header** | Header Bar | Displays policy icon `<PolicyOutlinedIcon />`, title **"Leave Approvals"**, and subtitle `"Review and process employee leave applications"`. |
+| **`Employee`** | Text Block | Displays employee full name (e.g. `Uttam Kumar`) and ID badge code (`ID: EMP-007`). |
+| **`Leave Type`** | Chip + Text | Displays a light-blue chip badge with leave type code (e.g. `CL`, `SL`, `EL`) and full name (`Casual Leave`, `Sick Leave`). |
+| **`Duration`** | Date Period | Displays start date and end date formatted as `MMM DD, YYYY` (e.g. `Sep 10, 2026 to Sep 12, 2026`). Single-day leaves show only the start date. |
+| **`Total Days`** | Count Badge | Displays requested day count (e.g. `1 Day` or `3 Days`). |
+| **`Reason`** | Truncated Text | Displays employee's submitted explanation (e.g. `"Family function in native place"`). Hovering displays full text tooltip. |
+| **`Approve` Button** | Outlined Green Button (`#10B981`, icon `<CheckIcon />`) | Clicking opens the **Approve Leave Request** confirmation dialog. |
+| **`Reject` Button** | Outlined Red Button (`#EF4444`, icon `<CloseIcon />`) | Clicking opens the **Reject Leave Request** confirmation dialog. |
+| **Table Pagination** | Pagination Controls | Bottom right controls (`Rows per page: 5, 10, 20`). Allows paging through large pending approval queues. |
+
+##### 2. Review Request Confirmation Modal (`Dialog`)
+
+| Element / Field Label | Expected Format & Type | Required / Optional | Manager Reviewer Behavior & Backend Mechanics |
+| :--- | :--- | :---: | :--- |
+| **Modal Title** | Header Title | Display Only | Displays **"Approve Leave Request"** (Green) or **"Reject Leave Request"** (Red) based on the clicked action. |
+| **Confirmation Prompt** | Body Text | Display Only | Displays prompt: `"Are you sure you want to approve/reject this leave request? You can add review comments below."` |
+| **Review Comments** | Multiline Text Field (`rows={3}`) | Optional | Text area with placeholder `"Add comments or notes..."`. Accepts up to 500 characters of manager review feedback. |
+| **`[ Cancel ]` Button** | Text Button | Click Action | Dismisses the dialog without submitting changes or altering the request status. |
+| **`[ Confirm Approve ]` / `[ Confirm Reject ]` Button** | Solid Action Button (Green `#10B981` / Red `#EF4444`) | Click Action | Submits `PATCH /api/v1/leave/requests/:id/review` with payload `{ status: "APPROVED" | "REJECTED", reviewComments }`.<br>**Automatic Backend Effects**:<br>1. **On Approval**: Converts reserved pending balance to `used` balance, updates request status to `APPROVED`, and automatically upserts daily attendance records as `ON_LEAVE` for the leave date range.<br>2. **On Rejection**: Releases reserved pending balance back to employee's available pool and sets request status to `REJECTED`.<br>3. **On Success**: Closes modal, displays auto-refresh, and updates total pending count. |
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Load Pending Approvals Queue** | 1. Log in as **Manager** or **HR Admin**.<br>2. Navigate to `/leave/approvals`. | Page header displays **"Leave Approvals"**. Table populates with all pending employee leave requests displaying names, codes, leave types, date ranges, total days, and reasons. | [`LeaveApprovalsView.tsx:L136-L193`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L136-L193) |
+| **Open Review Dialog** | 1. Locate employee row (e.g. `Uttam Kumar`).<br>2. Click **Approve** or **Reject** button. | Opens confirmation modal. Title displays `"Approve Leave Request"` or `"Reject Leave Request"`. Includes prompt and Review Comments textarea. | [`LeaveApprovalsView.tsx:L117-L120`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L117-L120), [`LeaveApprovalsView.tsx:L322-L372`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L322-L372) |
+| **Approve Leave Request** | 1. Open Review modal for approval.<br>2. Enter optional comment (e.g. `"Approved by Manager"`).<br>3. Click **`[ Confirm Approve ]`**. | Modal closes. Request disappears from pending queue. Backend converts reserved balance to `used`, marks daily attendance as `ON_LEAVE`, and logs audit action. | [`LeaveApprovalsView.tsx:L121-L132`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L121-L132), [`leave-request.service.ts:L283-L293`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L283-L293) |
+| **Reject Leave Request** | 1. Open Review modal for rejection.<br>2. Enter optional comment (e.g. `"Project deliverable deadline conflict"`).<br>3. Click **`[ Confirm Reject ]`**. | Modal closes. Request status updates to `REJECTED`. Backend releases reserved leave days back to employee's available pool. | [`LeaveApprovalsView.tsx:L121-L132`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L121-L132), [`leave-request.service.ts:L275-L281`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L275-L281) |
+| **Paginate Pending Queue** | 1. Click page navigation arrows or change rows per page dropdown (e.g. `20`). | Table fetches next page of pending leave applications (`getPendingLeaveRequestsRequest`). | [`LeaveApprovalsView.tsx:L308-L316`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L308-L316) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field / Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Already Processed Request (400)** | Submitting review for a request already approved/rejected in another session | Red Alert inside modal: `"This request is not pending review"` | [`leave-request.service.ts:L245`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L245) |
+| **Review Comments Length (> 500 Chars)** | Enter review comments exceeding 500 characters | Backend DTO validation fails: `"String must contain at most 500 character(s)"` | [`leave.dto.ts:L56`](file:///d:/hrms/hrms-backend/src/modules/leave/dto/leave.dto.ts#L56) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Unauthorized Approver Role (403)** | Manager attempts to approve a level reserved for a different role | Red inline Alert displays: `"Only a [Role] can act on this approval level"`. | [`leave-request.service.ts:L254-L257`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L254-L257) |
+| **Request Not Found (404)** | Leave request was deleted before review submission | Red inline Alert displays: `"Leave request not found"`. | [`leave-request.service.ts:L243`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L243) |
+| **Empty Approvals Queue** | No pending employee leave requests require review | Renders empty state card titled `"No Pending Leave Requests"`, subtext `"Excellent! There are no employee leave applications awaiting your review."` | [`LeaveApprovalsView.tsx:L162-L178`](file:///d:/hrms/src/sections/leave/leave-approvals/LeaveApprovalsView.tsx#L162-L178) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access `/leave/approvals`? | Access Scope & Review Rights | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Full Access | Full access to `/leave/approvals` (bypasses step approver role checks). Can review and approve/reject leave requests for any employee across all branches. | [`leave-request.service.ts:L253`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/leave-requests/leave-request.service.ts#L253) |
+| **`HR_ADMIN`** | ✅ Full Access | Full access to `/leave/approvals` (`permission: "leave.approve"`). Can review, approve, or reject employee leave applications. | [`index.tsx:L150-L156`](file:///d:/hrms/src/routes/index.tsx#L150-L156) |
+| **`BRANCH_ADMIN`** | ✅ Branch Scope | Access to `/leave/approvals`. Can review, approve, or reject leave requests within assigned branch. | [`index.tsx:L150-L156`](file:///d:/hrms/src/routes/index.tsx#L150-L156) |
+| **`LEADERSHIP`** | ✅ Review Access | Access to `/leave/approvals`. Can review and process pending team leave applications. | [`index.tsx:L150-L156`](file:///d:/hrms/src/routes/index.tsx#L150-L156) |
+| **`MANAGER`** | ✅ Team Scope | Access to `/leave/approvals` (`permission: "leave.approve"`). Can review and process pending leave requests for direct report team members. | [`index.tsx:L150-L156`](file:///d:/hrms/src/routes/index.tsx#L150-L156) |
+| **`PRODUCT_MANAGER`** | ✅ Permission-Based | Access granted if assigned `permission: "leave.approve"`. | [`index.tsx:L150-L156`](file:///d:/hrms/src/routes/index.tsx#L150-L156) |
+| **`EMPLOYEE`** | ❌ Blocked | Route `/leave/approvals` is blocked by `<RoleGuard permission="leave.approve">`. Employees are redirected away from the approvals queue. | [`index.tsx:L150-L156`](file:///d:/hrms/src/routes/index.tsx#L150-L156) |
 
 ---
 
 ## 6. 📅 Holidays & Branch Calendars
 
-* **Routes**: `/holidays`, `/branches/calendar`
+* **Route**: `/holidays`
+* **Source Component**: [`HolidayListView.tsx`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx), [`holiday.service.ts`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.service.ts), [`holiday-resolution.engine.ts`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday-resolution.engine.ts)
+* **API Calls**: `GET /api/v1/leave/holidays?year=2026`, `POST /api/v1/leave/holidays`, `PATCH /api/v1/leave/holidays/:id`, `DELETE /api/v1/leave/holidays/:id`, `GET /api/v1/leave/holidays/resolve?branchId=:id&year=2026`, `POST /api/v1/leave/holidays/seed-default`
 
-### **Features & Testing**:
-1. **Holidays Directory (`/holidays`)**:
-   * View full list of public, national, and company holidays.
-   * Filter holidays by year or branch.
-2. **Branch Work Calendar (`/branches/calendar`)**:
-   * Interactive calendar grid displaying working days, weekend policies, and scheduled company events.
-
----
-
-## 7. 🏢 Organization & Master Data Administration
-
-* **Routes**: `/departments`, `/designations`, `/branches`
-
-### **7.1 Departments Management (`/departments`)**
-* **Testing Steps**:
-  1. View department list with code chips and employee counts.
-  2. Click **+ Add Department**.
-  3. Enter Department Name, Code (e.g. `ENG`, `HR`), and Department Head.
-* **⚠️ Validation Errors to Test**:
-  | Field | Trigger Condition | Expected Error Message |
-  | :--- | :--- | :--- |
-  | **Department Name** | Blank | `"Department name is required"` |
-  | **Department Code** | Non-alphanumeric or > 10 chars | `"Code must be 2-10 uppercase alphanumeric characters"` |
+🧭 **How to Get Here**:
+After logging in:
+1. Click **Holiday** in the left sidebar (under top navigation group, icon: `<CalendarMonthIcon />`). This opens the **Holidays & Branch Calendars** screen (`/holidays`).
+2. On the Holidays page, use the top action buttons **`[ Seed Defaults ]`** and **`[ Add Holiday ]`** (visible to Admin/HR roles) or use the Filter Toolbar to switch between master lists, branch-resolved schedules, monthly calendar grids, and personal schedules.
+* **Sidebar Menu Permission**: Guarded by `permission: "leave.read"`.
 
 ---
 
-### **7.2 Designations Management (`/designations`)**
-* **Testing Steps**:
-  1. View designations directory.
-  2. Click **+ Add Designation** to configure job titles and pay bands.
-* **⚠️ Validation Errors to Test**:
-  * Leaving Title blank triggers `"Designation title is required"`.
+#### 📝 Interactive Controls, Filter Bar & Form Field Guide
+
+The Holidays module provides organization-wide statutory holiday management, priority resolution engines (`BRANCH > STATE > COUNTRY > GLOBAL`), interactive monthly branch calendars, and statutory defaults seeding. Below is the field-by-field breakdown of every control, filter, and modal dialog:
+
+##### 1. Top Filter Toolbar Controls (`HolidayListView.tsx`)
+
+| Element / Control Label | Format & Type | Selection Dependencies & Interactive UI Behavior |
+| :--- | :--- | :--- |
+| **Year Selector** | Select Dropdown (`TextInput select`) | Options: `2024`, `2025`, `2026`, `2027`, `2028`. Defaults to current year (`2026`). Selecting a year refetches holidays for that year (`listHolidaysRequest(selectedYear)`). |
+| **View Mode Selector** | Select Dropdown (`TextInput select`) | Visible to authorized roles (`ORG_ADMIN`, `HR_ADMIN`, `isSuperAdmin`).<br>Options:<br>• **`All Organization Master Holidays`** (`ALL`, Default): Renders master holiday table.<br>• **`Resolve Branch List`** (`RESOLVED`): Displays priority-deduplicated branch list.<br>• **`Branch Monthly Calendar Grid`** (`GRID`): Displays interactive month grid (`BranchCalendarGrid`).<br>• **`My Personal Schedule`** (`MY_SCHEDULE`): Displays employee's personal schedule calendar. |
+| **Branch Selector** | Select Dropdown (`TextInput select`) | Visible when `viewMode` is set to **`RESOLVED`** or **`GRID`**. Populated dynamically from organization branches (`listBranches()`). Selecting a branch refetches resolved branch holidays or monthly calendar. |
+
+##### 2. Add / Edit Holiday Dialog Modal (`HolidayFormDialog`)
+
+| Element / Control Label | Expected Format & Type | Required / Optional | Selection Dependencies & Interactive UI Behavior |
+| :--- | :--- | :---: | :--- |
+| **Holiday Name** | Text Field (`TextInput`) | Required | Text input with placeholder `"e.g. Republic Day or Bangalore Office Day Off"`. E.g. `Republic Day`, `Diwali`. |
+| **Date** | Date Input (`type="date"`) | Required | Standard ISO date picker (`YYYY-MM-DD`). |
+| **Holiday Type** | Select Dropdown (`TextInput select`) | Optional (Default: `NATIONAL`) | Options: `National Holiday` (`NATIONAL`, Red chip `#FEE2E2`), `Restricted Holiday` (`RESTRICTED`, Yellow chip `#FEF3C7`), `Regional Holiday` (`REGIONAL`, Blue chip `#E0F2FE`). |
+| **Holiday Scope** | Select Dropdown (`TextInput select`) | Optional (Default: `GLOBAL`) | Options:<br>• `Global (Entire Organization / Tenant)` (`GLOBAL`, Purple chip `#EDE9FE`)<br>• `Country Scope` (`COUNTRY`, Blue chip `#E0F2FE`)<br>• `State Scope` (`STATE`, Teal chip `#CCFBF1`)<br>• `Branch Scope` (`BRANCH`, Indigo chip `#E0E7FF`). |
+| **Target Branch** | Select Dropdown (`TextInput select`) | Required when Scope = `BRANCH` | **Cascading Select**: Appears only when `Holiday Scope` is set to **`BRANCH`**. Populated dynamically from active branches. |
+| **Country Code** | Text Field (`TextInput`) | Required when Scope = `COUNTRY` or `STATE` | **Cascading Field**: Appears only when Scope is **`COUNTRY`** or **`STATE`**. Placeholder `"e.g. IN or US"`. 2-letter ISO country code. |
+| **State Code / State Name** | Text Field (`TextInput`) | Required when Scope = `STATE` | **Cascading Field**: Appears only when Scope is **`STATE`**. Placeholder `"e.g. Karnataka or KA"`. Accepts state code or full state name. |
+| **Is Optional Holiday** | MUI Switch Toggle | Optional (Default: `Off`) | Toggle label `"Is Optional Holiday"`, subtext `"Employees can choose to take this leave or not"`. Sets `isOptional: true`. |
+| **Description** | Multiline Text Field (`rows={2}`) | Optional | Text area with placeholder `"Brief description or context"`. |
+| **`[ Create ]` / `[ Update ]` Button** | Primary Action Button (Indigo `#6D5DF6`) | Click Action | **Disabled when**: `submitting`, `!name.trim()`, `!date`, or scope dependencies missing (`branchId` for `BRANCH`, `countryCode` for `COUNTRY`, `stateCode` for `STATE`).<br>**Behavior**: Dispatches `createHolidayRequest` or `updateHolidayRequest`, sets spinner, closes modal, and refreshes list. |
+| **`[ Cancel ]` Button** | Secondary Text Button | Click Action | Dismisses the dialog without saving changes. |
+
+##### 3. Seed Default Statutory Holidays Modal (`SeedHolidaysDialog`)
+
+| Element / Control Label | Expected Format & Type | Required / Optional | Selection Dependencies & Interactive UI Behavior |
+| :--- | :--- | :---: | :--- |
+| **Modal Header** | Header Title | Display Only | Displays sparkle icon `<AutoAwesomeIcon />` and title **"Seed Default Statutory Holidays"**. |
+| **Info Banner** | Blue Alert Card | Display Only | Text: `"Generates statutory national (COUNTRY) & cantonal/regional (STATE) holidays based on your organization's registered locale. Idempotent & safe to execute."` |
+| **State / Canton Code** | Text Field (`TextInput`) | Optional | Placeholder `"e.g. ZH (Zurich), GE, KA, NY, CA"`. Specifies regional state/canton code for statutory seeding. |
+| **`[ Seed Statutory Holidays ]` Button** | Primary Action Button | Click Action | Submits `POST /api/v1/leave/holidays/seed-default?stateCode=...`. Automatically derives country code from organization settings. |
+| **`[ Cancel ]` Button** | Secondary Text Button | Click Action | Dismisses the seed modal without making API calls. |
+
+##### 4. Row Action Context Menu (`Menu`)
+* **Trigger**: Clicking `MoreVertIcon` (`⋮`) on any row in the holiday table.
+* **Options**:
+  - **`Edit`** (Blue icon): Opens `HolidayFormDialog` with pre-filled details.
+  - **`Delete`** (Red icon): Opens `ConfirmDialog` titled `"Delete Holiday"`. Clicking **`Delete`** dispatches `deleteHolidayRequest(id)`.
 
 ---
 
-### **7.3 Branch Management (`/branches`)**
-* **Testing Steps**:
-  1. View office branch locations.
-  2. Add new branch address, timezone, and working hours.
-* **⚠️ Validation Errors to Test**:
-  * Leaving Branch Name blank triggers `"Branch name is required"`.
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Load Holidays Directory** | 1. Log in to HRMS.<br>2. Click **Holiday** in left sidebar. | Page header displays **"Holidays"**. Filter toolbar and Master Holiday Table populate with active organization holidays for current year. | [`HolidayListView.tsx:L632-L693`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L632-L693) |
+| **Add New Master Holiday** | 1. Click **`[ Add Holiday ]`** button.<br>2. Enter Name: `Independence Day`, Date: `2026-08-15`, Type: `NATIONAL`, Scope: `GLOBAL`.<br>3. Click **`[ Create ]`**. | Modal closes. Redux dispatches `createHolidayRequest`. Toast confirms success and new holiday appears with Red `NATIONAL` chip and Purple `GLOBAL` scope chip. | [`HolidayListView.tsx:L127-L150`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L127-L150), [`HolidayListView.tsx:L563-L569`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L563-L569) |
+| **Add Branch Local Override Holiday** | 1. Click **`[ Add Holiday ]`** button.<br>2. Select Scope: `BRANCH`. Select Branch: `Bangalore Branch`.<br>3. Enter Name: `Karnataka Rajyotsava`, Date: `2026-11-01`.<br>4. Click **`[ Create ]`**. | Target Branch select field appears. On submission, creates a branch-specific holiday with Indigo `BRANCH` scope chip. Target branch calendar automatically includes this local override. | [`HolidayListView.tsx:L237-L251`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L237-L251) |
+| **Seed Default Statutory Holidays** | 1. Click **`[ Seed Defaults ]`** button.<br>2. Optional: Enter State Code `KA`.<br>3. Click **`[ Seed Statutory Holidays ]`**. | Backend generates statutory national and state holidays derived from org locale (e.g. `IN-KA`). Success alert displays `"Statutory holidays for IN-KA seeded successfully"`. | [`HolidayListView.tsx:L330-L424`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L330-L424), [`holiday.controller.ts:L97-L123`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.controller.ts#L97-L123) |
+| **View Priority-Resolved Branch List** | 1. In View Mode dropdown, select **`Resolve Branch List`**.<br>2. Select Branch: `Bangalore Branch`. | Info banner displays explaining priority order (`BRANCH > STATE > COUNTRY > GLOBAL`). Table displays deduplicated holiday schedule tailored specifically for Bangalore Branch. | [`HolidayListView.tsx:L490-L503`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L490-L503), [`HolidayListView.tsx:L752-L757`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L752-L757) |
+| **View Interactive Branch Calendar Grid** | 1. In View Mode dropdown, select **`Branch Monthly Calendar Grid`**.<br>2. Select Branch: `Bangalore Branch`. | Replaces table with `<BranchCalendarGrid />` monthly grid showing working days, weekends, and holiday events. Use `<` and `>` buttons to navigate months. | [`HolidayListView.tsx:L759-L782`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L759-L782) |
+| **Edit Existing Holiday** | 1. Click `⋮` action menu on holiday row.<br>2. Click **Edit**.<br>3. Modify description or scope.<br>4. Click **`[ Update ]`**. | Modal pre-fills with existing holiday data. Submitting updates holiday and refreshes list. | [`HolidayListView.tsx:L557-L569`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L557-L569) |
+| **Delete Holiday** | 1. Click `⋮` action menu on holiday row.<br>2. Click **Delete**.<br>3. In confirmation modal, click **`Delete`**. | Confirmation dialog asks `"Are you sure you want to delete the holiday [Name]?"`. On confirmation, deletes holiday record and updates table. | [`HolidayListView.tsx:L571-L585`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L571-L585) |
 
 ---
 
-## 8. 🛡️ Roles & Permissions Administration
+#### ⚠️ Validation Errors to Test
 
-* **Route**: `/settings`
-
-### **Features & Testing**:
-1. **Roles Directory**:
-   * View built-in roles: *Super Admin*, *HR Manager*, *Department Lead*, *Employee*.
-2. **Permission Matrix Checkbox Grid**:
-   * Select any role to load its permission matrix.
-   * Toggle permissions across modules (*View*, *Create*, *Edit*, *Delete*, *Approve*).
-   * Click **Save Permissions**.
-* **⚠️ Validation Errors to Test**:
-  * Submitting custom role without name triggers `"Role name is required"`.
-  * Selecting zero permissions triggers `"At least one permission must be granted"`.
+| Field / Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Duplicate Holiday Date & Scope (409 Conflict)** | Creating or updating a holiday with name/date/scope matching an existing record | Red inline Alert inside modal: `"A [SCOPE]-scope holiday (\"[Name]\") already exists on this date"` | [`holiday.service.ts:L42-L46`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.service.ts#L42-L46) |
+| **Unconfigured Org Country Code (400)** | Clicking Seed Defaults when organization locale country code is missing | Red inline Alert inside modal: `"Organization has no country code configured. Please set a country code in your Organization settings first."` | [`holiday.controller.ts:L103-L108`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.controller.ts#L103-L108) |
+| **Invalid Year Query (400)** | Providing an invalid year parameter (< 2000 or > 2100) to branch resolution API | Red inline Alert: `"Invalid year parameter"` | [`holiday.controller.ts:L68-L70`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.controller.ts#L68-L70) |
+| **Missing Branch ID Query (400)** | Accessing branch resolution without specifying branch ID | Red inline Alert: `"branchId query param is required"` | [`holiday.controller.ts:L59-L61`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.controller.ts#L59-L61) |
 
 ---
 
-## 9. 📋 Onboarding & Document Verification
+#### ❌ Error / Failure Cases
 
-* **Route**: `/onboarding`
-
-### **Features & Testing**:
-1. **Onboarding Pipeline**:
-   * Track status of new hires (*Pending Documents*, *Verification in Progress*, *Completed*).
-2. **Document Verification Modal**:
-   * Click on any new joiner record to preview submitted ID proofs (Aadhaar, PAN, Passport).
-   * Click **Verify** or **Request Resubmission**.
-* **⚠️ Validation Errors to Test**:
-  * Rejecting a document without entering a rejection note triggers `"Rejection reason is required"`.
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Holiday Not Found (404)** | Attempting to update or delete a holiday that was removed in another session | Red inline Alert: `"Holiday not found"`. | [`holiday.service.ts:L83`](file:///d:/hrms/hrms-backend/src/modules/leave/sub-modules/holidays/holiday.service.ts#L83) |
+| **Server Error on Create (500)** | Database failure during holiday creation | Red inline Alert inside modal: `error` message string. | [`HolidayListView.tsx:L186-L190`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L186-L190) |
+| **Empty Holiday Directory** | No master holidays recorded for selected year | Renders empty state paper titled `"No Holidays Found"`, subtext `"Holidays represent organization-wide paid calendar closures."`, and a **`[ Create New Holiday ]`** button. | [`HolidayListView.tsx:L820-L853`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L820-L853) |
 
 ---
 
-## 💡 Quick Tips for Testers
-> [!TIP]
-> **Performance Verification**: All major data tables (Employee Directory, Attendance Log, Leave Requests) use **Virtualization**. Open Chrome DevTools (`F12` $\rightarrow$ `Elements`) while scrolling to verify sub-16ms frame rates and zero DOM bloat.
+#### 🛡️ Role-Based Access & Restrictions
 
-> [!NOTE]
-> **Responsive Layouts**: Resize your browser window or switch to mobile view (`< 600px`). The app automatically switches table views into compact mobile cards.
+| Role Slug | Can Access `/holidays`? | Access Scope & Actions Available | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Full Access | Full access to `/holidays`. Can view all master holidays, seed statutory defaults, create/edit/delete holidays, resolve branch calendars, and switch view modes. | [`HolidayListView.tsx:L439-L440`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L439-L440) |
+| **`HR_ADMIN`** | ✅ Full Access | Full access to `/holidays`. Can seed defaults, add/edit/delete holidays, view branch calendar grids, and resolve branch lists (`canCreate: true`). | [`HolidayListView.tsx:L439-L440`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L439-L440) |
+| **`BRANCH_ADMIN`** | ✅ Branch Scope | Access to `/holidays`. Can view master holidays and resolve/view calendar grid for assigned branch. `Add Holiday` and `Seed Defaults` buttons visible if granted `holiday.create`. | [`HolidayListView.tsx:L440`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L440) |
+| **`LEADERSHIP`** | ✅ Read-Only | Access to `/holidays`. Can view master holidays and branch calendars. Action buttons (`Seed Defaults`, `Add Holiday`, Edit/Delete icons) are hidden. | [`HolidayListView.tsx:L440`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L440) |
+| **`MANAGER`** | ✅ Read-Only | Access to `/holidays` (`permission: "leave.read"`). Can view master holidays and team branch calendars. Action buttons hidden unless granted `holiday.create`. | [`HolidayListView.tsx:L440`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L440) |
+| **`PRODUCT_MANAGER`** | ✅ Permission-Based | Access determined by `leave.read` and `holiday.create` permissions. | [`HolidayListView.tsx:L440`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L440) |
+| **`EMPLOYEE`** | ✅ Read-Only | Access to `/holidays` (`permission: "leave.read"`). Views master holiday table and personal schedule (`MY_SCHEDULE`). Management controls and View Mode selector are hidden (`isAuthorized: false`). | [`HolidayListView.tsx:L720-L733`](file:///d:/hrms/src/sections/holidays/HolidayListView.tsx#L720-L733) |
+
+---
+
+## 7. 📋 Document Verification
+
+* **Route**: `/document-verification`
+* **Source Component**: [`DocumentVerificationView.tsx`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx)
+* **API Calls**: `GET /api/v1/documents/pending`, `PATCH /api/v1/documents/:id/verify`, `GET /api/v1/documents/:empId/:docId/download`
+
+🧭 **How to Get Here**:
+After logging in as **HR Admin**, **Branch Admin**, or **Org Admin**:
+1. Click **Document Verification** in the left sidebar (under bottom navigation group, icon: `<FactCheckIcon />`). This opens the **Document Verification Queue** screen (`/document-verification`).
+* **Sidebar Menu Permission**: Guarded by `permission: "document.read"`.
+
+---
+
+#### 📝 Interactive Controls & Rejection Modal Field Guide
+
+The Document Verification queue allows HR administrators to review employee identity and education proof documents uploaded during onboarding or profile updates:
+
+##### 1. Pending Verification Table (`DocumentVerificationView.tsx`)
+
+| Element / Column Header | Format & Type | HR Action & Interactive UI Behavior |
+| :--- | :--- | :--- |
+| **Page Header** | Header Bar | Displays document icon `<DescriptionOutlinedIcon />`, title **"Document Verification"**, and subtitle `"Review and verify employee documents"`. |
+| **`EMPLOYEE`** | Avatar + Text Block | Displays employee avatar initials, full name (e.g. `Uttam Kumar`), and Employee Code (`EMP-007`). |
+| **`DOCUMENT TYPE`** | Text String | Displays uploaded document category (e.g. `PAN Card`, `Aadhaar Card`, `Degree Certificate`). |
+| **`FILE NAME`** | Text String | Displays file name string (e.g. `pan_card_uttam.pdf`). |
+| **`UPLOADED ON`** | Date (`MMM DD, YYYY`) | Upload timestamp. |
+| **`STATUS`** | Status Chip Badge | Displays yellow **`Pending`** chip badge (`#FEF3C7` background). |
+| **`View Document` Button** | Small Eye Icon Button (`<VisibilityOutlinedIcon />`) | Clicking fetches a secure presigned download URL (`getHrDownloadUrl`) and opens the document file in a new browser tab for visual inspection. |
+| **`Approve` Button** | Small Green Check Icon Button (`#DCFCE7`, `<CheckIcon />`) | Submits `verifyDocument(id, { isVerified: true })`. On success, removes document from queue and displays toast `"Document approved successfully"`. |
+| **`Reject` Button** | Small Red Close Icon Button (`#FEE2E2`, `<CloseIcon />`) | Clicking opens the **Reject Document** dialog modal. |
+
+##### 2. Reject Document Modal (`Dialog`)
+
+| Element / Field Label | Expected Format & Type | Required / Optional | HR Reviewer Behavior & Execution Logic |
+| :--- | :--- | :---: | :--- |
+| **Modal Title** | Header Title | Display Only | Displays title **"Reject Document"**. |
+| **Remarks Field** | Multiline Text Field (`rows={3}`) | Optional | Text area label `"Remarks"`. Allows HR to type rejection notes or resubmission instructions for the employee. |
+| **`[ Reject ]` Button** | Danger Action Button (Red `#DC2626`) | Click Action | Sends `PATCH /api/v1/documents/:id/verify` with `{ isVerified: false, remarks }`. Removes document from pending queue, updates document status to **`Rejected`**, and displays toast `"Document rejected"`. |
+| **`[ Cancel ]` Button** | Text Button | Click Action | Dismisses the dialog without rejecting the document. |
+
+---
+
+#### ✅ Success Cases
+
+| Action | Steps | Expected Result | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Inspect Uploaded Document** | 1. Open `/document-verification`.<br>2. Locate employee row.<br>3. Click **View Document** (Eye icon). | Fetches presigned download URL (`getHrDownloadUrl`) and opens document file in a new browser tab. | [`DocumentVerificationView.tsx:L98-L107`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx#L98-L107) |
+| **Approve Document** | 1. Locate pending document row.<br>2. Click **Approve** (Green check icon). | Document status updates to verified. Row disappears from pending queue and toast displays `"Document approved successfully"`. | [`DocumentVerificationView.tsx:L109-L125`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx#L109-L125) |
+| **Reject Document** | 1. Click **Reject** (Red close icon).<br>2. Enter Remarks: `"Document image blurry"`.<br>3. Click **`[ Reject ]`**. | Modal closes. Document status updates to rejected. Row disappears from queue and toast displays `"Document rejected"`. | [`DocumentVerificationView.tsx:L133-L155`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx#L133-L155) |
+
+---
+
+#### ⚠️ Validation Errors to Test
+
+| Field / Constraint | Trigger Condition | Expected Error Message | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Missing Document ID Query** | Attempting to verify or download without a valid document ID | Backend returns `400 Bad Request` or `404 Not Found`. | [`DocumentVerificationView.tsx:L118`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx#L118) |
+
+---
+
+#### ❌ Error / Failure Cases
+
+| Scenario | Trigger Condition | Expected Behavior | Code Reference |
+| :--- | :--- | :--- | :--- |
+| **Server Error on Document Verification (500)** | Network or database error during document approval/rejection | Red Alert banner displays: `"Failed to approve document"` or `"Failed to reject document"`. | [`DocumentVerificationView.tsx:L118-L122`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx#L118-L122) |
+| **Empty Verification Queue** | No pending employee documents require HR review | Renders empty state card featuring `<HourglassEmptyOutlinedIcon />`, title `"No pending documents to verify"`, subtext `"All documents have been reviewed"`. | [`DocumentVerificationView.tsx:L180-L189`](file:///d:/hrms/src/sections/hr/documents-verification/DocumentVerificationView.tsx#L180-L189) |
+
+---
+
+#### 🛡️ Role-Based Access & Restrictions
+
+| Role Slug | Can Access `/document-verification`? | Access Scope & Actions Available | Code Reference |
+| :--- | :---: | :--- | :--- |
+| **`ORG_ADMIN`** | ✅ Full Access | Full access to inspect, approve, or reject employee documents. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+| **`HR_ADMIN`** | ✅ Full Access | Full access to `/document-verification` queue (`permission: "document.read"`) to review employee documents. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+| **`BRANCH_ADMIN`** | ✅ Branch Scope | Access to `/document-verification` to review branch employee documents. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+| **`LEADERSHIP`** | ✅ Read Access | Can view employee documents in verification queue. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+| **`MANAGER`** | ✅ Team Scope | Access to `/document-verification` for team members if assigned `document.read`. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+| **`PRODUCT_MANAGER`** | ✅ Permission-Based | Access determined by `document.read` permission. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+| **`EMPLOYEE`** | ❌ Blocked | Route `/document-verification` is blocked by `<RoleGuard permission="document.read">`. Employees cannot verify or reject documents. | [`index.tsx:L178-L184`](file:///d:/hrms/src/routes/index.tsx#L178-L184) |
+
+---
+

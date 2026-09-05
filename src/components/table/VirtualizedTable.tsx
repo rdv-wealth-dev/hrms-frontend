@@ -97,12 +97,14 @@ export function VirtualizedTable<T>({
                   position: "sticky",
                   left: 0,
                   backgroundColor: "background.paper",
+                  boxShadow: "3px 0 6px -2px rgba(0, 0, 0, 0.08)",
                   zIndex: 2,
                 }),
                 ...(col.sticky === "right" && {
                   position: "sticky",
                   right: 0,
                   backgroundColor: "background.paper",
+                  boxShadow: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)",
                   zIndex: 2,
                 }),
               }}
@@ -178,13 +180,15 @@ export function VirtualizedTable<T>({
                       position: "sticky",
                       left: 0,
                       backgroundColor: "background.paper",
-                      zIndex: 4,
+                      boxShadow: "3px 0 6px -2px rgba(0, 0, 0, 0.08)",
+                      zIndex: 5,
                     }),
                     ...(col.sticky === "right" && {
                       position: "sticky",
                       right: 0,
                       backgroundColor: "background.paper",
-                      zIndex: 4,
+                      boxShadow: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)",
+                      zIndex: 5,
                     }),
                   }}
                 >

@@ -244,7 +244,7 @@ function BranchListContent() {
                     label={selectedBranch.isHeadOffice ? "Primary Headquarters" : "Assigned Branch"}
                     size="small"
                     sx={{
-                      backgroundColor: selectedBranch.isHeadOffice 
+                      backgroundColor: selectedBranch.isHeadOffice
                         ? "rgba(165, 180, 252, 0.2)"
                         : "rgba(165, 180, 252, 0.15)",
                       color: "#E0E7FF",
@@ -399,11 +399,11 @@ function BranchListContent() {
           <Table sx={{ width: "100%", tableLayout: "auto" }}>
             <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
               <TableRow>
-                <TableCell align="left" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Branch Info</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Branch Name</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650 }}>Location</TableCell>
                 <TableCell align="left" sx={{ fontWeight: 650 }}>Contact Details</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650 }}>Work Policy</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
+
                 <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Status</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Actions</TableCell>
               </TableRow>

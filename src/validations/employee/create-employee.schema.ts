@@ -63,8 +63,8 @@ export const bankAccountSchema = z.object({
     .string()
     .trim()
     .refine(
-      (val) => !val || (val.length >= 6 && val.length <= 20 && /^\d+$/.test(val)),
-      "Account number must be 6-20 numeric digits"
+      (val) => !val || (val.length >= 6 && val.length <= 13 && /^\d+$/.test(val)),
+      "Account number must be 6-13 numeric digits"
     )
     .optional()
     .or(z.literal("")),

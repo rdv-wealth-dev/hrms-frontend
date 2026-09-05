@@ -203,7 +203,7 @@ export function CustomFieldsSettingsTab() {
             </Box>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 750, color: "text.primary" }}>
-                Dynamic Custom Fields Engine
+                Custom Fields
               </Typography>
             </Box>
           </Box>

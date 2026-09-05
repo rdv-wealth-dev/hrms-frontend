@@ -21,6 +21,8 @@ import Chip from "@mui/material/Chip";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
@@ -266,21 +268,98 @@ export default function ShiftContent() {
         )}
       </Box>
 
-      {/* Tabs Navigation */}
-      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-        <Tabs 
-          value={activeTab} 
-          onChange={(_, newValue) => setActiveTab(newValue)}
+      {/* Tabs Navigation (Outer Sub-Nav Responsive Pattern) */}
+      <Box sx={{ mb: 3 }}>
+        <Paper
+          elevation={0}
           sx={{
-            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "14px" },
-            "& .MuiTabs-indicator": { backgroundColor: "primary.main" },
-            "& .MuiTab-root.Mui-selected": { color: "primary.main" }
+            borderRadius: "12px",
+            border: "1px solid #E5E7EB",
+            backgroundColor: "#FFFFFF",
+            overflow: "hidden",
           }}
         >
-          <Tab label="Shifts List" />
-          <Tab label="Employee Assignments" />
-          <Tab label="Rotation Plans" />
-        </Tabs>
+          <Tabs
+            value={activeTab ?? 0}
+            onChange={(_, newValue) => setActiveTab?.(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            slots={{
+              startScrollButtonIcon: ChevronLeftRoundedIcon,
+              endScrollButtonIcon: ChevronRightRoundedIcon,
+            }}
+            sx={{
+              minHeight: 44,
+
+              "& .MuiTabs-scroller": {
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+              },
+
+              "& .MuiTabs-list": {
+                alignItems: "stretch",
+              },
+
+              // Chevron buttons matching outer navigation
+              "& .MuiTabScrollButton-root": {
+                flexShrink: 0,
+                width: 28,
+                minWidth: 28,
+                color: "primary.main",
+                opacity: 0.9,
+                transition: "all 0.2s ease",
+
+                "&.Mui-disabled": {
+                  opacity: 0.25,
+                },
+
+                "&:hover": {
+                  backgroundColor: "primary.lighter",
+                },
+              },
+
+              // Tab Styling (Auto content fit without truncation, smooth scroll chevrons)
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontSize: {
+                  xs: "13px",
+                  md: "14px",
+                },
+                fontWeight: 600,
+                minHeight: 44,
+                boxSizing: "border-box",
+                flexShrink: 0,
+                minWidth: "auto",
+                width: "auto",
+                px: {
+                  xs: 2,
+                  sm: 2.5,
+                },
+                py: 1,
+                color: "#64748B",
+                whiteSpace: "nowrap",
+
+                "&.Mui-selected": {
+                  color: "primary.main",
+                  fontWeight: 700,
+                },
+              },
+
+              "& .MuiTabs-indicator": {
+                backgroundColor: "primary.main",
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+              },
+            }}
+          >
+            <Tab label="Shifts List" />
+            <Tab label="Shift Assignments" />
+            <Tab label="Rotation Plans" />
+          </Tabs>
+        </Paper>
       </Box>
 
       {/* Success/Error Alerts */}
@@ -331,7 +410,18 @@ export default function ShiftContent() {
             </Typography>
           </Box>
         ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              borderRadius: 3,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              width: "100%",
+              maxWidth: "100%",
+              overflowX: "auto",
+              scrollbarWidth: "thin",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
             <Table>
               <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
                 <TableRow>
@@ -461,7 +551,18 @@ export default function ShiftContent() {
             </Typography>
           </Box>
         ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              borderRadius: 3,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              width: "100%",
+              maxWidth: "100%",
+              overflowX: "auto",
+              scrollbarWidth: "thin",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
             <Table>
               <TableHead sx={{ backgroundColor: "#F9FAFB" }}>
                 <TableRow>

@@ -152,7 +152,7 @@ export function PeopleHubTableView({
   return (
     <Box sx={{ width: "100%" }}>
       {/* Mobile Card View (xs < 600px) */}
-      <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", alignItems: "center", gap: 1.5, px: 1, py: 1.5, my: 1 }}>
         {safeEmployees.map((emp, index) => {
           const fullName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim() || "Employee";
           const initials = `${emp?.firstName?.[0] ?? ""}${emp?.lastName?.[0] ?? ""}`.toUpperCase() || "E";
@@ -165,6 +165,10 @@ export function PeopleHubTableView({
             <Card
               key={emp?._id || `mobile-emp-${index}`}
               sx={{
+                width: "95%",
+                maxWidth: "520px",
+                mx: "auto",
+                my: 0.75,
                 p: 2,
                 borderRadius: 3,
                 backgroundColor: "#FFFFFF",
@@ -248,7 +252,6 @@ export function PeopleHubTableView({
               id: "employee",
               header: "EMPLOYEE",
               minWidth: 200,
-              sticky: "left",
               cell: (emp, index) => {
                 const fullName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim() || "Employee";
                 const initials = `${emp?.firstName?.[0] ?? ""}${emp?.lastName?.[0] ?? ""}`.toUpperCase() || "E";
@@ -408,7 +411,6 @@ export function PeopleHubTableView({
               header: "QUICK ACTION",
               minWidth: 100,
               align: "center",
-              sticky: "right",
               cell: (emp) => (
                 <IconButton
                   size="small"

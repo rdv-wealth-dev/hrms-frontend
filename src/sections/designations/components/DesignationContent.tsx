@@ -64,7 +64,7 @@ function DesignationContent() {
   );
 
   const branchId = useActiveBranchId();
-  
+
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("designation.create");
   const canUpdate = hasPermission("designation.update");
@@ -357,24 +357,7 @@ function DesignationContent() {
                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
                           Click "Create Designation" to set up your organization's first designation.
                         </Typography>
-                        {canCreate && (
-                          <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
-                            <Button
-                              variant="contained"
-                              onClick={() => setCreateOpen(true)}
-                              startIcon={<AddIcon />}
-                              sx={{
-                                borderRadius: 2,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                backgroundColor: "primary.main",
-                                "&:hover": { backgroundColor: "primary.dark" },
-                              }}
-                            >
-                              Create Designation
-                            </Button>
-                          </Box>
-                        )}
+
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -382,62 +365,49 @@ function DesignationContent() {
                   filteredDesignations
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((d) => (
-                    <TableRow
-                      key={d?._id ?? Math.random()}
-                      hover
-                      sx={{ "&:last-child td": { border: 0 } }}
-                    >
-                      <TableCell sx={{ fontWeight: 500, fontSize: 14 }}>
-                        {d?.name ?? "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={d?.code ?? ""}
-                          size="small"
-                          sx={{
-                            backgroundColor: "primary.lighter",
-                            color: "primary.main",
-                            fontWeight: 600,
-                            fontSize: 12,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ fontSize: 13 }}>{d?.level ?? "—"}</TableCell>
-                      <TableCell sx={{ color: "#6B7280", fontSize: 13 }}>
-                        {d?.description || "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={d?.isActive ? "Active" : "Inactive"}
-                          size="small"
-                          color={d?.isActive ? "success" : "default"}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      {canUpdate && (
-                        <TableCell align="center">
-                          <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                            <IconButton
-                              size="small"
-                              onClick={() => openEdit(d)}
-                              sx={{ color: "primary.main" }}
-                              title="Edit Designation"
-                            >
-                              <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() => setDeleteSingleTarget(d)}
-                              sx={{ color: "error.main" }}
-                              title="Delete Designation"
-                            >
-                              <DeleteOutlineOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
+                      <TableRow key={d?._id ?? Math.random()} hover sx={{ "&:last-child td": { border: 0 } }}>
+                        <TableCell sx={{ fontWeight: 500, fontSize: 14 }}>
+                          {d?.name ?? "—"}
                         </TableCell>
-                      )}
-                    </TableRow>
-                  ))
+                        <TableCell>
+                          <Chip label={d?.code ?? ""} size="small" sx={{ backgroundColor: "primary.lighter", color: "primary.main", fontWeight: 600, fontSize: 12 }} />
+                        </TableCell>
+                        <TableCell sx={{ fontSize: 13 }}>{d?.level ?? "—"}</TableCell>
+                        <TableCell sx={{ color: "#6B7280", fontSize: 13 }}>
+                          {d?.description || "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={d?.isActive ? "Active" : "Inactive"}
+                            size="small"
+                            color={d?.isActive ? "success" : "default"}
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        {canUpdate && (
+                          <TableCell align="center">
+                            <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => openEdit(d)}
+                                sx={{ color: "primary.main" }}
+                                title="Edit Designation"
+                              >
+                                <EditOutlinedIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => setDeleteSingleTarget(d)}
+                                sx={{ color: "error.main" }}
+                                title="Delete Designation"
+                              >
+                                <DeleteOutlineOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
                 )}
               </TableBody>
             </Table>
