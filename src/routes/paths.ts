@@ -28,7 +28,19 @@ export const paths = {
 
   attendance: "/attendance",
   leave: "/leave",
-  payroll: "/payroll",
+  payroll: {
+    root: "/payroll",
+    dashboard: "/payroll/dashboard",
+    salaryComponents: "/payroll/salary-components",
+    professionalTaxSlabs: "/payroll/professional-tax-slabs",
+    structureTemplates: "/payroll/structure-templates",
+    payCalendar: "/payroll/pay-calendar",
+    bankPayoutFormat: "/payroll/bank-payout-format",
+    payslipTemplates: "/payroll/payslip-templates",
+    glMapping: "/payroll/gl-mapping",
+    structureAssignment: "/payroll/structure-assignment",
+    salaryStructureView: "/payroll/salary-structure-view",
+  },
 
   profile: "/profile",
   onboarding: "/onboarding",

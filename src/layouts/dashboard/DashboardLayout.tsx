@@ -33,7 +33,19 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import CustomAvatar from "../../components/avatar/CustomAvatar";
 
-// CollapsibleNavGroup import removed (flattened menu)
+import CollapsibleNavGroup, { type NavSubItem } from "./components/CollapsibleNavGroup";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import SettingsSuggestOutlinedIcon from "@mui/icons-material/SettingsSuggestOutlined";
+import PlayCircleOutlineOutlinedIcon from "@mui/icons-material/PlayCircleOutlineOutlined";
+import TuneIcon from "@mui/icons-material/Tune";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+import AssignmentIndOutlinedIcon from "@mui/icons-material/AssignmentIndOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -110,6 +122,76 @@ const bottomNavItems: NavItem[] = [
         label: "My Profile",
         icon: <PersonIcon fontSize="small" />,
         path: paths.profile,
+    },
+];
+
+const payrollNavItems: NavSubItem[] = [
+    {
+        label: "Dashboard",
+        icon: <DashboardIcon fontSize="small" />,
+        path: paths.payroll.dashboard,
+    },
+    {
+        label: "Master Setup",
+        icon: <SettingsSuggestOutlinedIcon fontSize="small" />,
+        children: [
+            {
+                label: "Salary Components",
+                icon: <TuneIcon fontSize="small" />,
+                path: paths.payroll.salaryComponents,
+            },
+            {
+                label: "Professional Tax Slabs",
+                icon: <DescriptionOutlinedIcon fontSize="small" />,
+                path: paths.payroll.professionalTaxSlabs,
+            },
+            {
+                label: "Structure Templates",
+                icon: <LayersOutlinedIcon fontSize="small" />,
+                path: paths.payroll.structureTemplates,
+            },
+            {
+                label: "Pay Calendar",
+                icon: <CalendarTodayOutlinedIcon fontSize="small" />,
+                path: paths.payroll.payCalendar,
+            },
+            {
+                label: "Bank Payout Format",
+                icon: <CreditCardOutlinedIcon fontSize="small" />,
+                path: paths.payroll.bankPayoutFormat,
+            },
+            {
+                label: "Payslip Templates",
+                icon: <ArticleOutlinedIcon fontSize="small" />,
+                path: paths.payroll.payslipTemplates,
+            },
+            {
+                label: "GL Mapping",
+                icon: <BarChartOutlinedIcon fontSize="small" />,
+                path: paths.payroll.glMapping,
+            },
+        ],
+    },
+    {
+        label: "Employees",
+        icon: <PeopleAltIcon fontSize="small" />,
+        children: [
+            {
+                label: "Structure Assignment",
+                icon: <AssignmentIndOutlinedIcon fontSize="small" />,
+                path: paths.payroll.structureAssignment,
+            },
+            {
+                label: "Salary Structure View",
+                icon: <VisibilityOutlinedIcon fontSize="small" />,
+                path: paths.payroll.salaryStructureView,
+            },
+        ],
+    },
+    {
+        label: "Payroll Run",
+        icon: <PlayCircleOutlineOutlinedIcon fontSize="small" />,
+        children: [],
     },
 ];
 
@@ -402,7 +484,14 @@ function DashboardLayout() {
                     {/* Top Standalone Nav Items */}
                     {visibleTopItems.map((item) => renderNavListItem(item, isCollapsed))}
 
-                    {/* TIME & LEAVE categories are flattened into topNavItems */}
+                    {/* Payroll Collapsible Nav Group */}
+                    <CollapsibleNavGroup
+                        title="Payroll"
+                        icon={<AccountBalanceWalletOutlinedIcon fontSize="small" />}
+                        items={payrollNavItems}
+                        isCollapsed={isCollapsed}
+                        onNavigate={handleMobileNavigation}
+                    />
 
                     {/* Bottom Standalone Nav Items */}
                     {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
