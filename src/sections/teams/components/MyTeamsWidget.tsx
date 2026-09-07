@@ -14,7 +14,15 @@ import StatusChip from "../../../components/common/StatusChip";
 import { getMyTeams, type MyTeamItem } from "../../../api/team.api";
 import type { RootState } from "../../../store/rootReducer";
 
-export function MyTeamsWidget() {
+interface MyTeamsWidgetProps {
+  /**
+   * When true (default), the widget is completely hidden if the employee
+   * does not belong to any team, or while loading/erroring.
+   */
+  hideIfEmpty?: boolean;
+}
+
+export function MyTeamsWidget({ hideIfEmpty = true }: MyTeamsWidgetProps = {}) {
   const user = useSelector((state: RootState) => state.auth.user);
   const [myTeams, setMyTeams] = useState<MyTeamItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -25,6 +33,11 @@ export function MyTeamsWidget() {
     setLoading(true);
 
     const empId = user?.employeeId || (user as any)?._id || user?.id;
+    if (!empId) {
+      setLoading(false);
+      setMyTeams([]);
+      return;
+    }
 
     getMyTeams(empId)
       .then((res) => {
@@ -46,6 +59,11 @@ export function MyTeamsWidget() {
     };
   }, [user?.employeeId, user?.id]);
 
+  // Conditional rendering: completely hidden if employee belongs to no teams
+  if (hideIfEmpty && (loading || error || myTeams.length === 0)) {
+    return null;
+  }
+
   return (
     <Paper
       elevation={0}
@@ -56,6 +74,7 @@ export function MyTeamsWidget() {
         borderColor: "divider",
         backgroundColor: "background.paper",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+        mb: { xs: 2.5, sm: 3, md: 4 },
       }}
     >
       {/* Header */}
@@ -79,7 +98,7 @@ export function MyTeamsWidget() {
             <Typography variant="h6" sx={{ fontWeight: 800, color: "text.primary", fontSize: "1.05rem", lineHeight: 1.2 }}>
               My Squads & Teams
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748B" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
               Project teams & capacity allocations assigned to you
             </Typography>
           </Box>
@@ -92,8 +111,8 @@ export function MyTeamsWidget() {
             sx={{
               fontWeight: 700,
               fontSize: "11px",
-              backgroundColor: "#F1F5F9",
-              color: "#475569",
+              backgroundColor: "action.hover",
+              color: "text.secondary",
             }}
           />
         )}
@@ -109,7 +128,7 @@ export function MyTeamsWidget() {
           ))}
         </Grid>
       ) : error ? (
-        <Box sx={{ p: 3, textAlign: "center", borderRadius: "12px", backgroundColor: "#FEF2F2" }}>
+        <Box sx={{ p: 3, textAlign: "center", borderRadius: "12px", backgroundColor: "error.lighter" }}>
           <Typography variant="caption" color="error">
             {error}
           </Typography>
@@ -121,12 +140,13 @@ export function MyTeamsWidget() {
             px: 2,
             textAlign: "center",
             borderRadius: "12px",
-            border: "1px dashed #CBD5E1",
-            backgroundColor: "#F8FAFC",
+            border: "1px dashed",
+            borderColor: "divider",
+            backgroundColor: "action.hover",
           }}
         >
-          <GroupsIcon sx={{ fontSize: 36, color: "#94A3B8", mb: 0.75 }} />
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#334155" }}>
+          <GroupsIcon sx={{ fontSize: 36, color: "text.secondary", mb: 0.75 }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
             No Teams Assigned Yet
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -177,7 +197,7 @@ export function MyTeamsWidget() {
                         {tName}
                       </Typography>
                       {tCode && (
-                        <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                           Code: {tCode}
                         </Typography>
                       )}
@@ -201,10 +221,10 @@ export function MyTeamsWidget() {
                         fontWeight: 700,
                         fontSize: "10px",
                         height: 22,
-                        backgroundColor: roleInTeam === "LEAD" ? "#ECFDF5" : "action.hover",
-                        color: roleInTeam === "LEAD" ? "#047857" : "text.secondary",
+                        backgroundColor: roleInTeam === "LEAD" ? "success.lighter" : "action.hover",
+                        color: roleInTeam === "LEAD" ? "success.dark" : "text.secondary",
                         border: "1px solid",
-                        borderColor: roleInTeam === "LEAD" ? "#A7F3D0" : "divider",
+                        borderColor: roleInTeam === "LEAD" ? "success.light" : "divider",
                       }}
                     />
 
@@ -236,7 +256,7 @@ export function MyTeamsWidget() {
                         borderRadius: 3,
                         backgroundColor: "divider",
                         "& .MuiLinearProgress-bar": {
-                          backgroundColor: allocPct >= 80 ? "#10B981" : allocPct >= 50 ? "#3B82F6" : "#F59E0B",
+                          backgroundColor: allocPct >= 80 ? "success.main" : allocPct >= 50 ? "info.main" : "warning.main",
                           borderRadius: 3,
                         },
                       }}

@@ -35,10 +35,8 @@ function DashboardView() {
           </Box>
         )}
 
-        {/* My Assigned Teams & Squads Widget */}
-        <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 } }}>
-          <MyTeamsWidget />
-        </Box>
+        {/* My Assigned Teams & Squads Widget (conditionally rendered only if employee belongs to a team) */}
+        <MyTeamsWidget />
 
         {/* Logged-in Employee My Branch Celebrations & Holidays Widget */}
         <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 }, width: { xs: "100%", md: "50%" } }}>

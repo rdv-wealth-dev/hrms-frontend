@@ -421,6 +421,8 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
                 label="Admin Job Title"
                 value={adminJobTitle}
                 onChange={(e) => setAdminJobTitle(e.target.value)}
+                placeholder="e.g. HR Director, Operations Lead"
+                tooltip="Your professional designation or role in the organization (e.g. HR Director, Operations Lead, Founder & CEO). This will be assigned to your admin profile."
                 required
               />
             </Grid>
