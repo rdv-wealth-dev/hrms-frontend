@@ -103,15 +103,15 @@ const topNavItems: NavItem[] = [
         path: paths.holidays,
         permission: "leave.read",
     },
-];
-
-const bottomNavItems: NavItem[] = [
     {
         label: "Document Verification",
         icon: <FactCheckIcon fontSize="small" />,
         path: paths.documentVerification,
         permission: "document.read",
     },
+];
+
+const bottomNavItems: NavItem[] = [
     {
         label: "Settings",
         icon: <SettingsIcon fontSize="small" />,

@@ -10,7 +10,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <Toaster
         position="top-right"
-        expand={false}
+        expand={true}
+        gap={12}
+        visibleToasts={3}
         richColors
         closeButton
         theme={theme.palette.mode === "dark" ? "dark" : "light"}
