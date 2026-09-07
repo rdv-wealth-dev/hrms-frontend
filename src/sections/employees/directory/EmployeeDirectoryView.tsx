@@ -31,7 +31,7 @@ import PageHeader from "../../../components/common/PageHeader";
 
 function EmployeeDirectoryView() {
   const [selectedEmpForMatrix, setSelectedEmpForMatrix] = useState<any | null>(null);
-  const [currentViewMode, setCurrentViewMode] = useState<ViewMode>("directory");
+  const [currentViewMode, setCurrentViewMode] = useState<ViewMode>("people_hub");
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();

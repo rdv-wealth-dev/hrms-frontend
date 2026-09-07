@@ -6,32 +6,17 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import AddIcon from "@mui/icons-material/Add";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import { paths } from "../../../routes/paths";
-import { formatDate } from "../../../utils/format-date";
-import { StatusChip } from "../../../components/common/StatusChip";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import CreditCompOffDialog from "../../leave/components/CreditCompOffDialog";
@@ -50,7 +35,6 @@ import { useDebounce } from "../../../hooks/useDebounce";
 import { usePagination } from "../../../hooks/usePagination";
 import ManualAttendanceDialog from "../../attendance/components/ManualAttendanceDialog";
 import ManageRoleDialog from "./components/ManageRoleDialog";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { listUsers, type UserAccountData } from "../../../api/user.api";
 import { deleteEmployee, bulkExportEmployees } from "../../../api/employee.api";
 import { ConfirmDialog } from "../../../components/modal";
@@ -221,7 +205,7 @@ function EmployeeListView() {
     }
   };
 
-  const [usersList, setUsersList] = useState<UserAccountData[]>([]);
+  const [_usersList, setUsersList] = useState<UserAccountData[]>([]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -254,68 +238,6 @@ function EmployeeListView() {
       setUsersList(users);
     } catch (err) {
       console.error("Failed to fetch users for system roles", err);
-    }
-  };
-
-  const getUserRole = (emp: EmployeeListItem) => {
-    const user = usersList.find(
-      (u) =>
-        u.employeeId === emp._id ||
-        u.email.toLowerCase() === emp.email.toLowerCase()
-    );
-    return user ? user.role : "EMPLOYEE";
-  };
-
-  const getUserRoleLabel = (emp: EmployeeListItem) => {
-    const role = getUserRole(emp);
-    const roleLabels: Record<string, string> = {
-      ORG_ADMIN: "Org Admin",
-      HR_ADMIN: "HR Admin",
-      BRANCH_ADMIN: "Branch Admin",
-      LEADERSHIP: "Leadership",
-      MANAGER: "Manager",
-      PRODUCT_MANAGER: "Product Manager",
-      TEAM_LEADER: "Team Leader",
-      EMPLOYEE: "Employee",
-    };
-    return roleLabels[role] || role;
-  };
-
-  const getUserRoleChipColor = (role: string) => {
-    switch (role) {
-      case "ORG_ADMIN":
-        return "#FEE2E2";
-      case "HR_ADMIN":
-        return "#F3E8FF";
-      case "BRANCH_ADMIN":
-        return "#E0F2FE";
-      case "LEADERSHIP":
-      case "MANAGER":
-      case "PRODUCT_MANAGER":
-      case "TEAM_LEADER":
-        return "#ECFDF5";
-      case "EMPLOYEE":
-      default:
-        return "#F3F4F6";
-    }
-  };
-
-  const getUserRoleChipTextColor = (role: string) => {
-    switch (role) {
-      case "ORG_ADMIN":
-        return "#991B1B";
-      case "HR_ADMIN":
-        return "#6B21A8";
-      case "BRANCH_ADMIN":
-        return "#075985";
-      case "LEADERSHIP":
-      case "MANAGER":
-      case "PRODUCT_MANAGER":
-      case "TEAM_LEADER":
-        return "#065F46";
-      case "EMPLOYEE":
-      default:
-        return "#374151";
     }
   };
 
@@ -499,41 +421,6 @@ function EmployeeListView() {
     filters.designation,
     setPageNumber,
   ]);
-
-  // Helper mapping IDs to human-readable names
-  const getDepartmentName = (id: any) => {
-    if (!id) return "—";
-    if (typeof id === "object") {
-      if (id.name) {
-        return `${id.name} (${id.code || "—"})`;
-      }
-      id = id._id;
-    }
-    if (!id || !Array.isArray(departments)) return "—";
-    const dept = departments.find((d) => d && d._id === id);
-    return dept ? `${dept.name || "—"} (${dept.code || "—"})` : "—";
-  };
-
-  const getDesignationName = (id: any) => {
-    if (!id) return "—";
-    if (typeof id === "object") {
-      if (id.name) {
-        return id.name;
-      }
-      id = id._id;
-    }
-    if (!id || !Array.isArray(designations)) return "—";
-    const desig = designations.find((d) => d && d._id === id);
-    return desig ? desig.name || "—" : "—";
-  };
-
-  const formatEmployeeType = (type: string) => {
-    if (!type) return "—";
-    return type
-      .split("_")
-      .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(" ");
-  };
 
   const displayedEmployees = employees.filter((emp) => {
     // 1. Branch Multi-Select Filter
