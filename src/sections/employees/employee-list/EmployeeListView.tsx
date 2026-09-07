@@ -65,6 +65,8 @@ import { ViewModeSwitcher, type ViewMode } from "./components/ViewModeSwitcher";
 import { PeopleHubKpiCards } from "./components/PeopleHubKpiCards";
 import { PeopleHubDepartmentTabs, type FilterState } from "./components/PeopleHubDepartmentTabs";
 import { PeopleHubTableView } from "./components/PeopleHubTableView";
+import { EmployeeDirectoryCardGrid } from "../directory/components/EmployeeDirectoryCardGrid";
+import { OrganizationChart } from "../directory/components/OrganizationChart";
 
 const getFilterString = (val: string | string[] | undefined): string =>
   Array.isArray(val) ? val[0] ?? "" : val ?? "";
@@ -80,10 +82,6 @@ function EmployeeListView() {
   const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>("");
 
   const handleViewModeChange = (mode: ViewMode) => {
-    if (mode === "directory") {
-      navigate(paths.employees.directory);
-      return;
-    }
     setViewMode(mode);
     localStorage.setItem("employee_view_mode", mode);
   };
@@ -698,9 +696,6 @@ function EmployeeListView() {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-            {/* Design View Switcher (Design 1: Classic vs Design 2: People Hub) */}
-            <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
-
             {/* Export Button */}
             <Button
               variant="outlined"
@@ -778,6 +773,9 @@ function EmployeeListView() {
                 Import
               </Button>
             )}
+
+            {/* Design View Switcher Pill (Right side of Import button) */}
+            <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
 
             {/* Add Employee Button */}
             {canCreate && (
@@ -923,8 +921,37 @@ function EmployeeListView() {
           </Alert>
         )}
 
-        {/* Conditional View Rendering: Design 2 (People Hub) vs Design 1 (Classic) */}
-        {viewMode === "people_hub" ? (
+        {/* Conditional View Rendering: People Hub (Table) vs Directory (Cards) vs Org Chart vs Classic (Table) */}
+        {viewMode === "org_chart" ? (
+          <Box sx={{ mt: 1 }}>
+            <OrganizationChart />
+          </Box>
+        ) : viewMode === "directory" ? (
+          <Box sx={{ mt: 1 }}>
+            {loading && displayedEmployees.length === 0 ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+                <CircularProgress sx={{ color: "primary.main" }} />
+              </Box>
+            ) : (
+              <EmployeeDirectoryCardGrid
+                employees={displayedEmployees}
+                onSelectEmployee={(emp) => {
+                  navigate(paths.employees.detail.replace(":id", emp._id));
+                }}
+              />
+            )}
+            <Box sx={{ mt: 2 }}>
+              <CustomTablePagination
+                count={total}
+                rowsPerPage={pageSize}
+                page={pageNumber}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+              />
+            </Box>
+          </Box>
+        ) : viewMode === "people_hub" ? (
           <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
             {loading && (
               <Box

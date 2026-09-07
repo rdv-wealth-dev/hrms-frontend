@@ -1,1 +1,1 @@
-export { default } from "./OrganizationChart";
+export { default, default as OrganizationChart } from "./OrganizationChart";
