@@ -3,7 +3,9 @@ import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import Popover from "@mui/material/Popover";
+import Popper from "@mui/material/Popper";
+import Paper from "@mui/material/Paper";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
 import Checkbox from "@mui/material/Checkbox";
 import InputAdornment from "@mui/material/InputAdornment";
 import Chip from "@mui/material/Chip";
@@ -29,6 +31,7 @@ export interface MultiSelectProps {
   searchPlaceholder?: string;
   size?: "small" | "medium";
   fullWidth?: boolean;
+  maxHeight?: number;
   error?: string;
   sx?: any;
 }
@@ -44,10 +47,11 @@ export function MultiSelect({
   searchPlaceholder = "Search options...",
   fullWidth = true,
   size = "small",
+  maxHeight = 300,
   error,
   sx,
 }: MultiSelectProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -72,14 +76,21 @@ export function MultiSelect({
     return safeOptions.some((opt) => safeValue.includes(opt.value));
   }, [allSelected, safeOptions, safeValue]);
 
-  const handleOpen = () => {
+  const handleToggleOpen = () => {
     if (disabled) return;
-    setIsOpen(true);
+    setIsOpen((prev) => !prev);
   };
 
   const handleClose = () => {
     setIsOpen(false);
     setSearchTerm("");
+  };
+
+  const handleClickAway = (event: MouseEvent | TouchEvent) => {
+    if (triggerRef.current && triggerRef.current.contains(event.target as Node)) {
+      return;
+    }
+    handleClose();
   };
 
   const handleToggleOption = (val: string) => {
@@ -115,7 +126,7 @@ export function MultiSelect({
   }, [safeValue, safeOptions, placeholder]);
 
   return (
-    <Box ref={containerRef} sx={{ width: fullWidth ? "100%" : "auto" }}>
+    <Box sx={{ width: fullWidth ? "100%" : "auto" }}>
       {label && (
         <Typography
           sx={{
@@ -131,7 +142,8 @@ export function MultiSelect({
       )}
 
       <Box
-        onClick={handleOpen}
+        ref={triggerRef}
+        onClick={handleToggleOpen}
         sx={{
           display: "flex",
           alignItems: "center",
@@ -201,120 +213,136 @@ export function MultiSelect({
         </Box>
       </Box>
 
-      <Popover
+      <Popper
         open={isOpen}
-        anchorEl={containerRef.current}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        anchorEl={triggerRef.current}
+        placement="bottom-start"
         sx={{ zIndex: 1400 }}
-        slotProps={{
-          paper: {
-            sx: {
-              mt: 0.8,
-              width: containerRef.current?.clientWidth ?? 260,
+        modifiers={[
+          {
+            name: "offset",
+            options: {
+              offset: [0, 4],
+            },
+          },
+          {
+            name: "preventOverflow",
+            enabled: true,
+            options: {
+              altAxis: true,
+              padding: 8,
+            },
+          },
+        ]}
+      >
+        <ClickAwayListener onClickAway={handleClickAway}>
+          <Paper
+            elevation={8}
+            sx={{
+              width: triggerRef.current?.clientWidth ?? 260,
               minWidth: 240,
               maxWidth: "92vw",
-              maxHeight: 320,
+              maxHeight,
               borderRadius: "12px",
               border: "1px solid",
               borderColor: "divider",
               backgroundColor: "background.paper",
-              boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1)",
+              boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.15)",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-            },
-          },
-        }}
-      >
-        {searchable && (
-          <Box sx={{ p: 1, borderBottom: "1px solid", borderColor: "divider" }}>
-            <TextField
-              size="small"
-              fullWidth
-              autoFocus
-              placeholder={searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                  sx: { fontSize: "13px", height: 34, borderRadius: "8px" },
-                },
-              }}
-            />
-          </Box>
-        )}
-
-        <Box sx={{ px: 1, py: 0.5, borderBottom: "1px solid", borderColor: "divider", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={handleToggleSelectAll}>
-            <Checkbox
-              size="small"
-              checked={allSelected}
-              indeterminate={someSelected}
-              sx={{ p: 0.5, color: "text.secondary", "&.Mui-checked": { color: "primary.main" } }}
-            />
-            <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "text.primary", ml: 0.5 }}>
-              Select All
-            </Typography>
-          </Box>
-
-          {safeValue.length > 0 && (
-            <Button
-              size="small"
-              onClick={handleClearAll}
-              sx={{ fontSize: "12px", fontWeight: 600, textTransform: "none", color: "error.main", p: 0.5 }}
-            >
-              Clear
-            </Button>
-          )}
-        </Box>
-
-        <Box sx={{ flexGrow: 1, overflowY: "auto", py: 0.5 }}>
-          {filteredOptions.length === 0 ? (
-            <Box sx={{ p: 2, textAlign: "center" }}>
-              <Typography sx={{ fontSize: "13px", color: "text.secondary" }}>
-                No options found
-              </Typography>
-            </Box>
-          ) : (
-            filteredOptions.map((opt) => {
-              const isChecked = safeValue.includes(opt.value);
-              return (
-                <Box
-                  key={opt.value}
-                  onClick={() => handleToggleOption(opt.value)}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    py: 0.8,
-                    px: 1.5,
-                    cursor: "pointer",
-                    userSelect: "none",
-                    transition: "background-color 0.15s ease",
-                    backgroundColor: isChecked ? "primary.lighter" : "transparent",
-                    "&:hover": { backgroundColor: "action.hover" },
+            }}
+          >
+            {searchable && (
+              <Box sx={{ p: 1, borderBottom: "1px solid", borderColor: "divider" }}>
+                <TextField
+                  size="small"
+                  fullWidth
+                  autoFocus
+                  placeholder={searchPlaceholder}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                        </InputAdornment>
+                      ),
+                      sx: { fontSize: "13px", height: 34, borderRadius: "8px" },
+                    },
                   }}
+                />
+              </Box>
+            )}
+
+            <Box sx={{ px: 1, py: 0.5, borderBottom: "1px solid", borderColor: "divider", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={handleToggleSelectAll}>
+                <Checkbox
+                  size="small"
+                  checked={allSelected}
+                  indeterminate={someSelected}
+                  sx={{ p: 0.5, color: "text.secondary", "&.Mui-checked": { color: "primary.main" } }}
+                />
+                <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "text.primary", ml: 0.5 }}>
+                  Select All
+                </Typography>
+              </Box>
+
+              {safeValue.length > 0 && (
+                <Button
+                  size="small"
+                  onClick={handleClearAll}
+                  sx={{ fontSize: "12px", fontWeight: 600, textTransform: "none", color: "error.main", p: 0.5 }}
                 >
-                  <Checkbox
-                    size="small"
-                    checked={isChecked}
-                    sx={{ p: 0.5, mr: 1, color: "text.secondary", "&.Mui-checked": { color: "primary.main" } }}
-                  />
-                  <Typography noWrap sx={{ fontSize: "13.5px", fontWeight: isChecked ? 600 : 400, color: isChecked ? "primary.main" : "text.primary" }}>
-                    {opt.label}
+                  Clear
+                </Button>
+              )}
+            </Box>
+
+            <Box sx={{ flexGrow: 1, overflowY: "auto", py: 0.5 }}>
+              {filteredOptions.length === 0 ? (
+                <Box sx={{ p: 2, textAlign: "center" }}>
+                  <Typography sx={{ fontSize: "13px", color: "text.secondary" }}>
+                    No options found
                   </Typography>
                 </Box>
-              );
-            })
-          )}
-        </Box>
-      </Popover>
+              ) : (
+                filteredOptions.map((opt) => {
+                  const isChecked = safeValue.includes(opt.value);
+                  return (
+                    <Box
+                      key={opt.value}
+                      onClick={() => handleToggleOption(opt.value)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        py: 0.8,
+                        px: 1.5,
+                        cursor: "pointer",
+                        userSelect: "none",
+                        transition: "background-color 0.15s ease",
+                        backgroundColor: isChecked ? "primary.lighter" : "transparent",
+                        "&:hover": { backgroundColor: "action.hover" },
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={isChecked}
+                        sx={{ p: 0.5, mr: 1, color: "text.secondary", "&.Mui-checked": { color: "primary.main" } }}
+                      />
+                      <Typography noWrap sx={{ fontSize: "13.5px", fontWeight: isChecked ? 600 : 400, color: isChecked ? "primary.main" : "text.primary" }}>
+                        {opt.label}
+                      </Typography>
+                    </Box>
+                  );
+                })
+              )}
+            </Box>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
+
       {error && (
         <Typography variant="caption" color="error" sx={{ mt: 0.5, display: "block" }}>
           {error}

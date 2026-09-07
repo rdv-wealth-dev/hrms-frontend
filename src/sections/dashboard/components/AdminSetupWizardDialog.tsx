@@ -603,21 +603,41 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
               />
 
               {useCustomLeaves && (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-                  {LEAVE_TYPE_OPTIONS.map((l) => (
-                    <Chip
-                      key={l.code}
-                      label={l.label}
-                      clickable
-                      color={selectedLeaves.includes(l.code) ? "primary" : "default"}
-                      variant={selectedLeaves.includes(l.code) ? "filled" : "outlined"}
-                      onClick={() =>
-                        setSelectedLeaves((prev) =>
-                          prev.includes(l.code) ? prev.filter((c) => c !== l.code) : [...prev, l.code]
-                        )
-                      }
-                    />
-                  ))}
+                <Box sx={{ mt: 1.5 }}>
+                  <MultiSelect
+                    placeholder="Select specific leave types..."
+                    options={LEAVE_TYPE_OPTIONS.map((l) => ({ value: l.code, label: l.label }))}
+                    value={selectedLeaves}
+                    onChange={(values) => setSelectedLeaves(values)}
+                    searchable
+                    searchPlaceholder="Search leave types..."
+                    sx={{
+                      borderRadius: "12px",
+                      minHeight: 42,
+                    }}
+                  />
+                  {selectedLeaves.length > 0 && (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 1 }}>
+                      {selectedLeaves.map((code) => {
+                        const leave = LEAVE_TYPE_OPTIONS.find((l) => l.code === code);
+                        return (
+                          <Chip
+                            key={code}
+                            label={leave?.label || code}
+                            size="small"
+                            onDelete={() => setSelectedLeaves((prev) => prev.filter((c) => c !== code))}
+                            color="primary"
+                            variant="outlined"
+                            sx={{
+                              borderRadius: "8px",
+                              fontWeight: 500,
+                              fontSize: "12px",
+                            }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  )}
                 </Box>
               )}
             </Grid>

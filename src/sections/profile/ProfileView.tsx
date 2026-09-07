@@ -78,13 +78,14 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
   const organization = useSelector((state: RootState) => state.organization?.organization);
+  const organizationLoading = useSelector((state: RootState) => (state as any).organization?.loading);
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    if (!organization && hasPermission("organization.read")) {
+    if (!organization && !organizationLoading && hasPermission("organization.read")) {
       dispatch(loadOrganizationRequest());
     }
-  }, [dispatch, organization, hasPermission]);
+  }, [dispatch, organization, organizationLoading, hasPermission]);
 
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;

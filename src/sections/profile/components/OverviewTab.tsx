@@ -54,13 +54,14 @@ export default function OverviewTab({
 }: OverviewTabProps) {
   const dispatch = useDispatch<any>();
   const { hasPermission } = usePermissions();
-  const branches = useSelector((state: RootState) => state.branch?.branches || []);
+  const branches = useSelector((state: RootState) => state.branch?.branches);
+  const branchesLoading = useSelector((state: RootState) => state.branch?.loading);
 
   useEffect(() => {
-    if ((!branches || branches.length === 0) && hasPermission("branch.read")) {
+    if (!branches?.length && !branchesLoading && hasPermission("branch.read")) {
       dispatch(listBranchesRequest());
     }
-  }, [dispatch, branches, hasPermission]);
+  }, [dispatch, branches, branchesLoading, hasPermission]);
 
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js", "AWS"]);
   const [addSkillOpen, setAddSkillOpen] = useState(false);
