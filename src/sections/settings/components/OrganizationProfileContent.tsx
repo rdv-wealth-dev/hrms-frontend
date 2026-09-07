@@ -137,7 +137,7 @@ function OrganizationProfileContent() {
       setCountryCode(organization.address?.countryCode || "IN");
       setZip(organization.address?.zip || "");
 
-      setPrimaryColor(organization.branding?.primaryColor || "#2886CE");
+      setPrimaryColor(organization.branding?.primaryColor || "#6D5DF6");
       setWebsite(organization.branding?.website || "");
       setSupportEmail(organization.branding?.supportEmail || "");
 
@@ -184,7 +184,7 @@ function OrganizationProfileContent() {
       setStateName(organization.address?.state || "");
       setCountryCode(organization.address?.countryCode || "IN");
       setZip(organization.address?.zip || "");
-      setPrimaryColor(organization.branding?.primaryColor || "#2886CE");
+      setPrimaryColor(organization.branding?.primaryColor || "#6D5DF6");
       setWebsite(organization.branding?.website || "");
       setSupportEmail(organization.branding?.supportEmail || "");
       setTimezone(organization.locale?.timezone || "Asia/Kolkata");

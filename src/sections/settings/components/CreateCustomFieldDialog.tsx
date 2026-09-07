@@ -35,7 +35,7 @@ interface CreateCustomFieldDialogProps {
   onSuccess: () => void;
 }
 
-const PRESET_COLORS = ["#2886CE", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444", "#6B7280"];
+const PRESET_COLORS = ["#6D5DF6", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444", "#6B7280"];
 
 export function CreateCustomFieldDialog({
   open,
@@ -57,7 +57,7 @@ export function CreateCustomFieldDialog({
 
   // Dynamic Options Builder
   const [options, setOptions] = useState<CustomFieldOption[]>([
-    { label: "Work From Office (WFO)", value: "WFO", description: "Direct attendance from office branch", color: "#2886CE" },
+    { label: "Work From Office (WFO)", value: "WFO", description: "Direct attendance from office branch", color: "#6D5DF6" },
     { label: "Work From Home (WFH)", value: "WFH", description: "Remote attendance from home", color: "#10B981" },
     { label: "Hybrid", value: "HYBRID", description: "Flexible office & remote schedule", color: "#8B5CF6" },
   ]);

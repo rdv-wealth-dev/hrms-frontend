@@ -141,7 +141,7 @@ const DEFAULT_OPTIONS: Record<string, FilterOption[]> = {
 };
 
 function resolveFieldOptions(field: FilterField): FilterOption[] {
-  if (field.options && field.options.length > 1) {
+  if (field.options && field.options.length >= 1) {
     return field.options;
   }
   const fallback = DEFAULT_OPTIONS[field.key];

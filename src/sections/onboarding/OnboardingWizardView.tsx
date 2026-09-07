@@ -68,6 +68,28 @@ export default function OnboardingWizardView() {
   const [mandatoryDocTypes, setMandatoryDocTypes] = useState<string[]>([]);
   const [step5Data, setStep5Data] = useState<any>(null);
 
+  const refreshOnboardingStatus = async () => {
+    try {
+      const res = await getOnboardingStatus();
+      if (res.succeeded && res.data) {
+        if (res.data.step1Data) {
+          const step1 = (res.data.step1Data as Partial<OnboardingStep1FormData>) || {};
+          if (!step1.phone && user?.phone) {
+            step1.phone = user.phone;
+          }
+          setStep1Data(step1);
+        }
+        if (res.data.step2Data) setStep2Data(res.data.step2Data as Partial<OnboardingStep2FormData>);
+        if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
+        if (res.data.missingDocuments) setMissingDocs(res.data.missingDocuments);
+        if (res.data.mandatoryDocumentTypes) setMandatoryDocTypes(res.data.mandatoryDocumentTypes);
+        if (res.data.step5Data) setStep5Data(res.data.step5Data);
+      }
+    } catch (err: any) {
+      console.warn("Failed to refresh onboarding status:", err);
+    }
+  };
+
   useEffect(() => {
     if (role === "ORG_ADMIN") {
       navigate(paths.dashboard);
@@ -107,6 +129,12 @@ export default function OnboardingWizardView() {
     init();
   }, [navigate, showSnackbar, user?.phone]);
 
+  useEffect(() => {
+    if (activeStep === 4) {
+      refreshOnboardingStatus();
+    }
+  }, [activeStep]);
+
   const handleNavigateBack = async (targetStepNumber: number) => {
     try {
       const res = await navigateOnboardingStep(targetStepNumber);
@@ -129,6 +157,7 @@ export default function OnboardingWizardView() {
         showSnackbar(res?.message || `Step ${stepNumber} skipped`, "info");
         const nextStep = res?.data?.nextStep || Math.min(stepNumber + 1, 4);
         setActiveStep(nextStep - 1);
+        await refreshOnboardingStatus();
       } else {
         setStepError(res?.message || "Failed to skip step");
       }
@@ -148,6 +177,7 @@ export default function OnboardingWizardView() {
         setStep1Data(data);
         setActiveStep(1);
         showSnackbar("Personal information saved successfully", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Failed to save Step 1");
       }
@@ -167,6 +197,7 @@ export default function OnboardingWizardView() {
         setStep2Data(data);
         setActiveStep(2);
         showSnackbar("Family details saved successfully", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Failed to save Step 2");
       }
@@ -186,6 +217,7 @@ export default function OnboardingWizardView() {
         setStep3Data(data);
         setActiveStep(3);
         showSnackbar("Bank account details saved successfully", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Failed to save Step 3");
       }
@@ -204,6 +236,7 @@ export default function OnboardingWizardView() {
       if (res.succeeded) {
         setActiveStep(4);
         showSnackbar("Mandatory documents verified", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Please upload all required documents before proceeding");
       }

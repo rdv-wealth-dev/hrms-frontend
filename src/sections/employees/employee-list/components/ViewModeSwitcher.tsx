@@ -3,10 +3,9 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
 import TableRowsOutlinedIcon from "@mui/icons-material/TableRowsOutlined";
-import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 
-export type ViewMode = "classic" | "people_hub" | "directory" | "org_chart";
+export type ViewMode = "classic" | "people_hub" | "org_chart";
 
 interface ViewModeSwitcherProps {
   viewMode: ViewMode;
@@ -23,10 +22,12 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
     }
   };
 
+  const selectedValue = viewMode === "org_chart" ? "org_chart" : "people_hub";
+
   return (
     <Box sx={{ display: "inline-flex", alignItems: "center" }}>
       <ToggleButtonGroup
-        value={viewMode === "classic" ? "people_hub" : viewMode}
+        value={selectedValue}
         exclusive
         onChange={handleViewChange}
         size="small"
@@ -66,12 +67,6 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
         <Tooltip title="Table View" placement="top">
           <ToggleButton value="people_hub" aria-label="Table View">
             <TableRowsOutlinedIcon sx={{ fontSize: 20 }} />
-          </ToggleButton>
-        </Tooltip>
-
-        <Tooltip title="Employee Directory Cards" placement="top">
-          <ToggleButton value="directory" aria-label="Employee Directory Cards">
-            <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
           </ToggleButton>
         </Tooltip>
 
