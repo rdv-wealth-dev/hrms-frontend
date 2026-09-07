@@ -29,6 +29,7 @@ import {
   signupSchema,
   type SignupFormData,
 } from "../../../validations/auth/signup.schema";
+import type { SignupRequest } from "../../../auth/types";
 
 // Employee count options matching backend enum exactly
 const EMPLOYEE_COUNT_OPTIONS = [
@@ -89,7 +90,6 @@ function SignupView() {
       companyName: "",
       workspaceSlug: "",
       employeeCountRange: undefined,
-      industry: "",
       firstName: "",
       lastName: "",
       email: "",
@@ -114,19 +114,25 @@ function SignupView() {
     // Block submit if slug is confirmed taken
     if (slugAvailable === false) return;
 
-    const { confirmPassword, ...rest } = data;
-    setSubmittedEmail(rest.email);
+    setSubmittedEmail(data.email);
 
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const phone = rest.phone ? rest.phone.replace(/\D/g, "") : undefined;
+    const phone = data.phone ? data.phone.replace(/\D/g, "") : undefined;
 
-    dispatch(
-      registerRequest({
-        ...rest,
-        phone,
-        timezone,
-      })
-    );
+    const payload: SignupRequest = {
+      companyName: data.companyName,
+      workspaceSlug: data.workspaceSlug,
+      employeeCountRange: data.employeeCountRange,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      countryCode: data.countryCode,
+      password: data.password,
+      phone,
+      timezone,
+    };
+
+    dispatch(registerRequest(payload));
   };
 
   return (

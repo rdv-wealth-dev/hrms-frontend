@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -13,9 +13,16 @@ import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Chip from "@mui/material/Chip";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Divider from "@mui/material/Divider";
 
 import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
+import { MultiSelect } from "../../../components/input/MultiSelect";
 import { useSnackbar } from "../../../components/snackbar";
 import { completeOnboarding, type CompleteOnboardingRequest } from "../../../api/auth.api";
 import { useUserOrgData } from "../../../hooks/useUserOrgData";
@@ -71,6 +78,45 @@ const INDUSTRIES = [
   "Other",
 ];
 
+const DEPARTMENT_OPTIONS = [
+  { code: "ENG", label: "Engineering" },
+  { code: "QA", label: "Quality Assurance" },
+  { code: "DEVOPS", label: "DevOps" },
+  { code: "SEC", label: "Security" },
+  { code: "DATA", label: "Data" },
+  { code: "PM", label: "Product Management" },
+  { code: "ITSUP", label: "IT Support" },
+  { code: "UIX", label: "Design (UI/UX)" },
+  { code: "HR", label: "Human Resources" },
+  { code: "FIN", label: "Finance" },
+  { code: "OPS", label: "Operations" },
+  { code: "ADMIN", label: "Administration" },
+];
+
+const WORKING_STYLES = [
+  { value: "regular", label: "Regular", hint: "9:00 AM – 6:00 PM only" },
+  { value: "flexible", label: "Flexible", hint: "9–6 and 11–8 shifts" },
+  { value: "rotational", label: "Rotational", hint: "24/7, 3 shifts" },
+] as const;
+
+const LEAVE_POLICIES = [
+  { value: "standard", label: "Standard", hint: "Casual, Sick, Annual, LOP" },
+  { value: "all", label: "All Leave Types", hint: "All 9 types" },
+  { value: "minimal", label: "Minimal", hint: "Annual + LOP only" },
+] as const;
+
+const LEAVE_TYPE_OPTIONS = [
+  { code: "CL", label: "Casual Leave" },
+  { code: "SL", label: "Sick Leave" },
+  { code: "AL", label: "Annual Leave" },
+  { code: "ML", label: "Maternity Leave" },
+  { code: "PAT", label: "Paternity Leave" },
+  { code: "BL", label: "Bereavement Leave" },
+  { code: "COMP_OFF", label: "Compensatory Off" },
+  { code: "MAR", label: "Marriage Leave" },
+  { code: "LOP", label: "Loss of Pay" },
+];
+
 export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Props) {
   const { showSnackbar } = useSnackbar();
   const orgData = useUserOrgData();
@@ -84,15 +130,32 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
   const [phone, setPhone] = useState((orgData.phone || "").replace(/\D/g, "").slice(0, 10));
   const [adminJobTitle, setAdminJobTitle] = useState("");
 
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [workingStyle, setWorkingStyle] = useState<"regular" | "flexible" | "rotational">("regular");
+  const [leavePolicy, setLeavePolicy] = useState<"standard" | "all" | "minimal">("standard");
+  const [selectedLeaves, setSelectedLeaves] = useState<string[]>([]);
+  const [useCustomLeaves, setUseCustomLeaves] = useState(false);
+
+  const hasInitializedRef = useRef(false);
+
   useEffect(() => {
-    if (open) {
+    if (open && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
       if (orgData.countryCode) setCountryCode(orgData.countryCode);
       if (orgData.timezone) setTimezone(orgData.timezone);
       if (orgData.baseCurrency) setBaseCurrency(orgData.baseCurrency);
       if (orgData.fiscalYearStart) setFiscalYearStart(orgData.fiscalYearStart);
       if (orgData.employeeCountRange) setEmployeeCountRange(orgData.employeeCountRange);
       if (orgData.industry) setIndustry(orgData.industry);
-      if (orgData.phone) setPhone(orgData.phone.replace(/\D/g, "").slice(0, 10));
+      if (orgData.phone) setPhone((orgData.phone || "").replace(/\D/g, "").slice(0, 10));
+      setSelectedDepartments([]);
+      setWorkingStyle("regular");
+      setLeavePolicy("standard");
+      setSelectedLeaves([]);
+      setUseCustomLeaves(false);
+      setError(null);
+    } else if (!open) {
+      hasInitializedRef.current = false;
     }
   }, [open, orgData]);
 
@@ -120,6 +183,10 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
       baseCurrency,
       fiscalYearStart,
       adminJobTitle: adminJobTitle.trim(),
+      selectedDepartments: selectedDepartments.length > 0 ? selectedDepartments : undefined,
+      workingStyle,
+      leavePolicy,
+      selectedLeaves: useCustomLeaves && selectedLeaves.length > 0 ? selectedLeaves : undefined,
     };
 
     try {
@@ -135,7 +202,11 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
         setError(res.message || "Failed to complete onboarding setup.");
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to complete onboarding setup.";
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.[0]?.message ||
+        err?.message ||
+        "Failed to complete onboarding setup.";
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -352,6 +423,201 @@ export default function AdminSetupWizardDialog({ open, onClose, onSuccess }: Pro
                 onChange={(e) => setAdminJobTitle(e.target.value)}
                 required
               />
+            </Grid>
+
+            {/* Divider */}
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
+            </Grid>
+
+            {/* Departments */}
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.8, color: "text.primary" }}>
+                Departments to Set Up (optional — leave empty for smart defaults)
+              </Typography>
+              <MultiSelect
+                placeholder="Leave empty for smart defaults (or choose specific departments)"
+                options={DEPARTMENT_OPTIONS.map((d) => ({ value: d.code, label: d.label }))}
+                value={selectedDepartments}
+                onChange={(values) => setSelectedDepartments(values)}
+                searchable
+                searchPlaceholder="Search departments..."
+                sx={{
+                  borderRadius: "12px",
+                  minHeight: 42,
+                }}
+              />
+              {selectedDepartments.length > 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 1 }}>
+                  {selectedDepartments.map((code) => {
+                    const dept = DEPARTMENT_OPTIONS.find((d) => d.code === code);
+                    return (
+                      <Chip
+                        key={code}
+                        label={dept?.label || code}
+                        size="small"
+                        onDelete={() => setSelectedDepartments((prev) => prev.filter((c) => c !== code))}
+                        color="primary"
+                        variant="outlined"
+                        sx={{
+                          borderRadius: "8px",
+                          fontWeight: 500,
+                          fontSize: "12px",
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              )}
+            </Grid>
+
+            {/* Divider */}
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
+            </Grid>
+
+            {/* Working Style */}
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                Working Style
+              </Typography>
+              <ToggleButtonGroup
+                value={workingStyle}
+                exclusive
+                onChange={(_, val) => val && setWorkingStyle(val)}
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 1,
+                  "& .MuiToggleButtonGroup-grouped": {
+                    borderRadius: "8px !important",
+                    border: "1px solid !important",
+                    borderColor: "divider !important",
+                    mx: 0,
+                  },
+                  "& .MuiToggleButton-root": {
+                    flex: { xs: "1 1 100%", sm: "1 1 calc(33.333% - 8px)" },
+                    borderRadius: 2,
+                    textTransform: "none",
+                    px: 2,
+                    py: 1.25,
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    border: "1px solid",
+                    borderColor: "divider",
+                  },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    borderColor: (theme) => `${theme.palette.primary.main} !important`,
+                    backgroundColor: "action.selected",
+                  },
+                }}
+              >
+                {WORKING_STYLES.map((w) => (
+                  <ToggleButton key={w.value} value={w.value}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{w.label}</Typography>
+                    <Typography variant="caption" color="text.secondary">{w.hint}</Typography>
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Grid>
+
+            {/* Divider */}
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
+            </Grid>
+
+            {/* Leave Policy */}
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                Leave Policy
+              </Typography>
+              <ToggleButtonGroup
+                value={leavePolicy}
+                exclusive
+                disabled={useCustomLeaves}
+                onChange={(_, val) => val && setLeavePolicy(val)}
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 1,
+                  mb: 1,
+                  "& .MuiToggleButtonGroup-grouped": {
+                    borderRadius: "8px !important",
+                    border: "1px solid !important",
+                    borderColor: "divider !important",
+                    mx: 0,
+                  },
+                  "& .MuiToggleButton-root": {
+                    flex: { xs: "1 1 100%", sm: "1 1 calc(33.333% - 8px)" },
+                    borderRadius: 2,
+                    textTransform: "none",
+                    px: 2,
+                    py: 1.25,
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    border: "1px solid",
+                    borderColor: "divider",
+                  },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    borderColor: (theme) => `${theme.palette.primary.main} !important`,
+                    backgroundColor: "action.selected",
+                  },
+                }}
+              >
+                {LEAVE_POLICIES.map((l) => (
+                  <ToggleButton key={l.value} value={l.value}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{l.label}</Typography>
+                    <Typography variant="caption" color="text.secondary">{l.hint}</Typography>
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+
+              <FormControlLabel
+                sx={{
+                  userSelect: "none",
+                  cursor: "pointer",
+                  mt: 0.5,
+                  "& .MuiFormControlLabel-label": {
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "text.primary",
+                    cursor: "pointer",
+                  },
+                }}
+                control={
+                  <Checkbox
+                    checked={useCustomLeaves}
+                    onChange={(e) => {
+                      setUseCustomLeaves(e.target.checked);
+                      if (!e.target.checked) setSelectedLeaves([]);
+                    }}
+                    sx={{
+                      color: "text.secondary",
+                      "&.Mui-checked": { color: "primary.main" },
+                    }}
+                  />
+                }
+                label="Choose specific leave types instead"
+              />
+
+              {useCustomLeaves && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+                  {LEAVE_TYPE_OPTIONS.map((l) => (
+                    <Chip
+                      key={l.code}
+                      label={l.label}
+                      clickable
+                      color={selectedLeaves.includes(l.code) ? "primary" : "default"}
+                      variant={selectedLeaves.includes(l.code) ? "filled" : "outlined"}
+                      onClick={() =>
+                        setSelectedLeaves((prev) =>
+                          prev.includes(l.code) ? prev.filter((c) => c !== l.code) : [...prev, l.code]
+                        )
+                      }
+                    />
+                  ))}
+                </Box>
+              )}
             </Grid>
           </Grid>
         </Box>

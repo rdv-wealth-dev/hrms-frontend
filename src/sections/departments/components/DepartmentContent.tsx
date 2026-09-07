@@ -22,11 +22,13 @@ import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import DeleteSweepOutlinedIcon from "@mui/icons-material/DeleteSweepOutlined";
 import TextInput from "../../../components/input/TextInput";
 import { CreateTeamDialog, TeamsListContent } from "../../teams";
 import { VirtualizedTable } from "../../../components/table";
 import DeleteBranchDepartmentsDialog from "./DeleteBranchDepartmentsDialog";
 import DeleteSingleDepartmentDialog from "./DeleteSingleDepartmentDialog";
+import CleanupUnusedMasterDataDialog from "./CleanupUnusedMasterDataDialog";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -243,6 +245,7 @@ function DepartmentContent() {
     const [createOpen, setCreateOpen] = useState(false);
     const [createTeamOpen, setCreateTeamOpen] = useState(false);
     const [deleteBranchDeptsOpen, setDeleteBranchDeptsOpen] = useState(false);
+    const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
@@ -350,6 +353,26 @@ function DepartmentContent() {
 
                     {/* Action Buttons */}
                     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", width: { xs: "100%", sm: "auto" } }}>
+                        {canUpdate && (
+                            <Button
+                                variant="outlined"
+                                color="warning"
+                                startIcon={<DeleteSweepOutlinedIcon />}
+                                onClick={() => setCleanupDialogOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2,
+                                    whiteSpace: "nowrap",
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Clean Up Unused
+                            </Button>
+                        )}
+
                         {canUpdate && selectedBranchId && (
                             <Button
                                 variant="outlined"
@@ -652,6 +675,15 @@ function DepartmentContent() {
                 open={Boolean(deleteTarget)}
                 department={deleteTarget}
                 onClose={() => setDeleteTarget(null)}
+                onSuccess={() => {
+                    dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
+                }}
+            />
+
+            {/* 1-Click Master Data Cleanup Dialog */}
+            <CleanupUnusedMasterDataDialog
+                open={cleanupDialogOpen}
+                onClose={() => setCleanupDialogOpen(false)}
                 onSuccess={() => {
                     dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
                 }}

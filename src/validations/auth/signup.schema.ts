@@ -22,8 +22,6 @@ export const signupSchema = z
       { message: "Please select your team size" }
     ),
 
-    industry: z.string().optional(),
-
     firstName: z
       .string()
       .min(2, "First name must be at least 2 characters")

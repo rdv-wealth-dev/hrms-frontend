@@ -121,7 +121,7 @@ export function MultiSelect({
           sx={{
             fontSize: "13px",
             fontWeight: 600,
-            color: "#334155",
+            color: "text.primary",
             mb: 0.6,
             display: "block",
           }}
@@ -172,8 +172,8 @@ export function MultiSelect({
                 height: 20,
                 fontSize: "11px",
                 fontWeight: 700,
-                backgroundColor: "#EEF2FF",
-                color: "#4F46E5",
+                backgroundColor: "action.selected",
+                color: "primary.main",
                 borderRadius: "6px",
               }}
             />
@@ -185,7 +185,7 @@ export function MultiSelect({
             <IconButton
               size="small"
               onClick={handleClearAll}
-              sx={{ p: 0.2, color: "#94A3B8", "&:hover": { color: "#EF4444" } }}
+              sx={{ p: 0.2, color: "text.secondary", "&:hover": { color: "error.main" } }}
             >
               <ClearIcon sx={{ fontSize: 16 }} />
             </IconButton>
@@ -193,7 +193,7 @@ export function MultiSelect({
           <KeyboardArrowDownIcon
             sx={{
               fontSize: 18,
-              color: "#94A3B8",
+              color: "text.secondary",
               transition: "transform 0.15s ease",
               transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
             }}
@@ -207,6 +207,7 @@ export function MultiSelect({
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
+        sx={{ zIndex: 1400 }}
         slotProps={{
           paper: {
             sx: {
@@ -240,7 +241,7 @@ export function MultiSelect({
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
+                      <SearchIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                     </InputAdornment>
                   ),
                   sx: { fontSize: "13px", height: 34, borderRadius: "8px" },
@@ -267,7 +268,7 @@ export function MultiSelect({
             <Button
               size="small"
               onClick={handleClearAll}
-              sx={{ fontSize: "12px", fontWeight: 600, textTransform: "none", color: "#EF4444", p: 0.5 }}
+              sx={{ fontSize: "12px", fontWeight: 600, textTransform: "none", color: "error.main", p: 0.5 }}
             >
               Clear
             </Button>
@@ -277,7 +278,7 @@ export function MultiSelect({
         <Box sx={{ flexGrow: 1, overflowY: "auto", py: 0.5 }}>
           {filteredOptions.length === 0 ? (
             <Box sx={{ p: 2, textAlign: "center" }}>
-              <Typography sx={{ fontSize: "13px", color: "#94A3B8" }}>
+              <Typography sx={{ fontSize: "13px", color: "text.secondary" }}>
                 No options found
               </Typography>
             </Box>

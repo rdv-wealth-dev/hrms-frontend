@@ -663,6 +663,8 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
             <LeaveTab
               isViewingOther={isViewingOther}
               user={user}
+              gender={empProfile?.gender}
+              maritalStatus={empProfile?.maritalStatus}
             />
           </LazyTabPanel>
 

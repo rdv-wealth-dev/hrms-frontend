@@ -141,6 +141,10 @@ export interface CompleteOnboardingRequest {
   baseCurrency: string;
   fiscalYearStart: string;
   adminJobTitle: string;
+  selectedDepartments?: string[];
+  workingStyle?: "regular" | "flexible" | "rotational";
+  leavePolicy?: "standard" | "all" | "minimal";
+  selectedLeaves?: string[];
 }
 
 export interface CompleteOnboardingResponse {

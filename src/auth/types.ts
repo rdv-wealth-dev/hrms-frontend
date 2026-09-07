@@ -25,7 +25,6 @@ export interface SignupRequest {
   countryCode: string;
   timezone: string;
   employeeCountRange: string;  // required — "1-10" | "11-50" | "51-200" | "201-500" | "500+"
-  industry?: string;
   phone?: string;
   adminJobTitle?: string;      // optional
 }

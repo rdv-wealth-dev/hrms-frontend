@@ -31,11 +31,15 @@ import StatusChip from "../../../components/common/StatusChip";
 interface LeaveTabProps {
   isViewingOther: boolean;
   user: any;
+  gender?: string;
+  maritalStatus?: string;
 }
 
 export default function LeaveTab({
   isViewingOther,
   user,
+  gender,
+  maritalStatus,
 }: LeaveTabProps) {
   const dispatch = useDispatch<any>();
   const { showSnackbar } = useSnackbar();
@@ -410,6 +414,8 @@ export default function LeaveTab({
         error={error}
         balances={balances}
         leaveTypes={leaveTypes}
+        gender={gender}
+        maritalStatus={maritalStatus}
       />
 
       {/* Leave Balance Details Dialog */}

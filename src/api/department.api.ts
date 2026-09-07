@@ -150,3 +150,27 @@ export const seedDefaultDepartments = async (branchId: string): Promise<string[]
   
   return createdDepartmentIds;
 };
+
+export interface CleanupUnusedMasterDataResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    message: string;
+    departmentsCleaned: number;
+    designationsCleaned: number;
+    activeDepartmentsInUse: number;
+    activeDesignationsInUse: number;
+  };
+}
+
+/**
+ * Clean up all departments and designations that currently have 0 assigned employees
+ * DELETE /api/v1/departments/cleanup/unused
+ */
+export const cleanupUnusedDepartments = async (): Promise<CleanupUnusedMasterDataResponse> => {
+  const response = await axiosInstance.delete<CleanupUnusedMasterDataResponse>(
+    "/departments/cleanup/unused",
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
