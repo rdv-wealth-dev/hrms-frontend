@@ -731,7 +731,7 @@ function DashboardLayout() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        px: { xs: 2, sm: 3, md: 4 },
+                        px: { xs: 1.5, sm: 3, md: 4 },
                         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
                         transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}
@@ -757,14 +757,14 @@ function DashboardLayout() {
                     </Box>
 
                     {/* Right: Search, Notifications, Avatar, & Back Button */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 1.5, md: 2 } }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 1.5, md: 2 } }}>
                         {/* Search Bar */}
                         <OutlinedInput
-                            placeholder="Search employees, reports, actions..."
+                            placeholder="Search..."
                             size="small"
                             startAdornment={
-                                <InputAdornment position="start">
-                                    <SearchIcon sx={{ color: "#9CA3AF", fontSize: 20 }} />
+                                <InputAdornment position="start" sx={{ mr: { xs: 0.5, sm: 1 } }}>
+                                    <SearchIcon sx={{ color: "#9CA3AF", fontSize: { xs: 18, sm: 20 } }} />
                                 </InputAdornment>
                             }
                             endAdornment={
@@ -788,10 +788,14 @@ function DashboardLayout() {
                                 </InputAdornment>
                             }
                             sx={{
-                                width: { xs: 150, sm: 240, md: 300 },
+                                width: { xs: 110, sm: 220, md: 300 },
                                 borderRadius: 2.5,
                                 backgroundColor: "#FFFFFF",
                                 fontSize: "0.85rem",
+                                "& .MuiOutlinedInput-input": {
+                                    px: { xs: 0.5, sm: 1 },
+                                    textOverflow: "ellipsis",
+                                },
                                 "& fieldset": {
                                     borderColor: "#E5E7EB",
                                 },
@@ -809,42 +813,49 @@ function DashboardLayout() {
                             sx={{
                                 backgroundColor: "#FFFFFF",
                                 border: "1px solid #E5E7EB",
-                                p: 0.8,
+                                p: { xs: 0.6, sm: 0.8 },
                                 borderRadius: 2.5,
+                                flexShrink: 0,
                                 "&:hover": {
                                     backgroundColor: "#F9FAFB",
                                 },
                             }}
                         >
                             <Badge badgeContent={6} color="error">
-                                <NotificationsNoneOutlinedIcon sx={{ color: "#4B5563", fontSize: 20 }} />
+                                <NotificationsNoneOutlinedIcon sx={{ color: "#4B5563", fontSize: { xs: 18, sm: 20 } }} />
                             </Badge>
                         </IconButton>
 
                         {/* User Avatar */}
-                        <CustomAvatar
-                            name={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}
-                            size={34}
-                            fontSize="0.8rem"
-                        />
+                        <Box sx={{ flexShrink: 0 }}>
+                            <CustomAvatar
+                                name={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}
+                                size={34}
+                                fontSize="0.8rem"
+                            />
+                        </Box>
 
                         {showBackButton && (
                             <Button
                                 variant="text"
-                                startIcon={<ArrowBackIcon />}
+                                startIcon={<ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 }, mr: { xs: -0.5, sm: 0 } }} />}
                                 onClick={() => navigate(-1)}
                                 sx={{
                                     textTransform: "none",
                                     color: "#64748B",
                                     fontWeight: 600,
                                     fontSize: "14px",
-                                    px: 1.5,
+                                    minWidth: { xs: 34, sm: "auto" },
+                                    px: { xs: 0.8, sm: 1.5 },
                                     py: 0.75,
                                     borderRadius: "8px",
+                                    flexShrink: 0,
                                     "&:hover": { color: "primary.main", backgroundColor: "primary.lighter" },
                                 }}
                             >
-                                Back
+                                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                                    Back
+                                </Box>
                             </Button>
                         )}
                     </Box>
