@@ -16,7 +16,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Collapse from "@mui/material/Collapse";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Tabs from "@mui/material/Tabs";
@@ -27,8 +26,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
@@ -67,7 +64,6 @@ export default function BulkImportDialog({
   const [directResult, setDirectResult] = useState<BulkImportResponse | null>(null);
   const [directSendEmail, setDirectSendEmail] = useState<boolean>(false);
   const [copiedPassword, setCopiedPassword] = useState<boolean>(false);
-  const [showHeaders, setShowHeaders] = useState<boolean>(false);
   const [templateLoading, setTemplateLoading] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +81,6 @@ export default function BulkImportDialog({
     setDirectFile(null);
     setDirectError(null);
     setDirectResult(null);
-    setShowHeaders(false);
     setCopiedPassword(false);
     wizard.resetWizard();
     onClose();

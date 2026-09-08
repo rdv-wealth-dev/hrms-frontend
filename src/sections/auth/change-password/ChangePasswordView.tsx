@@ -74,6 +74,7 @@ export default function ChangePasswordView() {
     setSubmitting(true);
     setApiError(null);
 
+    try {
       await changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
