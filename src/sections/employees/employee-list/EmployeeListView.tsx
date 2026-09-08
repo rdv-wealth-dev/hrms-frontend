@@ -86,6 +86,7 @@ function EmployeeListView() {
   const canManageRoles = hasPermission("role.update");
   const canReadRoles = hasPermission("role.read");
   const canDelete = hasPermission("employee.delete");
+  const canReadBranches = hasPermission("branch.read");
 
   const {
     pageNumber,
@@ -267,11 +268,11 @@ function EmployeeListView() {
     if (designations.length === 0) {
       dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 50 }));
     }
-    if (branches.length === 0) {
+    if (branches.length === 0 && canReadBranches) {
       dispatch(listBranchesRequest());
     }
     dispatch(clearEmployeeError());
-  }, [dispatch, departments.length, designations.length, branches.length]);
+  }, [dispatch, departments.length, designations.length, branches.length, canReadBranches]);
 
   const departmentsList = useMemo(() => {
     const names = new Set<string>();
@@ -705,6 +706,7 @@ function EmployeeListView() {
 
         {/* Single Line Unified Toolbar (Search + Category Filters) Directly Above Cards */}
         <PeopleHubDepartmentTabs
+          canReadBranches={canReadBranches}
           filters={filters}
           searchElement={
             <TextField

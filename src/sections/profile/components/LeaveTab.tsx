@@ -292,27 +292,9 @@ export default function LeaveTab({
             <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
               No leave applications recorded yet
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B", maxWidth: 380, mb: 1 }}>
+            <Typography variant="body2" sx={{ color: "#64748B", maxWidth: 380 }}>
               Submit your first leave request to view its approval status, period breakdown, and timeline history.
             </Typography>
-            {!isOrgAdmin && !isViewingOther && (
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => setApplyLeaveDialogOpen(true)}
-                sx={{
-                  borderRadius: "10px",
-                  backgroundColor: "primary.main",
-                  fontWeight: 600,
-                  fontSize: "13.5px",
-                  textTransform: "none",
-                  "&:hover": { backgroundColor: "primary.dark" },
-                }}
-              >
-                Apply Leave
-              </Button>
-            )}
           </Box>
         ) : (
           <TableContainer sx={{ width: "100%", overflowX: "auto" }}>

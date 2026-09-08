@@ -23,6 +23,7 @@ export interface FilterState {
 }
 
 interface PeopleHubFilterTabsProps {
+  canReadBranches?: boolean;
   filters?: FilterState;
   onFilterChange?: (newFilters: FilterState) => void;
   departmentsList?: string[];
@@ -47,6 +48,7 @@ const CATEGORIES = [
 ];
 
 export function PeopleHubDepartmentTabs({
+  canReadBranches = true,
   filters = {},
   onFilterChange,
   departmentsList,
@@ -59,6 +61,7 @@ export function PeopleHubDepartmentTabs({
   selectedDepartment = "",
   onSelectDepartment,
 }: PeopleHubFilterTabsProps) {
+  const visibleCategories = CATEGORIES.filter((c) => c.id !== "branch" || canReadBranches);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [localFilters, setLocalFilters] = useState<FilterState>({
     department: selectedDepartment,
@@ -144,7 +147,7 @@ export function PeopleHubDepartmentTabs({
             flexGrow: 1,
           }}
         >
-          {CATEGORIES.map((cat) => {
+          {visibleCategories.map((cat) => {
             const rawVal = localFilters[cat.id as keyof FilterState];
             const selectedArray = Array.isArray(rawVal)
               ? rawVal

@@ -56,6 +56,7 @@ import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
 import { useModalTrigger } from "../../hooks/useModalTrigger";
 import { OnboardingBanner } from "../../components/common/OnboardingBanner";
+import { ScrollToTop } from "../../components/common/ScrollToTop";
 
 import { getPendingLeaveRequests } from "../../api/leave.api";
 import { getPendingRegularizationRequests } from "../../api/attendance.api";
@@ -864,6 +865,7 @@ function DashboardLayout() {
                 {/* Navbar Fixed Offset Spacer */}
                 <Box sx={{ height: { xs: 56, sm: 64 } }} />
 
+                <ScrollToTop />
                 <OnboardingBanner />
                 <Outlet />
             </Box>

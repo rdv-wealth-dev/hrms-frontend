@@ -19,7 +19,7 @@ import EmergencyContactDialog from "./EmergencyContactDialog";
 import type { CompleteProfileEmployee, EmergencyContact } from "../../../api/employee.api";
 
 import TuneIcon from "@mui/icons-material/Tune";
-import useCustomFields from "../../../hooks/useCustomFields";
+import useEffectiveCustomFields from "../../../hooks/useEffectiveCustomFields";
 
 interface PersonalTabProps {
   empProfile: CompleteProfileEmployee | null;
@@ -42,7 +42,10 @@ export default function PersonalTab({
   onRefreshProfileData,
   showSnackbar,
 }: PersonalTabProps) {
-  const { customFields: activeCustomFields } = useCustomFields({ scope: "ORGANIZATION" });
+  const { customFields: activeCustomFields } = useEffectiveCustomFields({
+    branchId: (empProfile as any)?.branchId,
+    departmentId: (empProfile as any)?.departmentId,
+  });
   const ecDialog = useDialog<void>();
   const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
   const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);

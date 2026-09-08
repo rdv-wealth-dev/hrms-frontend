@@ -27,7 +27,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 
 
 import DynamicFieldRenderer from "../../../components/input/DynamicFieldRenderer";
-import useCustomFields from "../../../hooks/useCustomFields";
+import useEffectiveCustomFields from "../../../hooks/useEffectiveCustomFields";
 import useEducationOptions from "../../../hooks/useEducationOptions";
 import type { CustomFieldDefinition } from "../../../api/custom-field.api";
 
@@ -468,7 +468,7 @@ export default function OnboardingStep1Personal({
   onSkipStep,
   loading,
 }: OnboardingStep1Props) {
-  const { customFields: fetchedDefinitions } = useCustomFields({ scope: "ORGANIZATION", autoFetch: !passedDefinitions });
+  const { customFields: fetchedDefinitions } = useEffectiveCustomFields({ forOnboarding: true, autoFetch: !passedDefinitions });
   const activeDefinitions = passedDefinitions?.length ? passedDefinitions : fetchedDefinitions;
 
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>(

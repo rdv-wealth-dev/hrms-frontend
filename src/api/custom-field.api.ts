@@ -127,3 +127,30 @@ export const deleteCustomField = async (
   );
   return response.data;
 };
+
+// ── API 5: Get Effective Custom Fields for End-Users ─────────
+export interface GetEffectiveCustomFieldsParams {
+  branchId?: string;
+  departmentId?: string;
+  forOnboarding?: boolean;
+}
+
+export const getEffectiveCustomFields = async (
+  params?: GetEffectiveCustomFieldsParams
+): Promise<CustomFieldListResponse> => {
+  try {
+    const response = await axiosInstance.get<CustomFieldListResponse>(
+      "/custom-fields/effective",
+      { params }
+    );
+    return response.data;
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || "Failed to fetch effective custom fields";
+    return {
+      succeeded: false,
+      message: msg,
+      data: [],
+    };
+  }
+};
+
