@@ -7,6 +7,8 @@ import type {
   UpdateModulesResponse,
   UpdateStatutoryRequest,
   UpdateStatutoryResponse,
+  UpdateEmployeeCodeConfigRequest,
+  UpdateEmployeeCodeConfigResponse,
 } from "../store/organization/organization.types";
 
 export const getOrganization = async (): Promise<GetOrganizationResponse> => {
@@ -49,6 +51,16 @@ export const updateMandatoryDocs = async (
 ): Promise<UpdateOrganizationResponse> => {
   const response = await axiosInstance.patch<UpdateOrganizationResponse>(
     "/organizations/me/mandatory-docs",
+    payload
+  );
+  return response.data;
+};
+
+export const updateEmployeeCodeConfig = async (
+  payload: UpdateEmployeeCodeConfigRequest
+): Promise<UpdateEmployeeCodeConfigResponse> => {
+  const response = await axiosInstance.patch<UpdateEmployeeCodeConfigResponse>(
+    "/organizations/me/employee-code-config",
     payload
   );
   return response.data;

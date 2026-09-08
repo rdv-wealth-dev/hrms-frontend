@@ -46,6 +46,7 @@ import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import AssignmentIndOutlinedIcon from "@mui/icons-material/AssignmentIndOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -192,7 +193,18 @@ const payrollNavItems: NavSubItem[] = [
     {
         label: "Payroll Run",
         icon: <PlayCircleOutlineOutlinedIcon fontSize="small" />,
-        children: [],
+        children: [
+            {
+                label: "Run Wizard",
+                icon: <PlayCircleOutlineOutlinedIcon fontSize="small" />,
+                path: paths.payroll.runWizard,
+            },
+            {
+                label: "Run History & Audit",
+                icon: <ReceiptLongOutlinedIcon fontSize="small" />,
+                path: paths.payroll.runHistoryAudit,
+            },
+        ],
     },
 ];
 

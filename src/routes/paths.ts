@@ -40,6 +40,8 @@ export const paths = {
     glMapping: "/payroll/gl-mapping",
     structureAssignment: "/payroll/structure-assignment",
     salaryStructureView: "/payroll/salary-structure-view",
+    runWizard: "/payroll/run-wizard",
+    runHistoryAudit: "/payroll/run-history-audit",
   },
 
   profile: "/profile",

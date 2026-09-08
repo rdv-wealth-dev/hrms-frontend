@@ -450,6 +450,242 @@ export const SALARY_STRUCTURE_EMPLOYEES_MOCK_DATA: EmployeeSalaryStructureOption
   { id: "emp-12", code: "EMP-0012", name: "Meera Joshi", structureName: "Structure 1", annualCtc: "₹13,50,000", monthlyGross: "₹1,12,500" },
 ];
 
+export interface PreflightCheckItem {
+  id: string;
+  title: string;
+  status: string;
+}
+
+export interface WageInputItem {
+  id: string;
+  employeeName: string;
+  type: "HOURLY" | "DAILY";
+  rate: string;
+  unitsWorked: number;
+  otHours: number;
+  otAmount: string;
+}
+
+export interface AdhocVariablePayItem {
+  id: string;
+  employeeCode: string;
+  employeeName: string;
+  component: string;
+  amount: string;
+  remarks: string;
+}
+
+export interface SalaryOnHoldItem {
+  id: string;
+  employeeCode: string;
+  employeeName: string;
+  reason: string;
+}
+
+export interface TaxOverrideItem {
+  id: string;
+  employeeCode: string;
+  employeeName: string;
+  incomeTax: string;
+  pt: string;
+  remarks: string;
+}
+
+export interface PayrollRunWizardStep {
+  stepNumber: number;
+  label: string;
+}
+
+export interface PayrollRunWizardData {
+  periodLabel: string;
+  periodStatus: string;
+  steps: PayrollRunWizardStep[];
+  currentStep: number;
+  apiEndpoint: string;
+  runTitle: string;
+  branchName: string;
+  employeeCount: number;
+  runStatus: string;
+  notes: string;
+  preflightChecks: PreflightCheckItem[];
+  wageInputs: WageInputItem[];
+  adhocVariablePay: AdhocVariablePayItem[];
+  salaryOnHold: SalaryOnHoldItem[];
+  taxOverrides: TaxOverrideItem[];
+}
+
+export const PAYROLL_RUN_WIZARD_MOCK_DATA: PayrollRunWizardData = {
+  periodLabel: "Aug 2026",
+  periodStatus: "DRAFT",
+  currentStep: 1,
+  apiEndpoint: "POST /payroll/runs",
+  runTitle: "August 2026 · Regular Salary Run",
+  branchName: "Mumbai HQ",
+  employeeCount: 12,
+  runStatus: "DRAFT",
+  notes: "August 2026 Regular Salary Run",
+  preflightChecks: [
+    { id: "check-1", title: "Active Employees & Branch Assignment", status: "12/12 PASSED" },
+    { id: "check-2", title: "Salary Structure Assignment & Components", status: "12/12 PASSED" },
+    { id: "check-3", title: "Bank Account & IFSC Completeness", status: "12/12 PASSED" },
+    { id: "check-4", title: "Tax Declarations & Statutory PAN Profiles", status: "12/12 PASSED" },
+  ],
+  wageInputs: [
+    {
+      id: "wage-1",
+      employeeName: "Farhan Sheikh",
+      type: "HOURLY",
+      rate: "₹350",
+      unitsWorked: 176,
+      otHours: 10,
+      otAmount: "₹5250",
+    },
+    {
+      id: "wage-2",
+      employeeName: "Ramesh Kumar",
+      type: "DAILY",
+      rate: "₹1200",
+      unitsWorked: 22,
+      otHours: 8,
+      otAmount: "₹1800",
+    },
+  ],
+  adhocVariablePay: [
+    {
+      id: "adhoc-1",
+      employeeCode: "EMP-0001",
+      employeeName: "Aditi Sharma",
+      component: "PERFORMANCE_BONUS",
+      amount: "5000",
+      remarks: "Q2 Performance Bonus",
+    },
+  ],
+  salaryOnHold: [
+    {
+      id: "hold-1",
+      employeeCode: "EMP-0011",
+      employeeName: "Farhan Sheikh",
+      reason: "Asset clearance pending / Exit notice period",
+    },
+  ],
+  taxOverrides: [
+    {
+      id: "tax-1",
+      employeeCode: "EMP-0002",
+      employeeName: "Rohan Mehta",
+      incomeTax: "2500",
+      pt: "200",
+      remarks: "Tax adjustment as per declaration",
+    },
+  ],
+  steps: [
+    { stepNumber: 1, label: "Overview" },
+    { stepNumber: 2, label: "Validation" },
+    { stepNumber: 3, label: "Attendance & LOP" },
+    { stepNumber: 4, label: "Wage Inputs" },
+    { stepNumber: 5, label: "Adhoc Variable Pay" },
+    { stepNumber: 6, label: "Salary On-Hold" },
+    { stepNumber: 7, label: "Tax Overrides" },
+    { stepNumber: 8, label: "Generate Pay Register" },
+    { stepNumber: 9, label: "CFO Approval" },
+    { stepNumber: 10, label: "Payout & Mark Paid" },
+  ],
+};
+
+export interface RunHistoryItem {
+  id: string;
+  period: string;
+  status: string;
+  employees: number;
+  gross: string;
+  deductions: string;
+  net: string;
+  approved: string | null;
+  paid: string | null;
+}
+
+export interface AuditTrailItem {
+  id: string;
+  action: string;
+  actor: string;
+  timestamp: string;
+}
+
+export interface RunHistoryAuditData {
+  periodLabel: string;
+  periodStatus: string;
+  runHistory: RunHistoryItem[];
+  auditTrail: AuditTrailItem[];
+}
+
+export const RUN_HISTORY_AUDIT_MOCK_DATA: RunHistoryAuditData = {
+  periodLabel: "Aug 2026",
+  periodStatus: "DRAFT",
+  runHistory: [
+    {
+      id: "run-aug-2026",
+      period: "August 2026",
+      status: "DRAFT",
+      employees: 12,
+      gross: "₹0",
+      deductions: "₹0",
+      net: "₹0",
+      approved: null,
+      paid: null,
+    },
+    {
+      id: "run-jul-2026",
+      period: "July 2026",
+      status: "PAID",
+      employees: 12,
+      gross: "₹10,85,000",
+      deductions: "₹92,500",
+      net: "₹9,92,500",
+      approved: "2026-07-28",
+      paid: "2026-07-29",
+    },
+    {
+      id: "run-jun-2026",
+      period: "June 2026",
+      status: "PAID",
+      employees: 11,
+      gross: "₹10,40,000",
+      deductions: "₹88,000",
+      net: "₹9,52,000",
+      approved: "2026-06-28",
+      paid: "2026-06-29",
+    },
+  ],
+  auditTrail: [
+    {
+      id: "audit-1",
+      action: "Marked July 2026 payroll run as Paid",
+      actor: "Finance Team",
+      timestamp: "2026-07-29 18:00",
+    },
+    {
+      id: "audit-2",
+      action: "Approved and froze July 2026 payroll run",
+      actor: "CFO",
+      timestamp: "2026-07-28 14:30",
+    },
+    {
+      id: "audit-3",
+      action: "Generated pay register batch for July 2026 — 12 employees",
+      actor: "HR Admin",
+      timestamp: "2026-07-28 11:05",
+    },
+    {
+      id: "audit-4",
+      action: "Locked attendance for July 2026",
+      actor: "System",
+      timestamp: "2026-07-20 09:00",
+    },
+  ],
+};
+
+
+
 
 
 

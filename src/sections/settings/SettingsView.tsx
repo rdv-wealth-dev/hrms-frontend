@@ -18,6 +18,7 @@ import OrganizationProfileContent from "./components/OrganizationProfileContent"
 import OrganizationModulesContent from "./components/OrganizationModulesContent";
 import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
 import OrganizationDocumentsContent from "./components/OrganizationDocumentsContent";
+import EmployeeCodeConfigContent from "./components/EmployeeCodeConfigContent";
 import BranchListContent from "../branches/branch-list/components/BranchListContent";
 import RolesListContent from "./components/roles/RolesListContent";
 import CustomFieldsSettingsTab from "./components/CustomFieldsSettingsTab";
@@ -35,6 +36,7 @@ import {
 
 const CONTENT_MAP: Record<string, ReactNode> = {
   "org-profile":       <OrganizationProfileContent />,
+  "employee-code":     <EmployeeCodeConfigContent />,
   "org-modules":       <OrganizationModulesContent />,
   "org-statutory":     <OrganizationStatutoryContent />,
   "org-documents":     <OrganizationDocumentsContent />,
@@ -70,7 +72,7 @@ function SettingsView() {
   };
 
   // Sidebar nav content (shared between desktop sidebar & mobile drawer)
-  const SidebarNav = () => (
+  const renderSidebarNav = () => (
     <Box sx={{ py: 2 }}>
       {SETTINGS_CATEGORIES.map((cat) => {
         const subItems = permittedSubItems.filter((item) => item.categoryId === cat.id);
@@ -299,7 +301,7 @@ function SettingsView() {
                   top: 80,
                 }}
               >
-                <SidebarNav />
+                {renderSidebarNav()}
               </Box>
 
               {/* Main Content Panel */}

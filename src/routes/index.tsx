@@ -46,6 +46,8 @@ const PayslipTemplatesPage = lazy(() => import("../pages/payroll/payslip-templat
 const GLMappingPage = lazy(() => import("../pages/payroll/gl-mapping"));
 const StructureAssignmentPage = lazy(() => import("../pages/payroll/structure-assignment"));
 const SalaryStructureViewPage = lazy(() => import("../pages/payroll/salary-structure-view"));
+const RunWizardPage = lazy(() => import("../pages/payroll/run-wizard"));
+const RunHistoryAuditPage = lazy(() => import("../pages/payroll/run-history-audit"));
 
 function AppRoutes() {
   return (
@@ -231,6 +233,14 @@ function AppRoutes() {
           <Route
             path={paths.payroll.salaryStructureView}
             element={<SalaryStructureViewPage />}
+          />
+          <Route
+            path={paths.payroll.runWizard}
+            element={<RunWizardPage />}
+          />
+          <Route
+            path={paths.payroll.runHistoryAudit}
+            element={<RunHistoryAuditPage />}
           />
         </Route>
 

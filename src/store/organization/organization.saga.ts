@@ -8,7 +8,9 @@ import {
   updateModules,
   updateStatutory,
   updateMandatoryDocs,
+  updateEmployeeCodeConfig,
 } from "../../api/organization.api";
+import { getApiErrorMessage } from "../../utils/handle-api-error";
 import {
   loadOrganizationSuccess,
   loadOrganizationFailure,
@@ -20,6 +22,8 @@ import {
   updateStatutoryFailure,
   updateMandatoryDocsSuccess,
   updateMandatoryDocsFailure,
+  updateEmployeeCodeConfigSuccess,
+  updateEmployeeCodeConfigFailure,
 } from "./organization.actions";
 import { ORGANIZATION_ACTIONS } from "./organization.types";
 import type {
@@ -27,6 +31,7 @@ import type {
   UpdateModulesRequestAction,
   UpdateStatutoryRequestAction,
   UpdateMandatoryDocsRequestAction,
+  UpdateEmployeeCodeConfigRequestAction,
 } from "./organization.types";
 
 function* handleLoadOrganization(): SagaIterator {
@@ -182,6 +187,25 @@ function* handleUpdateMandatoryDocs(
   }
 }
 
+function* handleUpdateEmployeeCodeConfig(
+  action: UpdateEmployeeCodeConfigRequestAction
+): SagaIterator {
+  const fallback = "Failed to update employee code configuration";
+
+  try {
+    const response = yield call(updateEmployeeCodeConfig, action.payload);
+
+    if (!response?.succeeded || !response?.data) {
+      yield put(updateEmployeeCodeConfigFailure(response?.message ?? fallback));
+      return;
+    }
+
+    yield put(updateEmployeeCodeConfigSuccess(response.data));
+  } catch (error: unknown) {
+    yield put(updateEmployeeCodeConfigFailure(getApiErrorMessage(error, fallback)));
+  }
+}
+
 export function* organizationSaga(): SagaIterator {
   yield takeLatest(ORGANIZATION_ACTIONS.LOAD_REQUEST, handleLoadOrganization);
   yield takeLatest(ORGANIZATION_ACTIONS.UPDATE_REQUEST, handleUpdateOrganization);
@@ -193,5 +217,9 @@ export function* organizationSaga(): SagaIterator {
   yield takeLatest(
     ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_REQUEST,
     handleUpdateMandatoryDocs
+  );
+  yield takeLatest(
+    ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_REQUEST,
+    handleUpdateEmployeeCodeConfig
   );
 }

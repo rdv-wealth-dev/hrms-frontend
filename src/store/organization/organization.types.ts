@@ -63,6 +63,13 @@ export interface OrganizationStatutory {
   lwfEnabled: boolean;
 }
 
+export interface EmployeeCodeConfig {
+  prefix: string;
+  digits: number;
+  separator: string;
+  startSequenceNumber: number;
+}
+
 export interface Organization {
   _id: string;
   companyName: string;
@@ -87,6 +94,7 @@ export interface Organization {
   createdAt: string;
   updatedAt: string;
   mandatoryDocumentTypes?: string[];
+  employeeCodeConfig?: EmployeeCodeConfig;
 }
 
 export interface GetOrganizationResponse {
@@ -148,6 +156,15 @@ export interface UpdateStatutoryResponse {
   data: Organization | null;
 }
 
+export type UpdateEmployeeCodeConfigRequest = EmployeeCodeConfig;
+
+export interface UpdateEmployeeCodeConfigResponse {
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: EmployeeCodeConfig | null;
+}
+
 // ===========================================
 // Organization State
 // ===========================================
@@ -182,6 +199,10 @@ export const ORGANIZATION_ACTIONS = {
   UPDATE_MANDATORY_DOCS_REQUEST: "organization/updateMandatoryDocsRequest",
   UPDATE_MANDATORY_DOCS_SUCCESS: "organization/updateMandatoryDocsSuccess",
   UPDATE_MANDATORY_DOCS_FAILURE: "organization/updateMandatoryDocsFailure",
+
+  UPDATE_EMPLOYEE_CODE_CONFIG_REQUEST: "organization/updateEmployeeCodeConfigRequest",
+  UPDATE_EMPLOYEE_CODE_CONFIG_SUCCESS: "organization/updateEmployeeCodeConfigSuccess",
+  UPDATE_EMPLOYEE_CODE_CONFIG_FAILURE: "organization/updateEmployeeCodeConfigFailure",
 
   RESET_STATUS: "organization/resetStatus",
 } as const;
@@ -267,6 +288,21 @@ export type UpdateMandatoryDocsFailureAction = {
   payload: string;
 };
 
+export type UpdateEmployeeCodeConfigRequestAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_REQUEST;
+  payload: UpdateEmployeeCodeConfigRequest;
+};
+
+export type UpdateEmployeeCodeConfigSuccessAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_SUCCESS;
+  payload: EmployeeCodeConfig;
+};
+
+export type UpdateEmployeeCodeConfigFailureAction = {
+  type: typeof ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_FAILURE;
+  payload: string;
+};
+
 export type ResetOrganizationStatusAction = {
   type: typeof ORGANIZATION_ACTIONS.RESET_STATUS;
 };
@@ -287,4 +323,7 @@ export type OrganizationAction =
   | UpdateMandatoryDocsRequestAction
   | UpdateMandatoryDocsSuccessAction
   | UpdateMandatoryDocsFailureAction
+  | UpdateEmployeeCodeConfigRequestAction
+  | UpdateEmployeeCodeConfigSuccessAction
+  | UpdateEmployeeCodeConfigFailureAction
   | ResetOrganizationStatusAction;
