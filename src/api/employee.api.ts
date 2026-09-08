@@ -712,6 +712,7 @@ export interface BulkImportErrorDetail {
   rowNumber: number;
   email?: string;
   reason: string;
+  severity?: "ERROR" | "WARNING";
 }
 
 export interface BulkImportWarningDetail {
@@ -723,13 +724,14 @@ export interface BulkImportWarningDetail {
 
 export interface BulkImportResponse {
   succeeded: boolean;
-  success: boolean;
+  success?: boolean;
   message: string;
   errors: BulkImportErrorDetail[];
   data: {
     totalProcessed: number;
     insertedCount: number;
     failedCount: number;
+    defaultPassword?: string | null;
     errors: BulkImportErrorDetail[];
     warnings?: BulkImportWarningDetail[];
     created?: {
@@ -765,13 +767,22 @@ export interface BulkExportResponse {
 
 export const bulkImportEmployees = async (
   file: File,
-  tenantSlug: string
+  tenantSlug: string,
+  sendWelcomeEmail: boolean = false,
+  defaultPassword?: string
 ): Promise<BulkImportResponse> => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("sendWelcomeEmail", String(sendWelcomeEmail));
+  if (defaultPassword) {
+    formData.append("defaultPassword", defaultPassword);
+  }
+
+  // Supply query param as well to ensure backend picks it up regardless of multipart parsing quirks
+  const queryParam = sendWelcomeEmail ? "?sendWelcomeEmail=true" : "?sendWelcomeEmail=false";
 
   const response = await axiosInstance.post<BulkImportResponse>(
-    "/employees/bulk-import",
+    `/employees/bulk-import${queryParam}`,
     formData,
     {
       headers: {
@@ -780,6 +791,154 @@ export const bulkImportEmployees = async (
         "X-Tenant-Slug": tenantSlug,
       },
     }
+  );
+  return response.data;
+};
+
+// ── Smart Import Wizard APIs (Step 1, Step 2, Step 3) ──
+
+export interface ImportValidateResponse {
+  succeeded: boolean;
+  success?: boolean;
+  message: string;
+  data: {
+    sessionId: string;
+    fileName: string;
+    status: string; // 'validating' | 'queued' | 'ready' | 'validated' | 'failed'
+  };
+}
+
+export const validateImportFile = async (
+  file: File,
+  tenantSlug: string
+): Promise<ImportValidateResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axiosInstance.post<ImportValidateResponse>(
+    "/employees/import/validate",
+    formData,
+    {
+      headers: {
+        ...getAuthHeader(),
+        "Content-Type": "multipart/form-data",
+        "X-Tenant-Slug": tenantSlug,
+      },
+    }
+  );
+  return response.data;
+};
+
+export interface ImportPreviewRow {
+  rowNumber: number;
+  status: "valid" | "warning" | "error";
+  action: "create" | "update" | "skip";
+  data?: Record<string, any>;
+  rawData?: Record<string, any>;
+  mappedData?: Record<string, any>;
+  errors?: string[];
+  warnings?: string[];
+  messages?: string[];
+}
+
+export interface ImportPreviewResponse {
+  succeeded: boolean;
+  success?: boolean;
+  message: string;
+  data: {
+    sessionId: string;
+    fileName: string;
+    status: string;
+    totalRows: number;
+    pageNumber: number;
+    pageSize: number;
+    rows: ImportPreviewRow[];
+  };
+}
+
+export const getImportPreview = async (
+  sessionId: string,
+  pageNumber: number = 1,
+  pageSize: number = 20
+): Promise<ImportPreviewResponse> => {
+  const response = await axiosInstance.get<ImportPreviewResponse>(
+    `/employees/import/${sessionId}/preview`,
+    {
+      params: { pageNumber, pageSize },
+      headers: getAuthHeader(),
+    }
+  );
+  return response.data;
+};
+
+export interface CommitImportRequest {
+  sendWelcomeEmail?: boolean;
+  defaultPassword?: string;
+}
+
+export interface CommitImportResponse {
+  succeeded: boolean;
+  success?: boolean;
+  message: string;
+  data: {
+    sessionId: string;
+    status: string;
+    totalRows?: number;
+    insertedCount?: number;
+    failedCount?: number;
+    defaultPassword?: string | null;
+    errors?: BulkImportErrorDetail[];
+    warnings?: BulkImportWarningDetail[];
+    created?: {
+      departments?: string[];
+      designations?: string[];
+    };
+  };
+}
+
+export const commitImport = async (
+  sessionId: string,
+  payload: CommitImportRequest = {}
+): Promise<CommitImportResponse> => {
+  const response = await axiosInstance.post<CommitImportResponse>(
+    `/employees/import/${sessionId}/commit`,
+    payload,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+// ── Import / Export History Audit API ──
+
+export interface ImportExportHistoryItem {
+  _id: string;
+  operationType: "IMPORT" | "EXPORT";
+  fileName: string;
+  totalRecords?: number;
+  insertedCount?: number;
+  failedCount?: number;
+  status?: string;
+  fileData?: string;
+  mimeType?: string;
+  createdBy?: {
+    _id: string;
+    fullName?: string;
+    email?: string;
+  } | string;
+  createdAt: string;
+}
+
+export interface ImportExportHistoryResponse {
+  succeeded: boolean;
+  success?: boolean;
+  message: string;
+  data: ImportExportHistoryItem[];
+}
+
+export const getImportExportHistory = async (): Promise<ImportExportHistoryResponse> => {
+  const response = await axiosInstance.get<ImportExportHistoryResponse>(
+    "/employees/audit/import-export-history",
+    { headers: getAuthHeader() }
   );
   return response.data;
 };
@@ -890,6 +1049,22 @@ export const addBankAccount = async (
     return response.data;
   }
   return addMyBankAccount(employeeIdOrPayload);
+};
+
+export interface GetEmployeeBankAccountsResponse {
+  succeeded: boolean;
+  message: string;
+  data: BankAccount[];
+}
+
+export const getEmployeeBankAccounts = async (
+  employeeId: string
+): Promise<GetEmployeeBankAccountsResponse> => {
+  const response = await axiosInstance.get<GetEmployeeBankAccountsResponse>(
+    `/employees/${employeeId}/bank-accounts`,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
 };
 
 // ── Assign Salary Structure API ──

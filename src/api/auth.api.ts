@@ -163,3 +163,39 @@ export const completeOnboarding = async (
   );
   return response.data;
 };
+
+// ── Change Password (Forced First-time or Regular) API ──
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword?: string;
+}
+
+export interface ChangePasswordResponse {
+  succeeded: boolean;
+  success?: boolean;
+  message: string;
+  errors?: string[];
+  data?: {
+    message?: string;
+  } | null;
+}
+
+export const changePassword = async (
+  payload: ChangePasswordRequest
+): Promise<ChangePasswordResponse> => {
+  const response = await axiosInstance.post<ChangePasswordResponse>(
+    "/auth/change-password",
+    {
+      currentPassword: payload.currentPassword,
+      newPassword: payload.newPassword,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }
+  );
+  return response.data;
+};

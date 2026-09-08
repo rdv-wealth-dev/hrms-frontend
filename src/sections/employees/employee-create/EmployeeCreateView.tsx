@@ -49,6 +49,8 @@ import { listTeams } from "../../../api/team.api";
 import type { Shift } from "../../../store/attendance";
 import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
+import { useEmployeeRoleAutoFill } from "../../../hooks/useEmployeeRoleAutoFill";
+import { getApiErrorMessage } from "../../../utils/handle-api-error";
 
 const DEFAULT_FALLBACK_ROLES: RoleItem[] = [
   { _id: "1", name: "Employee", slug: "EMPLOYEE", description: "Self-service access" },
@@ -86,9 +88,11 @@ export default function EmployeeCreateView() {
   // Cascading Dynamic State
   const [departments, setDepartments] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDepartments, setLoadingDepartments] = useState<boolean>(false);
+  const [departmentsLoaded, setDepartmentsLoaded] = useState<boolean>(false);
 
   const [designations, setDesignations] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
+  const [designationsLoaded, setDesignationsLoaded] = useState<boolean>(false);
 
   const [teams, setTeams] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
@@ -98,6 +102,7 @@ export default function EmployeeCreateView() {
   const [shiftsLoading, setShiftsLoading] = useState(true);
   const [formValidationError, setFormValidationError] = useState<string | null>(null);
   const [secondaryManagerOpen, setSecondaryManagerOpen] = useState(false);
+  const [placementLoadError, setPlacementLoadError] = useState<string | null>(null);
 
   const [rolesList, setRolesList] = useState<RoleItem[]>(DEFAULT_FALLBACK_ROLES);
 
@@ -177,7 +182,25 @@ export default function EmployeeCreateView() {
   const selectedDepartmentId = watch("departmentId");
   const selectedDesignationId = watch("designationId");
   const selectedManagerId = watch("managerId");
+  const selectedRole = watch("role");
   const employeeType = watch("employeeType");
+
+  const {
+    isCeoRole,
+    targetDepartmentId,
+    targetDesignationId,
+    resolving: resolvingCeoPlacement,
+    error: ceoPlacementError,
+  } = useEmployeeRoleAutoFill({
+    role: selectedRole,
+    selectedDepartmentId,
+    departments,
+    designations,
+    departmentsLoaded,
+    designationsLoaded,
+    loadingDepartments,
+    loadingDesignations,
+  });
 
   // Custom hook for eligible managers
   const {
@@ -185,10 +208,44 @@ export default function EmployeeCreateView() {
     defaultManagerId,
     loading: loadingManagers,
   } = useEligibleManagers({
-    branchId: selectedBranchId,
-    departmentId: selectedDepartmentId,
-    designationId: selectedDesignationId,
+    branchId: isCeoRole ? undefined : selectedBranchId,
+    departmentId: isCeoRole ? undefined : selectedDepartmentId,
+    designationId: isCeoRole ? undefined : selectedDesignationId,
   });
+
+  useEffect(() => {
+    if (!isCeoRole) {
+      setPlacementLoadError(null);
+      return;
+    }
+
+    setValue("managerId", "", { shouldValidate: true });
+
+    if (targetDepartmentId && selectedDepartmentId !== targetDepartmentId) {
+      setValue("departmentId", targetDepartmentId, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      return;
+    }
+
+    if (
+      targetDesignationId &&
+      selectedDesignationId !== targetDesignationId
+    ) {
+      setValue("designationId", targetDesignationId, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [
+    isCeoRole,
+    selectedDepartmentId,
+    selectedDesignationId,
+    setValue,
+    targetDepartmentId,
+    targetDesignationId,
+  ]);
 
   // Load initial branches
   useEffect(() => {
@@ -210,6 +267,8 @@ export default function EmployeeCreateView() {
     if (!selectedBranchId) {
       setDepartments([]);
       setDesignations([]);
+      setDepartmentsLoaded(false);
+      setDesignationsLoaded(false);
       setValue("departmentId", "");
       setValue("designationId", "");
       setValue("managerId", "");
@@ -218,6 +277,8 @@ export default function EmployeeCreateView() {
 
     const fetchBranchDepartments = async () => {
       setLoadingDepartments(true);
+      setDepartmentsLoaded(false);
+      setPlacementLoadError(null);
       try {
         const res = await listDepartments(1, 100, selectedBranchId);
         if (res?.succeeded && res?.data) {
@@ -225,12 +286,17 @@ export default function EmployeeCreateView() {
           setDepartments(list);
         } else {
           setDepartments([]);
+          setPlacementLoadError(res?.message ?? "Failed to load departments for the selected branch.");
         }
       } catch (err) {
         console.error("Failed to load departments for branch:", err);
         setDepartments([]);
+        setPlacementLoadError(
+          getApiErrorMessage(err, "Failed to load departments for the selected branch.")
+        );
       } finally {
         setLoadingDepartments(false);
+        setDepartmentsLoaded(true);
       }
     };
 
@@ -239,6 +305,7 @@ export default function EmployeeCreateView() {
     setValue("designationId", "");
     setValue("managerId", "");
     setDesignations([]);
+    setDesignationsLoaded(false);
 
     fetchBranchDepartments();
   }, [selectedBranchId, setValue]);
@@ -247,6 +314,7 @@ export default function EmployeeCreateView() {
   useEffect(() => {
     if (!selectedDepartmentId) {
       setDesignations([]);
+      setDesignationsLoaded(false);
       setValue("designationId", "");
       setValue("managerId", "");
       return;
@@ -254,6 +322,8 @@ export default function EmployeeCreateView() {
 
     const fetchDepartmentDesignations = async () => {
       setLoadingDesignations(true);
+      setDesignationsLoaded(false);
+      setPlacementLoadError(null);
       try {
         const res = await listDesignations(1, 100, selectedDepartmentId);
         if (res?.succeeded && res?.data) {
@@ -261,12 +331,17 @@ export default function EmployeeCreateView() {
           setDesignations(list);
         } else {
           setDesignations([]);
+          setPlacementLoadError(res?.message ?? "Failed to load designations for the selected department.");
         }
       } catch (err) {
         console.error("Failed to load designations for department:", err);
         setDesignations([]);
+        setPlacementLoadError(
+          getApiErrorMessage(err, "Failed to load designations for the selected department.")
+        );
       } finally {
         setLoadingDesignations(false);
+        setDesignationsLoaded(true);
       }
     };
 
@@ -279,10 +354,10 @@ export default function EmployeeCreateView() {
 
   // 3. Auto-Select Default Manager when returned by query hook
   useEffect(() => {
-    if (defaultManagerId && !selectedManagerId) {
+    if (!isCeoRole && defaultManagerId && !selectedManagerId) {
       setValue("managerId", defaultManagerId);
     }
-  }, [defaultManagerId, selectedManagerId, setValue]);
+  }, [defaultManagerId, isCeoRole, selectedManagerId, setValue]);
 
   // Load shifts list
   useEffect(() => {
@@ -341,6 +416,20 @@ export default function EmployeeCreateView() {
   const onSubmit = (data: CreateEmployeeFormData) => {
     setFormValidationError(null);
     const payload: any = { ...data };
+
+    if (isCeoRole) {
+      if (!targetDepartmentId || !targetDesignationId) {
+        setFormValidationError(
+          ceoPlacementError ??
+            placementLoadError ??
+            "CEO department and designation could not be resolved from master data."
+        );
+        return;
+      }
+      payload.departmentId = targetDepartmentId;
+      payload.designationId = targetDesignationId;
+      payload.managerId = undefined;
+    }
 
     payload.branchId = payload.branchId || activeBranchId;
 
@@ -470,6 +559,11 @@ export default function EmployeeCreateView() {
             {formValidationError}
           </Alert>
         )}
+        {isCeoRole && (ceoPlacementError || placementLoadError) && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: "8px" }}>
+            {ceoPlacementError ?? placementLoadError}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit, onInvalidForm)} autoComplete="off">
           <Stack spacing={3}>
@@ -513,8 +607,8 @@ export default function EmployeeCreateView() {
                       value={watch("departmentId")}
                       options={departmentOptions}
                       loading={loadingDepartments}
-                      disabled={!selectedBranchId}
-                      disabledPlaceholder="Select Branch first"
+                      disabled={!selectedBranchId || isCeoRole}
+                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Branch first"}
                       emptyPlaceholder="No departments in branch"
                       error={errors.departmentId?.message}
                       registration={register("departmentId")}
@@ -529,8 +623,8 @@ export default function EmployeeCreateView() {
                       value={watch("designationId")}
                       options={designationOptions}
                       loading={loadingDesignations}
-                      disabled={!selectedDepartmentId}
-                      disabledPlaceholder="Select Department first"
+                      disabled={!selectedDepartmentId || isCeoRole}
+                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Department first"}
                       emptyPlaceholder="No designations in department"
                       error={errors.designationId?.message}
                       registration={register("designationId")}
@@ -558,8 +652,8 @@ export default function EmployeeCreateView() {
                       value={watch("managerId")}
                       options={managerOptions}
                       loading={loadingManagers}
-                      disabled={!selectedBranchId || !selectedDepartmentId}
-                      disabledPlaceholder="Select Branch & Dept first"
+                      disabled={isCeoRole || !selectedBranchId || !selectedDepartmentId}
+                      disabledPlaceholder={isCeoRole ? "CEO does not require a reporting manager" : "Select Branch & Dept first"}
                       emptyPlaceholder="No eligible managers found"
                       error={errors.managerId?.message}
                       registration={register("managerId")}
@@ -875,22 +969,23 @@ export default function EmployeeCreateView() {
             </Card>
 
             {/* ── ACTION BUTTONS ── */}
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, pt: 1, pb: 4 }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column-reverse", sm: "row" }, justifyContent: "flex-end", gap: 2, pt: 1, pb: 4 }}>
               <Button
                 variant="outlined"
                 color="inherit"
                 onClick={() => navigate(paths.employees.directory)}
-                sx={{ px: 4, borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
+                sx={{ px: 4, width: { xs: "100%", sm: "auto" }, borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                disabled={submitting}
+                disabled={submitting || resolvingCeoPlacement || (isCeoRole && Boolean(ceoPlacementError || placementLoadError))}
                 sx={{
                   px: 4,
                   py: 1.2,
+                  width: { xs: "100%", sm: "auto" },
                   borderRadius: "8px",
                   textTransform: "none",
                   fontWeight: 700,

@@ -50,7 +50,9 @@ import { listRoles, type RoleItem } from "../../../api/role.api";
 import { listTeams } from "../../../api/team.api";
 import { listBranchesRequest } from "../../../store/branch";
 import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
+import { useEmployeeRoleAutoFill } from "../../../hooks/useEmployeeRoleAutoFill";
 import { useFormValidation } from "../../../hooks/useFormValidation";
+import { getApiErrorMessage } from "../../../utils/handle-api-error";
 import {
   updateEmployeeSchema,
   type UpdateEmployeeFormData,
@@ -149,6 +151,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
   const {
     errors,
     validate,
+    setError,
     clearError,
     getTabErrorCount,
     clearAllErrors,
@@ -164,6 +167,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
   const [secondaryManagerOpen, setSecondaryManagerOpen] = useState(false);
   const [role, setRole] = useState<string>("EMPLOYEE");
   const [employeeType, setEmployeeType] = useState<string>("FULL_TIME");
+  const [placementLoadError, setPlacementLoadError] = useState<string | null>(null);
 
   // Form State: 2. Personal & Contact Info
   const [firstName, setFirstName] = useState<string>("");
@@ -206,14 +210,33 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
   // Cascading Dynamic Options
   const [departments, setDepartments] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDepartments, setLoadingDepartments] = useState<boolean>(false);
+  const [departmentsLoaded, setDepartmentsLoaded] = useState<boolean>(false);
 
   const [designations, setDesignations] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
+  const [designationsLoaded, setDesignationsLoaded] = useState<boolean>(false);
 
   const [teams, setTeams] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
 
   const [rolesList, setRolesList] = useState<RoleItem[]>(DEFAULT_FALLBACK_ROLES);
+
+  const {
+    isCeoRole,
+    targetDepartmentId,
+    targetDesignationId,
+    resolving: resolvingCeoPlacement,
+    error: ceoPlacementError,
+  } = useEmployeeRoleAutoFill({
+    role,
+    selectedDepartmentId: departmentId,
+    departments,
+    designations,
+    departmentsLoaded,
+    designationsLoaded,
+    loadingDepartments,
+    loadingDesignations,
+  });
 
   // Fetch initial master branches & roles
   useEffect(() => {
@@ -245,10 +268,39 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     managers: eligibleManagers,
     loading: loadingManagers,
   } = useEligibleManagers({
-    branchId: branchId || undefined,
-    departmentId: departmentId || undefined,
-    designationId: designationId || undefined,
+    branchId: isCeoRole ? undefined : branchId || undefined,
+    departmentId: isCeoRole ? undefined : departmentId || undefined,
+    designationId: isCeoRole ? undefined : designationId || undefined,
   });
+
+  useEffect(() => {
+    if (!isCeoRole) {
+      setPlacementLoadError(null);
+      return;
+    }
+
+    setManagerId("");
+    clearError("managerId");
+
+    if (targetDepartmentId && departmentId !== targetDepartmentId) {
+      setDepartmentId(targetDepartmentId);
+      setDesignationId("");
+      clearError("departmentId");
+      return;
+    }
+
+    if (targetDesignationId && designationId !== targetDesignationId) {
+      setDesignationId(targetDesignationId);
+      clearError("designationId");
+    }
+  }, [
+    departmentId,
+    designationId,
+    clearError,
+    isCeoRole,
+    targetDepartmentId,
+    targetDesignationId,
+  ]);
 
   // 1. Fetch fresh, populated employee data when dialog opens
   useEffect(() => {
@@ -333,21 +385,39 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
   useEffect(() => {
     if (!branchId) {
       setDepartments([]);
+      setDepartmentsLoaded(false);
       return;
     }
     let isMounted = true;
     setLoadingDepartments(true);
+    setDepartmentsLoaded(false);
+    setPlacementLoadError(null);
     listDepartments(1, 100, branchId)
       .then((res) => {
         if (!isMounted) return;
-        const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items ?? [];
-        setDepartments(list);
+        if (res?.succeeded && res?.data) {
+          const list = Array.isArray(res.data) ? res.data : (res.data as any)?.items ?? [];
+          setDepartments(list);
+        } else {
+          setDepartments([]);
+          setPlacementLoadError(
+            res?.message ?? "Failed to load departments for the selected branch."
+          );
+        }
       })
-      .catch(() => {
-        if (isMounted) setDepartments([]);
+      .catch((err) => {
+        if (isMounted) {
+          setDepartments([]);
+          setPlacementLoadError(
+            getApiErrorMessage(err, "Failed to load departments for the selected branch.")
+          );
+        }
       })
       .finally(() => {
-        if (isMounted) setLoadingDepartments(false);
+        if (isMounted) {
+          setLoadingDepartments(false);
+          setDepartmentsLoaded(true);
+        }
       });
 
     return () => {
@@ -359,21 +429,39 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
   useEffect(() => {
     if (!departmentId) {
       setDesignations([]);
+      setDesignationsLoaded(false);
       return;
     }
     let isMounted = true;
     setLoadingDesignations(true);
+    setDesignationsLoaded(false);
+    setPlacementLoadError(null);
     listDesignations(1, 100, departmentId)
       .then((res) => {
         if (!isMounted) return;
-        const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items ?? [];
-        setDesignations(list);
+        if (res?.succeeded && res?.data) {
+          const list = Array.isArray(res.data) ? res.data : (res.data as any)?.items ?? [];
+          setDesignations(list);
+        } else {
+          setDesignations([]);
+          setPlacementLoadError(
+            res?.message ?? "Failed to load designations for the selected department."
+          );
+        }
       })
-      .catch(() => {
-        if (isMounted) setDesignations([]);
+      .catch((err) => {
+        if (isMounted) {
+          setDesignations([]);
+          setPlacementLoadError(
+            getApiErrorMessage(err, "Failed to load designations for the selected department.")
+          );
+        }
       })
       .finally(() => {
-        if (isMounted) setLoadingDesignations(false);
+        if (isMounted) {
+          setLoadingDesignations(false);
+          setDesignationsLoaded(true);
+        }
       });
 
     return () => {
@@ -464,6 +552,17 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     const targetId = employee?._id || selectedEmployee?._id;
     if (!targetId) return;
 
+    if (isCeoRole && (!targetDepartmentId || !targetDesignationId)) {
+      const message =
+        ceoPlacementError ??
+        placementLoadError ??
+        "CEO department and designation could not be resolved from master data.";
+      setError(targetDepartmentId ? "designationId" : "departmentId", message);
+      setActiveTab(0);
+      toast.error(message);
+      return;
+    }
+
     const formData: UpdateEmployeeFormData = {
       firstName,
       lastName,
@@ -481,10 +580,10 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       voterId,
 
       branchId,
-      departmentId,
-      designationId,
+      departmentId: isCeoRole ? targetDepartmentId : departmentId,
+      designationId: isCeoRole ? targetDesignationId : designationId,
       teamId: teamId || null,
-      managerId: managerId || null,
+      managerId: isCeoRole ? null : managerId || null,
       secondaryManagerIds,
       role,
       employeeType,
@@ -540,10 +639,10 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       voterId: voterId.trim().toUpperCase() || undefined,
 
       branchId: branchId || undefined,
-      departmentId: departmentId || undefined,
-      designationId: designationId || undefined,
+      departmentId: (isCeoRole ? targetDepartmentId : departmentId) || undefined,
+      designationId: (isCeoRole ? targetDesignationId : designationId) || undefined,
       teamId: teamId || null,
-      managerId: managerId || null,
+      managerId: isCeoRole ? null : managerId || null,
       secondaryManagerIds: secondaryManagerIds,
       role: role || "EMPLOYEE",
       employeeType: employeeType || "FULL_TIME",
@@ -776,6 +875,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       <DialogContent sx={{ p: { xs: 1, sm: 2 }, overflowY: "auto" }}>
         {error && <Alert severity="error" sx={{ mb: 2, borderRadius: "10px" }}>{error}</Alert>}
         {detailError && <Alert severity="warning" sx={{ mb: 2, borderRadius: "10px" }}>{detailError}</Alert>}
+        {isCeoRole && (ceoPlacementError || placementLoadError) && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: "10px" }}>
+            {ceoPlacementError ?? placementLoadError}
+          </Alert>
+        )}
 
         {loadingDetail ? (
           <Box sx={{ py: 4 }}>
@@ -846,8 +950,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       value={departmentId}
                       options={departmentOptions}
                       loading={loadingDepartments}
-                      disabled={!branchId}
-                      disabledPlaceholder="Select Branch first"
+                      disabled={!branchId || isCeoRole}
+                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Branch first"}
                       emptyPlaceholder="No departments in branch"
                       error={errors.departmentId}
                       onChange={(e) => {
@@ -868,8 +972,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       value={designationId}
                       options={designationOptions}
                       loading={loadingDesignations}
-                      disabled={!departmentId}
-                      disabledPlaceholder="Select Department first"
+                      disabled={!departmentId || isCeoRole}
+                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Department first"}
                       emptyPlaceholder="No designations in department"
                       error={errors.designationId}
                       onChange={(e) => {
@@ -903,8 +1007,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       value={managerId}
                       options={managerOptions}
                       loading={loadingManagers}
-                      disabled={!branchId || !departmentId}
-                      disabledPlaceholder="Select Branch & Dept first"
+                      disabled={isCeoRole || !branchId || !departmentId}
+                      disabledPlaceholder={isCeoRole ? "CEO does not require a reporting manager" : "Select Branch & Dept first"}
                       emptyPlaceholder="No eligible managers found"
                       error={errors.managerId}
                       onChange={(e) => {
@@ -1458,11 +1562,12 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexDirection: { xs: "column", sm: "row" },
           flexWrap: "wrap",
           gap: 1.5,
         }}
       >
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, width: { xs: "100%", sm: "auto" } }}>
           {activeTab > 0 && (
             <Button
               onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
@@ -1481,12 +1586,13 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
           )}
         </Box>
 
-        <Box sx={{ display: "flex", gap: 1.5 }}>
+        <Box sx={{ display: "flex", gap: 1.5, width: { xs: "100%", sm: "auto" } }}>
           <Button
             onClick={onClose}
             disabled={submitting}
             sx={{
               height: 42,
+              flex: { xs: 1, sm: "initial" },
               borderRadius: "10px",
               px: 2.5,
               fontSize: "14px",
@@ -1502,10 +1608,16 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
           <Button
             onClick={handleSubmit}
-            disabled={submitting || loadingDetail}
+            disabled={
+              submitting ||
+              loadingDetail ||
+              resolvingCeoPlacement ||
+              (isCeoRole && Boolean(ceoPlacementError || placementLoadError))
+            }
             variant="contained"
             sx={{
               height: 42,
+              flex: { xs: 1, sm: "initial" },
               borderRadius: "10px",
               px: 3.5,
               fontSize: "14px",

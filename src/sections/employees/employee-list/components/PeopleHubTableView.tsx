@@ -21,6 +21,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import type { EmployeeListItem } from "../../../../store/employee/employee.types";
 import { VirtualizedTable } from "../../../../components/table";
+import { isArchiveEmail, isExEmployee } from "../../utils/employeeFormatters";
 
 interface PeopleHubTableViewProps {
   employees: EmployeeListItem[];
@@ -64,12 +65,13 @@ function getPeopleHubMeta(index: number, emp?: Partial<EmployeeListItem>) {
   ];
   const performances = [94, 88, 91, 76, 97, 92, 85, 90, 95];
 
-  const email = emp?.email || defaultEmails[index % defaultEmails.length];
+  const isArchive = isArchiveEmail(emp?.email);
+  const email = isArchive ? "No Email on File" : (emp?.email || defaultEmails[index % defaultEmails.length]);
   const phone = emp?.phone || defaultPhones[index % defaultPhones.length];
   const perf = performances[index % performances.length];
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
 
-  return { email, phone, performance: perf, color };
+  return { email, phone, performance: perf, color, isArchive };
 }
 
 function getEmployeeStatusStyle(status?: string, employeeType?: string, isActive?: boolean) {
@@ -334,12 +336,13 @@ export function PeopleHubTableView({
                 const meta = getPeopleHubMeta(index, emp);
                 return (
                   <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0.75, color: "#64748B" }}>
-                    <EmailOutlinedIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
+                    <EmailOutlinedIcon sx={{ fontSize: 16, color: meta.isArchive ? "#CBD5E1" : "#94A3B8" }} />
                     <Typography
                       variant="body2"
                       sx={{
-                        color: "#475569",
-                        fontSize: "13px",
+                        color: meta.isArchive ? "#94A3B8" : "#475569",
+                        fontStyle: meta.isArchive ? "italic" : "normal",
+                        fontSize: meta.isArchive ? "12px" : "13px",
                         maxWidth: 180,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -467,7 +470,7 @@ export function PeopleHubTableView({
           </MenuItem>
         )}
 
-        {onCompOffCredit && selectedEmp && (
+        {!isExEmployee(selectedEmp?.status, selectedEmp?.isActive) && onCompOffCredit && selectedEmp && (
           <MenuItem
             onClick={() => {
               handleCloseMenu();
@@ -481,7 +484,7 @@ export function PeopleHubTableView({
           </MenuItem>
         )}
 
-        {onManualAttendance && selectedEmp && (
+        {!isExEmployee(selectedEmp?.status, selectedEmp?.isActive) && onManualAttendance && selectedEmp && (
           <MenuItem
             onClick={() => {
               handleCloseMenu();

@@ -42,7 +42,9 @@ import CustomTablePagination from "../../../components/pagination";
 import UploadOutlinedIcon from "@mui/icons-material/UploadOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import HistoryIcon from "@mui/icons-material/History";
 import BulkImportDialog from "./components/BulkImportDialog";
+import ImportAuditHistoryDialog from "./components/ImportAuditHistoryDialog";
 
 // People Hub Dual Design Components
 import { ViewModeSwitcher, type ViewMode } from "./components/ViewModeSwitcher";
@@ -126,6 +128,7 @@ function EmployeeListView() {
 
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
   // Extract org/tenant slug
@@ -588,7 +591,7 @@ function EmployeeListView() {
               variant="outlined"
               size="small"
               disabled={exportLoading}
-              startIcon={exportLoading ? <CircularProgress size={16} color="inherit" /> : <DownloadOutlinedIcon sx={{ fontSize: 20 }} />}
+              startIcon={exportLoading ? <CircularProgress size={16} color="inherit" /> : <UploadOutlinedIcon sx={{ fontSize: 20 }} />}
               endIcon={<KeyboardArrowDownIcon />}
               onClick={(e) => setExportAnchorEl(e.currentTarget)}
               sx={{
@@ -637,7 +640,7 @@ function EmployeeListView() {
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<UploadOutlinedIcon sx={{ fontSize: 20 }} />}
+                startIcon={<DownloadOutlinedIcon sx={{ fontSize: 20 }} />}
                 onClick={() => setImportOpen(true)}
                 sx={{
                   height: 40,
@@ -660,6 +663,33 @@ function EmployeeListView() {
                 Import
               </Button>
             )}
+
+            {/* Import / Export History Log Button */}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<HistoryIcon sx={{ fontSize: 18 }} />}
+              onClick={() => setHistoryOpen(true)}
+              sx={{
+                height: 40,
+                borderRadius: "10px",
+                textTransform: "none",
+                borderColor: "divider",
+                color: "text.secondary",
+                fontWeight: 600,
+                fontSize: "14px",
+                px: 2,
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                "&:hover": {
+                  borderColor: "primary.main",
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              History
+            </Button>
 
             {/* Design View Switcher Pill (Right side of Import button) */}
             <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
@@ -1012,6 +1042,11 @@ function EmployeeListView() {
           }}
         />
       )}
+
+      <ImportAuditHistoryDialog
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
     </>
   );
 }
