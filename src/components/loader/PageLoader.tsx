@@ -10,10 +10,10 @@ export function PageLoader() {
         justifyContent: "center",
         minHeight: "100vh",
         width: "100%",
-        backgroundColor: "#FCFCFD",
+        bgcolor: "background.paper",
       }}
     >
-      <CircularProgress sx={{ color: "#6D5DF6" }} size={40} />
+      <CircularProgress sx={{ color: "primary.main" }} size={40} />
     </Box>
   );
 }

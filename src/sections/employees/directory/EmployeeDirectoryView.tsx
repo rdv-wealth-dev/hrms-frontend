@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -24,10 +23,15 @@ import { listBranchesRequest } from "../../../store/branch/branch.actions";
 
 import { PeopleHubKpiCards } from "../employee-list/components/PeopleHubKpiCards";
 import { PeopleHubDepartmentTabs, type FilterState } from "../employee-list/components/PeopleHubDepartmentTabs";
-import { ViewModeSwitcher } from "../employee-list/components/ViewModeSwitcher";
+import { ViewModeSwitcher, type ViewMode } from "../employee-list/components/ViewModeSwitcher";
 import { EmployeeDirectoryCardGrid } from "./components/EmployeeDirectoryCardGrid";
+import EmployeeMatrixDetailDrawer from "./components/EmployeeMatrixDetailDrawer";
+import OrganizationChart from "./components/OrganizationChart";
+import PageHeader from "../../../components/common/PageHeader";
 
 function EmployeeDirectoryView() {
+  const [selectedEmpForMatrix, setSelectedEmpForMatrix] = useState<any | null>(null);
+  const [currentViewMode, setCurrentViewMode] = useState<ViewMode>("people_hub");
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
@@ -254,43 +258,30 @@ function EmployeeDirectoryView() {
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        {/* Top Header */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 2.5,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <PeopleAltOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
-                All Employees
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {total > 0
-                  ? `Showing ${displayedEmployees.length} of ${total} employee records`
-                  : "Manage employee directory, profiles, and assignments"}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<PeopleAltOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
+          title="All Employees"
+          subtitle={
+            total > 0
+              ? `Showing ${displayedEmployees.length} of ${total} employee records`
+              : "Manage employee directory, profiles, and assignments"
+          }
+          viewSwitcher={
             <ViewModeSwitcher
-              viewMode="directory"
+              viewMode={currentViewMode}
               onChange={(mode) => {
                 if (mode === "people_hub" || mode === "classic") {
                   localStorage.setItem("employee_view_mode", mode);
                   navigate(paths.employees.list);
+                } else {
+                  setCurrentViewMode(mode);
                 }
               }}
             />
-
-            {canCreate && (
+          }
+          action={
+            canCreate && (
               <Button
                 variant="contained"
                 size="small"
@@ -300,7 +291,7 @@ function EmployeeDirectoryView() {
                   height: 40,
                   borderRadius: "10px",
                   textTransform: "none",
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   color: "#FFFFFF",
                   fontWeight: 600,
                   fontSize: "14px",
@@ -310,16 +301,16 @@ function EmployeeDirectoryView() {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   "&:hover": {
-                    backgroundColor: "#5B4BEA",
+                    backgroundColor: "primary.dark",
                     boxShadow: "0 4px 12px rgba(109, 93, 246, 0.35)",
                   },
                 }}
               >
                 Add Employee
               </Button>
-            )}
-          </Box>
-        </Box>
+            )
+          }
+        />
 
         {/* Metric KPI Summary Cards */}
         <PeopleHubKpiCards
@@ -327,78 +318,94 @@ function EmployeeDirectoryView() {
           totalEmployees={total || employees.length}
         />
 
-        {/* Single Line Toolbar & Filter Tabs Directly Above Cards */}
-        <PeopleHubDepartmentTabs
-          filters={filters}
-          searchElement={
-            <TextField
-              size="small"
-              placeholder="Search employees..."
-              value={searchVal}
-              onChange={(e) => setSearchVal(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ mr: 1 }}>
-                      <SearchIcon sx={{ color: "#94A3B8", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={{
-                width: { xs: 180, sm: 210 },
-                flexShrink: 0,
-                "& .MuiOutlinedInput-root": {
-                  height: 40,
-                  borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
-                  fontSize: "14px",
-                  color: "#0F172A",
-                  "& fieldset": { borderColor: "#E2E8F0" },
-                  "&:hover fieldset": { borderColor: "#CBD5E1" },
-                  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
-                },
-                "& .MuiOutlinedInput-input": {
-                  py: 0,
-                  height: 40,
-                  fontSize: "14px",
-                  boxSizing: "border-box",
-                  color: "#0F172A",
-                  "&::placeholder": {
-                    color: "#94A3B8",
-                    opacity: 1,
-                  },
-                },
-              }}
-            />
-          }
-          departmentsList={departmentsList}
-          designationsList={designationsList}
-          branchesList={branchesList}
-          teamsList={teamsList}
-          statusesList={statusesList}
-          selectedDepartment={selectedDeptFilter}
-          onSelectDepartment={setSelectedDeptFilter}
-          onFilterChange={(newFilters) => {
-            setFilters(newFilters);
-            if (newFilters.department !== undefined) {
-              setSelectedDeptFilter(getFilterString(newFilters.department));
-            }
-          }}
-        />
-
-        {/* Card Grid Design View */}
-        {loading && displayedEmployees.length === 0 ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+        {currentViewMode === "org_chart" ? (
+          <Box sx={{ mt: 3 }}>
+            <OrganizationChart />
           </Box>
         ) : (
-          <EmployeeDirectoryCardGrid
-            employees={displayedEmployees}
-            onSelectEmployee={(emp) => navigate(`/employees/${emp._id}`)}
-          />
+          <>
+            {/* Single Line Toolbar & Filter Tabs Directly Above Cards */}
+            <PeopleHubDepartmentTabs
+              filters={filters}
+              searchElement={
+                <TextField
+                  size="small"
+                  placeholder="Search employees..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ mr: 1 }}>
+                          <SearchIcon sx={{ color: "#94A3B8", fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  sx={{
+                    width: { xs: 180, sm: 210 },
+                    flexShrink: 0,
+                    "& .MuiOutlinedInput-root": {
+                      height: 40,
+                      borderRadius: "10px",
+                      backgroundColor: "background.paper",
+                      fontSize: "14px",
+                      color: "text.primary",
+                      "& fieldset": { borderColor: "divider" },
+                      "&:hover fieldset": { borderColor: "primary.main" },
+                      "&.Mui-focused fieldset": { borderColor: "primary.main" },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      py: 0,
+                      height: 40,
+                      fontSize: "14px",
+                      boxSizing: "border-box",
+                      color: "text.primary",
+                      "&::placeholder": {
+                        color: "#94A3B8",
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              }
+              departmentsList={departmentsList}
+              designationsList={designationsList}
+              branchesList={branchesList}
+              teamsList={teamsList}
+              statusesList={statusesList}
+              selectedDepartment={selectedDeptFilter}
+              onSelectDepartment={setSelectedDeptFilter}
+              onFilterChange={(newFilters) => {
+                setFilters(newFilters);
+                if (newFilters.department !== undefined) {
+                  setSelectedDeptFilter(getFilterString(newFilters.department));
+                }
+              }}
+            />
+
+            {/* Card Grid Design View */}
+            {loading && displayedEmployees.length === 0 ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+                <CircularProgress sx={{ color: "primary.main" }} />
+              </Box>
+            ) : (
+              <EmployeeDirectoryCardGrid
+                employees={displayedEmployees}
+                onSelectEmployee={(emp) => setSelectedEmpForMatrix(emp)}
+              />
+            )}
+          </>
         )}
       </Box>
+
+      {/* Multi-Level Reporting & Matrix Architecture Detail Drawer */}
+      <EmployeeMatrixDetailDrawer
+        open={Boolean(selectedEmpForMatrix)}
+        employee={selectedEmpForMatrix}
+        onClose={() => setSelectedEmpForMatrix(null)}
+        onRefresh={() => dispatch(listEmployeesRequest({ pageNumber: 1, pageSize: 100 }))}
+      />
     </>
   );
 }

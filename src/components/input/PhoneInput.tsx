@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from "react";
+import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -9,6 +10,7 @@ import MenuList from "@mui/material/MenuList";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SearchIcon from "@mui/icons-material/Search";
 import type { UseFormRegisterReturn, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { isPossibleNumber } from "libphonenumber-js";
 import { countries, type CountryData } from "../../utils/country-data";
 
 // Helper to generate native flag emojis dynamically from ISO 2-letter codes
@@ -62,19 +64,36 @@ export default function PhoneInput({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Watch countryCode form state to dynamically update UI flag
-  const currentCountryCode = countryCodeValue !== undefined
-    ? countryCodeValue
-    : (countryCodeRegistration?.name && watch ? watch(countryCodeRegistration.name) : "IN");
+  const watchedCountryCode = countryCodeRegistration?.name && watch ? watch(countryCodeRegistration.name) : undefined;
+  const currentCountryCode =
+    countryCodeValue !== undefined && countryCodeValue !== ""
+      ? countryCodeValue
+      : (watchedCountryCode || "IN");
 
-  // Resolve current active country object with fallbacks
+  // Resolve current active country object with fallbacks to India (IN)
   const activeCountry = useMemo(() => {
-    const code = currentCountryCode || "IN";
+    const code = (currentCountryCode || "IN").toUpperCase();
     return (
-      countries.find((c) => c.code === code.toUpperCase()) ||
+      countries.find((c) => c.code === code) ||
       countries.find((c) => c.code === "IN") ||
       countries[0]
     );
   }, [currentCountryCode]);
+
+  // Compute exact maximum allowed digits based on selected country
+  const dynamicMaxLength = useMemo(() => {
+    const code = (activeCountry?.code || "IN").toUpperCase();
+    if (["IN", "US", "CA", "GB"].includes(code)) return 10;
+    if (["AE", "FR"].includes(code)) return 9;
+    try {
+      for (let len = 15; len >= 6; len--) {
+        if (isPossibleNumber("9".repeat(len), code as any)) return len;
+      }
+    } catch {
+      // fallback
+    }
+    return 15;
+  }, [activeCountry]);
 
   const handleOpenDropdown = () => {
     if (disabled) return;
@@ -96,6 +115,27 @@ export default function PhoneInput({
         shouldDirty: true,
       });
     }
+
+    // Auto-truncate phone value if it exceeds the newly selected country's valid length
+    const currentPhone =
+      phoneValue !== undefined
+        ? phoneValue
+        : phoneRegistration?.name && watch
+        ? watch(phoneRegistration.name)
+        : "";
+
+    const targetCode = (country.code || "IN").toUpperCase();
+    const targetMax = ["IN", "US", "CA", "GB"].includes(targetCode) ? 10 : ["AE", "FR"].includes(targetCode) ? 9 : 15;
+
+    if (currentPhone && String(currentPhone).length > targetMax) {
+      const trimmed = String(currentPhone).slice(0, targetMax);
+      if (phoneRegistration?.name && setValue) {
+        setValue(phoneRegistration.name, trimmed, { shouldValidate: true, shouldDirty: true });
+      } else if (onPhoneChange) {
+        onPhoneChange(trimmed);
+      }
+    }
+
     handleCloseDropdown();
   };
 
@@ -142,7 +182,7 @@ export default function PhoneInput({
         variant="outlined"
         slotProps={{
           htmlInput: {
-            maxLength: 15,
+            maxLength: dynamicMaxLength,
             autoComplete: "new-password",
             onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
               // Standard control keys
@@ -160,11 +200,24 @@ export default function PhoneInput({
 
               if (!isControlKey && !/^\d$/.test(e.key)) {
                 e.preventDefault();
+                return;
+              }
+
+              if (!isControlKey) {
+                const target = e.target as HTMLInputElement;
+                if (target.value.length >= dynamicMaxLength) {
+                  e.preventDefault();
+                }
               }
             },
             onInput: (e: React.FormEvent<HTMLInputElement>) => {
               const target = e.target as HTMLInputElement;
-              target.value = target.value.replace(/\D/g, "");
+              const digits = target.value.replace(/\D/g, "");
+              if (digits.length > dynamicMaxLength) {
+                target.value = digits.slice(0, dynamicMaxLength);
+              } else {
+                target.value = digits;
+              }
             },
           },
           input: {
@@ -212,7 +265,7 @@ export default function PhoneInput({
                   sx={{
                     width: "1px",
                     height: "22px",
-                    backgroundColor: "#E2E8F0",
+                    backgroundColor: "divider",
                     mx: 0.8,
                   }}
                 />
@@ -224,36 +277,36 @@ export default function PhoneInput({
           "& .MuiOutlinedInput-root": {
             minHeight: 40,
             borderRadius: "12px",
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             fontSize: "14px",
-            color: "#0F172A",
+            color: "text.primary",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             paddingLeft: "8px",
             "& fieldset": {
-              borderColor: "#E2E8F0",
+              borderColor: "divider",
               borderWidth: "1.5px",
             },
             "&:hover fieldset": {
-              borderColor: "#CBD5E1",
+              borderColor: "neutral.300",
             },
             "&.Mui-focused": {
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "background.paper",
               "& fieldset": {
-                borderColor: "#6D5DF6",
+                borderColor: "primary.main",
                 borderWidth: "2px",
               },
-              boxShadow: "0 0 0 3px rgba(109, 93, 246, 0.12)",
+              boxShadow: (theme: any) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}`,
             },
           },
           "& .MuiOutlinedInput-input": {
             py: "8px",
             px: "4px",
             fontSize: "14px",
-            color: "#0F172A",
+            color: "text.primary",
             boxSizing: "border-box",
             "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active": {
-              WebkitBoxShadow: "0 0 0 1000px #FFFFFF inset !important",
-              WebkitTextFillColor: "#0F172A !important",
+              WebkitBoxShadow: (theme: any) => `0 0 0 1000px ${theme.palette.background.paper} inset !important`,
+              WebkitTextFillColor: "currentColor !important",
               borderRadius: "12px",
             },
           },
@@ -290,7 +343,9 @@ export default function PhoneInput({
               width: 260,
               maxHeight: 250,
               borderRadius: "12px",
-              border: "1px solid #E2E8F0",
+              border: "1px solid",
+              borderColor: "divider",
+              backgroundColor: "background.paper",
               boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
               display: "flex",
               flexDirection: "column",
@@ -300,7 +355,7 @@ export default function PhoneInput({
         }}
       >
         {/* Search Header */}
-        <Box sx={{ p: 1.5, borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
+        <Box sx={{ p: 1.5, borderBottom: "1px solid", borderColor: "divider", flexShrink: 0 }}>
           <TextField
             size="small"
             fullWidth
@@ -323,10 +378,10 @@ export default function PhoneInput({
                 height: 36,
                 fontSize: "13px",
                 "& fieldset": {
-                  borderColor: "#E2E8F0",
+                  borderColor: "divider",
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#6D5DF6",
+                  borderColor: "primary.main",
                   borderWidth: "1.5px",
                 },
               },
@@ -365,17 +420,17 @@ export default function PhoneInput({
                   borderRadius: "6px",
                   mx: 1,
                   my: 0.2,
-                  color: "#334155",
+                  color: "text.primary",
                   "&:hover": {
-                    backgroundColor: "#F1F5F9",
-                    color: "#0F172A",
+                    backgroundColor: "action.hover",
+                    color: "text.primary",
                   },
                   "&.Mui-selected": {
-                    backgroundColor: "#EEF2FF",
-                    color: "#4F46E5",
+                    backgroundColor: "primary.lighter",
+                    color: "primary.main",
                     fontWeight: 600,
                     "&:hover": {
-                      backgroundColor: "#E0E7FF",
+                      backgroundColor: "primary.lighter",
                     },
                   },
                 }}

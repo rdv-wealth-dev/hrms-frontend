@@ -73,6 +73,59 @@ export const updateDepartment = async (
   return response.data;
 };
 
+export interface DeleteBranchDepartmentsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    message: string;
+    branchId: string;
+    deletedDepartmentsCount: number;
+    deletedDesignationsCount: number;
+  };
+}
+
+/**
+ * Delete all departments and associated designations for a specific branch
+ * DELETE /api/v1/departments/branch/:branchId?force=boolean
+ */
+export const deleteDepartmentsByBranch = async (
+  branchId: string,
+  force = false
+): Promise<DeleteBranchDepartmentsResponse> => {
+  const url = `/departments/branch/${encodeURIComponent(branchId)}${force ? "?force=true" : "?force=false"}`;
+  const response = await axiosInstance.delete<DeleteBranchDepartmentsResponse>(
+    url,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
+export interface DeleteSingleDepartmentResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    message: string;
+    departmentId: string;
+    deletedDesignationsCount: number;
+  };
+}
+
+/**
+ * Delete a single department by ID (cascades to associated child designations)
+ * DELETE /api/v1/departments/:id?force=boolean
+ */
+export const deleteDepartment = async (
+  id: string,
+  force = false
+): Promise<DeleteSingleDepartmentResponse> => {
+  const url = `/departments/${encodeURIComponent(id)}${force ? "?force=true" : "?force=false"}`;
+  const response = await axiosInstance.delete<DeleteSingleDepartmentResponse>(
+    url,
+    { headers: getAuthHeader() }
+  );
+  return response.data;
+};
+
 export const DEFAULT_STARTER_DEPARTMENTS = [
   { name: "Human Resources", code: "HR", description: "People management, payroll, and talent acquisition" },
   { name: "Information Technology", code: "IT", description: "IT infrastructure, software, and tech support" },
@@ -96,4 +149,28 @@ export const seedDefaultDepartments = async (branchId: string): Promise<string[]
   }
   
   return createdDepartmentIds;
+};
+
+export interface CleanupUnusedMasterDataResponse {
+  succeeded: boolean;
+  message: string;
+  data: {
+    message: string;
+    departmentsCleaned: number;
+    designationsCleaned: number;
+    activeDepartmentsInUse: number;
+    activeDesignationsInUse: number;
+  };
+}
+
+/**
+ * Clean up all departments and designations that currently have 0 assigned employees
+ * DELETE /api/v1/departments/cleanup/unused
+ */
+export const cleanupUnusedDepartments = async (): Promise<CleanupUnusedMasterDataResponse> => {
+  const response = await axiosInstance.delete<CleanupUnusedMasterDataResponse>(
+    "/departments/cleanup/unused",
+    { headers: getAuthHeader() }
+  );
+  return response.data;
 };

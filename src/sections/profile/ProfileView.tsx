@@ -46,6 +46,7 @@ import UploadAvatarDialog from "./components/UploadAvatarDialog";
 import {
   getEmployeeCompleteProfile,
   getLoggedInEmployeeProfile,
+  getMyFullProfile,
   getBankAccounts,
   getEmployeeDocuments,
   uploadSelfAvatar,
@@ -65,6 +66,7 @@ const DocumentsTab = lazy(() => import("./components/DocumentsTab"));
 const PayrollTab = lazy(() => import("./components/PayrollTab"));
 const LeaveTab = lazy(() => import("./components/LeaveTab"));
 const AttendanceTab = lazy(() => import("./components/AttendanceTab"));
+import { LazyTabPanel } from "../../components/tabs/LazyTabPanel";
 
 interface ProfileViewProps {
   targetEmployeeId?: string;
@@ -76,13 +78,14 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
   const routeParams = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.auth?.user);
   const organization = useSelector((state: RootState) => state.organization?.organization);
+  const organizationLoading = useSelector((state: RootState) => (state as any).organization?.loading);
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    if (!organization) {
+    if (!organization && !organizationLoading && hasPermission("organization.read")) {
       dispatch(loadOrganizationRequest());
     }
-  }, [dispatch, organization]);
+  }, [dispatch, organization, organizationLoading, hasPermission]);
 
   const resolvedTargetId = targetEmployeeId || routeParams.id;
   const employeeId = resolvedTargetId || user?.employeeId;
@@ -215,24 +218,32 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
     if (!loadedSelf && !cancelled && !isViewingOther) {
       try {
-        const [profileRes, bankRes, docRes] = await Promise.all([
+        const [meFullRes, profileRes, bankRes, docRes] = await Promise.allSettled([
+          getMyFullProfile(),
           getLoggedInEmployeeProfile(),
           getBankAccounts(),
           getEmployeeDocuments(),
         ]);
 
-        if (profileRes.succeeded) {
-          const empData = profileRes.data ? { ...profileRes.data } : null;
+        if (meFullRes.status === "fulfilled" && meFullRes.value?.data?.employee) {
+          const empData = { ...meFullRes.value.data.employee };
+          if (empData?.avatarUrl && !empData.avatarUrl.includes("?t=")) {
+            empData.avatarUrl = `${empData.avatarUrl}?t=${Date.now()}`;
+          }
+          setEmpProfile(empData as any);
+        } else if (profileRes.status === "fulfilled" && profileRes.value?.succeeded) {
+          const empData = profileRes.value.data ? { ...profileRes.value.data } : null;
           if (empData?.avatarUrl && !empData.avatarUrl.includes("?t=")) {
             empData.avatarUrl = `${empData.avatarUrl}?t=${Date.now()}`;
           }
           setEmpProfile(empData);
         }
-        if (bankRes.succeeded) {
-          setBankAccounts((bankRes.data || []) as BankAccount[]);
+
+        if (bankRes.status === "fulfilled" && bankRes.value?.succeeded) {
+          setBankAccounts((bankRes.value.data || []) as BankAccount[]);
         }
-        if (docRes.succeeded) {
-          setDocuments((docRes.data || []) as EmployeeDocument[]);
+        if (docRes.status === "fulfilled" && docRes.value?.succeeded) {
+          setDocuments((docRes.value.data || []) as EmployeeDocument[]);
         }
         setMissingDocTypes([]);
       } catch (fallbackErr) {
@@ -405,7 +416,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                     flexWrap: "wrap",
                   }}
                 >
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.55rem", wordBreak: "break-word" }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary", fontSize: "1.55rem", wordBreak: "break-word" }}>
                     {displayName}
                   </Typography>
                 </Box>
@@ -502,10 +513,10 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 startIcon={<DownloadOutlinedIcon />}
                 variant="outlined"
                 sx={{
-                  borderColor: "#E2E8F0",
-                  color: "#475569",
+                  borderColor: "divider",
+                  color: "text.secondary",
                   px: 2,
-                  "&:hover": { backgroundColor: "#F8FAFC", borderColor: "#CBD5E1" },
+                  "&:hover": { backgroundColor: "action.hover", borderColor: "primary.main" },
                   flexGrow: { xs: 1, sm: 0 },
                 }}
               >
@@ -518,18 +529,20 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         {/* Key KPI Metrics Ribbon */}
         <Grid container spacing={1.5} sx={{ mb: 3 }}>
           {[
-            { title: "94%", label: "Performance", sub: "Q2 2025", icon: <TrendingUpOutlinedIcon sx={{ fontSize: 18, color: "#4F46E5" }} /> },
-            { title: "96.4%", label: "Attendance", sub: "This month", icon: <AccessTimeOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} /> },
-            { title: "12d", label: "Leave Balance", sub: "Annual remaining", icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 18, color: "#0284C7" }} /> },
-            { title: "L5", label: "Grade", sub: "Current band", icon: <BadgeOutlinedIcon sx={{ fontSize: 18, color: "#8B5CF6" }} /> },
-            { title: "78%", label: "Training %", sub: "4/5 courses done", icon: <SchoolOutlinedIcon sx={{ fontSize: 18, color: "#F59E0B" }} /> },
-            { title: "2", label: "Assets", sub: "Assigned", icon: <Inventory2OutlinedIcon sx={{ fontSize: 18, color: "#06B6D4" }} /> },
-            { title: "Low", label: "Attrition Risk", sub: "AI prediction", icon: <PsychologyOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} /> },
+            { title: "94%", label: "Performance", sub: "Q2 2025", icon: <TrendingUpOutlinedIcon sx={{ fontSize: 17, color: "#4F46E5" }} />, variant: "purple" as const, iconBg: "rgba(99, 102, 241, 0.1)" },
+            { title: "96.4%", label: "Attendance", sub: "This month", icon: <AccessTimeOutlinedIcon sx={{ fontSize: 17, color: "#10B981" }} />, variant: "green" as const, iconBg: "rgba(16, 185, 129, 0.1)" },
+            { title: "12d", label: "Leave Balance", sub: "Annual remaining", icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 17, color: "#0284C7" }} />, variant: "blue" as const, iconBg: "rgba(2, 132, 199, 0.1)" },
+            { title: "L5", label: "Grade", sub: "Current band", icon: <BadgeOutlinedIcon sx={{ fontSize: 17, color: "#8B5CF6" }} />, variant: "purple" as const, iconBg: "rgba(139, 92, 246, 0.1)" },
+            { title: "78%", label: "Training %", sub: "4/5 courses done", icon: <SchoolOutlinedIcon sx={{ fontSize: 17, color: "#F59E0B" }} />, variant: "amber" as const, iconBg: "rgba(245, 158, 11, 0.1)" },
+            { title: "2", label: "Assets", sub: "Assigned", icon: <Inventory2OutlinedIcon sx={{ fontSize: 17, color: "#06B6D4" }} />, variant: "blue" as const, iconBg: "rgba(6, 182, 212, 0.1)" },
+            { title: "Low", label: "Attrition Risk", sub: "AI prediction", icon: <PsychologyOutlinedIcon sx={{ fontSize: 17, color: "#10B981" }} />, variant: "green" as const, iconBg: "rgba(16, 185, 129, 0.1)" },
             { 
               title: profileCompletion?.overallScore !== undefined ? `${profileCompletion.overallScore}%` : "100%", 
               label: "Profile Complete", 
               sub: profileCompletion ? `${profileCompletion.completedSections}/${profileCompletion.totalSections} sections` : "5/5 sections", 
-              icon: <AutoAwesomeIcon sx={{ fontSize: 18, color: "#6366F1" }} /> 
+              icon: <AutoAwesomeIcon sx={{ fontSize: 17, color: "#6366F1" }} />,
+              variant: "purple" as const,
+              iconBg: "rgba(99, 102, 241, 0.1)"
             },
           ].map((metric, i) => (
             <Grid key={i} size={{ xs: 6, sm: 6, md: 4, lg: 3, xl: 1.5 }}>
@@ -538,14 +551,16 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 value={metric.title}
                 subtext={metric.sub}
                 icon={metric.icon}
-                iconBg="rgba(109, 93, 246, 0.08)"
+                iconBg={metric.iconBg}
+                variant={metric.variant}
+                size="small"
               />
             </Grid>
           ))}
         </Grid>
 
         {/* Horizontal Navigation Tabs Bar */}
-        <Box sx={{ borderBottom: "1px solid #E2E8F0", mb: 3, width: "100%", maxWidth: "100%" }}>
+        <Box sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 3, width: "100%", maxWidth: "100%" }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
@@ -593,11 +608,11 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
 
         {/* Tab content screens wrapped in Suspense for optimization */}
         <Suspense fallback={
-          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF", display: "flex", justify: "center", alignItems: "center", minHeight: 200 }}>
+          <Card sx={{ p: 5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper", display: "flex", justify: "center", alignItems: "center", minHeight: 200 }}>
             <CircularProgress sx={{ color: "#4F46E5" }} />
           </Card>
         }>
-          <Box sx={{ display: activeTab === "overview" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "overview"}>
             <OverviewTab
               empProfile={empProfile}
               displayEmail={displayEmail || ""}
@@ -607,9 +622,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               user={user}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "personal" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "personal"}>
             <PersonalTab
               empProfile={empProfile}
               isViewingOther={isViewingOther}
@@ -620,9 +635,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "documents" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "documents"}>
             <DocumentsTab
               documents={documents}
               missingDocTypes={missingDocTypes}
@@ -631,9 +646,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "payroll" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "payroll"}>
             <PayrollTab
               bankAccounts={bankAccounts}
               bankAccountsLoading={bankAccountsLoading}
@@ -643,18 +658,20 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               onRefreshProfileData={loadProfileData}
               showSnackbar={showSnackbar}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "leave" ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "leave"}>
             <LeaveTab
               isViewingOther={isViewingOther}
               user={user}
+              gender={empProfile?.gender}
+              maritalStatus={empProfile?.maritalStatus}
             />
-          </Box>
+          </LazyTabPanel>
 
-          <Box sx={{ display: activeTab === "attendance" && canViewAttendance ? "block" : "none" }}>
+          <LazyTabPanel active={activeTab === "attendance" && canViewAttendance}>
             <AttendanceTab employeeId={employeeId || undefined} isViewingOther={isViewingOther} />
-          </Box>
+          </LazyTabPanel>
 
           {/* AI Insights Coming Soon Tab */}
           {activeTab === "ai-insights" && (
@@ -669,7 +686,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
               }}
             >
               <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 48, mb: 2 }} />
-              <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mb: 1 }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 1 }}>
                 AI Insights & Summary
               </Typography>
               <Chip
@@ -694,7 +711,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
           {/* Generic Content Fallback for remaining/placeholder tabs */}
           {!["overview", "personal", "documents", "payroll", "leave", "attendance", "ai-insights"].includes(activeTab) && (
              <Card sx={{ p: 5, textAlign: "center" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1, textTransform: "capitalize" }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 1, textTransform: "capitalize" }}>
                 {activeTab} Section
               </Typography>
               <Typography variant="body2" sx={{ color: "#64748B" }}>
@@ -732,7 +749,7 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
         }}
       >
         <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 3, pt: 2, pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Edit Personal Details & Address
           </Typography>
           <IconButton onClick={() => setEditProfileOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={personalDetailsUpdater.submitting}>
@@ -857,9 +874,9 @@ export default function ProfileView({ targetEmployeeId }: ProfileViewProps) {
                 textTransform: "none",
                 fontWeight: 600,
                 borderRadius: "8px",
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 px: 3,
-                "&:hover": { backgroundColor: "#5B4CE5" },
+                "&:hover": { backgroundColor: "primary.dark" },
               }}
             >
               {personalDetailsUpdater.submitting ? "Saving..." : "Save Changes"}

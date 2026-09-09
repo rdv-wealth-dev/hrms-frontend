@@ -62,8 +62,8 @@ export function BranchCalendarDialog({
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <CalendarMonthIcon sx={{ color: "#6D5DF6" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          <CalendarMonthIcon sx={{ color: "primary.main" }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             {branchName ? `${branchName} Schedule` : "Branch Calendar"}
           </Typography>
         </Box>
@@ -73,10 +73,10 @@ export function BranchCalendarDialog({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ borderTop: "1px solid #E5E7EB", py: 2.5 }}>
+      <DialogContent dividers sx={{ borderTop: "1px solid", borderColor: "divider", py: 2.5 }}>
         {!calendarData && loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+            <CircularProgress sx={{ color: "primary.main" }} />
           </Box>
         ) : error ? (
           <Alert severity="error" sx={{ borderRadius: 2 }}>

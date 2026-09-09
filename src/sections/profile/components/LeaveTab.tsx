@@ -1,15 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
 
 import ApplyLeaveDialog from "../../leave/leave-apply/ApplyLeaveDialog";
 import LeaveBalanceDetailsDialog from "../../leave/leave-apply/LeaveBalanceDetailsDialog";
@@ -19,21 +25,21 @@ import { useSnackbar } from "../../../components/snackbar";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
 import { usePermissions } from "../../../hooks/usePermissions";
 import SoftGateLockCard from "../../../components/common/SoftGateLockCard";
+import KpiCardsGrid, { type KpiCardItem } from "../../../components/card/KpiCard";
+import StatusChip from "../../../components/common/StatusChip";
 
 interface LeaveTabProps {
   isViewingOther: boolean;
   user: any;
+  gender?: string;
+  maritalStatus?: string;
 }
-
-const LEAVE_STATUS_CHIP_STYLES: Record<string, { backgroundColor: string; color: string; fontSize: string; fontWeight: number }> = {
-  APPROVED: { fontSize: "11px", fontWeight: 700, backgroundColor: "#D1FAE5", color: "#047857" },
-  REJECTED: { fontSize: "11px", fontWeight: 700, backgroundColor: "#FEE2E2", color: "#B91C1C" },
-  PENDING:  { fontSize: "11px", fontWeight: 700, backgroundColor: "#FEF3C7", color: "#B45309" },
-};
 
 export default function LeaveTab({
   isViewingOther,
   user,
+  gender,
+  maritalStatus,
 }: LeaveTabProps) {
   const dispatch = useDispatch<any>();
   const { showSnackbar } = useSnackbar();
@@ -111,7 +117,92 @@ export default function LeaveTab({
     setApplyLeaveDialogOpen(false);
   }, [dispatch, leaveTypes, user, showSnackbar]);
 
-  const cardGridSize = isOrgAdmin ? { xs: 12, sm: 6, md: 4 } : { xs: 12, sm: 6, md: 3 };
+  // Merge backend & local leaves
+  const uniqueLeaves = useMemo(() => {
+    const allLeavesCombined = [...localUserLeaves, ...myLeaveRequests];
+    return Array.from(new Map(allLeavesCombined.map((item) => [item._id, item])).values());
+  }, [localUserLeaves, myLeaveRequests]);
+
+  // Saved mock status overrides
+  const statusMap = useMemo(() => {
+    try {
+      const saved = localStorage.getItem("hrms_leave_status_map");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const pendingCount = useMemo(() => {
+    return uniqueLeaves.filter((r: any) => {
+      const rawStatus = (r?.status || "PENDING").toUpperCase();
+      const status = (
+        statusMap[r._id] ||
+        statusMap[r.reason] ||
+        statusMap[`${r.fromDate}_${r.toDate}`] ||
+        rawStatus
+      ).toUpperCase();
+      return status === "PENDING";
+    }).length;
+  }, [uniqueLeaves, statusMap]);
+
+  const totalAvailableDays = useMemo(() => {
+    return balances.length > 0
+      ? balances.reduce((acc: number, curr: any) => acc + (curr.available || 0), 0)
+      : 201;
+  }, [balances]);
+
+  // Standardized KPI Cards identical to All Employees / Attendance pages
+  const kpiCards: KpiCardItem[] = useMemo(() => {
+    return [
+      ...(!isOrgAdmin ? [{
+        id: "quick-apply",
+        title: "QUICK APPLY",
+        value: "Apply Leave",
+        subtext: "Submit new leave request",
+        variant: "purple" as const,
+        icon: <AddIcon sx={{ color: "#4F46E5", fontSize: 20 }} />,
+        iconBg: "rgba(79, 70, 229, 0.1)",
+        trend: "NEW",
+        trendType: "positive" as const,
+        onClick: () => !isViewingOther && setApplyLeaveDialogOpen(true),
+      }] : []),
+      {
+        id: "pending-requests",
+        title: "PENDING REQUESTS",
+        value: `${pendingCount} Pending`,
+        subtext: "Awaiting manager review",
+        variant: "amber" as const,
+        icon: <AccessTimeOutlinedIcon sx={{ color: "#D97706", fontSize: 20 }} />,
+        iconBg: "rgba(245, 158, 11, 0.1)",
+        trend: pendingCount > 0 ? `${pendingCount}` : "0",
+        trendType: pendingCount > 0 ? "negative" as const : "neutral" as const,
+      },
+      {
+        id: "leave-balance",
+        title: "LEAVE BALANCE",
+        value: `${totalAvailableDays} Days`,
+        subtext: "Available credit balance",
+        variant: "green" as const,
+        icon: <CalendarMonthOutlinedIcon sx={{ color: "#10B981", fontSize: 20 }} />,
+        iconBg: "rgba(16, 185, 129, 0.1)",
+        trend: "DETAILS →",
+        trendType: "positive" as const,
+        onClick: () => setBalanceDialogOpen(true),
+      },
+      {
+        id: "comp-off-balance",
+        title: "COMP-OFF BALANCE",
+        value: "1.0 Day",
+        subtext: "Available credit balance",
+        variant: "purple" as const,
+        icon: <BadgeOutlinedIcon sx={{ color: "#7C3AED", fontSize: 20 }} />,
+        iconBg: "rgba(124, 58, 237, 0.1)",
+        trend: "CREDIT",
+        trendType: "neutral" as const,
+      },
+    ];
+  }, [isOrgAdmin, isViewingOther, pendingCount, totalAvailableDays]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -124,202 +215,176 @@ export default function LeaveTab({
         />
       )}
 
-      {/* Summary Stat Cards Row */}
-      <Grid container spacing={2.5}>
-        {/* Card 1: Apply Leave Quick Action (Hidden for ORG_ADMIN) */}
-        {!isOrgAdmin && (
-          <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex" }}>
-            <Card
-              onClick={() => !isViewingOther && setApplyLeaveDialogOpen(true)}
+      {/* Unified Enterprise KPI Cards Grid (Matches All Employees / Attendance) */}
+      <KpiCardsGrid items={kpiCards} mb={0} />
+
+      {/* Modernized Leave Applications & History Table Card */}
+      <Card
+        sx={{
+          borderRadius: "16px",
+          border: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "background.paper",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Table Card Header */}
+        <Box
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 1.5,
+            borderBottom: "1px solid #F1F5F9",
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontSize: "16px", fontWeight: 700, color: "text.primary", lineHeight: 1.25 }}>
+              My Leave Applications & History
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500, mt: 0.25, display: "block" }}>
+              {uniqueLeaves.length > 0
+                ? `Showing ${uniqueLeaves.length} leave application records`
+                : "No leave records found"}
+            </Typography>
+          </Box>
+
+          {!isOrgAdmin && !isViewingOther && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setApplyLeaveDialogOpen(true)}
               sx={{
-                p: 2.5,
-                cursor: isViewingOther ? "default" : "pointer",
-                transition: "all 0.15s ease",
-                width: "100%",
-                "&:hover": { borderColor: "#C7D2FE", transform: "translateY(-2px)" },
+                borderRadius: "10px",
+                borderColor: "divider",
+                color: "#4F46E5",
+                fontWeight: 600,
+                fontSize: "13px",
+                textTransform: "none",
+                "&:hover": { borderColor: "primary.main", backgroundColor: "primary.lighter" },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                  QUICK APPLY
-                </Typography>
-                <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <AddIcon fontSize="small" />
-                </Box>
-              </Box>
-              <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#4F46E5", mb: 0.5 }}>
-                Apply Leave
-              </Typography>
-              <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-                Submit new leave request
-              </Typography>
-            </Card>
-          </Grid>
-        )}
+              Apply Leave
+            </Button>
+          )}
+        </Box>
 
-        {/* Card 2: Pending Requests */}
-        <Grid size={cardGridSize} sx={{ display: "flex" }}>
-          <Card sx={{ p: 2.5, width: "100%" }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                PENDING REQUESTS
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#FEF3C7", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <AccessTimeOutlinedIcon fontSize="small" />
-              </Box>
+        {uniqueLeaves.length === 0 ? (
+          <Box sx={{ py: 6, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                backgroundColor: "#F1F5F9",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#94A3B8",
+              }}
+            >
+              <EventNoteOutlinedIcon sx={{ fontSize: 24 }} />
             </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#D97706", mb: 0.5 }}>
-              {myLeaveRequests.filter((r: any) => (r?.status || "").toUpperCase() === "PENDING").length} Pending
+            <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
+              No leave applications recorded yet
             </Typography>
-            <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-              Awaiting manager review
+            <Typography variant="body2" sx={{ color: "#64748B", maxWidth: 380 }}>
+              Submit your first leave request to view its approval status, period breakdown, and timeline history.
             </Typography>
-          </Card>
-        </Grid>
+          </Box>
+        ) : (
+          <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
+                <TableRow>
+                  <TableCell sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px", py: 1.5, px: 2.5 }}>
+                    Leave Type
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px", py: 1.5, px: 2 }}>
+                    Period
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px", py: 1.5, px: 2 }}>
+                    Duration
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px", py: 1.5, px: 2 }}>
+                    Reason
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px", py: 1.5, px: 2.5, textAlign: "right" }}>
+                    Status
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {uniqueLeaves.map((req: any) => {
+                  const rawStatus = (req?.status || "PENDING").toUpperCase();
+                  const status = (
+                    statusMap[req._id] ||
+                    statusMap[req.reason] ||
+                    statusMap[`${req.fromDate}_${req.toDate}`] ||
+                    rawStatus
+                  ).toUpperCase();
 
-        {/* Card 3: Leave Balances */}
-        <Grid size={cardGridSize} sx={{ display: "flex" }}>
-          <Card
-            onClick={() => setBalanceDialogOpen(true)}
-            sx={{
-              p: 2.5,
-              width: "100%",
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              "&:hover": {
-                borderColor: "#86EFAC",
-                transform: "translateY(-2px)",
-                boxShadow: "0 8px 16px -4px rgba(22, 163, 74, 0.15)",
-              },
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                LEAVE BALANCE
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <CalendarMonthOutlinedIcon fontSize="small" />
-              </Box>
-            </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#16A34A", mb: 0.5 }}>
-              {balances.length > 0 ? `${balances.reduce((acc: number, curr: any) => acc + (curr.available || 0), 0)} Days` : "20 Days"}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-                Available credit balance
-              </Typography>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#16A34A" }}>
-                Details →
-              </Typography>
-            </Box>
-          </Card>
-        </Grid>
+                  const leaveTypeName = typeof req?.leaveTypeId === "object" ? req?.leaveTypeId?.name : "Emergency Leave";
+                  const fromStr = req?.fromDate ? new Date(req.fromDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+                  const toStr = req?.toDate ? new Date(req.toDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+                  const periodStr = fromStr && toStr ? `${fromStr} – ${toStr}` : "N/A";
+                  const daysCount = req.totalDays || 1;
 
-        {/* Card 4: Comp-Off Balance */}
-        <Grid size={cardGridSize} sx={{ display: "flex" }}>
-          <Card sx={{ p: 2.5, width: "100%" }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-                COMP-OFF BALANCE
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: "8px", backgroundColor: "#EDE9FE", color: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <BadgeOutlinedIcon fontSize="small" />
-              </Box>
-            </Box>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#7C3AED", mb: 0.5 }}>
-              1.0 Day
-            </Typography>
-            <Typography sx={{ fontSize: "12px", color: "#64748B" }}>
-              Available credit balance
-            </Typography>
-          </Card>
-        </Grid>
-      </Grid>
+                  return (
+                    <TableRow
+                      key={req._id || req.reason || Math.random()}
+                      sx={{
+                        borderBottom: "1px solid #F1F5F9",
+                        transition: "background-color 0.15s ease",
+                        "&:hover": { backgroundColor: "#F8FAFC" },
+                      }}
+                    >
+                      <TableCell sx={{ py: 1.75, px: 2.5 }}>
+                        <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
+                          {leaveTypeName}
+                        </Typography>
+                      </TableCell>
 
-      {/* Leave Table Section */}
-      <Card sx={{ p: 3, borderRadius: 3, border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(0,0,0,0.03)" }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 2 }}>
-          My Leave Applications & History
-        </Typography>
+                      <TableCell sx={{ py: 1.75, px: 2, fontSize: "13.5px", color: "#475569" }}>
+                        {periodStr}
+                      </TableCell>
 
-        {(() => {
-          const allLeavesCombined = [...localUserLeaves, ...myLeaveRequests];
-          const uniqueLeaves = Array.from(new Map(allLeavesCombined.map((item) => [item._id, item])).values());
-
-          if (uniqueLeaves.length === 0) {
-            return (
-              <Box sx={{ py: 4, textAlign: "center" }}>
-                <Typography sx={{ color: "#64748B", fontSize: "14px" }}>
-                  No leave requests found. Click "Apply Leave" above to submit a new request.
-                </Typography>
-              </Box>
-            );
-          }
-
-          return (
-            <Box sx={{ overflowX: "auto" }}>
-              <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                <Box component="thead">
-                  <Box component="tr" sx={{ borderBottom: "1px solid #E2E8F0", "& th": { py: 1.5, px: 2, fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" } }}>
-                    <Box component="th">LEAVE TYPE</Box>
-                    <Box component="th">PERIOD</Box>
-                    <Box component="th">DAYS</Box>
-                    <Box component="th">REASON</Box>
-                    <Box component="th">STATUS</Box>
-                  </Box>
-                </Box>
-                <Box component="tbody">
-                  {(() => {
-                    let statusMap: Record<string, string> = {};
-                    try {
-                      const saved = localStorage.getItem("hrms_leave_status_map");
-                      if (saved) statusMap = JSON.parse(saved);
-                    } catch {}
-
-                    return uniqueLeaves.map((req: any) => {
-                      const rawStatus = (req?.status || "PENDING").toUpperCase();
-                      const status = (
-                        statusMap[req._id] ||
-                        statusMap[req.reason] ||
-                        statusMap[`${req.fromDate}_${req.toDate}`] ||
-                        rawStatus
-                      ).toUpperCase();
-
-                      const leaveTypeName = typeof req?.leaveTypeId === "object" ? req?.leaveTypeId?.name : "Emergency Leave";
-                      const fromStr = req?.fromDate ? new Date(req.fromDate).toLocaleDateString() : "";
-                      const toStr = req?.toDate ? new Date(req.toDate).toLocaleDateString() : "";
-                      const periodStr = fromStr && toStr ? `${fromStr} - ${toStr}` : "N/A";
-
-                      return (
-                        <Box component="tr" key={req._id || req.reason || Math.random()} sx={{ borderBottom: "1px solid #F1F5F9", "&:hover": { backgroundColor: "#F8FAFC" } }}>
-                          <Box component="td" sx={{ p: 1.5, fontSize: "14px", fontWeight: 600, color: "#0F172A" }}>
-                            {leaveTypeName || "Emergency Leave"}
-                          </Box>
-                          <Box component="td" sx={{ p: 1.5, fontSize: "13px", color: "#475569" }}>
-                            {periodStr}
-                          </Box>
-                          <Box component="td" sx={{ p: 1.5, fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
-                            {req.totalDays || 1}d
-                          </Box>
-                          <Box component="td" sx={{ p: 1.5, fontSize: "13px", color: "#64748B", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {req.reason || "—"}
-                          </Box>
-                          <Box component="td" sx={{ p: 1.5 }}>
-                            <Chip
-                              label={status}
-                              size="small"
-                              sx={LEAVE_STATUS_CHIP_STYLES[status] || LEAVE_STATUS_CHIP_STYLES.PENDING}
-                            />
-                          </Box>
+                      <TableCell sx={{ py: 1.75, px: 2 }}>
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            px: 1.2,
+                            py: 0.35,
+                            borderRadius: "6px",
+                            backgroundColor: "#F1F5F9",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: "text.primary",
+                          }}
+                        >
+                          {daysCount} {daysCount === 1 ? "Day" : "Days"}
                         </Box>
-                      );
-                    });
-                  })()}
-                </Box>
-              </Box>
-            </Box>
-          );
-        })()}
+                      </TableCell>
+
+                      <TableCell sx={{ py: 1.75, px: 2, fontSize: "13px", color: "#64748B", maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {req.reason || "—"}
+                      </TableCell>
+
+                      <TableCell sx={{ py: 1.75, px: 2.5, textAlign: "right" }}>
+                        <StatusChip status={status} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Card>
 
       {/* Apply Leave dialog */}
@@ -331,6 +396,8 @@ export default function LeaveTab({
         error={error}
         balances={balances}
         leaveTypes={leaveTypes}
+        gender={gender}
+        maritalStatus={maritalStatus}
       />
 
       {/* Leave Balance Details Dialog */}

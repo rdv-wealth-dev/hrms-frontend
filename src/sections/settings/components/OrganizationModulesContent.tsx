@@ -87,7 +87,7 @@ function OrganizationModulesContent() {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
-        <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+        <CircularProgress size={40} sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -126,7 +126,7 @@ function OrganizationModulesContent() {
               p: 1.5,
               borderRadius: 2,
               backgroundColor: "rgba(109, 93, 246, 0.08)",
-              color: "#6D5DF6",
+              color: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -135,7 +135,7 @@ function OrganizationModulesContent() {
             <ViewModuleOutlinedIcon sx={{ fontSize: 32 }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 750, color: "#111827" }}>
+            <Typography variant="h6" sx={{ fontWeight: 750, color: "text.primary" }}>
               Modules Activation
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -239,7 +239,7 @@ function OrganizationModulesContent() {
                 )
               }
               sx={{
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 color: "#fff",
                 px: 4,
                 py: 1.5,
@@ -248,7 +248,7 @@ function OrganizationModulesContent() {
                 fontWeight: 600,
                 boxShadow: "0px 4px 12px rgba(109, 93, 246, 0.2)",
                 "&:hover": {
-                  backgroundColor: "#5B4EE4",
+                  backgroundColor: "primary.dark",
                   boxShadow: "0px 6px 16px rgba(109, 93, 246, 0.3)",
                 },
               }}

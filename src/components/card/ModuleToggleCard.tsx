@@ -25,7 +25,8 @@ export default function ModuleToggleCard({
       sx={{
         p: 2.5,
         borderRadius: 3,
-        border: "1px solid rgba(0, 0, 0, 0.06)",
+        border: "1px solid",
+        borderColor: "divider",
         boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.02)",
         display: "flex",
         alignItems: "center",
@@ -35,7 +36,7 @@ export default function ModuleToggleCard({
         opacity: disabled && !checked ? 0.6 : 1,
         "&:hover": {
           boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.05)",
-          borderColor: "rgba(109, 93, 246, 0.2)",
+          borderColor: "primary.main",
         },
       }}
     >
@@ -45,9 +46,9 @@ export default function ModuleToggleCard({
             p: 1.2,
             borderRadius: 2,
             backgroundColor: checked
-              ? "rgba(109, 93, 246, 0.08)"
-              : "rgba(156, 163, 175, 0.08)",
-            color: checked ? "#6D5DF6" : "#9CA3AF",
+              ? "primary.lighter"
+              : "action.hover",
+            color: checked ? "primary.main" : "text.secondary",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -58,7 +59,7 @@ export default function ModuleToggleCard({
           {icon}
         </Box>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary" }}>
             {title}
           </Typography>
           <Typography
@@ -82,13 +83,13 @@ export default function ModuleToggleCard({
         disabled={disabled}
         sx={{
           "& .MuiSwitch-switchBase.Mui-checked": {
-            color: "#6D5DF6",
+            color: "primary.main",
             "&:hover": {
-              backgroundColor: "rgba(109, 93, 246, 0.08)",
+              backgroundColor: "primary.lighter",
             },
           },
           "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-            backgroundColor: "#6D5DF6",
+            backgroundColor: "primary.main",
           },
         }}
       />

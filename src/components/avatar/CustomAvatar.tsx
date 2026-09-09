@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { themeConfig } from "../../theme/theme-config";
 
 export interface CustomAvatarProps {
   name?: string;
@@ -18,9 +19,10 @@ export function getInitials(name?: string): string {
 }
 
 export function getColorForName(name?: string): string {
-  if (!name) return "#6D5DF6";
+  if (!name) return themeConfig.palette.primary.main;
   const colors = [
-    "#6D5DF6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6",
+    themeConfig.palette.primary.main,
+    "#10B981", "#EF4444", "#F59E0B", "#8B5CF6",
     "#EC4899", "#3B82F6", "#06B6D4", "#14B8A6", "#6366F1",
   ];
   let hash = 0;

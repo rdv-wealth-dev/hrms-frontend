@@ -13,6 +13,9 @@ const initialState: EmployeeState = {
   totalPages: 0,
   search: "",
   status: "",
+  selectedEmployee: null,
+  loadingDetail: false,
+  detailError: null,
 }
 
 export function employeeReducer(
@@ -72,6 +75,36 @@ export function employeeReducer(
         ...state,
         loading: false,
         error: action.payload,
+      }
+
+    case EMPLOYEE_ACTIONS.GET_BY_ID_REQUEST:
+      return {
+        ...state,
+        loadingDetail: true,
+        detailError: null,
+      }
+
+    case EMPLOYEE_ACTIONS.GET_BY_ID_SUCCESS:
+      return {
+        ...state,
+        loadingDetail: false,
+        selectedEmployee: action.payload,
+        detailError: null,
+      }
+
+    case EMPLOYEE_ACTIONS.GET_BY_ID_FAILURE:
+      return {
+        ...state,
+        loadingDetail: false,
+        detailError: action.payload,
+      }
+
+    case EMPLOYEE_ACTIONS.CLEAR_SELECTED:
+      return {
+        ...state,
+        selectedEmployee: null,
+        loadingDetail: false,
+        detailError: null,
       }
 
     case EMPLOYEE_ACTIONS.UPDATE_REQUEST:

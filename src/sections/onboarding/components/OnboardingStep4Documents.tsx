@@ -18,12 +18,14 @@ import { uploadDocument, getEmployeeDocuments, type EmployeeDocument } from "../
 import { getDocumentDefinition, type DocumentDefinition } from "../../../utils/doc-helpers";
 
 import { useMandatoryDocuments } from "../../../hooks/useMandatoryDocuments";
+import SkipStepButton from "./SkipStepButton";
 
 interface OnboardingStep4Props {
   mandatoryDocumentTypes?: string[];
   missingDocuments?: string[];
   onSubmitStep: () => Promise<void>;
   onBack: () => void;
+  onSkipStep?: () => void;
   loading: boolean;
   errorMsg?: string | null;
 }
@@ -33,9 +35,11 @@ export default function OnboardingStep4Documents({
   missingDocuments,
   onSubmitStep,
   onBack,
+  onSkipStep,
   loading,
   errorMsg,
 }: OnboardingStep4Props) {
+
   const { docTypes, isLoading: docsLoading } = useMandatoryDocuments();
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
@@ -93,8 +97,8 @@ export default function OnboardingStep4Documents({
 
   if (docsLoading || docTypes === null) {
     return (
-      <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: "1px solid #E2E8F0", textAlign: "center" }}>
-        <CircularProgress size={36} sx={{ color: "#6D5DF6", mb: 2 }} />
+      <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: "1px solid", borderColor: "divider", textAlign: "center" }}>
+        <CircularProgress size={36} sx={{ color: "primary.main", mb: 2 }} />
         <Typography variant="body2" sx={{ color: "#64748B" }}>
           Loading mandatory document requirements...
         </Typography>
@@ -104,8 +108,8 @@ export default function OnboardingStep4Documents({
 
   return (
     <Box>
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", mb: 1 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 1 }}>
           4. Mandatory Documents Confirmation
         </Typography>
         <Typography variant="body2" sx={{ color: "#64748B", mb: 3 }}>
@@ -137,8 +141,8 @@ export default function OnboardingStep4Documents({
                   sx={{
                     p: 2.5,
                     borderRadius: 2.5,
-                    borderColor: isUploaded ? "#A7F3D0" : "#E2E8F0",
-                    backgroundColor: isUploaded ? "#ECFDF5" : "#FFFFFF",
+                    borderColor: isUploaded ? "#A7F3D0" : "divider",
+                    backgroundColor: isUploaded ? "#ECFDF5" : "background.paper",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
@@ -147,7 +151,7 @@ export default function OnboardingStep4Documents({
                 >
                   <Box>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
                         {doc.label}
                       </Typography>
                       {isUploaded ? (
@@ -224,7 +228,7 @@ export default function OnboardingStep4Documents({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
@@ -233,15 +237,19 @@ export default function OnboardingStep4Documents({
         >
           Back
         </Button>
-        <Button
-          onClick={onSubmitStep}
-          variant="contained"
-          disabled={loading}
-          endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
-        >
-          {loading ? "Verifying..." : "Verify & Continue"}
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+          <SkipStepButton onSkip={onSkipStep} loading={loading} />
+          <Button
+            onClick={onSubmitStep}
+            variant="contained"
+            disabled={loading}
+            endIcon={<ArrowForwardIcon />}
+            sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
+          >
+            {loading ? "Verifying..." : "Verify & Continue"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

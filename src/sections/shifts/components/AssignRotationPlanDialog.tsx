@@ -1,0 +1,264 @@
+import { useState, useEffect } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
+import MenuItem from "@mui/material/MenuItem";
+import Autocomplete from "@mui/material/Autocomplete";
+
+import { listEmployees } from "@/api/employee.api";
+import type { EmployeeListItem } from "@/store/employee/employee.types";
+import type {
+  ShiftRotationPlan,
+  AssignRotationPlanRequest,
+} from "@/store/attendance/attendance.types";
+
+import TextInput from "@/components/input/TextInput";
+
+type Props = {
+  open: boolean;
+  submitting: boolean;
+  error: string | null;
+  rotationPlans: ShiftRotationPlan[];
+  onClose: () => void;
+  onSubmit: (data: AssignRotationPlanRequest) => void;
+};
+
+export default function AssignRotationPlanDialog({
+  open,
+  submitting,
+  error,
+  rotationPlans,
+  onClose,
+  onSubmit,
+}: Props) {
+  const [rotationPlanId, setRotationPlanId] = useState("");
+  const [rotationStartDate, setRotationStartDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [selectedEmployees, setSelectedEmployees] = useState<EmployeeListItem[]>([]);
+  const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setRotationPlanId("");
+      setRotationStartDate(new Date().toISOString().split("T")[0]);
+      setSelectedEmployees([]);
+      setValidationError(null);
+
+      const fetchEmployees = async () => {
+        try {
+          setLoadingEmployees(true);
+          const res = await listEmployees(1, 200);
+          if (res.succeeded && res.data) {
+            setEmployees(res.data);
+          }
+        } catch (err) {
+          console.error("Failed to load employees", err);
+        } finally {
+          setLoadingEmployees(false);
+        }
+      };
+
+      fetchEmployees();
+    }
+  }, [open]);
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setValidationError(null);
+
+    if (!rotationPlanId) {
+      setValidationError("Please select a rotation plan.");
+      return;
+    }
+
+    if (!rotationStartDate) {
+      setValidationError("Please select a rotation start date.");
+      return;
+    }
+
+    if (selectedEmployees.length === 0) {
+      setValidationError("Please select at least one employee.");
+      return;
+    }
+
+    const payload: AssignRotationPlanRequest = {
+      rotationPlanId,
+      rotationStartDate: new Date(rotationStartDate).toISOString(),
+      employeeIds: selectedEmployees.map((emp) => emp._id),
+    };
+
+    onSubmit(payload);
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      slotProps={{
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+          },
+        },
+        paper: {
+          sx: {
+            borderRadius: "20px",
+            p: { xs: 2.5, sm: 3.5 },
+            backgroundColor: "background.paper",
+            boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+            border: "1px solid",
+            borderColor: "divider",
+            mx: { xs: 2, sm: "auto" },
+            width: { xs: "calc(100% - 32px)", sm: "100%" },
+          },
+        },
+      }}
+    >
+      <Box component="form" onSubmit={handleFormSubmit}>
+        <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
+          Assign Rotation Plan
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {(error || validationError) && (
+            <Alert severity="error" sx={{ mb: 1, borderRadius: 2 }}>
+              {error || validationError}
+            </Alert>
+          )}
+
+          <Grid container spacing={2.5}>
+            <Grid size={12}>
+              <Typography variant="body2" color="text.secondary">
+                Assign a rotational shift plan and start date for one or more employees.
+              </Typography>
+            </Grid>
+
+            {/* Select Rotation Plan */}
+            <Grid size={12}>
+              <TextInput
+                select
+                required
+                label="Rotation Plan"
+                value={rotationPlanId}
+                onChange={(e) => setRotationPlanId(e.target.value)}
+              >
+                <MenuItem value="" disabled>
+                  Select Rotation Plan
+                </MenuItem>
+                {rotationPlans.map((plan) => (
+                  <MenuItem key={plan._id} value={plan._id}>
+                    {plan.name} ({plan.cycleDuration})
+                  </MenuItem>
+                ))}
+              </TextInput>
+            </Grid>
+
+            {/* Rotation Start Date */}
+            <Grid size={12}>
+              <TextInput
+                required
+                label="Rotation Start Date"
+                type="date"
+                value={rotationStartDate}
+                onChange={(e) => setRotationStartDate(e.target.value)}
+              />
+            </Grid>
+
+            {/* Select Employees */}
+            <Grid size={12}>
+              <Autocomplete
+                multiple
+                options={employees}
+                loading={loadingEmployees}
+                value={selectedEmployees}
+                onChange={(_, newValue) => setSelectedEmployees(newValue)}
+                getOptionLabel={(option) =>
+                  `${option.firstName} ${option.lastName} (${option.employeeCode})`
+                }
+                isOptionEqualToValue={(option, value) => option._id === value._id}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Assign to Employees"
+                    size="small"
+                    placeholder={selectedEmployees.length === 0 ? "Select employees..." : ""}
+                    slotProps={{
+                      ...params.slotProps,
+                      input: {
+                        ...params.slotProps?.input,
+                        endAdornment: (
+                          <>
+                            {loadingEmployees ? (
+                              <CircularProgress color="inherit" size={20} />
+                            ) : null}
+                            {params.slotProps?.input?.endAdornment}
+                          </>
+                        ),
+                      }
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 2.5,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "#F1F5F9",
+              color: "#475569",
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitting}
+            sx={{
+              height: 42,
+              borderRadius: "10px",
+              px: 3,
+              fontSize: "14px",
+              fontWeight: 600,
+              textTransform: "none",
+              backgroundColor: "primary.main",
+              boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+              "&:hover": { backgroundColor: "primary.dark" },
+            }}
+          >
+            {submitting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              "Assign Plan"
+            )}
+          </Button>
+        </DialogActions>
+      </Box>
+    </Dialog>
+  );
+}

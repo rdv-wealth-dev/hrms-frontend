@@ -19,6 +19,10 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
@@ -28,6 +32,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import type { AppDispatch } from "../../../../store/store";
 import type { RootState } from "../../../../store/rootReducer";
@@ -76,6 +81,20 @@ function BranchListContent() {
   const deleteDialog = useDialog<Branch>();
   const calendarDialog = useDialog<Branch>();
   const seedDialog = useDialog<Branch>();
+
+  const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [actionMenuBranch, setActionMenuBranch] = useState<Branch | null>(null);
+
+  const handleOpenActionMenu = (event: React.MouseEvent<HTMLElement>, branch: Branch) => {
+    event.stopPropagation();
+    setActionMenuAnchorEl(event.currentTarget);
+    setActionMenuBranch(branch);
+  };
+
+  const handleCloseActionMenu = () => {
+    setActionMenuAnchorEl(null);
+    setActionMenuBranch(null);
+  };
 
   useEffect(() => {
     dispatch(listBranchesRequest());
@@ -149,7 +168,7 @@ function BranchListContent() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <ApartmentOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
+          <ApartmentOutlinedIcon sx={{ fontSize: 36, color: "primary.main" }} />
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               Branches
@@ -166,11 +185,11 @@ function BranchListContent() {
             startIcon={<AddIcon />}
             onClick={handleOpenCreate}
             sx={{
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               textTransform: "none",
               fontWeight: 600,
               borderRadius: 2,
-              "&:hover": { backgroundColor: "#5B4EE4" },
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             Add Branch
@@ -244,7 +263,7 @@ function BranchListContent() {
                     label={selectedBranch.isHeadOffice ? "Primary Headquarters" : "Assigned Branch"}
                     size="small"
                     sx={{
-                      backgroundColor: selectedBranch.isHeadOffice 
+                      backgroundColor: selectedBranch.isHeadOffice
                         ? "rgba(165, 180, 252, 0.2)"
                         : "rgba(165, 180, 252, 0.15)",
                       color: "#E0E7FF",
@@ -353,7 +372,7 @@ function BranchListContent() {
       {/* Loading & Error States */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
-          <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+          <CircularProgress size={40} sx={{ color: "primary.main" }} />
         </Box>
       )}
 
@@ -391,19 +410,20 @@ function BranchListContent() {
             width: "100%",
             maxWidth: "100%",
             overflowX: "auto",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
             WebkitOverflowScrolling: "touch",
           }}
         >
-          <Table sx={{ minWidth: { xs: 900, sm: 1000, md: 1100 } }}>
+          <Table sx={{ width: "100%", tableLayout: "auto" }}>
             <TableHead sx={{ backgroundColor: "rgba(109, 93, 246, 0.05)" }}>
               <TableRow>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Branch Info</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 220 }}>Location</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Contact Details</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 180 }}>Work Policy</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 130, whiteSpace: "nowrap" }}>Statutory Details</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 90, whiteSpace: "nowrap" }}>Status</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 650, minWidth: 150, whiteSpace: "nowrap" }}>Actions</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Branch Name</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650 }}>Location</TableCell>
+                <TableCell align="left" sx={{ fontWeight: 650 }}>Contact Details</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650 }}>Work Policy</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Statutory</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -442,7 +462,8 @@ function BranchListContent() {
                       sx={{
                         transition: "all 0.2s ease",
                         ...(isSelected && {
-                          borderLeft: "4px solid #6D5DF6",
+                          borderLeft: "4px solid",
+                          borderLeftColor: "primary.main",
                           pl: "12px !important",
                         }),
                       }}
@@ -473,16 +494,16 @@ function BranchListContent() {
                     </TableCell>
 
                     {/* Location */}
-                    <TableCell sx={{ maxWidth: 260, wordBreak: "break-word" }}>
+                    <TableCell align="center" sx={{ maxWidth: 260, wordBreak: "break-word" }}>
                       {addressString ? (
-                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.8 }}>
-                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled", mt: 0.2, flexShrink: 0 }} />
-                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13, wordBreak: "break-word" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.8 }}>
+                          <LocationOnOutlinedIcon sx={{ fontSize: 16, color: "text.disabled", flexShrink: 0 }} />
+                          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: 13, wordBreak: "break-word", textAlign: "center" }}>
                             {addressString}
                           </Typography>
                         </Box>
                       ) : (
-                        <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: 13 }}>
+                        <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: 13, textAlign: "center" }}>
                           No address specified
                         </Typography>
                       )}
@@ -559,61 +580,19 @@ function BranchListContent() {
                       </Box>
                     </TableCell>
 
-                    {/* Status */}
-                    <TableCell align="center">
-                      <Chip
-                        label={branch.isActive ? "Active" : "Inactive"}
-                        size="small"
-                        color={branch.isActive ? "success" : "default"}
-                        variant="outlined"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-
                     {/* Actions */}
-                    <TableCell align="right">
-                      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => calendarDialog.open(branch)}
-                          sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
-                          title="View Branch Calendar"
-                        >
-                          <CalendarMonthIcon fontSize="small" />
-                        </IconButton>
-
-                        {canUpdate && (
-                          <>
-                            <IconButton
-                              size="small"
-                              onClick={() => seedDialog.open(branch)}
-                              sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
-                              title="Seed Master Data (Leave Types & Shifts)"
-                            >
-                              <AutoAwesomeIcon fontSize="small" />
-                            </IconButton>
-
-                            <IconButton
-                              size="small"
-                              onClick={() => handleOpenEdit(branch)}
-                              sx={{ color: "#6D5DF6" }}
-                              title="Edit Branch"
-                            >
-                              <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </>
-                        )}
-                        {canDelete && (
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenDelete(branch)}
-                            sx={{ color: "error.main", "&:hover": { backgroundColor: "rgba(211, 47, 47, 0.04)" } }}
-                            title="Delete Branch"
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        )}
-                      </Box>
+                    <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleOpenActionMenu(e, branch)}
+                        sx={{
+                          color: "text.secondary",
+                          borderRadius: "8px",
+                          "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+                        }}
+                      >
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 );
@@ -622,6 +601,111 @@ function BranchListContent() {
           </Table>
         </TableContainer>
       )}
+
+      {/* Branch Action Menu */}
+      <Menu
+        anchorEl={actionMenuAnchorEl}
+        open={Boolean(actionMenuAnchorEl)}
+        onClose={handleCloseActionMenu}
+        onClick={(e) => e.stopPropagation()}
+        slotProps={{
+          paper: {
+            elevation: 3,
+            sx: {
+              minWidth: 190,
+              borderRadius: "12px",
+              py: 0.5,
+              border: "1px solid",
+              borderColor: "divider",
+              boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.12)",
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (actionMenuBranch) calendarDialog.open(actionMenuBranch);
+            handleCloseActionMenu();
+          }}
+          sx={{ py: 1, px: 2 }}
+        >
+          <ListItemIcon sx={{ color: "primary.main", minWidth: "32px !important" }}>
+            <CalendarMonthIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography sx={{ fontSize: "13.5px", fontWeight: 500, color: "text.primary" }}>
+                View Calendar
+              </Typography>
+            }
+          />
+        </MenuItem>
+
+        {canUpdate && (
+          <MenuItem
+            onClick={() => {
+              if (actionMenuBranch) seedDialog.open(actionMenuBranch);
+              handleCloseActionMenu();
+            }}
+            sx={{ py: 1, px: 2 }}
+          >
+            <ListItemIcon sx={{ color: "primary.main", minWidth: "32px !important" }}>
+              <AutoAwesomeIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography sx={{ fontSize: "13.5px", fontWeight: 500, color: "text.primary" }}>
+                  Seed Master Data
+                </Typography>
+              }
+            />
+          </MenuItem>
+        )}
+
+        {canUpdate && (
+          <MenuItem
+            onClick={() => {
+              if (actionMenuBranch) handleOpenEdit(actionMenuBranch);
+              handleCloseActionMenu();
+            }}
+            sx={{ py: 1, px: 2 }}
+          >
+            <ListItemIcon sx={{ color: "text.secondary", minWidth: "32px !important" }}>
+              <EditOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography sx={{ fontSize: "13.5px", fontWeight: 500, color: "text.primary" }}>
+                  Edit Branch
+                </Typography>
+              }
+            />
+          </MenuItem>
+        )}
+
+        {canDelete && (
+          <MenuItem
+            onClick={() => {
+              if (actionMenuBranch) handleOpenDelete(actionMenuBranch);
+              handleCloseActionMenu();
+            }}
+            sx={{ py: 1, px: 2, color: "error.main" }}
+          >
+            <ListItemIcon sx={{ color: "error.main", minWidth: "32px !important" }}>
+              <DeleteOutlineIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "error.main" }}>
+                  Delete Branch
+                </Typography>
+              }
+            />
+          </MenuItem>
+        )}
+      </Menu>
 
       {/* Seed Branch Master Data Dialog */}
       <SeedBranchDialog

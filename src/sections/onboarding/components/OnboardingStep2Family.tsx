@@ -11,6 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Divider from "@mui/material/Divider";
+import Card from "@mui/material/Card";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -23,16 +24,20 @@ import {
 import TextInput from "../../../components/input/TextInput";
 import { formatToYYYYMMDD } from "../../../utils/format-date";
 
+import SkipStepButton from "./SkipStepButton";
+
 const RELATIONSHIPS = ["SPOUSE", "CHILD", "FATHER", "MOTHER", "SIBLING", "OTHER"] as const;
 
 interface OnboardingStep2Props {
   initialValues?: Partial<OnboardingStep2FormData>;
   onSubmitStep: (data: OnboardingStep2FormData) => Promise<void>;
   onBack: () => void;
+  onSkipStep?: () => void;
   loading: boolean;
 }
 
 const buildStep2Defaults = (initial?: Partial<OnboardingStep2FormData>): OnboardingStep2FormData => ({
+  isNotApplicable: !!(initial?.isNotApplicable),
   familyMembers: (initial?.familyMembers || []).map((m) => ({
     ...m,
     dateOfBirth: formatToYYYYMMDD(m.dateOfBirth) || "",
@@ -43,13 +48,17 @@ export default function OnboardingStep2Family({
   initialValues,
   onSubmitStep,
   onBack,
+  onSkipStep,
   loading,
 }: OnboardingStep2Props) {
+
   const {
     register,
     control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<OnboardingStep2FormData>({
     resolver: zodResolver(onboardingStep2Schema),
@@ -62,26 +71,39 @@ export default function OnboardingStep2Family({
     }
   }, [initialValues, reset]);
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "familyMembers",
   });
 
+  const isNotApplicable = watch("isNotApplicable");
+
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmitStep)}>
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: 1.5,
+            mb: 2.5,
+          }}
+        >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               2. Family Members &amp; Dependents
             </Typography>
             <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
-              Single employees with no dependents may skip this step by clicking <strong>&quot;Save &amp; Continue&quot;</strong>.
+              Add your family members, dependents, or nominees. If you do not have any, check <strong>&quot;Not Applicable&quot;</strong> below.
             </Typography>
           </Box>
           <Button
+            variant="outlined"
             size="small"
             startIcon={<AddIcon />}
+            disabled={isNotApplicable}
             onClick={() =>
               append({
                 fullName: "",
@@ -94,16 +116,74 @@ export default function OnboardingStep2Family({
                 isNominee: false,
               })
             }
-            sx={{ textTransform: "none", fontWeight: 600 }}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              borderRadius: "8px",
+              px: 2,
+              py: 0.75,
+              alignSelf: { xs: "flex-start", sm: "auto" },
+            }}
           >
             Add Family Member
           </Button>
         </Box>
 
-        {fields.length === 0 ? (
+        {/* Not Applicable (NA) Checkbox Card Banner */}
+        <Card
+          variant="outlined"
+          sx={{
+            p: 1.8,
+            mb: 2.5,
+            borderRadius: 2.5,
+            backgroundColor: isNotApplicable ? "#F5F3FF" : "#F8FAFC",
+            borderColor: isNotApplicable ? "primary.main" : "divider",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={!!isNotApplicable}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setValue("isNotApplicable", checked, { shouldValidate: true });
+                  if (checked) {
+                    replace([]);
+                  }
+                }}
+                sx={{ color: "#6366F1", "&.Mui-checked": { color: "#6366F1" } }}
+              />
+            }
+            label={
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: isNotApplicable ? "#4338CA" : "#1E293B" }}>
+                I do not have family members / dependents to add (Mark as Not Applicable - NA)
+              </Typography>
+            }
+          />
+        </Card>
+
+        {/* Validation Error Banner when submitting empty without checking NA */}
+        {(errors?.familyMembers?.root?.message || (errors?.familyMembers as any)?.message) && !isNotApplicable && (
+          <Box sx={{ p: 1.5, mb: 2, borderRadius: 2, backgroundColor: "#FEF2F2", border: "1px solid #FCA5A5" }}>
+            <Typography variant="body2" sx={{ color: "#DC2626", fontWeight: 600 }}>
+              ⚠️ {errors?.familyMembers?.root?.message || (errors?.familyMembers as any)?.message}
+            </Typography>
+          </Box>
+        )}
+
+        {isNotApplicable ? (
+          <Box sx={{ p: 3, textAlign: "center", backgroundColor: "#F5F3FF", borderRadius: 2, border: "1.5px dashed #A5B4FC", my: 2 }}>
+            <Typography variant="body2" sx={{ color: "#4338CA", fontWeight: 600 }}>
+              ✓ Family details marked as Not Applicable. Click &quot;Save &amp; Continue&quot; to proceed to Step 3.
+            </Typography>
+          </Box>
+        ) : fields.length === 0 ? (
           <Box sx={{ p: 4, textAlign: "center", backgroundColor: "#F8FAFC", borderRadius: 2, border: "1.5px dashed #CBD5E1", my: 2 }}>
             <Typography variant="body2" sx={{ color: "#64748B" }}>
-              No family members added. If you have dependents or nominees, click <strong>&quot;Add Family Member&quot;</strong> above.
+              No family members added. If you have dependents or nominees, click <strong>&quot;Add Family Member&quot;</strong> above, or check <strong>&quot;Not Applicable&quot;</strong>.
             </Typography>
           </Box>
         ) : (
@@ -133,7 +213,9 @@ export default function OnboardingStep2Family({
                       >
                         <MenuItem value="">Select Relationship</MenuItem>
                         {RELATIONSHIPS.map((rel) => (
-                          <MenuItem key={rel} value={rel}>{rel}</MenuItem>
+                          <MenuItem key={rel} value={rel}>
+                            {rel}
+                          </MenuItem>
                         ))}
                       </TextInput>
                     )}
@@ -151,7 +233,7 @@ export default function OnboardingStep2Family({
 
                 <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
                   <TextInput
-                    label="Occupation (Optional)"
+                    label="Occupation"
                     registration={register(`familyMembers.${idx}.occupation` as const)}
                     error={errors.familyMembers?.[idx]?.occupation?.message}
                   />
@@ -191,7 +273,7 @@ export default function OnboardingStep2Family({
       </Paper>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexDirection: { xs: "column-reverse", sm: "row" } }}>
         <Button
           variant="outlined"
           onClick={onBack}
@@ -200,15 +282,19 @@ export default function OnboardingStep2Family({
         >
           Back
         </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          endIcon={<ArrowForwardIcon />}
-          sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
-        >
-          {loading ? "Saving..." : "Save & Continue"}
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+          <SkipStepButton onSkip={onSkipStep} loading={loading} />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            endIcon={<ArrowForwardIcon />}
+            sx={{ px: 4, py: 1.2, borderRadius: "10px", backgroundColor: "#4F46E5", "&:hover": { backgroundColor: "#4338CA" }, width: { xs: "100%", sm: "auto" } }}
+          >
+            {loading ? "Saving..." : "Save & Continue"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

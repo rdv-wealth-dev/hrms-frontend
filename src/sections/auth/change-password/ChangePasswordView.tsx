@@ -16,7 +16,7 @@ import PrimaryButton from "../../../components/button/PrimaryButton";
 
 import { paths } from "../../../routes/paths";
 import type { RootState } from "../../../store/rootReducer";
-import axiosInstance from "../../../api/axios";
+import { changePassword } from "../../../api/auth.api";
 
 // ─── Zod schema ────────────────────────────────────────────────────────────
 // Mirrors backend ChangePasswordDto: currentPassword + newPassword (different)
@@ -75,21 +75,11 @@ export default function ChangePasswordView() {
     setApiError(null);
 
     try {
-      // NOTE: Backend ChangePasswordDto exists (auth.dto.ts) but route is not yet
-      // registered. When backend adds POST /api/v1/auth/change-password (auth-protected),
-      // this call will work automatically — token is sent via axiosInstance interceptor.
-      await axiosInstance.post(
-        "/auth/change-password",
-        {
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
+      await changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      });
 
       setSuccess(true);
 
@@ -130,11 +120,11 @@ export default function ChangePasswordView() {
               mb: 2,
             }}
           >
-            <LockResetOutlinedIcon sx={{ fontSize: 28, color: "#6D5DF6" }} />
+            <LockResetOutlinedIcon sx={{ fontSize: 28, color: "primary.main" }} />
           </Box>
           <Typography
             variant="h5"
-            sx={{ fontWeight: 700, color: "#0F172A", mb: 0.5 }}
+            sx={{ fontWeight: 700, color: "text.primary", mb: 0.5 }}
           >
             Set Your Password
           </Typography>

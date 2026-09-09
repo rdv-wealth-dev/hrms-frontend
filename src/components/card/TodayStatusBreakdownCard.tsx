@@ -6,6 +6,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
+import { useTheme } from "@mui/material/styles";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
@@ -26,13 +27,14 @@ interface TodayStatusBreakdownCardProps {
 
 export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownCardProps) {
   const [showAiInsight, setShowAiInsight] = useState(true);
+  const theme = useTheme();
 
   const total = data.totalWorkforce || (data.onTime + data.late + data.wfh + data.absent + data.onLeave) || 1;
 
   const items = [
     { label: "On Time", count: data.onTime, color: "#10B981" },
     { label: "Late", count: data.late, color: "#F59E0B" },
-    { label: "WFH", count: data.wfh, color: "#6D5DF6" },
+    { label: "WFH", count: data.wfh, color: theme.palette.primary.main },
     { label: "Absent", count: data.absent, color: "#EF4444" },
     { label: "On Leave", count: data.onLeave, color: "#8B5CF6" },
   ];
@@ -42,9 +44,10 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
       sx={{
         p: { xs: 2.5, sm: 3 },
         borderRadius: 3.5,
-        backgroundColor: "#fff",
+        backgroundColor: "background.paper",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        border: "1px solid rgba(0,0,0,0.04)",
+        border: "1px solid",
+        borderColor: "divider",
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -53,7 +56,7 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
     >
       {/* Date Header */}
       <Box sx={{ mb: 2.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", fontSize: "1rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1rem" }}>
           {data.dateText || "Today – 17 Jun 2025"}
         </Typography>
       </Box>
@@ -65,10 +68,10 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
           return (
             <Box key={item.label}>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-                <Typography variant="body2" sx={{ color: "#4B5563", fontSize: "0.825rem", fontWeight: 500 }}>
+                <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.825rem", fontWeight: 500 }}>
                   {item.label}
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#111827", fontSize: "0.825rem" }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.825rem" }}>
                   {item.count}
                 </Typography>
               </Box>
@@ -78,7 +81,7 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
                 sx={{
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: "#F3F4F6",
+                  backgroundColor: "action.hover",
                   "& .MuiLinearProgress-bar": {
                     backgroundColor: item.color,
                     borderRadius: 3,
@@ -96,25 +99,26 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
           sx={{
             p: 2,
             borderRadius: 3,
-            backgroundColor: "#EEF2FF",
-            border: "1px solid #E0E7FF",
+            backgroundColor: "primary.lighter",
+            border: "1px solid",
+            borderColor: "divider",
             position: "relative",
           }}
         >
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, flexWrap: "wrap" }}>
-              <AutoAwesomeIcon sx={{ color: "#6366F1", fontSize: 18 }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4338CA", fontSize: "0.825rem" }}>
+              <AutoAwesomeIcon sx={{ color: "primary.main", fontSize: 18 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "primary.main", fontSize: "0.825rem" }}>
                 AI Insight
               </Typography>
-              <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "#E0E7FF", color: "#4338CA" }} />
+              <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "background.paper", color: "primary.main" }} />
             </Box>
-            <IconButton size="small" onClick={() => setShowAiInsight(false)} sx={{ p: 0.3, color: "#6366F1" }}>
+            <IconButton size="small" onClick={() => setShowAiInsight(false)} sx={{ p: 0.3, color: "primary.main" }}>
               <CloseIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Box>
 
-          <Typography variant="caption" component="p" sx={{ color: "#3730A3", fontSize: "0.78rem", lineHeight: 1.45, mb: 1.5 }}>
+          <Typography variant="caption" component="p" sx={{ color: "text.primary", fontSize: "0.78rem", lineHeight: 1.45, mb: 1.5 }}>
             Attendance dip on Fridays averages 8.2% above weekly average. Consider flexible Friday policy.
           </Typography>
 
@@ -134,15 +138,16 @@ export default function TodayStatusBreakdownCard({ data }: TodayStatusBreakdownC
                   fontSize: "0.72rem",
                   fontWeight: 600,
                   textTransform: "none",
-                  color: "#4338CA",
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #C7D2FE",
+                  color: "primary.main",
+                  backgroundColor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                  "&:hover": { backgroundColor: "#F5F3FF" },
+                  "&:hover": { backgroundColor: "action.hover" },
                   "&.Mui-disabled": {
-                    backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    color: "#9CA3AF",
-                    borderColor: "#E5E7EB",
+                    backgroundColor: "action.disabledBackground",
+                    color: "text.disabled",
+                    borderColor: "divider",
                   }
                 }}
               >

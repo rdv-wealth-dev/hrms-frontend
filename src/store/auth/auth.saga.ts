@@ -44,6 +44,29 @@ import {
   type CheckEmailRequestPayload,
 } from "./auth.types";
 
+// Helper to extract specific error messages from backend responses (e.g. DTO validation field errors)
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data;
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+      const firstErr = data.errors[0];
+      if (firstErr && typeof firstErr === "object" && firstErr.message) {
+        return firstErr.message;
+      }
+    }
+    if (data?.message && data.message !== "Validation failed") {
+      return data.message;
+    }
+    if (Array.isArray(data?.errors) && data.errors.length > 0 && typeof data.errors[0] === "string") {
+      return data.errors[0];
+    }
+    if (data?.message) {
+      return data.message;
+    }
+  }
+  return fallback;
+}
+
 // ===========================================
 // Register
 // ===========================================
@@ -62,11 +85,7 @@ function* handleRegisterRequest(action: {
 
     yield put(registerSuccess(response.data));
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      yield put(registerFailure(error.response?.data?.message ?? "Registration failed"));
-    } else {
-      yield put(registerFailure("Something went wrong"));
-    }
+    yield put(registerFailure(extractErrorMessage(error, "Registration failed")));
   }
 }
 

@@ -61,3 +61,6 @@ tsconfig.tsbuildinfo
  
 #package-lock
 package-lock.json
+*.md
+HRMS_USER_GUIDE.md
+HRMS_USER_GUIDE.pdf

@@ -3,12 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { paths } from "./paths";
 
-import AuthGuard from "../../src/auth/guards/AuthGuard";
-import GuestGuard from "../../src/auth/guards/GuestGuard";
-import RoleGuard from "../../src/auth/guards/RoleGuard";
+import AuthGuard from "@/auth/guards/AuthGuard";
+import GuestGuard from "@/auth/guards/GuestGuard";
+import RoleGuard from "@/auth/guards/RoleGuard";
 
-import PageLoader from "../components/loader/PageLoader";
-import DashboardLayout from "../layouts/dashboard/DashboardLayout";
+import PageLoader from "@/components/loader/PageLoader";
+import DashboardLayout from "@/layouts/dashboard/DashboardLayout";
 
 const SignUpPage = lazy(() => import("../pages/auth/SignUp"));
 const LoginPage = lazy(() => import("../pages/auth/Login"));
@@ -36,6 +36,18 @@ const MyLeavePage = lazy(() => import("../pages/leave"));
 const LeaveApprovalsPage = lazy(() => import("../pages/leave-approvals"));
 const ReportsPage = lazy(() => import("../pages/reports"));
 const DocumentVerificationPage = lazy(() => import("../pages/hr/documents-verification"));
+const PayrollDashboardPage = lazy(() => import("../pages/payroll/dashboard"));
+const SalaryComponentsPage = lazy(() => import("../pages/payroll/salary-components"));
+const ProfessionalTaxSlabsPage = lazy(() => import("../pages/payroll/professional-tax-slabs"));
+const StructureTemplatesPage = lazy(() => import("../pages/payroll/structure-templates"));
+const PayCalendarPage = lazy(() => import("../pages/payroll/pay-calendar"));
+const BankPayoutFormatPage = lazy(() => import("../pages/payroll/bank-payout-format"));
+const PayslipTemplatesPage = lazy(() => import("../pages/payroll/payslip-templates"));
+const GLMappingPage = lazy(() => import("../pages/payroll/gl-mapping"));
+const StructureAssignmentPage = lazy(() => import("../pages/payroll/structure-assignment"));
+const SalaryStructureViewPage = lazy(() => import("../pages/payroll/salary-structure-view"));
+const RunWizardPage = lazy(() => import("../pages/payroll/run-wizard"));
+const RunHistoryAuditPage = lazy(() => import("../pages/payroll/run-history-audit"));
 
 function AppRoutes() {
   return (
@@ -181,6 +193,54 @@ function AppRoutes() {
                 <DocumentVerificationPage />
               </RoleGuard>
             }
+          />
+          <Route
+            path={paths.payroll.dashboard}
+            element={<PayrollDashboardPage />}
+          />
+          <Route
+            path={paths.payroll.salaryComponents}
+            element={<SalaryComponentsPage />}
+          />
+          <Route
+            path={paths.payroll.professionalTaxSlabs}
+            element={<ProfessionalTaxSlabsPage />}
+          />
+          <Route
+            path={paths.payroll.structureTemplates}
+            element={<StructureTemplatesPage />}
+          />
+          <Route
+            path={paths.payroll.payCalendar}
+            element={<PayCalendarPage />}
+          />
+          <Route
+            path={paths.payroll.bankPayoutFormat}
+            element={<BankPayoutFormatPage />}
+          />
+          <Route
+            path={paths.payroll.payslipTemplates}
+            element={<PayslipTemplatesPage />}
+          />
+          <Route
+            path={paths.payroll.glMapping}
+            element={<GLMappingPage />}
+          />
+          <Route
+            path={paths.payroll.structureAssignment}
+            element={<StructureAssignmentPage />}
+          />
+          <Route
+            path={paths.payroll.salaryStructureView}
+            element={<SalaryStructureViewPage />}
+          />
+          <Route
+            path={paths.payroll.runWizard}
+            element={<RunWizardPage />}
+          />
+          <Route
+            path={paths.payroll.runHistoryAudit}
+            element={<RunHistoryAuditPage />}
           />
         </Route>
 

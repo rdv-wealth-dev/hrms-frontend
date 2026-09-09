@@ -25,6 +25,8 @@ import {
   submitOnboardingStep3,
   submitOnboardingStep4,
   submitOnboardingStep5,
+  skipOnboardingStep,
+  navigateOnboardingStep,
 } from "../../api/onboarding.api";
 import {
   type OnboardingStep1FormData,
@@ -64,6 +66,29 @@ export default function OnboardingWizardView() {
   const [step3Data, setStep3Data] = useState<Partial<OnboardingStep3FormData>>({});
   const [missingDocs, setMissingDocs] = useState<string[]>([]);
   const [mandatoryDocTypes, setMandatoryDocTypes] = useState<string[]>([]);
+  const [step5Data, setStep5Data] = useState<any>(null);
+
+  const refreshOnboardingStatus = async () => {
+    try {
+      const res = await getOnboardingStatus();
+      if (res.succeeded && res.data) {
+        if (res.data.step1Data) {
+          const step1 = (res.data.step1Data as Partial<OnboardingStep1FormData>) || {};
+          if (!step1.phone && user?.phone) {
+            step1.phone = user.phone;
+          }
+          setStep1Data(step1);
+        }
+        if (res.data.step2Data) setStep2Data(res.data.step2Data as Partial<OnboardingStep2FormData>);
+        if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
+        if (res.data.missingDocuments) setMissingDocs(res.data.missingDocuments);
+        if (res.data.mandatoryDocumentTypes) setMandatoryDocTypes(res.data.mandatoryDocumentTypes);
+        if (res.data.step5Data) setStep5Data(res.data.step5Data);
+      }
+    } catch (err: any) {
+      console.warn("Failed to refresh onboarding status:", err);
+    }
+  };
 
   useEffect(() => {
     if (role === "ORG_ADMIN") {
@@ -91,6 +116,7 @@ export default function OnboardingWizardView() {
           if (res.data.step3Data) setStep3Data(res.data.step3Data as Partial<OnboardingStep3FormData>);
           if (res.data.missingDocuments) setMissingDocs(res.data.missingDocuments);
           if (res.data.mandatoryDocumentTypes) setMandatoryDocTypes(res.data.mandatoryDocumentTypes);
+          if (res.data.step5Data) setStep5Data(res.data.step5Data);
         } else if (res.message) {
           setStepError(res.message);
         }
@@ -103,6 +129,45 @@ export default function OnboardingWizardView() {
     init();
   }, [navigate, showSnackbar, user?.phone]);
 
+  useEffect(() => {
+    if (activeStep === 4) {
+      refreshOnboardingStatus();
+    }
+  }, [activeStep]);
+
+  const handleNavigateBack = async (targetStepNumber: number) => {
+    try {
+      const res = await navigateOnboardingStep(targetStepNumber);
+      if (res?.succeeded && res?.data?.currentStep) {
+        setActiveStep(res.data.currentStep - 1);
+      } else {
+        setActiveStep(targetStepNumber - 1);
+      }
+    } catch (err: any) {
+      setActiveStep(targetStepNumber - 1);
+    }
+  };
+
+  const handleSkipStep = async (stepNumber: number) => {
+    setSubmitting(true);
+    setStepError(null);
+    try {
+      const res = await skipOnboardingStep(stepNumber);
+      if (res?.succeeded) {
+        showSnackbar(res?.message || `Step ${stepNumber} skipped`, "info");
+        const nextStep = res?.data?.nextStep || Math.min(stepNumber + 1, 4);
+        setActiveStep(nextStep - 1);
+        await refreshOnboardingStatus();
+      } else {
+        setStepError(res?.message || "Failed to skip step");
+      }
+    } catch (err: any) {
+      setStepError(err?.response?.data?.message || err?.message || "Failed to skip step");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleStep1Submit = async (data: OnboardingStep1FormData) => {
     setSubmitting(true);
     setStepError(null);
@@ -112,6 +177,7 @@ export default function OnboardingWizardView() {
         setStep1Data(data);
         setActiveStep(1);
         showSnackbar("Personal information saved successfully", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Failed to save Step 1");
       }
@@ -131,6 +197,7 @@ export default function OnboardingWizardView() {
         setStep2Data(data);
         setActiveStep(2);
         showSnackbar("Family details saved successfully", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Failed to save Step 2");
       }
@@ -150,6 +217,7 @@ export default function OnboardingWizardView() {
         setStep3Data(data);
         setActiveStep(3);
         showSnackbar("Bank account details saved successfully", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Failed to save Step 3");
       }
@@ -168,6 +236,7 @@ export default function OnboardingWizardView() {
       if (res.succeeded) {
         setActiveStep(4);
         showSnackbar("Mandatory documents verified", "success");
+        await refreshOnboardingStatus();
       } else {
         setStepError(res.message || "Please upload all required documents before proceeding");
       }
@@ -213,7 +282,7 @@ export default function OnboardingWizardView() {
       <PageWrapper>
         {/* Header */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A" }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
             Employee Onboarding Wizard
           </Typography>
           <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
@@ -222,14 +291,14 @@ export default function OnboardingWizardView() {
         </Box>
 
         {/* Stepper Header Card */}
-        <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, border: "1px solid #E2E8F0", mb: 3 }}>
+        <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3 }}>
           {/* Mobile Step Indicator */}
           <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 1 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#4F46E5" }}>
                 Step {activeStep + 1} of {STEPS.length}
               </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: "#0F172A" }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: "text.primary" }}>
                 {STEPS[activeStep]}
               </Typography>
             </Box>
@@ -277,6 +346,7 @@ export default function OnboardingWizardView() {
           <OnboardingStep1Personal
             initialValues={step1Data}
             onSubmitStep={handleStep1Submit}
+            onSkipStep={() => handleSkipStep(1)}
             loading={submitting}
           />
         )}
@@ -285,7 +355,8 @@ export default function OnboardingWizardView() {
           <OnboardingStep2Family
             initialValues={step2Data}
             onSubmitStep={handleStep2Submit}
-            onBack={() => setActiveStep(0)}
+            onBack={() => handleNavigateBack(1)}
+            onSkipStep={() => handleSkipStep(2)}
             loading={submitting}
           />
         )}
@@ -294,7 +365,8 @@ export default function OnboardingWizardView() {
           <OnboardingStep3Bank
             initialValues={step3Data}
             onSubmitStep={handleStep3Submit}
-            onBack={() => setActiveStep(1)}
+            onBack={() => handleNavigateBack(2)}
+            onSkipStep={() => handleSkipStep(3)}
             loading={submitting}
           />
         )}
@@ -304,7 +376,8 @@ export default function OnboardingWizardView() {
             mandatoryDocumentTypes={mandatoryDocTypes}
             missingDocuments={missingDocs}
             onSubmitStep={handleStep4Submit}
-            onBack={() => setActiveStep(2)}
+            onBack={() => handleNavigateBack(3)}
+            onSkipStep={() => handleSkipStep(4)}
             loading={submitting}
             errorMsg={stepError}
           />
@@ -312,8 +385,10 @@ export default function OnboardingWizardView() {
 
         {activeStep === 4 && (
           <OnboardingStep5Review
+            step5Data={step5Data}
             onSubmitStep={handleStep5Submit}
-            onBack={() => setActiveStep(3)}
+            onBack={() => handleNavigateBack(4)}
+            onNavigateToStep={(targetStep) => handleNavigateBack(targetStep)}
             loading={submitting}
             errorMsg={stepError}
           />

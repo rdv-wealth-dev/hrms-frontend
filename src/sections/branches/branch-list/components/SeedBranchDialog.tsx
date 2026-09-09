@@ -178,7 +178,7 @@ export default function SeedBranchDialog({
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <AutoAwesomeIcon sx={{ color: "#6D5DF6", fontSize: 28 }} />
+          <AutoAwesomeIcon sx={{ color: "primary.main", fontSize: 28 }} />
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
               Seed Master Data for {branch.name}
@@ -337,12 +337,12 @@ export default function SeedBranchDialog({
           fullWidth
           startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <CheckCircleOutlinedIcon />}
           sx={{
-            backgroundColor: "#6D5DF6",
+            backgroundColor: "primary.main",
             textTransform: "none",
             fontWeight: 600,
             borderRadius: 2,
             px: 3,
-            "&:hover": { backgroundColor: "#5B4EE4" },
+            "&:hover": { backgroundColor: "primary.dark" },
           }}
         >
           {loading ? "Seeding Master Data..." : "Seed Selected Master Data"}

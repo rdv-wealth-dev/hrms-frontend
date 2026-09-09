@@ -16,7 +16,7 @@ export const Scrollbar = forwardRef<HTMLDivElement, ScrollbarProps>(
           overflow: "auto",
           WebkitOverflowScrolling: "touch",
           scrollbarWidth: "thin",
-          scrollbarColor: "#CBD5E1 transparent",
+          scrollbarColor: "divider transparent",
           "&::-webkit-scrollbar": {
             width: "7px",
             height: "7px",
@@ -26,15 +26,15 @@ export const Scrollbar = forwardRef<HTMLDivElement, ScrollbarProps>(
             borderRadius: "10px",
           },
           "&::-webkit-scrollbar-thumb": {
-            background: "#CBD5E1",
+            backgroundColor: "divider",
             borderRadius: "10px",
             transition: "background-color 0.2s ease-in-out",
           },
           "&::-webkit-scrollbar-thumb:hover": {
-            background: "#94A3B8",
+            backgroundColor: "neutral.400",
           },
           "&::-webkit-scrollbar-thumb:active": {
-            background: "#6D5DF6",
+            backgroundColor: "primary.main",
           },
           ...(fillContent && {
             "& .MuiBox-root": {

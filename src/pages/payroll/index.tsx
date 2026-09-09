@@ -10,7 +10,7 @@ export function PayrollPage() {
     <>
       <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: "auto" }}>
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
             Payroll & Payslips
           </Typography>
           <Typography variant="body2" sx={{ color: "#6B7280", mt: 0.5 }}>

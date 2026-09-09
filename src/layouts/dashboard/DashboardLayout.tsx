@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -26,8 +26,27 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import PersonIcon from "@mui/icons-material/Person";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputAdornment from "@mui/material/InputAdornment";
+import Badge from "@mui/material/Badge";
+import SearchIcon from "@mui/icons-material/Search";
+import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import CustomAvatar from "../../components/avatar/CustomAvatar";
 
-// CollapsibleNavGroup import removed (flattened menu)
+import CollapsibleNavGroup, { type NavSubItem } from "./components/CollapsibleNavGroup";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import SettingsSuggestOutlinedIcon from "@mui/icons-material/SettingsSuggestOutlined";
+import PlayCircleOutlineOutlinedIcon from "@mui/icons-material/PlayCircleOutlineOutlined";
+import TuneIcon from "@mui/icons-material/Tune";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+import AssignmentIndOutlinedIcon from "@mui/icons-material/AssignmentIndOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 
 import type { AppDispatch } from "../../store/store";
 import { logout } from "../../store/auth";
@@ -36,7 +55,9 @@ import { logoutUser } from "../../api/auth.api";
 import { paths } from "../../routes/paths";
 import type { RootState } from "../../store/rootReducer";
 import { usePermissions } from "../../hooks/usePermissions";
+import { useModalTrigger } from "../../hooks/useModalTrigger";
 import { OnboardingBanner } from "../../components/common/OnboardingBanner";
+import { ScrollToTop } from "../../components/common/ScrollToTop";
 
 import { getPendingLeaveRequests } from "../../api/leave.api";
 import { getPendingRegularizationRequests } from "../../api/attendance.api";
@@ -84,15 +105,15 @@ const topNavItems: NavItem[] = [
         path: paths.holidays,
         permission: "leave.read",
     },
-];
-
-const bottomNavItems: NavItem[] = [
     {
         label: "Document Verification",
         icon: <FactCheckIcon fontSize="small" />,
         path: paths.documentVerification,
         permission: "document.read",
     },
+];
+
+const bottomNavItems: NavItem[] = [
     {
         label: "Settings",
         icon: <SettingsIcon fontSize="small" />,
@@ -106,6 +127,87 @@ const bottomNavItems: NavItem[] = [
     },
 ];
 
+const payrollNavItems: NavSubItem[] = [
+    {
+        label: "Dashboard",
+        icon: <DashboardIcon fontSize="small" />,
+        path: paths.payroll.dashboard,
+    },
+    {
+        label: "Master Setup",
+        icon: <SettingsSuggestOutlinedIcon fontSize="small" />,
+        children: [
+            {
+                label: "Salary Components",
+                icon: <TuneIcon fontSize="small" />,
+                path: paths.payroll.salaryComponents,
+            },
+            {
+                label: "Professional Tax Slabs",
+                icon: <DescriptionOutlinedIcon fontSize="small" />,
+                path: paths.payroll.professionalTaxSlabs,
+            },
+            {
+                label: "Structure Templates",
+                icon: <LayersOutlinedIcon fontSize="small" />,
+                path: paths.payroll.structureTemplates,
+            },
+            {
+                label: "Pay Calendar",
+                icon: <CalendarTodayOutlinedIcon fontSize="small" />,
+                path: paths.payroll.payCalendar,
+            },
+            {
+                label: "Bank Payout Format",
+                icon: <CreditCardOutlinedIcon fontSize="small" />,
+                path: paths.payroll.bankPayoutFormat,
+            },
+            {
+                label: "Payslip Templates",
+                icon: <ArticleOutlinedIcon fontSize="small" />,
+                path: paths.payroll.payslipTemplates,
+            },
+            {
+                label: "GL Mapping",
+                icon: <BarChartOutlinedIcon fontSize="small" />,
+                path: paths.payroll.glMapping,
+            },
+        ],
+    },
+    {
+        label: "Employees",
+        icon: <PeopleAltIcon fontSize="small" />,
+        children: [
+            {
+                label: "Structure Assignment",
+                icon: <AssignmentIndOutlinedIcon fontSize="small" />,
+                path: paths.payroll.structureAssignment,
+            },
+            {
+                label: "Salary Structure View",
+                icon: <VisibilityOutlinedIcon fontSize="small" />,
+                path: paths.payroll.salaryStructureView,
+            },
+        ],
+    },
+    {
+        label: "Payroll Run",
+        icon: <PlayCircleOutlineOutlinedIcon fontSize="small" />,
+        children: [
+            {
+                label: "Run Wizard",
+                icon: <PlayCircleOutlineOutlinedIcon fontSize="small" />,
+                path: paths.payroll.runWizard,
+            },
+            {
+                label: "Run History & Audit",
+                icon: <ReceiptLongOutlinedIcon fontSize="small" />,
+                path: paths.payroll.runHistoryAudit,
+            },
+        ],
+    },
+];
+
 function DashboardLayout() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -114,6 +216,30 @@ function DashboardLayout() {
 
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+
+    // Keep a stable focus target for the temporary mobile Drawer.
+    // When the Drawer closes, focus is restored to the element that opened it.
+    const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+
+    const handleMobileMenuOpen = useModalTrigger(() => setMobileOpen(true));
+
+    const restoreMobileMenuFocus = () => {
+        // Let MUI finish the Drawer close/Modal transition before restoring focus.
+        requestAnimationFrame(() => {
+            mobileMenuButtonRef.current?.focus();
+        });
+    };
+
+    const handleMobileDrawerClose = () => {
+        setMobileOpen(false);
+        restoreMobileMenuFocus();
+    };
+
+    const handleMobileNavigation = (targetPath: string) => {
+        navigate(targetPath);
+        setMobileOpen(false);
+        restoreMobileMenuFocus();
+    };
 
     const [pendingLeaveCount, setPendingLeaveCount] = useState<number>(0);
     const [pendingRegCount, setPendingRegCount] = useState<number>(0);
@@ -178,6 +304,35 @@ function DashboardLayout() {
         return item.label;
     };
 
+    const getItemTarget = (item: NavItem) => {
+        if (role === "EMPLOYEE") {
+            if (item.path === paths.reports) return paths.reports;
+            if (item.path === paths.leave) return paths.leave;
+        }
+        return item.path;
+    };
+
+    const isItemActive = (item: NavItem) => {
+        if (role === "EMPLOYEE") {
+            const searchParams = new URLSearchParams(location.search);
+            const currentTab = searchParams.get("tab");
+
+            if (item.path === paths.reports) {
+                return location.pathname === paths.reports || (location.pathname === paths.profile && currentTab === "attendance");
+            }
+            if (item.path === paths.leave) {
+                return location.pathname === paths.profile && currentTab === "leave";
+            }
+            if (item.path === paths.profile) {
+                return (
+                    location.pathname === paths.profile &&
+                    (!currentTab || (currentTab !== "attendance" && currentTab !== "leave"))
+                );
+            }
+        }
+        return location.pathname === item.path;
+    };
+
     const getBadgeCount = (item: NavItem) => {
         if (role === "EMPLOYEE") return 0;
         if (item.path === paths.leaveApprovals || item.path === paths.leave) return pendingLeaveCount;
@@ -186,15 +341,15 @@ function DashboardLayout() {
     };
 
     const renderNavListItem = (item: NavItem, isCollapsed = false) => {
-        const isActive = location.pathname === item.path;
+        const targetPath = getItemTarget(item);
+        const isActive = isItemActive(item);
         const badgeCount = getBadgeCount(item);
 
         return (
             <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
                 <ListItemButton
                     onClick={() => {
-                        navigate(item.path);
-                        setMobileOpen(false);
+                        handleMobileNavigation(targetPath);
                     }}
                     sx={{
                         borderRadius: 2.5,
@@ -202,11 +357,11 @@ function DashboardLayout() {
                         py: 1,
                         justify: isCollapsed ? "center" : "initial",
                         transition: "all 0.2s ease",
-                        backgroundColor: isActive ? "#4F46E5" : "transparent",
+                        background: isActive ? "linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)" : "transparent",
                         border: "1px solid transparent",
-                        boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.2)" : "none",
+                        boxShadow: isActive ? "0px 4px 14px rgba(168, 85, 247, 0.25)" : "none",
                         "&:hover": {
-                            backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
+                            background: isActive ? "linear-gradient(135deg, #B76EF9 0%, #9A6FF8 100%)" : "rgba(168, 85, 247, 0.08)",
                             border: "1px solid transparent",
                         },
                     }}
@@ -216,7 +371,7 @@ function DashboardLayout() {
                             minWidth: isCollapsed ? 0 : 34,
                             mr: isCollapsed ? 0 : 0,
                             justifyContent: "center",
-                            color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+                            color: isActive ? "#FFFFFF" : "#A855F7",
                         }}
                     >
                         {item.icon}
@@ -227,7 +382,7 @@ function DashboardLayout() {
                                 sx={{
                                     fontSize: 14,
                                     fontWeight: isActive ? 700 : 500,
-                                    color: isActive ? "#FFFFFF" : "#6B6699",
+                                    color: isActive ? "#FFFFFF" : "#475569",
                                 }}
                             >
                                 {getItemLabel(item)}
@@ -260,10 +415,11 @@ function DashboardLayout() {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    background: "#EDEBFC",
-                    color: "#312E81",
+                    backgroundColor: "background.paper",
+                    color: "text.primary",
                     overflow: "hidden",
-                    borderRight: "1px solid #DAD7F2",
+                    borderRight: "1px solid",
+                    borderColor: "divider",
                 }}
             >
                 {/* Logo */}
@@ -284,30 +440,30 @@ function DashboardLayout() {
                                 width: 34,
                                 height: 34,
                                 borderRadius: "10px",
-                                background: "linear-gradient(135deg, #6D5DF6 0%, #4F46E5 100%)",
+                                background: "linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 fontWeight: 800,
                                 color: "#fff",
-                                boxShadow: "0 2px 10px rgba(109, 93, 246, 0.3)",
+                                boxShadow: "0 2px 10px rgba(168, 85, 247, 0.3)",
                             }}
                         >
                             N
                         </Box>
                     ) : (
                         <>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#312E81", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#1E1B4B", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
                                 NexusHR
                             </Typography>
-                            <Typography variant="caption" sx={{ color: "#6366F1", fontSize: 11, mt: 0.5, fontWeight: 500 }}>
+                            <Typography variant="caption" sx={{ color: "#A855F7", fontSize: 11, mt: 0.5, fontWeight: 600 }}>
                                 AI-Powered HRMS
                             </Typography>
                         </>
                     )}
                 </Box>
 
-                <Divider sx={{ borderColor: "#DAD7F2" }} />
+                <Divider sx={{ borderColor: "divider" }} />
 
                 {/* Nav Items with Premium Custom Light Scrollbar */}
                 <List
@@ -318,7 +474,7 @@ function DashboardLayout() {
                         overflowY: "auto",
                         minHeight: 0,
                         scrollbarWidth: "thin",
-                        scrollbarColor: "rgba(99, 102, 241, 0.2) transparent",
+                        scrollbarColor: "rgba(168, 85, 247, 0.2) transparent",
                         "&::-webkit-scrollbar": {
                             width: "5px",
                         },
@@ -326,11 +482,11 @@ function DashboardLayout() {
                             backgroundColor: "transparent",
                         },
                         "&::-webkit-scrollbar-thumb": {
-                            backgroundColor: "rgba(99, 102, 241, 0.2)",
+                            backgroundColor: "rgba(168, 85, 247, 0.2)",
                             borderRadius: "10px",
                             transition: "background-color 0.2s ease",
                             "&:hover": {
-                                backgroundColor: "rgba(99, 102, 241, 0.4)",
+                                backgroundColor: "rgba(168, 85, 247, 0.35)",
                             },
                         },
                         "&::-webkit-scrollbar-button": {
@@ -341,13 +497,20 @@ function DashboardLayout() {
                     {/* Top Standalone Nav Items */}
                     {visibleTopItems.map((item) => renderNavListItem(item, isCollapsed))}
 
-                    {/* TIME & LEAVE categories are flattened into topNavItems */}
+                    {/* Payroll Collapsible Nav Group */}
+                    <CollapsibleNavGroup
+                        title="Payroll"
+                        icon={<AccountBalanceWalletOutlinedIcon fontSize="small" />}
+                        items={payrollNavItems}
+                        isCollapsed={isCollapsed}
+                        onNavigate={handleMobileNavigation}
+                    />
 
                     {/* Bottom Standalone Nav Items */}
                     {visibleBottomItems.map((item) => renderNavListItem(item, isCollapsed))}
                 </List>
 
-                <Divider sx={{ borderColor: "#DAD7F2" }} />
+                <Divider sx={{ borderColor: "divider" }} />
 
                 {/* User Footer Container */}
                 <Box sx={{ px: isCollapsed ? 1.5 : 2, py: 2, flexShrink: 0 }}>
@@ -355,13 +518,16 @@ function DashboardLayout() {
                         sx={{
                             p: isCollapsed ? 1 : 1.2,
                             borderRadius: 3,
-                            backgroundColor: "rgba(79, 70, 229, 0.05)",
-                            border: "1px solid #DAD7F2",
+                            backgroundColor: "background.paper",
+                            border: "1px solid",
+                            borderColor: "divider",
                             boxShadow: "none",
                         }}
                     >
                         <Box
-                            onClick={() => navigate(paths.profile)}
+                            onClick={() => {
+                                handleMobileNavigation(paths.profile);
+                            }}
                             sx={{
                                 display: "flex",
                                 alignItems: "center",
@@ -373,7 +539,7 @@ function DashboardLayout() {
                                 borderRadius: "8px",
                                 transition: "all 0.2s ease",
                                 "&:hover": {
-                                    backgroundColor: "rgba(79, 70, 229, 0.08)",
+                                    backgroundColor: "rgba(168, 85, 247, 0.08)",
                                 },
                             }}
                         >
@@ -382,8 +548,8 @@ function DashboardLayout() {
                                     <Typography
                                         variant="body2"
                                         sx={{
-                                            color: "#312E81",
-                                            fontWeight: 600,
+                                            color: "#1E1B4B",
+                                            fontWeight: 700,
                                             fontSize: 13,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
@@ -395,8 +561,9 @@ function DashboardLayout() {
                                     <Typography
                                         variant="caption"
                                         sx={{
-                                            color: "#6B6699",
+                                            color: "#64748B",
                                             fontSize: 11,
+                                            fontWeight: 500,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
                                             whiteSpace: "nowrap",
@@ -435,7 +602,7 @@ function DashboardLayout() {
                                 py: 0.75,
                                 justifyContent: isCollapsed ? "center" : "initial",
                                 transition: "all 0.2s ease",
-                                color: "#6B6699",
+                                color: "#64748B",
                                 "&:hover": {
                                     backgroundColor: "rgba(239, 68, 68, 0.08)",
                                     color: "#EF4444",
@@ -445,7 +612,7 @@ function DashboardLayout() {
                             <ListItemIcon
                                 sx={{
                                     minWidth: isCollapsed ? 0 : 30,
-                                    color: "rgba(79, 70, 229, 0.7)",
+                                    color: "#A855F7",
                                     justifyContent: "center",
                                 }}
                             >
@@ -471,16 +638,20 @@ function DashboardLayout() {
         <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#F5F6FA", width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
             {/* Mobile Drawer */}
             <Drawer
+                id="mobile-navigation-drawer"
                 variant="temporary"
                 open={mobileOpen}
-                onClose={() => setMobileOpen(false)}
-                ModalProps={{ keepMounted: true }}
+                onClose={handleMobileDrawerClose}
+                ModalProps={{
+                    keepMounted: true,
+                }}
                 sx={{
                     display: { xs: "block", md: "none" },
                     "& .MuiDrawer-paper": {
                         width: 240,
-                        borderRight: "1px solid #DAD7F2",
-                        background: "#EDEBFC",
+                        borderRight: "1px solid",
+                        borderColor: "divider",
+                        backgroundColor: "background.paper",
                     },
                 }}
             >
@@ -501,14 +672,15 @@ function DashboardLayout() {
                 <IconButton
                     onClick={() => setCollapsed(!collapsed)}
                     sx={{
-                        backgroundColor: "#FFFFFF",
-                        color: "#0F172A",
-                        border: "1px solid #E2E8F0",
+                        backgroundColor: "background.paper",
+                        color: "text.primary",
+                        border: "1px solid",
+                        borderColor: "divider",
                         width: 28,
                         height: 28,
                         boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.08)",
                         "&:hover": {
-                            backgroundColor: "#F8FAFC",
+                            backgroundColor: "action.hover",
                         },
                     }}
                 >
@@ -527,8 +699,9 @@ function DashboardLayout() {
                     display: { xs: "none", md: "block" },
                     "& .MuiDrawer-paper": {
                         width: sidebarWidth,
-                        borderRight: "1px solid #DAD7F2",
-                        background: "#EDEBFC",
+                        borderRight: "1px solid",
+                        borderColor: "divider",
+                        backgroundColor: "background.paper",
                         boxSizing: "border-box",
                         transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         overflowX: "hidden",
@@ -571,7 +744,7 @@ function DashboardLayout() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        px: { xs: 2, sm: 3, md: 4 },
+                        px: { xs: 1.5, sm: 3, md: 4 },
                         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
                         transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}
@@ -579,7 +752,11 @@ function DashboardLayout() {
                     {/* Left: Mobile hamburger menu trigger */}
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <IconButton
-                            onClick={() => setMobileOpen(true)}
+                            ref={mobileMenuButtonRef}
+                            aria-label="Open navigation menu"
+                            aria-expanded={mobileOpen}
+                            aria-controls="mobile-navigation-drawer"
+                            onClick={handleMobileMenuOpen}
                             sx={{
                                 display: { xs: "inline-flex", md: "none" },
                                 color: "#475569",
@@ -592,25 +769,106 @@ function DashboardLayout() {
                         </IconButton>
                     </Box>
 
-                    {/* Right: Back Button */}
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                    {/* Right: Search, Notifications, Avatar, & Back Button */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 1.5, md: 2 } }}>
+                        {/* Search Bar */}
+                        <OutlinedInput
+                            placeholder="Search..."
+                            size="small"
+                            startAdornment={
+                                <InputAdornment position="start" sx={{ mr: { xs: 0.5, sm: 1 } }}>
+                                    <SearchIcon sx={{ color: "#9CA3AF", fontSize: { xs: 18, sm: 20 } }} />
+                                </InputAdornment>
+                            }
+                            endAdornment={
+                                <InputAdornment position="end">
+                                    <Box
+                                        sx={{
+                                            px: 0.8,
+                                            py: 0.2,
+                                            borderRadius: 1,
+                                            backgroundColor: "#F3F4F6",
+                                            border: "1px solid #E5E7EB",
+                                            fontSize: "0.7rem",
+                                            fontWeight: 600,
+                                            color: "#6B7280",
+                                            display: { xs: "none", sm: "inline-flex" },
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        ⌘ K
+                                    </Box>
+                                </InputAdornment>
+                            }
+                            sx={{
+                                width: { xs: 110, sm: 220, md: 300 },
+                                borderRadius: 2.5,
+                                backgroundColor: "#FFFFFF",
+                                fontSize: "0.85rem",
+                                "& .MuiOutlinedInput-input": {
+                                    px: { xs: 0.5, sm: 1 },
+                                    textOverflow: "ellipsis",
+                                },
+                                "& fieldset": {
+                                    borderColor: "#E5E7EB",
+                                },
+                                "&:hover fieldset": {
+                                    borderColor: "#D1D5DB",
+                                },
+                                "&.Mui-focused fieldset": {
+                                    borderColor: "primary.main",
+                                },
+                            }}
+                        />
+
+                        {/* Notifications Bell */}
+                        <IconButton
+                            sx={{
+                                backgroundColor: "#FFFFFF",
+                                border: "1px solid #E5E7EB",
+                                p: { xs: 0.6, sm: 0.8 },
+                                borderRadius: 2.5,
+                                flexShrink: 0,
+                                "&:hover": {
+                                    backgroundColor: "#F9FAFB",
+                                },
+                            }}
+                        >
+                            <Badge badgeContent={6} color="error">
+                                <NotificationsNoneOutlinedIcon sx={{ color: "#4B5563", fontSize: { xs: 18, sm: 20 } }} />
+                            </Badge>
+                        </IconButton>
+
+                        {/* User Avatar */}
+                        <Box sx={{ flexShrink: 0 }}>
+                            <CustomAvatar
+                                name={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}
+                                size={34}
+                                fontSize="0.8rem"
+                            />
+                        </Box>
+
                         {showBackButton && (
                             <Button
                                 variant="text"
-                                startIcon={<ArrowBackIcon />}
+                                startIcon={<ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 }, mr: { xs: -0.5, sm: 0 } }} />}
                                 onClick={() => navigate(-1)}
                                 sx={{
                                     textTransform: "none",
                                     color: "#64748B",
                                     fontWeight: 600,
                                     fontSize: "14px",
-                                    px: 1.5,
+                                    minWidth: { xs: 34, sm: "auto" },
+                                    px: { xs: 0.8, sm: 1.5 },
                                     py: 0.75,
                                     borderRadius: "8px",
-                                    "&:hover": { color: "#6D5DF6", backgroundColor: "rgba(109, 93, 246, 0.06)" },
+                                    flexShrink: 0,
+                                    "&:hover": { color: "primary.main", backgroundColor: "primary.lighter" },
                                 }}
                             >
-                                Back
+                                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                                    Back
+                                </Box>
                             </Button>
                         )}
                     </Box>
@@ -619,6 +877,7 @@ function DashboardLayout() {
                 {/* Navbar Fixed Offset Spacer */}
                 <Box sx={{ height: { xs: 56, sm: 64 } }} />
 
+                <ScrollToTop />
                 <OnboardingBanner />
                 <Outlet />
             </Box>

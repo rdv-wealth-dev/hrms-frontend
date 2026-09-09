@@ -141,6 +141,10 @@ export interface CompleteOnboardingRequest {
   baseCurrency: string;
   fiscalYearStart: string;
   adminJobTitle: string;
+  selectedDepartments?: string[];
+  workingStyle?: "regular" | "flexible" | "rotational";
+  leavePolicy?: "standard" | "all" | "minimal";
+  selectedLeaves?: string[];
 }
 
 export interface CompleteOnboardingResponse {
@@ -156,6 +160,42 @@ export const completeOnboarding = async (
   const response = await axiosInstance.post<CompleteOnboardingResponse>(
     "/auth/complete-onboarding",
     payload
+  );
+  return response.data;
+};
+
+// ── Change Password (Forced First-time or Regular) API ──
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword?: string;
+}
+
+export interface ChangePasswordResponse {
+  succeeded: boolean;
+  success?: boolean;
+  message: string;
+  errors?: string[];
+  data?: {
+    message?: string;
+  } | null;
+}
+
+export const changePassword = async (
+  payload: ChangePasswordRequest
+): Promise<ChangePasswordResponse> => {
+  const response = await axiosInstance.post<ChangePasswordResponse>(
+    "/auth/change-password",
+    {
+      currentPassword: payload.currentPassword,
+      newPassword: payload.newPassword,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }
   );
   return response.data;
 };

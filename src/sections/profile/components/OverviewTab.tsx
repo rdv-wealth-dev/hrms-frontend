@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -28,6 +29,9 @@ import { formatDate } from "../../../utils/format-date";
 
 import type { CompleteProfileEmployee } from "../../../api/employee.api";
 import TextInput from "../../../components/input/TextInput";
+import type { RootState } from "../../../store/rootReducer";
+import { listBranchesRequest } from "../../../store/branch";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 interface OverviewTabProps {
   empProfile: CompleteProfileEmployee | null;
@@ -48,10 +52,56 @@ export default function OverviewTab({
   user,
   showSnackbar,
 }: OverviewTabProps) {
+  const dispatch = useDispatch<any>();
+  const { hasPermission } = usePermissions();
+  const branches = useSelector((state: RootState) => state.branch?.branches);
+  const branchesLoading = useSelector((state: RootState) => state.branch?.loading);
+
+  useEffect(() => {
+    if (!branches?.length && !branchesLoading && hasPermission("branch.read")) {
+      dispatch(listBranchesRequest());
+    }
+  }, [dispatch, branches, branchesLoading, hasPermission]);
+
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js", "AWS"]);
   const [addSkillOpen, setAddSkillOpen] = useState(false);
   const [newSkillInput, setNewSkillInput] = useState("");
   const [aiInsightsDismissed, setAiInsightsDismissed] = useState(false);
+
+  const resolvedBranchName = useMemo(() => {
+    if (!empProfile) return "Head Office";
+
+    // 1. If branchId is an object with a name property
+    if (empProfile.branchId && typeof empProfile.branchId === "object") {
+      if (empProfile.branchId.name) return empProfile.branchId.name;
+    }
+
+    // 2. If branch is populated on empProfile as an object
+    const branchObj = (empProfile as any).branch;
+    if (branchObj && typeof branchObj === "object" && branchObj.name) {
+      return branchObj.name;
+    }
+
+    // 3. If branchId or branch is a string ID, resolve it from the Redux branches list
+    const branchIdStr = typeof empProfile.branchId === "string" 
+      ? empProfile.branchId 
+      : typeof branchObj === "string" 
+        ? branchObj 
+        : "";
+
+    if (branchIdStr) {
+      const match = branches.find((b: any) => String(b._id || b.id) === String(branchIdStr));
+      if (match?.name) return match.name;
+    }
+
+    // 4. If branchName exists directly as a non-ID string
+    const directName = (empProfile as any).branchName;
+    if (directName && typeof directName === "string" && !/^[0-9a-fA-F]{24}$/.test(directName)) {
+      return directName;
+    }
+
+    return "Head Office";
+  }, [empProfile, branches]);
 
   return (
     <Grid container spacing={3}>
@@ -64,7 +114,7 @@ export default function OverviewTab({
             <Grid container spacing={3}>
               {/* Sub-card 1: Contact Information */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", mb: 2, fontSize: "0.95rem" }}>
                   Contact Information
                 </Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -76,7 +126,7 @@ export default function OverviewTab({
                       <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
                         EMAIL
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                         {displayEmail || "priya.sharma@nexus.hr"}
                       </Typography>
                     </Box>
@@ -90,7 +140,7 @@ export default function OverviewTab({
                       <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
                         PHONE
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                         {empProfile?.phone || "+91 98765 43210"}
                       </Typography>
                     </Box>
@@ -104,7 +154,7 @@ export default function OverviewTab({
                       <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
                         LOCATION
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                         {String(empProfile?.currentAddress?.city || "Bangalore")}
                       </Typography>
                     </Box>
@@ -118,7 +168,7 @@ export default function OverviewTab({
                       <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.68rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
                         WORK MODE
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                         {String((empProfile as any)?.workMode || "Hybrid")}
                       </Typography>
                     </Box>
@@ -128,7 +178,7 @@ export default function OverviewTab({
 
               {/* Sub-card 2: Employment Details */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2, fontSize: "0.95rem" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", mb: 2, fontSize: "0.95rem" }}>
                   Employment Details
                 </Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -136,11 +186,7 @@ export default function OverviewTab({
                     { label: "Employee Code", value: empProfile?.employeeCode || "NX-001" },
                     {
                       label: "Branch Name",
-                      value: empProfile?.branchId
-                        ? typeof empProfile.branchId === "object"
-                          ? empProfile.branchId.name || "Head Office"
-                          : empProfile.branchId
-                        : "Head Office",
+                      value: resolvedBranchName,
                     },
                     { label: "Department", value: empProfile?.departmentId?.name || "Engineering" },
                     { label: "Grade / Band", value: String((empProfile as any)?.band || "L5") },
@@ -152,12 +198,15 @@ export default function OverviewTab({
                           ? `${empProfile.shiftId.name} (${empProfile.shiftId.startTime} - ${empProfile.shiftId.endTime})`
                           : "General Shift (09:00 AM - 06:00 PM)",
                     },
+                    { label: "Designation", value: empProfile?.designationId?.name || "Senior Software Engineer" },
+                    { label: "Date of Joining", value: formatDate(empProfile?.joiningDate) },
+                    { label: "Official Work Email", value: displayEmail || "priya.sharma@nexus.hr" },
                     { label: "Employment Type", value: "Full-time Permanent" },
                     { label: "Account Created", value: formatDate(user?.createdAt) },
                   ].map((row, idx) => (
                     <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Typography variant="body2" sx={{ color: "#64748B" }}>{row.label}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{row.value}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>{row.value}</Typography>
                     </Box>
                   ))}
                 </Box>
@@ -167,7 +216,7 @@ export default function OverviewTab({
 
           {/* 2. Reporting Structure (Org Hierarchy Tree) */}
           <Card sx={{ p: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", mb: 2.5, fontSize: "0.95rem" }}>
               Reporting Structure
             </Typography>
 
@@ -192,7 +241,7 @@ export default function OverviewTab({
                   AM
                 </Avatar>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                     {empProfile?.managerId ? `${empProfile.managerId.firstName} ${empProfile.managerId.lastName}` : "Arjun Mehta"}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
@@ -210,7 +259,7 @@ export default function OverviewTab({
                   {displayLastName?.[0]?.toUpperCase() ?? "S"}
                 </Avatar>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                     {displayFirstName || "Priya"}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#6366F1", fontWeight: 600, display: "block" }}>
@@ -223,7 +272,7 @@ export default function OverviewTab({
 
           {/* 3. Assigned Policies (2x3 Grid) - Commented Out
           <Card sx={{ p: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", mb: 2.5, fontSize: "0.95rem" }}>
               Assigned Policies
             </Typography>
 
@@ -237,13 +286,13 @@ export default function OverviewTab({
                 { cat: "Performance Policy", title: "Performance Management v1.2" },
               ].map((pol, idx) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={idx}>
-                  <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                  <Box sx={{ p: 2, borderRadius: "12px", backgroundColor: "action.hover", border: "1px solid", borderColor: "divider", display: "flex", alignItems: "flex-start", gap: 1.5 }}>
                     <ArticleOutlinedIcon sx={{ color: "#6366F1", fontSize: 20, mt: 0.2 }} />
                     <Box>
                       <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block", fontSize: "0.72rem" }}>
                         {pol.cat}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                         {pol.title}
                       </Typography>
                     </Box>
@@ -257,7 +306,7 @@ export default function OverviewTab({
           {/* 4. Skills & Expertise */}
           <Card sx={{ p: 3 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", fontSize: "0.95rem" }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.95rem" }}>
                 Skills & Expertise
               </Typography>
               <Chip
@@ -269,7 +318,7 @@ export default function OverviewTab({
                   fontWeight: 600,
                   borderRadius: "8px",
                   cursor: "pointer",
-                  "&:hover": { backgroundColor: "#E2E8F0" },
+                  "&:hover": { backgroundColor: "action.hover" },
                 }}
               />
             </Box>
@@ -296,7 +345,7 @@ export default function OverviewTab({
 
           {/* 5. Recent Activity Feed - Commented Out
           <Card sx={{ p: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", mb: 2.5, fontSize: "0.95rem" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", mb: 2.5, fontSize: "0.95rem" }}>
               Recent Activity
             </Typography>
 
@@ -308,11 +357,11 @@ export default function OverviewTab({
                 { icon: <CalendarMonthOutlinedIcon sx={{ color: "#0284C7", fontSize: 18 }} />, text: "Annual leave — 5 days (approved by Arjun Mehta)", date: "Nov 5, 2024" },
               ].map((act, idx) => (
                 <Box key={idx} sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                  <IconButton size="small" sx={{ backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", p: 0.8 }}>
+                  <IconButton size="small" sx={{ backgroundColor: "action.hover", border: "1px solid", borderColor: "divider", p: 0.8 }}>
                     {act.icon}
                   </IconButton>
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                       {act.text}
                     </Typography>
                     <Typography variant="caption" sx={{ color: "#94A3B8" }}>
@@ -341,7 +390,7 @@ export default function OverviewTab({
                     {peer.initial}
                   </Avatar>
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                       {peer.name}
                     </Typography>
                     <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
@@ -370,7 +419,7 @@ export default function OverviewTab({
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <AutoAwesomeIcon sx={{ color: "#8B5CF6", fontSize: 20 }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "0.95rem" }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "text.primary", fontSize: "0.95rem" }}>
                   AI Insights
                 </Typography>
                 <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "#F3E8FF", color: "#7C3AED" }} />
@@ -416,7 +465,7 @@ export default function OverviewTab({
                     fontWeight: 600,
                     fontSize: "0.825rem",
                     color: "#64748B",
-                    borderColor: "#E2E8F0",
+                    borderColor: "divider",
                     borderRadius: "10px",
                     py: 1,
                     backgroundColor: "#F8FAFC",
@@ -425,7 +474,7 @@ export default function OverviewTab({
                 >
                   <Box component="span" sx={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center" }}>
                     <span>{btn.label}</span>
-                    <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "#E2E8F0", color: "#64748B" }} />
+                    <Chip label="Coming Soon" size="small" sx={{ height: 16, fontSize: "8px", fontWeight: 700, backgroundColor: "action.hover", color: "#64748B" }} />
                   </Box>
                 </Button>
               ))}
@@ -451,7 +500,7 @@ export default function OverviewTab({
         }}
       >
         <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Add Skill or Expertise
           </Typography>
           <IconButton onClick={() => setAddSkillOpen(false)} size="small" sx={{ color: "#9CA3AF" }}>
@@ -482,8 +531,8 @@ export default function OverviewTab({
               }
             }}
             sx={{
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BE4" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               textTransform: "none",
               fontWeight: 600,
               px: 3,

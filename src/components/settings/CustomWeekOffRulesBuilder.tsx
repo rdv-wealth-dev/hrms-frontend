@@ -91,10 +91,10 @@ export function CustomWeekOffRulesBuilder({
     <Box sx={{ width: "100%" }}>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A", fontSize: "0.95rem" }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.95rem" }}>
             Custom Week-Off Rules
           </Typography>
-          <Typography variant="caption" sx={{ color: "#64748B" }}>
+          <Typography variant="caption" sx={{ color: "text.secondary" }}>
             Configure specific occurrences (e.g. 2nd & 4th Saturday, 5th Friday) as off-days
           </Typography>
         </Box>
@@ -107,12 +107,13 @@ export function CustomWeekOffRulesBuilder({
           sx={{
             textTransform: "none",
             fontWeight: 600,
-            color: "#4F46E5",
-            border: "1px dashed #A5B4FC",
+            color: "primary.main",
+            border: "1px dashed",
+            borderColor: "primary.main",
             borderRadius: "8px",
             px: 1.5,
             py: 0.5,
-            "&:hover": { backgroundColor: "#EEF2FF", borderColor: "#6366F1" },
+            "&:hover": { backgroundColor: "primary.lighter", borderColor: "primary.main" },
           }}
         >
           Add Custom Rule
@@ -127,13 +128,13 @@ export function CustomWeekOffRulesBuilder({
             p: 2.5,
             textAlign: "center",
             borderRadius: "12px",
-            backgroundColor: "#F8FAFC",
+            backgroundColor: "action.hover",
             borderStyle: "dashed",
-            borderColor: "#E2E8F0",
+            borderColor: "divider",
             mb: 2,
           }}
         >
-          <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 500 }}>
+          <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 500 }}>
             No custom occurrence rules added. Click <strong>"+ Add Custom Rule"</strong> to define specific weekend off days.
           </Typography>
         </Paper>
@@ -146,8 +147,8 @@ export function CustomWeekOffRulesBuilder({
               sx={{
                 p: 2,
                 borderRadius: "12px",
-                borderColor: "#E2E8F0",
-                backgroundColor: "#FFFFFF",
+                borderColor: "divider",
+                backgroundColor: "background.paper",
                 display: "flex",
                 flexDirection: { xs: "column", md: "row" },
                 alignItems: { xs: "stretch", md: "flex-start" },
@@ -242,8 +243,8 @@ export function CustomWeekOffRulesBuilder({
                             size="small"
                             sx={{
                               p: 0.5,
-                              color: "#94A3B8",
-                              "&.Mui-checked": { color: "#4F46E5" },
+                              color: "text.secondary",
+                              "&.Mui-checked": { color: "primary.main" },
                             }}
                           />
                         }
@@ -253,7 +254,7 @@ export function CustomWeekOffRulesBuilder({
                             sx={{
                               fontSize: "0.825rem",
                               fontWeight: isChecked ? 600 : 400,
-                              color: isChecked ? "#0F172A" : "#64748B",
+                              color: isChecked ? "text.primary" : "text.secondary",
                               whiteSpace: "nowrap",
                             }}
                           >

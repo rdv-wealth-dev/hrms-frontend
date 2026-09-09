@@ -14,11 +14,10 @@ import Stack from "@mui/material/Stack";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
-import LinearProgress from "@mui/material/LinearProgress";
-import Chip from "@mui/material/Chip";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 
 import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
@@ -45,9 +44,22 @@ import {
   type CreateEmployeeFormData,
 } from "../../../validations/employee/create-employee.schema";
 import { listShifts } from "../../../api/attendance.api";
+import { listRoles, type RoleItem } from "../../../api/role.api";
+import { listTeams } from "../../../api/team.api";
 import type { Shift } from "../../../store/attendance";
 import { useActiveBranchId } from "../../../hooks/useActiveBranchId";
 import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
+import { useEmployeeRoleAutoFill } from "../../../hooks/useEmployeeRoleAutoFill";
+import { getApiErrorMessage } from "../../../utils/handle-api-error";
+
+const DEFAULT_FALLBACK_ROLES: RoleItem[] = [
+  { _id: "1", name: "Employee", slug: "EMPLOYEE", description: "Self-service access" },
+  { _id: "2", name: "Manager", slug: "MANAGER", description: "Team attendance & approvals" },
+  { _id: "3", name: "Team Leader", slug: "TEAM_LEADER", description: "Squad lead & member view" },
+  { _id: "4", name: "HR Admin", slug: "HR_ADMIN", description: "Full operational HR access" },
+  { _id: "5", name: "Branch Admin", slug: "BRANCH_ADMIN", description: "Branch operational access" },
+  { _id: "6", name: "Org Admin", slug: "ORG_ADMIN", description: "Full organizational access" },
+];
 
 const EMPLOYEE_TYPES = [
   { value: "FULL_TIME", label: "Full-Time" },
@@ -76,14 +88,62 @@ export default function EmployeeCreateView() {
   // Cascading Dynamic State
   const [departments, setDepartments] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDepartments, setLoadingDepartments] = useState<boolean>(false);
+  const [departmentsLoaded, setDepartmentsLoaded] = useState<boolean>(false);
 
   const [designations, setDesignations] = useState<Array<{ _id: string; name: string; code: string }>>([]);
   const [loadingDesignations, setLoadingDesignations] = useState<boolean>(false);
+  const [designationsLoaded, setDesignationsLoaded] = useState<boolean>(false);
+
+  const [teams, setTeams] = useState<Array<{ _id: string; name: string; code: string }>>([]);
+  const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
 
   const manageSalary = true;
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(true);
   const [formValidationError, setFormValidationError] = useState<string | null>(null);
+  const [secondaryManagerOpen, setSecondaryManagerOpen] = useState(false);
+  const [placementLoadError, setPlacementLoadError] = useState<string | null>(null);
+
+  const [rolesList, setRolesList] = useState<RoleItem[]>(DEFAULT_FALLBACK_ROLES);
+
+  // Fetch active squad teams from DB
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingTeams(true);
+    listTeams()
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.data) ? res.data : (res?.data as any)?.items || [];
+        setTeams(list);
+      })
+      .catch((err) => console.error("Failed to load squad teams:", err))
+      .finally(() => {
+        if (isMounted) setLoadingTeams(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch active system and custom roles from DB
+  useEffect(() => {
+    let isMounted = true;
+    listRoles()
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.data) ? res.data : [];
+        if (list.length > 0) {
+          setRolesList(list);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load roles from backend, using default fallback roles:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const {
     register,
@@ -97,7 +157,10 @@ export default function EmployeeCreateView() {
       branchId: activeBranchId || "",
       departmentId: "",
       designationId: "",
+      teamId: "",
       managerId: "",
+      secondaryManagerIds: [],
+      role: "EMPLOYEE",
       countryCode: "IN",
       employeeType: "FULL_TIME",
       shiftId: "",
@@ -105,6 +168,13 @@ export default function EmployeeCreateView() {
       maritalStatus: "",
       bloodGroup: "",
       nationality: "Indian",
+      bankAccount: {
+        bankName: "",
+        accountNumber: "",
+        ifscCode: "",
+        accountType: "SALARY",
+        accountHolderName: "",
+      },
     },
   });
 
@@ -112,7 +182,25 @@ export default function EmployeeCreateView() {
   const selectedDepartmentId = watch("departmentId");
   const selectedDesignationId = watch("designationId");
   const selectedManagerId = watch("managerId");
+  const selectedRole = watch("role");
   const employeeType = watch("employeeType");
+
+  const {
+    isCeoRole,
+    targetDepartmentId,
+    targetDesignationId,
+    resolving: resolvingCeoPlacement,
+    error: ceoPlacementError,
+  } = useEmployeeRoleAutoFill({
+    role: selectedRole,
+    selectedDepartmentId,
+    departments,
+    designations,
+    departmentsLoaded,
+    designationsLoaded,
+    loadingDepartments,
+    loadingDesignations,
+  });
 
   // Custom hook for eligible managers
   const {
@@ -120,10 +208,44 @@ export default function EmployeeCreateView() {
     defaultManagerId,
     loading: loadingManagers,
   } = useEligibleManagers({
-    branchId: selectedBranchId,
-    departmentId: selectedDepartmentId,
-    designationId: selectedDesignationId,
+    branchId: isCeoRole ? undefined : selectedBranchId,
+    departmentId: isCeoRole ? undefined : selectedDepartmentId,
+    designationId: isCeoRole ? undefined : selectedDesignationId,
   });
+
+  useEffect(() => {
+    if (!isCeoRole) {
+      setPlacementLoadError(null);
+      return;
+    }
+
+    setValue("managerId", "", { shouldValidate: true });
+
+    if (targetDepartmentId && selectedDepartmentId !== targetDepartmentId) {
+      setValue("departmentId", targetDepartmentId, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      return;
+    }
+
+    if (
+      targetDesignationId &&
+      selectedDesignationId !== targetDesignationId
+    ) {
+      setValue("designationId", targetDesignationId, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [
+    isCeoRole,
+    selectedDepartmentId,
+    selectedDesignationId,
+    setValue,
+    targetDepartmentId,
+    targetDesignationId,
+  ]);
 
   // Load initial branches
   useEffect(() => {
@@ -145,6 +267,8 @@ export default function EmployeeCreateView() {
     if (!selectedBranchId) {
       setDepartments([]);
       setDesignations([]);
+      setDepartmentsLoaded(false);
+      setDesignationsLoaded(false);
       setValue("departmentId", "");
       setValue("designationId", "");
       setValue("managerId", "");
@@ -153,6 +277,8 @@ export default function EmployeeCreateView() {
 
     const fetchBranchDepartments = async () => {
       setLoadingDepartments(true);
+      setDepartmentsLoaded(false);
+      setPlacementLoadError(null);
       try {
         const res = await listDepartments(1, 100, selectedBranchId);
         if (res?.succeeded && res?.data) {
@@ -160,12 +286,17 @@ export default function EmployeeCreateView() {
           setDepartments(list);
         } else {
           setDepartments([]);
+          setPlacementLoadError(res?.message ?? "Failed to load departments for the selected branch.");
         }
       } catch (err) {
         console.error("Failed to load departments for branch:", err);
         setDepartments([]);
+        setPlacementLoadError(
+          getApiErrorMessage(err, "Failed to load departments for the selected branch.")
+        );
       } finally {
         setLoadingDepartments(false);
+        setDepartmentsLoaded(true);
       }
     };
 
@@ -174,6 +305,7 @@ export default function EmployeeCreateView() {
     setValue("designationId", "");
     setValue("managerId", "");
     setDesignations([]);
+    setDesignationsLoaded(false);
 
     fetchBranchDepartments();
   }, [selectedBranchId, setValue]);
@@ -182,6 +314,7 @@ export default function EmployeeCreateView() {
   useEffect(() => {
     if (!selectedDepartmentId) {
       setDesignations([]);
+      setDesignationsLoaded(false);
       setValue("designationId", "");
       setValue("managerId", "");
       return;
@@ -189,6 +322,8 @@ export default function EmployeeCreateView() {
 
     const fetchDepartmentDesignations = async () => {
       setLoadingDesignations(true);
+      setDesignationsLoaded(false);
+      setPlacementLoadError(null);
       try {
         const res = await listDesignations(1, 100, selectedDepartmentId);
         if (res?.succeeded && res?.data) {
@@ -196,12 +331,17 @@ export default function EmployeeCreateView() {
           setDesignations(list);
         } else {
           setDesignations([]);
+          setPlacementLoadError(res?.message ?? "Failed to load designations for the selected department.");
         }
       } catch (err) {
         console.error("Failed to load designations for department:", err);
         setDesignations([]);
+        setPlacementLoadError(
+          getApiErrorMessage(err, "Failed to load designations for the selected department.")
+        );
       } finally {
         setLoadingDesignations(false);
+        setDesignationsLoaded(true);
       }
     };
 
@@ -214,10 +354,10 @@ export default function EmployeeCreateView() {
 
   // 3. Auto-Select Default Manager when returned by query hook
   useEffect(() => {
-    if (defaultManagerId && !selectedManagerId) {
+    if (!isCeoRole && defaultManagerId && !selectedManagerId) {
       setValue("managerId", defaultManagerId);
     }
-  }, [defaultManagerId, selectedManagerId, setValue]);
+  }, [defaultManagerId, isCeoRole, selectedManagerId, setValue]);
 
   // Load shifts list
   useEffect(() => {
@@ -277,6 +417,20 @@ export default function EmployeeCreateView() {
     setFormValidationError(null);
     const payload: any = { ...data };
 
+    if (isCeoRole) {
+      if (!targetDepartmentId || !targetDesignationId) {
+        setFormValidationError(
+          ceoPlacementError ??
+            placementLoadError ??
+            "CEO department and designation could not be resolved from master data."
+        );
+        return;
+      }
+      payload.departmentId = targetDepartmentId;
+      payload.designationId = targetDesignationId;
+      payload.managerId = undefined;
+    }
+
     payload.branchId = payload.branchId || activeBranchId;
 
     if (payload.joiningDate) {
@@ -288,13 +442,13 @@ export default function EmployeeCreateView() {
 
     // Clean up all empty optional fields to prevent backend validation errors
     const optionalKeys = [
-      "phone", "managerId", "probationEndDate", "shiftId",
+      "phone", "managerId", "teamId", "secondaryManagerIds", "probationEndDate", "shiftId",
       "pan", "aadhaar", "passportNo", "dateOfBirth", "gender",
-      "bloodGroup", "maritalStatus", "nationality", "currentAddress", "permanentAddress"
+      "bloodGroup", "maritalStatus", "nationality", "currentAddress", "permanentAddress", "bankAccount"
     ];
     optionalKeys.forEach((key) => {
       const val = payload[key];
-      if (val === "" || val === null || val === undefined) {
+      if (val === "" || val === null || val === undefined || (Array.isArray(val) && val.length === 0)) {
         delete payload[key];
       } else if (typeof val === "object" && !Array.isArray(val)) {
         const hasValues = Object.values(val).some((v) => v !== "" && v !== null && v !== undefined);
@@ -303,6 +457,21 @@ export default function EmployeeCreateView() {
         }
       }
     });
+
+    // Bank Account mapping / validation cleanup
+    if (payload.bankAccount) {
+      const bank = payload.bankAccount;
+      if (!bank.bankName && !bank.accountNumber && !bank.ifscCode) {
+        delete payload.bankAccount;
+      } else {
+        if (!bank.accountHolderName) {
+          bank.accountHolderName = `${payload.firstName || ""} ${payload.lastName || ""}`.trim();
+        }
+        if (bank.ifscCode) {
+          bank.ifscCode = bank.ifscCode.toUpperCase().trim();
+        }
+      }
+    }
 
     // Salary Structure mapping
     if (!manageSalary || (!payload.salarySetup && !payload.salaryStructure)) {
@@ -346,6 +515,12 @@ export default function EmployeeCreateView() {
     label: des.name,
   })) ?? [];
 
+  // Convert teams to CascadingSelect options
+  const teamOptions: SelectOption[] = teams?.map((t: any) => ({
+    value: t._id || t.id,
+    label: `${t.name} (${t.code || "SQUAD"})`,
+  })) ?? [];
+
   // Convert managers to CascadingSelect options
   const managerOptions: SelectOption[] = eligibleManagers?.map((m) => ({
     value: m._id,
@@ -358,12 +533,12 @@ export default function EmployeeCreateView() {
     <>
       <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1400, mx: "auto" }}>
         
-        {/* Header Title with Profile Completion Badge */}
-        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2 }}>
+        {/* Header Title */}
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <PersonAddOutlinedIcon color="primary" sx={{ fontSize: 32 }} />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
                 Add New Employee
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -371,16 +546,6 @@ export default function EmployeeCreateView() {
               </Typography>
             </Box>
           </Box>
-
-          <Card sx={{ borderRadius: "12px", border: "1px solid #E5E7EB", p: 1.5, minWidth: 220, bgcolor: "#F9FAFB" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: "#374151" }}>
-                Profile Completion
-              </Typography>
-              <Chip label={manageSalary ? "80%" : "65%"} size="small" color="primary" sx={{ height: 18, fontSize: "0.65rem" }} />
-            </Box>
-            <LinearProgress variant="determinate" value={manageSalary ? 80 : 65} sx={{ height: 6, borderRadius: 3 }} />
-          </Card>
         </Box>
 
         {/* Global Notifications */}
@@ -394,11 +559,16 @@ export default function EmployeeCreateView() {
             {formValidationError}
           </Alert>
         )}
+        {isCeoRole && (ceoPlacementError || placementLoadError) && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: "8px" }}>
+            {ceoPlacementError ?? placementLoadError}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit, onInvalidForm)} autoComplete="off">
           <Stack spacing={3}>
 
-            {/* ── CARD 1: CASCADING ORGANIZATIONAL PLACEMENT (STEPS 1 - 4) ── */}
+            {/* ── CARD 1: CASCADING ORGANIZATIONAL PLACEMENT (STEPS 1 - 7) ── */}
             <Card sx={{ borderRadius: "12px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)", border: "1px solid #E5E7EB" }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
@@ -410,7 +580,7 @@ export default function EmployeeCreateView() {
 
                 <Grid container spacing={2.5}>
                   {/* Step 1: Branch Selection */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <TextInput
                       select
                       label="STEP 1: Branch Location"
@@ -430,15 +600,15 @@ export default function EmployeeCreateView() {
                   </Grid>
 
                   {/* Step 2: Department (Cascading) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
                       label="STEP 2: Department"
                       required
                       value={watch("departmentId")}
                       options={departmentOptions}
                       loading={loadingDepartments}
-                      disabled={!selectedBranchId}
-                      disabledPlaceholder="Select Branch first"
+                      disabled={!selectedBranchId || isCeoRole}
+                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Branch first"}
                       emptyPlaceholder="No departments in branch"
                       error={errors.departmentId?.message}
                       registration={register("departmentId")}
@@ -446,34 +616,95 @@ export default function EmployeeCreateView() {
                   </Grid>
 
                   {/* Step 3: Designation (Cascading) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
                       label="STEP 3: Designation"
                       required
                       value={watch("designationId")}
                       options={designationOptions}
                       loading={loadingDesignations}
-                      disabled={!selectedDepartmentId}
-                      disabledPlaceholder="Select Department first"
+                      disabled={!selectedDepartmentId || isCeoRole}
+                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Department first"}
                       emptyPlaceholder="No designations in department"
                       error={errors.designationId?.message}
                       registration={register("designationId")}
                     />
                   </Grid>
 
-                  {/* Step 4: Reporting Manager (Auto-filled) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  {/* Step 4: Squad Team */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <CascadingSelect
-                      label="STEP 4: Reporting Manager"
+                      label="STEP 4: Squad Team"
+                      value={watch("teamId")}
+                      options={teamOptions}
+                      loading={loadingTeams}
+                      disabledPlaceholder="No teams available"
+                      emptyPlaceholder="No squad teams found"
+                      error={errors.teamId?.message}
+                      registration={register("teamId")}
+                    />
+                  </Grid>
+
+                  {/* Step 5: Primary Reporting Manager */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <CascadingSelect
+                      label="STEP 5: Primary Reporting Manager"
                       value={watch("managerId")}
                       options={managerOptions}
                       loading={loadingManagers}
-                      disabled={!selectedBranchId || !selectedDepartmentId}
-                      disabledPlaceholder="Select Branch & Dept first"
+                      disabled={isCeoRole || !selectedBranchId || !selectedDepartmentId}
+                      disabledPlaceholder={isCeoRole ? "CEO does not require a reporting manager" : "Select Branch & Dept first"}
                       emptyPlaceholder="No eligible managers found"
                       error={errors.managerId?.message}
                       registration={register("managerId")}
                     />
+                  </Grid>
+
+                  {/* Step 6: Secondary Managers (Multi-Select) */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="STEP 6: Secondary Managers"
+                      value={Array.isArray(watch("secondaryManagerIds")) ? watch("secondaryManagerIds") : []}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setValue("secondaryManagerIds", typeof val === "string" ? val.split(",") : val);
+                        setSecondaryManagerOpen(false);
+                      }}
+                      error={errors.secondaryManagerIds?.message}
+                      slotProps={{
+                        select: {
+                          multiple: true,
+                          open: secondaryManagerOpen,
+                          onOpen: () => setSecondaryManagerOpen(true),
+                          onClose: () => setSecondaryManagerOpen(false),
+                        },
+                      }}
+                      disabled={!selectedBranchId || !selectedDepartmentId}
+                    >
+                      {eligibleManagers?.map((m) => (
+                        <MenuItem key={m._id} value={m._id}>
+                          {m.fullName} [{m.employeeCode}] • {m.designationTitle || "Manager"}
+                        </MenuItem>
+                      ))}
+                    </TextInput>
+                  </Grid>
+
+                  {/* Step 7: System Access Security Role */}
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <TextInput
+                      select
+                      label="STEP 7: System Security Role"
+                      required
+                      registration={register("role")}
+                      error={errors.role?.message}
+                    >
+                      {rolesList?.map((r) => (
+                        <MenuItem key={r.slug || r._id} value={r.slug}>
+                          {r.name} ({r.slug})
+                        </MenuItem>
+                      ))}
+                    </TextInput>
                   </Grid>
                 </Grid>
               </CardContent>
@@ -489,7 +720,8 @@ export default function EmployeeCreateView() {
                 <Grid container spacing={2.5}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
-                      label="First Name *"
+                      label="First Name"
+                      required
                       placeholder="e.g. Rohan"
                       registration={register("firstName")}
                       error={errors.firstName?.message}
@@ -499,7 +731,8 @@ export default function EmployeeCreateView() {
 
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
-                      label="Last Name *"
+                      label="Last Name"
+                      required
                       placeholder="e.g. Sharma"
                       registration={register("lastName")}
                       error={errors.lastName?.message}
@@ -509,7 +742,8 @@ export default function EmployeeCreateView() {
 
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
-                      label="Work Email Address *"
+                      label="Work Email Address"
+                      required
                       placeholder="e.g. rohan.sharma@apexglobal.io"
                       registration={register("email")}
                       error={errors.email?.message}
@@ -547,7 +781,8 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       select
-                      label="Employee Type *"
+                      label="Employee Type"
+                      required
                       registration={register("employeeType")}
                       error={errors.employeeType?.message}
                     >
@@ -562,7 +797,8 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       type="date"
-                      label="Joining Date *"
+                      label="Joining Date"
+                      required
                       slotProps={{ inputLabel: { shrink: true } }}
                       registration={register("joiningDate")}
                       error={errors.joiningDate?.message}
@@ -572,7 +808,7 @@ export default function EmployeeCreateView() {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextInput
                       type="date"
-                      label="Probation End Date (Optional)"
+                      label="Probation End Date"
                       slotProps={{ inputLabel: { shrink: true } }}
                       registration={register("probationEndDate")}
                     />
@@ -597,12 +833,79 @@ export default function EmployeeCreateView() {
               </CardContent>
             </Card>
 
-            {/* ── CARD 6: COMPENSATION & SALARY SETUP ── */}
+            {/* ── CARD 6: BANK ACCOUNT DETAILS (PAYROLL SETUP) ── */}
+            <Card sx={{ borderRadius: "12px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)", border: "1px solid #E5E7EB" }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
+                  <AccountBalanceOutlinedIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#1F2937" }}>
+                    Bank Account Details (Payroll Setup)
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={2.5}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      label="Bank Name"
+                      placeholder="e.g. HDFC Bank, SBI, ICICI"
+                      registration={register("bankAccount.bankName")}
+                      error={errors.bankAccount?.bankName?.message}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      label="Account Number"
+                      format="numeric"
+                      maxLength={13}
+                      placeholder="e.g. 50100432109876"
+                      registration={register("bankAccount.accountNumber")}
+                      error={errors.bankAccount?.accountNumber?.message}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      label="IFSC Code"
+                      format="uppercase"
+                      maxLength={11}
+                      placeholder="e.g. HDFC0001234"
+                      registration={register("bankAccount.ifscCode")}
+                      error={errors.bankAccount?.ifscCode?.message}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextInput
+                      select
+                      label="Account Type"
+                      registration={register("bankAccount.accountType")}
+                      error={errors.bankAccount?.accountType?.message}
+                    >
+                      <MenuItem value="SALARY">Salary Account</MenuItem>
+                      <MenuItem value="SAVINGS">Savings Account</MenuItem>
+                      <MenuItem value="CURRENT">Current Account</MenuItem>
+                    </TextInput>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <TextInput
+                      label="Account Holder Name"
+                      placeholder="Leave blank to use employee's full name"
+                      registration={register("bankAccount.accountHolderName")}
+                      error={errors.bankAccount?.accountHolderName?.message}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* ── CARD 7: COMPENSATION & SALARY SETUP ── */}
             <Card sx={{ borderRadius: "12px", boxShadow: "0px 1px 3px rgba(0,0,0,0.05)", border: "1px solid #E5E7EB" }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <AccountBalanceOutlinedIcon color="primary" />
+                    <PaymentsOutlinedIcon color="primary" />
                     <Typography variant="h6" sx={{ fontWeight: 700, color: "#1F2937" }}>
                       Compensation & Salary Setup
                     </Typography>
@@ -666,22 +969,23 @@ export default function EmployeeCreateView() {
             </Card>
 
             {/* ── ACTION BUTTONS ── */}
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, pt: 1, pb: 4 }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column-reverse", sm: "row" }, justifyContent: "flex-end", gap: 2, pt: 1, pb: 4 }}>
               <Button
                 variant="outlined"
                 color="inherit"
                 onClick={() => navigate(paths.employees.directory)}
-                sx={{ px: 4, borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
+                sx={{ px: 4, width: { xs: "100%", sm: "auto" }, borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                disabled={submitting}
+                disabled={submitting || resolvingCeoPlacement || (isCeoRole && Boolean(ceoPlacementError || placementLoadError))}
                 sx={{
                   px: 4,
                   py: 1.2,
+                  width: { xs: "100%", sm: "auto" },
                   borderRadius: "8px",
                   textTransform: "none",
                   fontWeight: 700,

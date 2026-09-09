@@ -153,16 +153,17 @@ function LeaveTypeFormDialog({
           sx: {
             borderRadius: "20px",
             p: { xs: 2.5, sm: 3.5 },
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-            border: "1px solid #E2E8F0",
+            border: "1px solid",
+            borderColor: "divider",
             mx: { xs: 2, sm: "auto" },
             width: { xs: "calc(100% - 32px)", sm: "100%" },
           },
         },
       }}
     >
-      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>Create Leave Type</DialogTitle>
+      <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>Create Leave Type</DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
         {error && (
@@ -352,8 +353,8 @@ function LeaveTypeFormDialog({
           disabled={submitting || !name.trim() || !code.trim()}
           variant="contained"
           sx={{
-            backgroundColor: "#6D5DF6",
-            "&:hover": { backgroundColor: "#5B4EE4" },
+            backgroundColor: "primary.main",
+            "&:hover": { backgroundColor: "primary.dark" },
             fontWeight: 600,
             px: 3,
           }}
@@ -420,7 +421,7 @@ export default function LeaveTypeContent() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <PolicyOutlinedIcon sx={{ fontSize: 36, color: "#6D5DF6" }} />
+            <PolicyOutlinedIcon sx={{ fontSize: 36, color: "primary.main" }} />
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
                 Leave Types
@@ -437,11 +438,11 @@ export default function LeaveTypeContent() {
               startIcon={<AddIcon />}
               onClick={handleOpenCreate}
               sx={{
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 textTransform: "none",
                 fontWeight: 600,
                 borderRadius: 2,
-                "&:hover": { backgroundColor: "#5B4EE4" },
+                "&:hover": { backgroundColor: "primary.dark" },
               }}
             >
               Add Leave Type
@@ -452,7 +453,7 @@ export default function LeaveTypeContent() {
         {/* Content Section */}
         {loading && leaveTypes.length === 0 ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: "#6D5DF6" }} />
+            <CircularProgress sx={{ color: "primary.main" }} />
           </Box>
         ) : error && !formDialog.isOpen ? (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -480,10 +481,10 @@ export default function LeaveTypeContent() {
                 startIcon={<AddIcon />}
                 onClick={handleOpenCreate}
                 sx={{
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   textTransform: "none",
                   fontWeight: 600,
-                  "&:hover": { backgroundColor: "#5B4EE4" },
+                  "&:hover": { backgroundColor: "primary.dark" },
                 }}
               >
                 Create Your First Leave Type

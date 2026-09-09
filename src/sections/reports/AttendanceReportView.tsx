@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -35,7 +36,8 @@ import AttendanceKpiCards, { type AttendanceKpiData } from "../../components/car
 import TodayStatusBreakdownCard, { type StatusBreakdownData } from "../../components/card/TodayStatusBreakdownCard";
 import EmployeeAttendanceTable, { type AttendanceRecordRow } from "../../components/table/EmployeeAttendanceTable";
 import { FilterBar } from "../../components/filter";
-
+import PageHeader from "../../components/common/PageHeader";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import ManualAttendanceDialog from "../attendance/components/ManualAttendanceDialog";
 import RegularizeRequestDialog from "../attendance/components/RegularizeRequestDialog";
 
@@ -49,29 +51,6 @@ const STATUS_OPTIONS = [
   { value: "HOLIDAY", label: "Holiday" },
   { value: "WEEK_OFF", label: "Week Off" },
 ];
-
-const COLOR_PALETTE = [
-  "#6D5DF6", "#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#EC4899"
-];
-
-function getInitials(name?: string): string {
-  if (!name) return "EMP";
-  const parts = name.trim().split(" ");
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
-}
-
-function getColorForName(name?: string): string {
-  if (!name) return COLOR_PALETTE[0];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % COLOR_PALETTE.length;
-  return COLOR_PALETTE[index];
-}
 
 function getRecordLocalDateStr(r: AttendanceRecord): string {
   const raw = r.attendanceDate || r.firstCheckIn || (r as any).createdAt || "";
@@ -128,8 +107,13 @@ export default function AttendanceReportView() {
   const [manualOpen, setManualOpen] = useState(false);
   const [regularizeOpen, setRegularizeOpen] = useState(false);
 
-  const { role, hasPermission } = usePermissions();
+  const { role, hasPermission, isSuperAdmin } = usePermissions();
+  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
+  const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("attendance.read") && !hasPermission("report.read"));
   const canMarkAttendance = hasPermission("attendance.create");
+  const canReadDepartments = isOrgAdmin || hasPermission("department.read");
+  const canReadDesignations = isOrgAdmin || hasPermission("designation.read");
+  const canReadBranches = isOrgAdmin || hasPermission("branch.read");
 
   const dispatch = useDispatch<AppDispatch>();
   const { departments } = useSelector((state: RootState) => state.department);
@@ -137,10 +121,16 @@ export default function AttendanceReportView() {
   const { branches } = useSelector((state: RootState) => state.branch);
 
   useEffect(() => {
-    dispatch(listDepartmentsRequest());
-    dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
-    dispatch(listBranchesRequest());
-  }, [dispatch]);
+    if (canReadDepartments) {
+      dispatch(listDepartmentsRequest());
+    }
+    if (canReadDesignations) {
+      dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 100 }));
+    }
+    if (canReadBranches) {
+      dispatch(listBranchesRequest());
+    }
+  }, [dispatch, canReadDepartments, canReadDesignations, canReadBranches]);
 
   const { pageNumber, pageSize, setPageNumber } =
     usePagination({ initialPageSize: 100 });
@@ -205,9 +195,12 @@ export default function AttendanceReportView() {
   };
 
   useEffect(() => {
-    fetchReport();
+    if (!isEmployeeRole) {
+      fetchReport();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    isEmployeeRole,
     pageNumber, 
     pageSize, 
     fromDate, 
@@ -425,14 +418,25 @@ export default function AttendanceReportView() {
     return rawStatus || "PRESENT";
   };
 
-  // Convert real live API records to table row format
+  // Convert real live API records to table row format — one row per punch event
   const tableRows: AttendanceRecordRow[] = useMemo(() => {
-    return todayRecords.map((r) => {
+    const formatPunchDate = (dateInput?: string) => {
+      if (!dateInput) return "--";
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) return "--";
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yy = String(d.getFullYear()).slice(-2);
+      return `${dd} ${mm} ${yy}`;
+    };
+
+    return todayRecords.flatMap((r) => {
       const empObj = typeof r?.employeeId === "object" ? r.employeeId : r?.employee;
       const firstName = empObj?.firstName || (r as any)?.firstName || "";
       const lastName = empObj?.lastName || (r as any)?.lastName || "";
       const fullName = empObj?.fullName || (r as any)?.fullName || (r as any)?.employeeName || `${firstName} ${lastName}`.trim();
       const empName = fullName || "Employee";
+      const empCode = empObj?.employeeCode || (r as any)?.employeeCode || "--";
 
       const avatarUrl =
         empObj?.avatarUrl ||
@@ -442,27 +446,34 @@ export default function AttendanceReportView() {
         (empObj as any)?.user?.avatarUrl ||
         "";
 
-      const mins = getRealWorkedMinutes(r);
       const status = getResolvedStatus(r);
-
       const deptName = (empObj as any)?.department?.name || (empObj as any)?.departmentName || (r as any)?.departmentName || "";
       const desigName = (empObj as any)?.designation?.title || (empObj as any)?.designationName || (r as any)?.designationName || "";
       const branchName = (empObj as any)?.branch?.name || (empObj as any)?.branchName || (r as any)?.branchName || "";
+      const punchDate = formatPunchDate(r?.attendanceDate);
 
-      return {
-        id: r?._id || Math.random().toString(),
+      // Real punch log: one row per session. Falls back to firstCheckIn/lastCheckOut
+      // only for older records that predate the sessions[] array.
+      const sessions = Array.isArray(r?.sessions) && r.sessions.length > 0
+        ? r.sessions
+        : [
+            ...(r?.firstCheckIn ? [{ timestamp: r.firstCheckIn }] : []),
+            ...(r?.lastCheckOut ? [{ timestamp: r.lastCheckOut }] : []),
+          ];
+
+      return sessions.map((s, idx) => ({
+        id: `${r?._id || "rec"}-${idx}`,
+        recordId: r?._id || "",
+        employeeCode: empCode,
         employeeName: empName,
-        initials: getInitials(empName),
-        avatarColor: getColorForName(empName),
         avatarUrl,
+        punchLog: formatTime(s.timestamp),
+        punchDate,
+        status,
         departmentName: deptName,
         designationName: desigName,
-        branchName: branchName,
-        checkIn: formatTime(r?.firstCheckIn),
-        checkOut: formatTime(r?.lastCheckOut),
-        hours: formatWorkedTime(mins),
-        status: status,
-      };
+        branchName,
+      }));
     });
   }, [todayRecords]);
 
@@ -563,9 +574,13 @@ export default function AttendanceReportView() {
     return days;
   }, [records]);
 
-  if (role === "EMPLOYEE") {
+  if (isEmployeeRole) {
     return (
-      <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
+      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "background.default", minHeight: "100vh" }}>
+        <PageHeader
+          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
+          title="My Attendance"
+        />
         <AttendanceTab hideTabs={true} />
       </Box>
     );
@@ -573,40 +588,35 @@ export default function AttendanceReportView() {
 
   return (
     <>
-      <Box sx={{ p: { xs: 2.5, md: 4 }, backgroundColor: "#F8FAFC", minHeight: "100vh" }}>
-        
-        {/* Top Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 3.5 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-              Attendance
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
-              Real-time workforce attendance tracking
-            </Typography>
-          </Box>
-
-          {canMarkAttendance && (
-            <Button
-              variant="contained"
-              onClick={() => setManualOpen(true)}
-              startIcon={<AddIcon />}
-              sx={{
-                borderRadius: 2.5,
-                px: 2.5,
-                py: 1,
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: "0.875rem",
-                backgroundColor: "#6D5DF6",
-                boxShadow: "0 4px 14px rgba(109, 93, 246, 0.3)",
-                "&:hover": { backgroundColor: "#5B4BEA" },
-              }}
-            >
-              Mark Attendance
-            </Button>
-          )}
-        </Box>
+      <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: "background.default", minHeight: "100vh" }}>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<EventAvailableOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
+          title="Attendance"
+          subtitle="Real-time workforce attendance tracking"
+          action={
+            canMarkAttendance && (
+              <Button
+                variant="contained"
+                onClick={() => setManualOpen(true)}
+                startIcon={<AddIcon />}
+                sx={{
+                  borderRadius: "10px",
+                  px: 2.5,
+                  height: 40,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  backgroundColor: "primary.main",
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  "&:hover": { backgroundColor: "primary.dark" },
+                }}
+              >
+                Mark Attendance
+              </Button>
+            )
+          }
+        />
 
         {/* 1. Top KPI Summary Cards */}
         <AttendanceKpiCards data={kpiData} />
@@ -687,7 +697,6 @@ export default function AttendanceReportView() {
           <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 66.666%" } }}>
             <LazyWeeklyTrendBarChart
               data={trendData}
-              onRegularizeClick={() => setRegularizeOpen(true)}
             />
           </Box>
           <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 33.333%" } }}>
@@ -714,8 +723,9 @@ export default function AttendanceReportView() {
           <>
             <EmployeeAttendanceTable
               records={paginatedRows}
+              startIndex={clientPage * clientRowsPerPage}
               onRowClick={(row) => {
-                const origRecord = records.find((r) => r._id === row.id);
+                const origRecord = records.find((r) => r._id === row.recordId);
                 if (origRecord) detailDialog.open(origRecord);
               }}
             />

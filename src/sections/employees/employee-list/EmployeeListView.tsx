@@ -6,32 +6,17 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import AddIcon from "@mui/icons-material/Add";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import { paths } from "../../../routes/paths";
-import { formatDate } from "../../../utils/format-date";
-import { StatusChip } from "../../../components/common/StatusChip";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
 import CreditCompOffDialog from "../../leave/components/CreditCompOffDialog";
@@ -50,7 +35,6 @@ import { useDebounce } from "../../../hooks/useDebounce";
 import { usePagination } from "../../../hooks/usePagination";
 import ManualAttendanceDialog from "../../attendance/components/ManualAttendanceDialog";
 import ManageRoleDialog from "./components/ManageRoleDialog";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { listUsers, type UserAccountData } from "../../../api/user.api";
 import { deleteEmployee, bulkExportEmployees } from "../../../api/employee.api";
 import { ConfirmDialog } from "../../../components/modal";
@@ -58,13 +42,16 @@ import CustomTablePagination from "../../../components/pagination";
 import UploadOutlinedIcon from "@mui/icons-material/UploadOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import HistoryIcon from "@mui/icons-material/History";
 import BulkImportDialog from "./components/BulkImportDialog";
+import ImportAuditHistoryDialog from "./components/ImportAuditHistoryDialog";
 
 // People Hub Dual Design Components
 import { ViewModeSwitcher, type ViewMode } from "./components/ViewModeSwitcher";
 import { PeopleHubKpiCards } from "./components/PeopleHubKpiCards";
 import { PeopleHubDepartmentTabs, type FilterState } from "./components/PeopleHubDepartmentTabs";
 import { PeopleHubTableView } from "./components/PeopleHubTableView";
+import { OrganizationChart } from "../directory/components/OrganizationChart";
 
 const getFilterString = (val: string | string[] | undefined): string =>
   Array.isArray(val) ? val[0] ?? "" : val ?? "";
@@ -80,10 +67,6 @@ function EmployeeListView() {
   const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>("");
 
   const handleViewModeChange = (mode: ViewMode) => {
-    if (mode === "directory") {
-      navigate(paths.employees.directory);
-      return;
-    }
     setViewMode(mode);
     localStorage.setItem("employee_view_mode", mode);
   };
@@ -105,6 +88,7 @@ function EmployeeListView() {
   const canManageRoles = hasPermission("role.update");
   const canReadRoles = hasPermission("role.read");
   const canDelete = hasPermission("employee.delete");
+  const canReadBranches = hasPermission("branch.read");
 
   const {
     pageNumber,
@@ -144,6 +128,7 @@ function EmployeeListView() {
 
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
   // Extract org/tenant slug
@@ -224,7 +209,7 @@ function EmployeeListView() {
     }
   };
 
-  const [usersList, setUsersList] = useState<UserAccountData[]>([]);
+  const [_usersList, setUsersList] = useState<UserAccountData[]>([]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -260,68 +245,6 @@ function EmployeeListView() {
     }
   };
 
-  const getUserRole = (emp: EmployeeListItem) => {
-    const user = usersList.find(
-      (u) =>
-        u.employeeId === emp._id ||
-        u.email.toLowerCase() === emp.email.toLowerCase()
-    );
-    return user ? user.role : "EMPLOYEE";
-  };
-
-  const getUserRoleLabel = (emp: EmployeeListItem) => {
-    const role = getUserRole(emp);
-    const roleLabels: Record<string, string> = {
-      ORG_ADMIN: "Org Admin",
-      HR_ADMIN: "HR Admin",
-      BRANCH_ADMIN: "Branch Admin",
-      LEADERSHIP: "Leadership",
-      MANAGER: "Manager",
-      PRODUCT_MANAGER: "Product Manager",
-      TEAM_LEADER: "Team Leader",
-      EMPLOYEE: "Employee",
-    };
-    return roleLabels[role] || role;
-  };
-
-  const getUserRoleChipColor = (role: string) => {
-    switch (role) {
-      case "ORG_ADMIN":
-        return "#FEE2E2";
-      case "HR_ADMIN":
-        return "#F3E8FF";
-      case "BRANCH_ADMIN":
-        return "#E0F2FE";
-      case "LEADERSHIP":
-      case "MANAGER":
-      case "PRODUCT_MANAGER":
-      case "TEAM_LEADER":
-        return "#ECFDF5";
-      case "EMPLOYEE":
-      default:
-        return "#F3F4F6";
-    }
-  };
-
-  const getUserRoleChipTextColor = (role: string) => {
-    switch (role) {
-      case "ORG_ADMIN":
-        return "#991B1B";
-      case "HR_ADMIN":
-        return "#6B21A8";
-      case "BRANCH_ADMIN":
-        return "#075985";
-      case "LEADERSHIP":
-      case "MANAGER":
-      case "PRODUCT_MANAGER":
-      case "TEAM_LEADER":
-        return "#065F46";
-      case "EMPLOYEE":
-      default:
-        return "#374151";
-    }
-  };
-
   const handleStatusChange = (newStatus: string) => {
     if (statusMenuTarget?._id) {
       dispatch(updateEmployeeStatusRequest(statusMenuTarget._id, newStatus));
@@ -348,11 +271,11 @@ function EmployeeListView() {
     if (designations.length === 0) {
       dispatch(listDesignationsRequest({ pageNumber: 1, pageSize: 50 }));
     }
-    if (branches.length === 0) {
+    if (branches.length === 0 && canReadBranches) {
       dispatch(listBranchesRequest());
     }
     dispatch(clearEmployeeError());
-  }, [dispatch, departments.length, designations.length, branches.length]);
+  }, [dispatch, departments.length, designations.length, branches.length, canReadBranches]);
 
   const departmentsList = useMemo(() => {
     const names = new Set<string>();
@@ -503,41 +426,6 @@ function EmployeeListView() {
     setPageNumber,
   ]);
 
-  // Helper mapping IDs to human-readable names
-  const getDepartmentName = (id: any) => {
-    if (!id) return "—";
-    if (typeof id === "object") {
-      if (id.name) {
-        return `${id.name} (${id.code || "—"})`;
-      }
-      id = id._id;
-    }
-    if (!id || !Array.isArray(departments)) return "—";
-    const dept = departments.find((d) => d && d._id === id);
-    return dept ? `${dept.name || "—"} (${dept.code || "—"})` : "—";
-  };
-
-  const getDesignationName = (id: any) => {
-    if (!id) return "—";
-    if (typeof id === "object") {
-      if (id.name) {
-        return id.name;
-      }
-      id = id._id;
-    }
-    if (!id || !Array.isArray(designations)) return "—";
-    const desig = designations.find((d) => d && d._id === id);
-    return desig ? desig.name || "—" : "—";
-  };
-
-  const formatEmployeeType = (type: string) => {
-    if (!type) return "—";
-    return type
-      .split("_")
-      .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(" ");
-  };
-
   const displayedEmployees = employees.filter((emp) => {
     // 1. Branch Multi-Select Filter
     const selectedBranches = Array.isArray(filters.branch)
@@ -684,9 +572,9 @@ function EmployeeListView() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <PeopleAltOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
+            <PeopleAltOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
                 All Employees
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -698,23 +586,20 @@ function EmployeeListView() {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-            {/* Design View Switcher (Design 1: Classic vs Design 2: People Hub) */}
-            <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
-
             {/* Export Button */}
             <Button
               variant="outlined"
               size="small"
               disabled={exportLoading}
-              startIcon={exportLoading ? <CircularProgress size={16} color="inherit" /> : <DownloadOutlinedIcon sx={{ fontSize: 20 }} />}
+              startIcon={exportLoading ? <CircularProgress size={16} color="inherit" /> : <UploadOutlinedIcon sx={{ fontSize: 20 }} />}
               endIcon={<KeyboardArrowDownIcon />}
               onClick={(e) => setExportAnchorEl(e.currentTarget)}
               sx={{
                 height: 40,
                 borderRadius: "10px",
                 textTransform: "none",
-                borderColor: "#E2E8F0",
-                color: "#475569",
+                borderColor: "divider",
+                color: "text.secondary",
                 fontWeight: 600,
                 fontSize: "14px",
                 px: 2.5,
@@ -722,8 +607,8 @@ function EmployeeListView() {
                 whiteSpace: "nowrap",
                 flexShrink: 0,
                 "&:hover": {
-                  borderColor: "#CBD5E1",
-                  backgroundColor: "#F8FAFC",
+                  borderColor: "primary.main",
+                  backgroundColor: "action.hover",
                 },
               }}
             >
@@ -755,14 +640,14 @@ function EmployeeListView() {
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<UploadOutlinedIcon sx={{ fontSize: 20 }} />}
+                startIcon={<DownloadOutlinedIcon sx={{ fontSize: 20 }} />}
                 onClick={() => setImportOpen(true)}
                 sx={{
                   height: 40,
                   borderRadius: "10px",
                   textTransform: "none",
-                  borderColor: "#6D5DF6",
-                  color: "#6D5DF6",
+                  borderColor: "primary.main",
+                  color: "primary.main",
                   fontWeight: 600,
                   fontSize: "14px",
                   px: 2.5,
@@ -770,14 +655,44 @@ function EmployeeListView() {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   "&:hover": {
-                    borderColor: "#5B4BEA",
-                    backgroundColor: "#F5F3FF",
+                    borderColor: "primary.dark",
+                    backgroundColor: "primary.lighter",
                   },
                 }}
               >
                 Import
               </Button>
             )}
+
+            {/* Import / Export History Log Button */}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<HistoryIcon sx={{ fontSize: 18 }} />}
+              onClick={() => setHistoryOpen(true)}
+              sx={{
+                height: 40,
+                borderRadius: "10px",
+                textTransform: "none",
+                borderColor: "divider",
+                color: "text.secondary",
+                fontWeight: 600,
+                fontSize: "14px",
+                px: 2,
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                "&:hover": {
+                  borderColor: "primary.main",
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              History
+            </Button>
+
+            {/* Design View Switcher Pill (Right side of Import button) */}
+            <ViewModeSwitcher viewMode={viewMode} onChange={handleViewModeChange} />
 
             {/* Add Employee Button */}
             {canCreate && (
@@ -790,7 +705,7 @@ function EmployeeListView() {
                   height: 40,
                   borderRadius: "10px",
                   textTransform: "none",
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   color: "#FFFFFF",
                   fontWeight: 600,
                   fontSize: "14px",
@@ -800,7 +715,7 @@ function EmployeeListView() {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   "&:hover": {
-                    backgroundColor: "#5B4BEA",
+                    backgroundColor: "primary.dark",
                     boxShadow: "0 4px 12px rgba(109, 93, 246, 0.35)",
                   },
                 }}
@@ -821,6 +736,7 @@ function EmployeeListView() {
 
         {/* Single Line Unified Toolbar (Search + Category Filters) Directly Above Cards */}
         <PeopleHubDepartmentTabs
+          canReadBranches={canReadBranches}
           filters={filters}
           searchElement={
             <TextField
@@ -843,19 +759,19 @@ function EmployeeListView() {
                 "& .MuiOutlinedInput-root": {
                   height: 40,
                   borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "background.paper",
                   fontSize: "14px",
-                  color: "#0F172A",
-                  "& fieldset": { borderColor: "#E2E8F0" },
-                  "&:hover fieldset": { borderColor: "#CBD5E1" },
-                  "&.Mui-focused fieldset": { borderColor: "#6D5DF6" },
+                  color: "text.primary",
+                  "& fieldset": { borderColor: "divider" },
+                  "&:hover fieldset": { borderColor: "primary.main" },
+                  "&.Mui-focused fieldset": { borderColor: "primary.main" },
                 },
                 "& .MuiOutlinedInput-input": {
                   py: 0,
                   height: 40,
                   fontSize: "14px",
                   boxSizing: "border-box",
-                  color: "#0F172A",
+                  color: "text.primary",
                   "&::placeholder": {
                     color: "#94A3B8",
                     opacity: 1,
@@ -923,8 +839,12 @@ function EmployeeListView() {
           </Alert>
         )}
 
-        {/* Conditional View Rendering: Design 2 (People Hub) vs Design 1 (Classic) */}
-        {viewMode === "people_hub" ? (
+        {/* Conditional View Rendering: Org Chart vs Table View (People Hub) */}
+        {viewMode === "org_chart" ? (
+          <Box sx={{ mt: 1 }}>
+            <OrganizationChart />
+          </Box>
+        ) : (
           <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
             {loading && (
               <Box
@@ -941,7 +861,7 @@ function EmployeeListView() {
                   alignItems: "center",
                 }}
               >
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             )}
             <PeopleHubTableView
@@ -974,240 +894,6 @@ function EmployeeListView() {
                 navigate(paths.employees.detail.replace(":id", emp._id));
               }}
             />
-            <CustomTablePagination
-              count={total}
-              rowsPerPage={pageSize}
-              page={pageNumber}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              rowsPerPageOptions={[10, 25, 50, 100]}
-            />
-          </Card>
-        ) : (
-          <Card sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
-            {loading && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "rgba(255, 255, 255, 0.6)",
-                  zIndex: 10,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
-              </Box>
-            )}
-            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Employee Name</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Email</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Phone</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Department</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Designation</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Type</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Joining Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                    {canReadRoles && (
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>System Role</TableCell>
-                    )}
-                    {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
-                      <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
-                    )}
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {displayedEmployees.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)}
-                        align="center"
-                      >
-                        <Box sx={{ py: 8 }}>
-                          <PeopleAltOutlinedIcon sx={{ fontSize: 48, color: "#D1D5DB", mb: 1.5 }} />
-                          <Typography variant="body2" color="text.secondary">
-                            No employees found. {canCreate && 'Click "Add Employee" to create one.'}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    displayedEmployees.map((emp, index) => (
-                      <TableRow
-                        key={emp._id || index}
-                        hover
-                        sx={{ height: 53, "&:last-child td": { border: 0 } }}
-                      >
-                        <TableCell>
-                          <Chip
-                            label={emp.employeeCode || "—"}
-                            size="small"
-                            sx={{
-                              backgroundColor: "#EEF2FF",
-                              color: "#6D5DF6",
-                              fontWeight: 600,
-                              fontSize: 12,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          sx={{ fontWeight: 600, fontSize: 14, cursor: "pointer", color: "#6D5DF6" }}
-                          onClick={() => navigate(paths.employees.detail.replace(":id", emp._id))}
-                        >
-                          {`${emp.firstName ?? ""} ${emp.lastName ?? ""}`}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 13 }}>{emp.email || "—"}</TableCell>
-                        <TableCell sx={{ fontSize: 13 }}>{emp.phone || "—"}</TableCell>
-                        <TableCell sx={{ fontSize: 13 }}>
-                          {getDepartmentName(emp.departmentId)}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 13 }}>
-                          {getDesignationName(emp.designationId)}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
-                          {formatEmployeeType(emp.employeeType)}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 13 }}>
-                          {formatDate(emp.joiningDate)}
-                        </TableCell>
-                        <TableCell>
-                          <StatusChip
-                            status={emp.status}
-                            size="small"
-                            onClick={
-                              canUpdate
-                                ? (e) => {
-                                    setStatusMenuAnchor(e.currentTarget);
-                                    setStatusMenuTarget(emp);
-                                  }
-                                : undefined
-                            }
-                            sx={{
-                              cursor: canUpdate ? "pointer" : "default",
-                              "&:hover": canUpdate
-                                ? {
-                                    backgroundColor: "rgba(0, 0, 0, 0.04)",
-                                  }
-                                : {},
-                            }}
-                          />
-                        </TableCell>
-                        {canReadRoles && (
-                          <TableCell>
-                            <Chip
-                              label={getUserRoleLabel(emp)}
-                              size="small"
-                              sx={{
-                                backgroundColor: getUserRoleChipColor(getUserRole(emp)),
-                                color: getUserRoleChipTextColor(getUserRole(emp)),
-                                fontWeight: 600,
-                                fontSize: 11,
-                              }}
-                            />
-                          </TableCell>
-                        )}
-                        {(canUpdate || hasPermission("attendance.create") || hasPermission("leave.create") || canManageRoles || canDelete) && (
-                          <TableCell>
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              {canUpdate && (
-                                <IconButton
-                                  size="small"
-                                  onClick={() => {
-                                    setEditTarget(emp);
-                                    setEditOpen(true);
-                                  }}
-                                  sx={{ color: "#6D5DF6" }}
-                                >
-                                  <EditOutlinedIcon fontSize="small" />
-                                </IconButton>
-                              )}
-                              {canManageRoles && (
-                                <IconButton
-                                  size="small"
-                                  title="Manage System Role"
-                                  onClick={() => {
-                                    setRoleTarget(emp);
-                                    setRoleOpen(true);
-                                  }}
-                                  sx={{ color: "#8B5CF6" }}
-                                >
-                                  <AdminPanelSettingsIcon fontSize="small" />
-                                </IconButton>
-                              )}
-                              {hasPermission("attendance.create") && (
-                                <IconButton
-                                  size="small"
-                                  title="Record Manual Attendance"
-                                  onClick={() => {
-                                    setManualTarget(emp);
-                                    setManualOpen(true);
-                                  }}
-                                  sx={{ color: "#10B981" }}
-                                >
-                                  <CalendarMonthOutlinedIcon fontSize="small" />
-                                </IconButton>
-                              )}
-                              {hasPermission("leave.create") && (
-                                <IconButton
-                                  size="small"
-                                  title="Credit Comp-Off"
-                                  onClick={() => {
-                                    setCompOffTarget(emp);
-                                    setCompOffOpen(true);
-                                  }}
-                                  sx={{ color: "#D97706" }}
-                                >
-                                  <AccessTimeIcon fontSize="small" />
-                                </IconButton>
-                              )}
-                              {canDelete && (
-                                <IconButton
-                                  size="small"
-                                  title="Delete Employee"
-                                  onClick={() => {
-                                    setDeleteTarget(emp);
-                                    setDeleteOpen(true);
-                                  }}
-                                  sx={{ color: "#EF4444" }}
-                                >
-                                  <DeleteOutlineIcon fontSize="small" />
-                                </IconButton>
-                              )}
-                            </Box>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))
-                  )}
-                  {displayedEmployees.length > 0 && Math.max(0, 10 - displayedEmployees.length) > 0 &&
-                    Array.from({ length: Math.max(0, 10 - displayedEmployees.length) }).map((_, index) => {
-                      const isLast = index === Math.max(0, 10 - displayedEmployees.length) - 1;
-                      return (
-                        <TableRow
-                          key={`empty-classic-${index}`}
-                          sx={{
-                            height: 53,
-                            "& td": { borderBottom: isLast ? 0 : "1px solid #F1F5F9" },
-                          }}
-                        >
-                          <TableCell colSpan={9 + (canUpdate || hasPermission("attendance.create") || canManageRoles ? 1 : 0) + (canReadRoles ? 1 : 0)} />
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            {/* Table Pagination */}
             <CustomTablePagination
               count={total}
               rowsPerPage={pageSize}
@@ -1356,6 +1042,11 @@ function EmployeeListView() {
           }}
         />
       )}
+
+      <ImportAuditHistoryDialog
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
     </>
   );
 }

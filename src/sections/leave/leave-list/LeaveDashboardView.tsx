@@ -18,6 +18,8 @@ import Tab from "@mui/material/Tab";
 import Chip from "@mui/material/Chip";
 import AddIcon from "@mui/icons-material/Add";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
+import PageHeader from "../../../components/common/PageHeader";
 
 import { useSnackbar } from "../../../components/snackbar";
 import { usePermissions } from "../../../hooks/usePermissions";
@@ -72,17 +74,17 @@ function LeaveDetailDialog({
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: "12px !important" }}>
         <Box>
           <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700 }}>EMPLOYEE</Typography>
-          <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>{empName}</Typography>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{empName}</Typography>
         </Box>
 
         <Box>
           <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700 }}>LEAVE TYPE</Typography>
-          <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>{request?.leaveTypeId?.name || "Leave"}</Typography>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{request?.leaveTypeId?.name || "Leave"}</Typography>
         </Box>
 
         <Box>
           <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 700 }}>PERIOD</Typography>
-          <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>
             {new Date(request.fromDate).toLocaleDateString()} - {new Date(request.toDate).toLocaleDateString()} ({request.totalDays || 1} day(s))
           </Typography>
         </Box>
@@ -123,23 +125,36 @@ export default function LeaveDashboardView() {
   const [loadingOrgRequests, setLoadingOrgRequests] = useState(false);
   const navigate = useNavigate();
 
+  const { role, isSuperAdmin, hasPermission } = usePermissions();
+  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
+  const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("leave.approve") && !hasPermission("leave.read"));
+  const user = useSelector((state: RootState) => state.auth?.user);
+
+  const canReadEmployees = isOrgAdmin || hasPermission("employee.read");
+  const canReadLeaves = isOrgAdmin || hasPermission("leave.read");
+  const canApproveLeaves = isOrgAdmin || hasPermission("leave.approve");
+
   useEffect(() => {
     let isMounted = true;
-    setLoadingOrgEmployees(true);
-    listEmployees(1, 50)
-      .then((res) => {
-        if (isMounted && res?.data && Array.isArray(res.data)) {
-          setOrgEmployees(res.data);
-        }
-      })
-      .catch((err) => console.error("Failed prefetching employees for leave balances", err))
-      .finally(() => {
-        if (isMounted) setLoadingOrgEmployees(false);
-      });
+    if (canReadEmployees) {
+      setLoadingOrgEmployees(true);
+      listEmployees(1, 50)
+        .then((res) => {
+          if (isMounted && res?.data && Array.isArray(res.data)) {
+            setOrgEmployees(res.data);
+          }
+        })
+        .catch((err) => console.error("Failed prefetching employees for leave balances", err))
+        .finally(() => {
+          if (isMounted) setLoadingOrgEmployees(false);
+        });
+    } else {
+      setLoadingOrgEmployees(false);
+    }
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [canReadEmployees]);
 
   const {
     balances = [],
@@ -161,13 +176,8 @@ export default function LeaveDashboardView() {
     error: null,
   });
 
-  const { role, isSuperAdmin, hasPermission } = usePermissions();
-  const isEmployeeRole = role === "EMPLOYEE" || (!isSuperAdmin && !hasPermission("leave.approve"));
-  const isOrgAdmin = role === "ORG_ADMIN" || isSuperAdmin;
-  const user = useSelector((state: RootState) => state.auth?.user);
-
   const fetchOrgLeaves = useCallback(() => {
-    if (isOrgAdmin || hasPermission("leave.read")) {
+    if (canReadLeaves) {
       setLoadingOrgRequests(true);
       getLeaveReport({ pageNumber: 1, pageSize: 50 })
         .then((res) => {
@@ -182,7 +192,7 @@ export default function LeaveDashboardView() {
           setLoadingOrgRequests(false);
         });
     }
-  }, [isOrgAdmin, hasPermission]);
+  }, [canReadLeaves]);
 
   useEffect(() => {
     fetchOrgLeaves();
@@ -207,10 +217,13 @@ export default function LeaveDashboardView() {
   useEffect(() => {
     dispatch(getMyLeaveBalancesRequest(selectedYear));
     dispatch(listLeaveTypesRequest());
-    dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
     dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
     dispatch(getMyCompOffBalancesRequest());
-  }, [dispatch, selectedYear, pageNumber, pageSize]);
+
+    if (canApproveLeaves) {
+      dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
+    }
+  }, [dispatch, selectedYear, pageNumber, pageSize, canApproveLeaves]);
 
   // Handle success auto-close and reload
   useSubmitSuccess({
@@ -333,55 +346,52 @@ export default function LeaveDashboardView() {
 
   const pendingCount = displayRequests.filter((r) => (r?.status || "").toUpperCase() === "PENDING").length;
 
+  if (isEmployeeRole) {
+    return (
+      <Box sx={{ p: { xs: 2, md: 3 } }}>
+        <PageHeader
+          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
+          title="My Leaves"
+        />
+        <LeaveTab isViewingOther={false} user={user} />
+      </Box>
+    );
+  }
+
   return (
     <>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        {/* Page Header Section */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "stretch", sm: "center" },
-            justifyContent: "space-between",
-            gap: 2,
-            mb: 3,
-          }}
-        >
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-              Leave Management
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 500 }}>
-              Manage team leave, balances, and approvals
-            </Typography>
-          </Box>
+        {/* Unified Enterprise Page Header */}
+        <PageHeader
+          icon={<EventNoteOutlinedIcon sx={{ fontSize: 26, color: "primary.main" }} />}
+          title="Leave Management"
+          subtitle="Manage team leave, balances, and approvals"
+          action={
+            role !== "ORG_ADMIN" && !isProfileBlocked && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenApply}
+                sx={{
+                  backgroundColor: "primary.main",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  borderRadius: "10px",
+                  px: 2.5,
+                  height: 40,
+                  boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                  "&:hover": { backgroundColor: "primary.dark" },
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                Apply Leave
+              </Button>
+            )
+          }
+        />
 
-          {role !== "ORG_ADMIN" && !isProfileBlocked && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenApply}
-              sx={{
-                backgroundColor: "#4F46E5",
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: "14px",
-                borderRadius: "10px",
-                px: 2.5,
-                height: 40,
-                boxShadow: "0 2px 6px rgba(79, 70, 229, 0.25)",
-                "&:hover": { backgroundColor: "#4338CA" },
-                width: { xs: "100%", sm: "auto" },
-              }}
-            >
-              Apply Leave
-            </Button>
-          )}
-        </Box>
-
-        {isEmployeeRole ? (
-          <LeaveTab isViewingOther={false} user={user} />
-        ) : isProfileBlocked ? (
+        {isProfileBlocked ? (
           <Paper
             sx={{
               p: 6,
@@ -463,7 +473,7 @@ export default function LeaveDashboardView() {
             />
 
             {/* Navigation Tabs Bar */}
-            <Box sx={{ borderBottom: 1, borderColor: "#E2E8F0", mb: 3 }}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
               <Tabs
                 value={tabValue}
                 onChange={(_, val) => setTabValue(val)}

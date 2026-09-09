@@ -23,6 +23,7 @@ export interface FilterState {
 }
 
 interface PeopleHubFilterTabsProps {
+  canReadBranches?: boolean;
   filters?: FilterState;
   onFilterChange?: (newFilters: FilterState) => void;
   departmentsList?: string[];
@@ -47,6 +48,7 @@ const CATEGORIES = [
 ];
 
 export function PeopleHubDepartmentTabs({
+  canReadBranches = true,
   filters = {},
   onFilterChange,
   departmentsList,
@@ -59,6 +61,7 @@ export function PeopleHubDepartmentTabs({
   selectedDepartment = "",
   onSelectDepartment,
 }: PeopleHubFilterTabsProps) {
+  const visibleCategories = CATEGORIES.filter((c) => c.id !== "branch" || canReadBranches);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [localFilters, setLocalFilters] = useState<FilterState>({
     department: selectedDepartment,
@@ -116,118 +119,107 @@ export function PeopleHubDepartmentTabs({
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          alignItems: { xs: "stretch", md: "center" },
-          gap: 1.5,
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 1.2,
           width: "100%",
         }}
       >
         {searchElement && (
-          <Box sx={{
-            width: { xs: "100%", md: "auto" },
-            flexShrink: 0,
-            "& .MuiTextField-root": {
-              width: "100% !important"
-            }
-          }}>
+          <Box
+            sx={{
+              width: { xs: "100%", sm: 220 },
+              flexShrink: 0,
+              "& .MuiTextField-root": {
+                width: "100% !important",
+              },
+            }}
+          >
             {searchElement}
           </Box>
         )}
         <Box
           sx={{
-            display: { xs: "grid", sm: "flex" },
-            gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "none" },
+            display: "flex",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: { xs: 0.8, sm: 1.2 },
-            py: 0.5,
-            px: 0.5,
+            gap: 1,
             flexGrow: 1,
-            width: "100%",
           }}
         >
-          <Box
-            sx={{
-              display: { xs: "grid", sm: "contents" },
-              gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "none" },
-              gap: { xs: 0.8, sm: 0 },
-              width: "100%",
-              gridColumn: { xs: "span 3", sm: "auto" }
-            }}
-          >
-            {CATEGORIES.map((cat) => {
-              const rawVal = localFilters[cat.id as keyof FilterState];
-              const selectedArray = Array.isArray(rawVal)
-                ? rawVal
-                : typeof rawVal === "string" && rawVal && !rawVal.startsWith("All")
-                ? [rawVal]
-                : [];
+          {visibleCategories.map((cat) => {
+            const rawVal = localFilters[cat.id as keyof FilterState];
+            const selectedArray = Array.isArray(rawVal)
+              ? rawVal
+              : typeof rawVal === "string" && rawVal && !rawVal.startsWith("All")
+              ? [rawVal]
+              : [];
 
-              const count = cat.isDate
-                ? (localFilters.dateOfJoining ? 1 : 0)
-                : selectedArray.length;
+            const count = cat.isDate
+              ? (localFilters.dateOfJoining ? 1 : 0)
+              : selectedArray.length;
 
-              const isSelected = count > 0;
-              const isOpen = activeCategory === cat.id;
+            const isSelected = count > 0;
+            const isOpen = activeCategory === cat.id;
 
-              let labelText = cat.label;
-              if (cat.isDate) {
-                labelText = localFilters.dateOfJoining || cat.label;
-              } else if (count === 1) {
-                labelText = `${cat.label}: ${selectedArray[0]}`;
-              } else if (count > 1) {
-                labelText = `${cat.label} (${count})`;
-              }
+            let labelText = cat.label;
+            if (cat.isDate) {
+              labelText = localFilters.dateOfJoining || cat.label;
+            } else if (count === 1) {
+              labelText = `${cat.label}: ${selectedArray[0]}`;
+            } else if (count > 1) {
+              labelText = `${cat.label} (${count})`;
+            }
 
-              return (
-                <Button
-                  key={cat.id}
-                  onClick={() => handleToggleCategory(cat.id)}
-                  size="small"
-                  endIcon={
-                    cat.isDate ? (
-                      <CalendarTodayOutlinedIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: isOpen ? "#6D5DF6" : "#64748B" }} />
-                    ) : (
-                      <KeyboardArrowDownIcon
-                        sx={{
-                          fontSize: { xs: 14, sm: 18 },
-                          color: isOpen ? "#6D5DF6" : "#64748B",
-                          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                        }}
-                      />
-                    )
-                  }
-                  sx={{
-                    height: { xs: 36, sm: 40 },
-                    borderRadius: "10px",
-                    px: { xs: 0.8, sm: 1.8 },
-                    fontSize: { xs: "11px", sm: "14px" },
-                    fontWeight: isSelected || isOpen ? 600 : 500,
-                    textTransform: "none",
-                    whiteSpace: "nowrap",
-                    backgroundColor: isOpen ? "#EEF2FF" : isSelected ? "#F5F3FF" : "#FFFFFF",
-                    color: isSelected || isOpen ? "#4F46E5" : "#475569",
-                    border: isOpen || isSelected ? "1.5px solid #6D5DF6" : "1px solid #CBD5E1",
-                    boxShadow: isOpen ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    minWidth: { xs: "auto", sm: cat.isDate ? 145 : 125 },
-                    "&:hover": {
-                      backgroundColor: isOpen || isSelected ? "#EEF2FF" : "#F8FAFC",
-                      borderColor: "#6D5DF6",
-                      color: "#4F46E5",
-                    },
-                  }}
-                >
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {labelText}
-                  </span>
-                </Button>
-              );
-            })}
-          </Box>
+            return (
+              <Button
+                key={cat.id}
+                onClick={() => handleToggleCategory(cat.id)}
+                size="small"
+                endIcon={
+                  cat.isDate ? (
+                    <CalendarTodayOutlinedIcon sx={{ fontSize: 15, color: isOpen ? "primary.main" : "#64748B" }} />
+                  ) : (
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        fontSize: 16,
+                        color: isOpen ? "primary.main" : "#64748B",
+                        transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 0.2s ease",
+                      }}
+                    />
+                  )
+                }
+                sx={{
+                  height: 40,
+                  borderRadius: "10px",
+                  px: 1.8,
+                  fontSize: "13px",
+                  fontWeight: isSelected || isOpen ? 600 : 500,
+                  textTransform: "none",
+                  whiteSpace: "nowrap",
+                  backgroundColor: isOpen || isSelected ? "primary.lighter" : "background.paper",
+                  color: isSelected || isOpen ? "primary.main" : "text.secondary",
+                  border: isOpen || isSelected ? "1.5px solid" : "1px solid",
+                  borderColor: isOpen || isSelected ? "primary.main" : "divider",
+                  boxShadow: isOpen ? "0 2px 6px rgba(109, 93, 246, 0.15)" : "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 0.8,
+                  "&:hover": {
+                    backgroundColor: "primary.lighter",
+                    borderColor: "primary.main",
+                    color: "primary.main",
+                  },
+                }}
+              >
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {labelText}
+                </span>
+              </Button>
+            );
+          })}
 
           {hasActiveFilters && (
             <Button
@@ -237,15 +229,13 @@ export function PeopleHubDepartmentTabs({
               sx={{
                 height: 40,
                 borderRadius: "10px",
-                px: 1.5,
+                px: 1.8,
                 fontSize: "13px",
                 fontWeight: 600,
                 textTransform: "none",
                 color: "#EF4444",
                 backgroundColor: "#FEF2F2",
                 whiteSpace: "nowrap",
-                width: { xs: "100%", sm: "auto" },
-                gridColumn: { xs: "span 3", sm: "auto" },
                 "&:hover": {
                   backgroundColor: "#FEE2E2",
                 },
@@ -264,8 +254,9 @@ export function PeopleHubDepartmentTabs({
             mt: 1.5,
             p: 2,
             borderRadius: "12px",
-            backgroundColor: "#F8FAFC",
-            border: "1px solid #E2E8F0",
+            backgroundColor: "action.hover",
+            border: "1px solid",
+            borderColor: "divider",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
             display: "flex",
             flexDirection: "column",
@@ -297,7 +288,7 @@ export function PeopleHubDepartmentTabs({
                       onFilterChange?.(updated);
                       if (activeCategoryObj.id === "department") onSelectDepartment?.(allOpts[0] || "");
                     }}
-                    sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", py: 0.2, px: 0.8, color: "#6D5DF6" }}
+                    sx={{ fontSize: "11px", fontWeight: 700, textTransform: "none", py: 0.2, px: 0.8, color: "primary.main" }}
                   >
                     Select All
                   </Button>
@@ -324,7 +315,7 @@ export function PeopleHubDepartmentTabs({
                 color: "#64748B",
                 width: 24,
                 height: 24,
-                "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+                "&:hover": { backgroundColor: "divider", color: "text.primary" },
               }}
             >
               <CloseIcon sx={{ fontSize: 16 }} />
@@ -360,13 +351,14 @@ export function PeopleHubDepartmentTabs({
                       px: 1,
                       fontSize: "13px",
                       fontWeight: isSelected ? 600 : 500,
-                      backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
-                      color: isSelected ? "#FFFFFF" : "#334155",
-                      border: isSelected ? "1px solid #6D5DF6" : "1px solid #CBD5E1",
+                      backgroundColor: isSelected ? "primary.main" : "background.paper",
+                      color: isSelected ? "#FFFFFF" : "text.secondary",
+                      border: "1px solid",
+                      borderColor: isSelected ? "primary.main" : "divider",
                       boxShadow: isSelected ? "0 2px 5px rgba(109, 93, 246, 0.25)" : "none",
                       "&:hover": {
-                        backgroundColor: isSelected ? "#5B4EB3" : "#F1F5F9",
-                        borderColor: isSelected ? "#5B4EB3" : "#94A3B8",
+                        backgroundColor: isSelected ? "primary.dark" : "action.hover",
+                        borderColor: isSelected ? "primary.dark" : "primary.main",
                       },
                     }}
                   />
@@ -415,15 +407,16 @@ export function PeopleHubDepartmentTabs({
                     px: 1,
                     fontSize: "13px",
                     fontWeight: isSelected ? 600 : 500,
-                    backgroundColor: isSelected ? "#6D5DF6" : "#FFFFFF",
-                    color: isSelected ? "#FFFFFF" : "#334155",
-                    border: isSelected ? "1.5px solid #6D5DF6" : "1px solid #CBD5E1",
+                    backgroundColor: isSelected ? "primary.main" : "background.paper",
+                    color: isSelected ? "#FFFFFF" : "text.secondary",
+                    border: isSelected ? "1.5px solid" : "1px solid",
+                    borderColor: isSelected ? "primary.main" : "divider",
                     boxShadow: isSelected ? "0 2px 6px rgba(109, 93, 246, 0.2)" : "none",
                     transition: "all 0.15s ease",
                     "&:hover": {
-                      backgroundColor: isSelected ? "#5B4EB3" : "#F1F5F9",
-                      borderColor: isSelected ? "#5B4EB3" : "#94A3B8",
-                      color: isSelected ? "#FFFFFF" : "#0F172A",
+                      backgroundColor: isSelected ? "primary.dark" : "action.hover",
+                      borderColor: isSelected ? "primary.dark" : "primary.main",
+                      color: isSelected ? "#FFFFFF" : "text.primary",
                     },
                   }}
                 />
@@ -447,10 +440,10 @@ export function PeopleHubDepartmentTabs({
                     "& .MuiOutlinedInput-root": {
                       height: 32,
                       borderRadius: "8px",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: "background.paper",
                       fontSize: "12px",
-                      color: "#0F172A",
-                      "& fieldset": { borderColor: localFilters.fromDate ? "#6D5DF6" : "#CBD5E1" },
+                      color: "text.primary",
+                      "& fieldset": { borderColor: localFilters.fromDate ? "primary.main" : "divider" },
                     },
                     "& .MuiOutlinedInput-input": { py: 0, height: 32, boxSizing: "border-box" },
                   }}
@@ -473,10 +466,10 @@ export function PeopleHubDepartmentTabs({
                     "& .MuiOutlinedInput-root": {
                       height: 32,
                       borderRadius: "8px",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: "background.paper",
                       fontSize: "12px",
-                      color: "#0F172A",
-                      "& fieldset": { borderColor: localFilters.toDate ? "#6D5DF6" : "#CBD5E1" },
+                      color: "text.primary",
+                      "& fieldset": { borderColor: localFilters.toDate ? "primary.main" : "divider" },
                     },
                     "& .MuiOutlinedInput-input": { py: 0, height: 32, boxSizing: "border-box" },
                   }}

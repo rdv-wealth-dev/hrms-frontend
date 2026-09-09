@@ -6,24 +6,29 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import TablePagination from "@mui/material/TablePagination";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import DeleteSweepOutlinedIcon from "@mui/icons-material/DeleteSweepOutlined";
 import TextInput from "../../../components/input/TextInput";
+import { CreateTeamDialog, TeamsListContent } from "../../teams";
+import { VirtualizedTable } from "../../../components/table";
+import DeleteBranchDepartmentsDialog from "./DeleteBranchDepartmentsDialog";
+import DeleteSingleDepartmentDialog from "./DeleteSingleDepartmentDialog";
+import CleanupUnusedMasterDataDialog from "./CleanupUnusedMasterDataDialog";
 
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -108,16 +113,17 @@ function DeptFormDialog({
                     sx: {
                         borderRadius: "20px",
                         p: { xs: 2.5, sm: 3.5 },
-                        backgroundColor: "#FFFFFF",
+                        backgroundColor: "background.paper",
                         boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
-                        border: "1px solid #E2E8F0",
+                        border: "1px solid",
+                        borderColor: "divider",
                         mx: { xs: 2, sm: "auto" },
                         width: { xs: "calc(100% - 32px)", sm: "100%" },
                     },
                 },
             }}
         >
-            <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "#0F172A" }}>
+            <DialogTitle sx={{ p: 0, mb: 2, fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.3rem" }, color: "text.primary" }}>
                 {mode === "create" ? "Create Department" : "Update Department"}
             </DialogTitle>
 
@@ -164,7 +170,7 @@ function DeptFormDialog({
                 <TextInput
                     multiline
                     rows={3}
-                    label="Description (optional)"
+                    label="Description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value ?? "")}
                     placeholder="Brief description of this department"
@@ -182,9 +188,9 @@ function DeptFormDialog({
                         fontSize: "14px",
                         fontWeight: 600,
                         textTransform: "none",
-                        backgroundColor: "#F1F5F9",
-                        color: "#475569",
-                        "&:hover": { backgroundColor: "#E2E8F0", color: "#0F172A" },
+                        backgroundColor: "action.hover",
+                        color: "text.secondary",
+                        "&:hover": { backgroundColor: "divider", color: "text.primary" },
                     }}
                 >
                     Cancel
@@ -200,9 +206,9 @@ function DeptFormDialog({
                         fontSize: "14px",
                         fontWeight: 600,
                         textTransform: "none",
-                        backgroundColor: "#6D5DF6",
+                        backgroundColor: "primary.main",
                         boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                        "&:hover": { backgroundColor: "#5B4BEA" },
+                        "&:hover": { backgroundColor: "primary.dark" },
                     }}
                 >
                     {submitting ? <CircularProgress size={18} color="inherit" /> : mode === "create" ? "Create" : "Update"}
@@ -230,16 +236,24 @@ function DepartmentContent() {
 
     const branchId = useActiveBranchId();
     const [selectedBranchId, setSelectedBranchId] = useState<string>(branchId || "");
-    
-    const { hasPermission } = usePermissions();
+
+    const { hasPermission, canCreateTeam } = usePermissions();
     const canCreate = hasPermission("department.create");
     const canUpdate = hasPermission("department.update");
 
+    const [activeTab, setActiveTab] = useState<"departments" | "teams">("departments");
     const [createOpen, setCreateOpen] = useState(false);
+    const [createTeamOpen, setCreateTeamOpen] = useState(false);
+    const [deleteBranchDeptsOpen, setDeleteBranchDeptsOpen] = useState(false);
+    const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
     const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
     const [hasSubmittedUpdate, setHasSubmittedUpdate] = useState(false);
     const [editTarget, setEditTarget] = useState<Department | null>(null);
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     useEffect(() => {
         if (branchId && !selectedBranchId) {
@@ -249,7 +263,7 @@ function DepartmentContent() {
 
     // Load departments filtered by selected branch
     useEffect(() => {
-        dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
+        dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
         dispatch(getHeadOfficeRequest());
         dispatch(listBranchesRequest());
     }, [dispatch, selectedBranchId]);
@@ -259,7 +273,7 @@ function DepartmentContent() {
         if (hasSubmittedCreate && !submitting && !error && createOpen) {
             setCreateOpen(false);
             setHasSubmittedCreate(false);
-            dispatch(listDepartmentsRequest(selectedBranchId ? { branchId: selectedBranchId } : undefined));
+            dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [submitting, error, hasSubmittedCreate, selectedBranchId]);
@@ -330,161 +344,279 @@ function DepartmentContent() {
                 >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                         <ApartmentOutlinedIcon
-                            sx={{ fontSize: 32, color: "#6D5DF6" }}
+                            sx={{ fontSize: 32, color: "primary.main" }}
                         />
-                        <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
-                                Departments
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {total > 0 ? `${total} department${total !== 1 ? "s" : ""}` : "Manage your organisation's departments"}
-                            </Typography>
-                        </Box>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
+                            Departments
+                        </Typography>
                     </Box>
 
-                    {/* + Add Department Button */}
-                    {canCreate && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setCreateOpen(true)}
-                            sx={{
-                                height: 40,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                borderRadius: "10px",
-                                px: 2.5,
-                                backgroundColor: "#6D5DF6",
-                                boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
-                                "&:hover": { backgroundColor: "#5B4BEA" },
-                                width: { xs: "100%", sm: "auto" },
-                            }}
-                        >
-                            Add Department
-                        </Button>
-                    )}
+                    {/* Action Buttons */}
+                    <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", width: { xs: "100%", sm: "auto" } }}>
+                        {canUpdate && (
+                            <Button
+                                variant="outlined"
+                                color="warning"
+                                startIcon={<DeleteSweepOutlinedIcon />}
+                                onClick={() => setCleanupDialogOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2,
+                                    whiteSpace: "nowrap",
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Clean Up Unused
+                            </Button>
+                        )}
+
+                        {canUpdate && selectedBranchId && (
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                startIcon={<DeleteForeverOutlinedIcon />}
+                                onClick={() => setDeleteBranchDeptsOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2.5,
+                                    whiteSpace: "nowrap",
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Delete All Departments
+                            </Button>
+                        )}
+
+                        {canCreateTeam && (
+                            <Button
+                                variant="outlined"
+                                startIcon={<GroupsRoundedIcon />}
+                                onClick={() => setCreateTeamOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2.5,
+                                    borderColor: "primary.main",
+                                    color: "primary.main",
+                                    "&:hover": {
+                                        backgroundColor: "primary.lighter",
+                                        borderColor: "primary.dark",
+                                    },
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Create Squad / Team
+                            </Button>
+                        )}
+
+                        {canCreate && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => setCreateOpen(true)}
+                                sx={{
+                                    height: 40,
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "10px",
+                                    px: 2.5,
+                                    backgroundColor: "primary.main",
+                                    boxShadow: "0 2px 8px rgba(109, 93, 246, 0.25)",
+                                    "&:hover": { backgroundColor: "primary.dark" },
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Add Department
+                            </Button>
+                        )}
+                    </Box>
                 </Box>
 
-                {/* Error Banner */}
-                {error && !createOpen && !updateOpen && (
-                    <Alert
-                        severity="error"
-                        onClose={() => dispatch(clearDepartmentError())}
-                        sx={{ mb: 2 }}
+                {/* Tab Switcher */}
+                <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+                    <Tabs
+                        value={activeTab}
+                        onChange={(_, val) => setActiveTab(val)}
+                        sx={{
+                            "& .MuiTab-root": {
+                                textTransform: "none",
+                                fontWeight: 700,
+                                fontSize: "14px",
+                                minHeight: 44,
+                                color: "text.secondary",
+                                "&.Mui-selected": { color: "primary.main" },
+                            },
+                            "& .MuiTabs-indicator": {
+                                backgroundColor: "primary.main",
+                                height: 3,
+                                borderRadius: "3px 3px 0 0",
+                            },
+                        }}
                     >
-                        {error}
-                    </Alert>
-                )}
+                        <Tab
+                            icon={<ApartmentOutlinedIcon sx={{ fontSize: 20 }} />}
+                            iconPosition="start"
+                            label={`Departments Overview (${total || 0})`}
+                            value="departments"
+                        />
+                        <Tab
+                            icon={<GroupsRoundedIcon sx={{ fontSize: 20 }} />}
+                            iconPosition="start"
+                            label="Teams & Squads"
+                            value="teams"
+                        />
+                    </Tabs>
+                </Box>
 
-
-                {/* Department Table */}
-                {loading ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
-                        <CircularProgress />
-                    </Box>
+                {activeTab === "teams" ? (
+                    <TeamsListContent />
                 ) : (
-                    <TableContainer
-                        component={Paper}
-                        sx={{ borderRadius: 3, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
-                    >
-                        <Table>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: "#F9FAFB" }}>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Name</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Code</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Description</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Status</TableCell>
-                                    {canUpdate && (
-                                        <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>Actions</TableCell>
-                                    )}
-                                </TableRow>
-                            </TableHead>
+                    <>
+                        {/* Error Banner */}
+                        {error && !createOpen && !updateOpen && (
+                            <Alert
+                                severity="error"
+                                onClose={() => dispatch(clearDepartmentError())}
+                                sx={{ mb: 2 }}
+                            >
+                                {error}
+                            </Alert>
+                        )}
 
-                            <TableBody>
-                                {(departments ?? []).length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={canUpdate ? 5 : 4} align="center">
-                                            <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
-                                                <ApartmentOutlinedIcon
-                                                    sx={{ fontSize: 54, color: "#9CA3AF" }}
-                                                />
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
-                                                    No Departments Configured Yet
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
-                                                    Click "Create Department" to set up your organization's first department.
-                                                </Typography>
-                                                {canCreate && (
-                                                    <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
-                                                        <Button
-                                                            variant="contained"
-                                                            onClick={() => setCreateOpen(true)}
-                                                            startIcon={<AddIcon />}
-                                                            sx={{
-                                                                borderRadius: 2,
-                                                                textTransform: "none",
-                                                                fontWeight: 600,
-                                                                backgroundColor: "#6D5DF6",
-                                                                "&:hover": { backgroundColor: "#5B4BEA" },
-                                                            }}
-                                                        >
-                                                            Create Department
-                                                        </Button>
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    (departments ?? []).map((dept) => (
-                                        <TableRow
-                                            key={dept?._id ?? Math.random()}
-                                            hover
-                                            sx={{ "&:last-child td": { border: 0 } }}
-                                        >
-                                            <TableCell sx={{ fontWeight: 500, fontSize: 14 }}>
-                                                {dept?.name ?? "—"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={dept?.code ?? ""}
-                                                    size="small"
-                                                    sx={{
-                                                        backgroundColor: "#EEF2FF",
-                                                        color: "#6D5DF6",
-                                                        fontWeight: 600,
-                                                        fontSize: 12,
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell sx={{ color: "#6B7280", fontSize: 13 }}>
-                                                {dept?.description || "—"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={dept?.isActive ? "Active" : "Inactive"}
-                                                    size="small"
-                                                    color={dept?.isActive ? "success" : "default"}
-                                                    variant="outlined"
-                                                />
-                                            </TableCell>
-                                            {canUpdate && (
-                                                <TableCell>
+
+                        {/* Department Table */}
+                        <VirtualizedTable<any>
+                            data={(departments ?? []).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+                            loading={loading}
+                            maxHeight="none"
+                            minWidth={720}
+                            estimateRowHeight={52}
+                            rowKey={(dept, index) => dept?._id || `dept-${index}`}
+                            emptyState={
+                                <Box sx={{ py: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
+                                    <ApartmentOutlinedIcon sx={{ fontSize: 54, color: "#9CA3AF" }} />
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
+                                        No Departments Configured Yet
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, textAlign: "center" }}>
+                                        Click "Create Department" to set up your organization's first department.
+                                    </Typography>
+
+                                </Box>
+                            }
+                            columns={[
+                                {
+                                    id: "name",
+                                    header: "Name",
+                                    minWidth: 150,
+                                    cell: (dept) => (
+                                        <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+                                            {dept?.name ?? "—"}
+                                        </Typography>
+                                    ),
+                                },
+                                {
+                                    id: "code",
+                                    header: "Code",
+                                    minWidth: 100,
+                                    cell: (dept) => (
+                                        <Chip
+                                            label={dept?.code ?? ""}
+                                            size="small"
+                                            sx={{
+                                                backgroundColor: "primary.lighter",
+                                                color: "primary.main",
+                                                fontWeight: 600,
+                                                fontSize: 12,
+                                            }}
+                                        />
+                                    ),
+                                },
+                                {
+                                    id: "description",
+                                    header: "Description",
+                                    minWidth: 200,
+                                    cell: (dept) => (
+                                        <Typography sx={{ color: "#6B7280", fontSize: 13 }}>
+                                            {dept?.description || "—"}
+                                        </Typography>
+                                    ),
+                                },
+                                {
+                                    id: "status",
+                                    header: "Status",
+                                    minWidth: 100,
+                                    cell: (dept) => (
+                                        <Chip
+                                            label={dept?.isActive ? "Active" : "Inactive"}
+                                            size="small"
+                                            color={dept?.isActive ? "success" : "default"}
+                                            variant="outlined"
+                                        />
+                                    ),
+                                },
+                                ...(canUpdate
+                                    ? [
+                                        {
+                                            id: "actions",
+                                            header: "Actions",
+                                            minWidth: 100,
+                                            align: "center" as const,
+                                            cell: (dept: any) => (
+                                                <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                                                     <IconButton
                                                         size="small"
                                                         onClick={() => openEdit(dept)}
-                                                        sx={{ color: "#6D5DF6" }}
+                                                        sx={{ color: "primary.main" }}
+                                                        title="Edit Department"
                                                     >
                                                         <EditOutlinedIcon fontSize="small" />
                                                     </IconButton>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => setDeleteTarget(dept)}
+                                                        sx={{ color: "error.main" }}
+                                                        title="Delete Department"
+                                                    >
+                                                        <DeleteOutlineOutlinedIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Box>
+                                            ),
+                                        },
+                                    ]
+                                    : []),
+                            ]}
+                        />
+                        <TablePagination
+                            rowsPerPageOptions={[10, 25, 50, 100]}
+                            component="div"
+                            count={(departments ?? []).length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={(_, newPage) => setPage(newPage)}
+                            onRowsPerPageChange={(e) => {
+                                setRowsPerPage(parseInt(e.target.value, 10));
+                                setPage(0);
+                            }}
+                            sx={{
+                                borderTop: "1px solid",
+                                borderColor: "divider",
+                                color: "text.secondary",
+                                "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                                    fontSize: "13px",
+                                    fontWeight: 500,
+                                },
+                            }}
+                        />
+                    </>
                 )}
             </Box>
 
@@ -519,6 +651,42 @@ function DepartmentContent() {
                     dispatch(clearDepartmentError());
                 }}
                 onSubmit={handleUpdate}
+            />
+
+            {/* Create Team / Squad Dialog */}
+            <CreateTeamDialog
+                open={createTeamOpen}
+                defaultBranchId={selectedBranchId || branchId}
+                onClose={() => setCreateTeamOpen(false)}
+            />
+
+            {/* Delete All Branch Departments Dialog */}
+            <DeleteBranchDepartmentsDialog
+                open={deleteBranchDeptsOpen}
+                branchId={selectedBranchId || branchId}
+                onClose={() => setDeleteBranchDeptsOpen(false)}
+                onSuccess={() => {
+                    dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
+                }}
+            />
+
+            {/* Delete Single Department Dialog */}
+            <DeleteSingleDepartmentDialog
+                open={Boolean(deleteTarget)}
+                department={deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onSuccess={() => {
+                    dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
+                }}
+            />
+
+            {/* 1-Click Master Data Cleanup Dialog */}
+            <CleanupUnusedMasterDataDialog
+                open={cleanupDialogOpen}
+                onClose={() => setCleanupDialogOpen(false)}
+                onSuccess={() => {
+                    dispatch(listDepartmentsRequest({ pageNumber: 1, pageSize: 100, branchId: selectedBranchId || undefined }));
+                }}
             />
         </>
     );

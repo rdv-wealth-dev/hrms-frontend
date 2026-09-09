@@ -18,6 +18,9 @@ import { useProfileSelfUpdate } from "../../../hooks/useProfileSelfUpdate";
 import EmergencyContactDialog from "./EmergencyContactDialog";
 import type { CompleteProfileEmployee, EmergencyContact } from "../../../api/employee.api";
 
+import TuneIcon from "@mui/icons-material/Tune";
+import useEffectiveCustomFields from "../../../hooks/useEffectiveCustomFields";
+
 interface PersonalTabProps {
   empProfile: CompleteProfileEmployee | null;
   isViewingOther: boolean;
@@ -39,6 +42,10 @@ export default function PersonalTab({
   onRefreshProfileData,
   showSnackbar,
 }: PersonalTabProps) {
+  const { customFields: activeCustomFields } = useEffectiveCustomFields({
+    branchId: (empProfile as any)?.branchId,
+    departmentId: (empProfile as any)?.departmentId,
+  });
   const ecDialog = useDialog<void>();
   const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
   const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);
@@ -72,7 +79,7 @@ export default function PersonalTab({
       {/* Personal Info Card */}
       <Card sx={{ p: 3.5 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", display: "flex", alignItems: "center", gap: 1 }}>
             <BadgeOutlinedIcon sx={{ color: "#4F46E5" }} />
             Personal Information
           </Typography>
@@ -85,33 +92,33 @@ export default function PersonalTab({
         <Grid container spacing={2.5}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>First Name</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayFirstName || "—"}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>{displayFirstName || "—"}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Last Name</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayLastName || "—"}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>{displayLastName || "—"}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Email Address</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{displayEmail || "—"}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>{displayEmail || "—"}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Phone Number</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{empProfile?.phone || "—"}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>{empProfile?.phone || "—"}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Gender</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>{empProfile?.gender || "—"}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>{empProfile?.gender || "—"}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Date of Birth</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>
               {empProfile?.dateOfBirth ? new Date(empProfile.dateOfBirth).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" }) : "—"}
             </Typography>
           </Grid>
           <Grid size={{ xs: 12 }}>
             <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>Current Address</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: "#0F172A", mt: 0.5 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>
               {empProfile?.currentAddress?.addressLine1 ? (
                 `${empProfile.currentAddress.addressLine1}, ${empProfile.currentAddress.city || ""}, ${empProfile.currentAddress.state || ""}, ${empProfile.currentAddress.countryCode || ""} ${empProfile.currentAddress.zip || ""}`
               ) : "—"}
@@ -123,7 +130,7 @@ export default function PersonalTab({
       {/* Emergency Contacts Card */}
       <Card sx={{ p: 3.5 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", display: "flex", alignItems: "center", gap: 1 }}>
             <ContactEmergencyOutlinedIcon sx={{ color: "#4F46E5" }} />
             Emergency Contacts
           </Typography>
@@ -141,9 +148,9 @@ export default function PersonalTab({
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {(empProfile?.emergencyContacts ?? []).map((ec, idx) => (
-              <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC" }}>
+              <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider", backgroundColor: "action.hover" }}>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{ec.name}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>{ec.name}</Typography>
                   <Typography variant="caption" sx={{ color: "#64748B" }}>{ec.relationship} · {ec.phone}</Typography>
                 </Box>
                 {!isViewingOther && (
@@ -156,6 +163,40 @@ export default function PersonalTab({
           </Box>
         )}
       </Card>
+
+      {/* Dynamic Custom Fields Card */}
+      {activeCustomFields && activeCustomFields.length > 0 && (
+        <Card sx={{ p: 3.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+            <TuneIcon sx={{ color: "#4F46E5" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
+              Additional Custom Information
+            </Typography>
+          </Box>
+          <Grid container spacing={2.5}>
+            {activeCustomFields.map((field) => {
+              const customData = (empProfile as any)?.customFields || {};
+              const rawVal = customData[field.fieldKey] ?? field.defaultValue ?? "—";
+              const displayVal = Array.isArray(rawVal)
+                ? rawVal.join(", ")
+                : typeof rawVal === "boolean"
+                ? rawVal ? "Yes" : "No"
+                : String(rawVal);
+
+              return (
+                <Grid key={field._id} size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 500 }}>
+                    {field.fieldLabel}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mt: 0.5 }}>
+                    {displayVal || "—"}
+                  </Typography>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Card>
+      )}
 
       {/* Add Emergency Contact dialog */}
       <EmergencyContactDialog

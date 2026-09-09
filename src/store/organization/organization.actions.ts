@@ -4,6 +4,7 @@ import type {
   UpdateOrganizationRequest,
   UpdateModulesRequest,
   UpdateStatutoryRequest,
+  UpdateEmployeeCodeConfigRequest,
 } from "./organization.types";
 
 export const loadOrganizationRequest = () => ({
@@ -77,6 +78,25 @@ export const updateMandatoryDocsSuccess = (organization: Organization) => ({
 
 export const updateMandatoryDocsFailure = (error: string) => ({
   type: ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_FAILURE,
+  payload: error,
+});
+
+export const updateEmployeeCodeConfigRequest = (
+  payload: UpdateEmployeeCodeConfigRequest
+) => ({
+  type: ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_REQUEST,
+  payload,
+});
+
+export const updateEmployeeCodeConfigSuccess = (
+  config: UpdateEmployeeCodeConfigRequest
+) => ({
+  type: ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_SUCCESS,
+  payload: config,
+});
+
+export const updateEmployeeCodeConfigFailure = (error: string) => ({
+  type: ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_FAILURE,
   payload: error,
 });
 

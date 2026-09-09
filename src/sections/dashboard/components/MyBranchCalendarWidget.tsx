@@ -35,15 +35,16 @@ export function MyBranchCalendarWidget() {
       sx={{
         p: { xs: 1.5, sm: 2.5, md: 3 },
         borderRadius: 3,
-        border: "1px solid #E5E7EB",
+        border: "1px solid",
+        borderColor: "divider",
         boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "background.paper",
         width: "100%",
       }}
     >
       {!calendarData && loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-          <CircularProgress sx={{ color: "#6D5DF6" }} />
+          <CircularProgress sx={{ color: "primary.main" }} />
         </Box>
       ) : error ? (
         <Alert severity="error" sx={{ borderRadius: 2 }}>

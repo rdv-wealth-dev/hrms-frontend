@@ -19,11 +19,7 @@ function AuthGuard({ children }: AuthGuardProps) {
 
   if (!hasSession) {
     return (
-      <Navigate
-        to={paths.auth.login}
-        state={{ from: location?.pathname ?? "" }}
-        replace
-      />
+      <Navigate to={paths.auth.login} state={{ from: location?.pathname ?? "" }} replace />
     );
   }
 

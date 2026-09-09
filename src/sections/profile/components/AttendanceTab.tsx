@@ -121,8 +121,8 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
     ...companyEvents.map((evt) => ({
       title: `📢 ${evt.title}`,
       start: evt.date ? evt.date.split("T")[0] : "",
-      backgroundColor: "#6D5DF6",
-      borderColor: "#6D5DF6",
+      backgroundColor: "primary.main",
+      borderColor: "primary.main",
       allDay: true,
       extendedProps: { type: "company_event", event: evt },
     }))
@@ -269,13 +269,13 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
           sx={{
             mb: 3,
             borderBottom: "1px solid rgba(0,0,0,0.08)",
-            "& .MuiTabs-indicator": { backgroundColor: "#6D5DF6" },
+            "& .MuiTabs-indicator": { backgroundColor: "primary.main" },
             "& .MuiTab-root": {
               textTransform: "none",
               fontWeight: 600,
               fontSize: "0.95rem",
               color: "#6B7280",
-              "&.Mui-selected": { color: "#6D5DF6" },
+              "&.Mui-selected": { color: "primary.main" },
             },
           }}
         >
@@ -334,8 +334,8 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                 fontWeight: 600,
                 borderRadius: "12px",
                 px: 3,
-                backgroundColor: "#6D5DF6",
-                "&:hover": { backgroundColor: "#5B4BEA" },
+                backgroundColor: "primary.main",
+                "&:hover": { backgroundColor: "primary.dark" },
                 width: { xs: "100%", sm: "auto" },
               }}
             >
@@ -352,11 +352,11 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                   fontWeight: 600,
                   borderRadius: "12px",
                   px: 3,
-                  color: "#6D5DF6",
-                  borderColor: "#6D5DF6",
+                  color: "primary.main",
+                  borderColor: "primary.main",
                   "&:hover": {
-                    borderColor: "#5B4BEA",
-                    backgroundColor: "rgba(109, 93, 246, 0.04)",
+                    borderColor: "primary.dark",
+                    backgroundColor: "primary.lighter",
                   },
                   width: { xs: "100%", sm: "auto" },
                 }}
@@ -382,7 +382,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                     px: 2.5,
                     py: 0.75,
                     backgroundColor: viewMode === "list" ? "#FFF" : "transparent",
-                    color: viewMode === "list" ? "#111827" : "#6B7280",
+                    color: viewMode === "list" ? "text.primary" : "text.secondary",
                     boxShadow: viewMode === "list" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
                     "&:hover": { backgroundColor: viewMode === "list" ? "#FFF" : "rgba(0,0,0,0.04)" },
                   }}
@@ -400,7 +400,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                     px: 2.5,
                     py: 0.75,
                     backgroundColor: viewMode === "calendar" ? "#FFF" : "transparent",
-                    color: viewMode === "calendar" ? "#111827" : "#6B7280",
+                    color: viewMode === "calendar" ? "text.primary" : "text.secondary",
                     boxShadow: viewMode === "calendar" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
                     "&:hover": { backgroundColor: viewMode === "calendar" ? "#FFF" : "rgba(0,0,0,0.04)" },
                   }}
@@ -433,7 +433,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
         {tabValue === 0 ? (
           loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-              <CircularProgress sx={{ color: "#6D5DF6" }} />
+              <CircularProgress sx={{ color: "primary.main" }} />
             </Box>
           ) : viewMode === "calendar" ? (
             <Box
@@ -448,7 +448,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                 "& .fc-toolbar-title": {
                   fontSize: "1.25rem !important",
                   fontWeight: 700,
-                  color: "#111827",
+                  color: "text.primary",
                 },
                 "& .fc-button-primary": {
                   backgroundColor: "#FFF !important",
@@ -546,13 +546,13 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                 <TableBody>
                   {records.map((row) => (
                     <TableRow key={row._id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                      <TableCell sx={{ fontWeight: 500, color: "#111827", whiteSpace: "nowrap" }}>
+                      <TableCell sx={{ fontWeight: 500, color: "text.primary", whiteSpace: "nowrap" }}>
                         {formatDate(row.attendanceDate)}
                       </TableCell>
                       <TableCell sx={{ fontSize: 13, color: "#4B5563", whiteSpace: "nowrap" }}>
                         General Shift
                       </TableCell>
-                      <TableCell sx={{ color: "#111827", fontWeight: 500, whiteSpace: "nowrap" }}>
+                      <TableCell sx={{ color: "text.primary", fontWeight: 500, whiteSpace: "nowrap" }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
                           <span>{formatTime(row.firstCheckIn)}</span>
                           {row.isLate && (
@@ -573,7 +573,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                           )}
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ color: "#111827", fontWeight: 500, whiteSpace: "nowrap" }}>
+                      <TableCell sx={{ color: "text.primary", fontWeight: 500, whiteSpace: "nowrap" }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
                           <span>{formatTime(row.lastCheckOut)}</span>
                           {row.isCheckOutEarly && (
@@ -604,7 +604,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                         <IconButton
                           size="small"
                           onClick={() => handleOpenDetails(row)}
-                          sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                          sx={{ color: "primary.main", "&:hover": { backgroundColor: "primary.lighter" } }}
                           title="View Details"
                         >
                           <InfoOutlinedIcon fontSize="small" />
@@ -632,7 +632,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
         ) : (
           loadingRegs ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-              <CircularProgress sx={{ color: "#6D5DF6" }} />
+              <CircularProgress sx={{ color: "primary.main" }} />
             </Box>
           ) : regRequests.length === 0 ? (
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 8, gap: 1.5 }}>
@@ -659,13 +659,13 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                 <TableBody>
                   {regRequests.map((row) => (
                     <TableRow key={row._id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                      <TableCell sx={{ fontWeight: 500, color: "#111827", whiteSpace: "nowrap" }}>
+                      <TableCell sx={{ fontWeight: 500, color: "text.primary", whiteSpace: "nowrap" }}>
                         {formatDate(row.attendanceDate)}
                       </TableCell>
-                      <TableCell sx={{ color: "#111827", fontWeight: 500, whiteSpace: "nowrap" }}>
+                      <TableCell sx={{ color: "text.primary", fontWeight: 500, whiteSpace: "nowrap" }}>
                         {formatTime(row.requestedCheckIn)}
                       </TableCell>
-                      <TableCell sx={{ color: "#111827", fontWeight: 500, whiteSpace: "nowrap" }}>
+                      <TableCell sx={{ color: "text.primary", fontWeight: 500, whiteSpace: "nowrap" }}>
                         {formatTime(row.requestedCheckOut)}
                       </TableCell>
                       <TableCell sx={{ fontSize: 13, color: "#4B5563", maxWidth: 220, minWidth: 150, wordBreak: "break-word" }}>
@@ -698,7 +698,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
         slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
       >
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Attendance Details
           </Typography>
           <IconButton onClick={handleCloseDetails} size="small" sx={{ color: "#9CA3AF" }}>
@@ -714,7 +714,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     Date
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                     {formatDate(selectedRecord.attendanceDate)}
                   </Typography>
                 </Box>
@@ -744,7 +744,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     Worked Duration
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#6D5DF6" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
                     {formatWorkedTime(selectedRecord.workedMinutes)}
                   </Typography>
                 </Box>
@@ -792,7 +792,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
                               }}
                             />
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                                 {new Date(session.timestamp).toLocaleTimeString(navigator.language, {
                                   hour: "numeric",
                                   minute: "2-digit",
@@ -931,8 +931,8 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BE5" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               m: "0 !important"
             }}
           >
@@ -948,9 +948,9 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              color: "#6D5DF6",
-              borderColor: "#6D5DF6",
-              "&:hover": { borderColor: "#5B4BE5", backgroundColor: "rgba(109,93,246,0.04)" },
+              color: "primary.main",
+              borderColor: "primary.main",
+              "&:hover": { borderColor: "primary.dark", backgroundColor: "primary.lighter" },
               m: "0 !important"
             }}
           >
@@ -988,7 +988,7 @@ export default function AttendanceTab({ employeeId, isViewingOther = false, hide
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
             Date & Time
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827", mb: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", mb: 2 }}>
             {selectedEventDetails?.date
               ? new Date(selectedEventDetails.date).toLocaleString(navigator.language, {
                   dateStyle: "medium",

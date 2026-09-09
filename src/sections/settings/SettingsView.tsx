@@ -6,21 +6,22 @@ import Alert from "@mui/material/Alert";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Paper from "@mui/material/Paper";
-import Drawer from "@mui/material/Drawer";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 
 import SettingsContentPanel from "../../components/settings/SettingsContentPanel";
 import DepartmentContent from "../departments/components/DepartmentContent";
 import DesignationContent from "../designations/components/DesignationContent";
-import ShiftContent from "../attendance/components/ShiftContent";
+import ShiftContent from "../shifts/components/ShiftContent";
 import LeaveTypeContent from "../leave/leave-policy/LeaveTypeContent";
 import OrganizationProfileContent from "./components/OrganizationProfileContent";
 import OrganizationModulesContent from "./components/OrganizationModulesContent";
 import OrganizationStatutoryContent from "./components/OrganizationStatutoryContent";
 import OrganizationDocumentsContent from "./components/OrganizationDocumentsContent";
+import EmployeeCodeConfigContent from "./components/EmployeeCodeConfigContent";
 import BranchListContent from "../branches/branch-list/components/BranchListContent";
+import RolesListContent from "./components/roles/RolesListContent";
+import CustomFieldsSettingsTab from "./components/CustomFieldsSettingsTab";
 import { usePermissions } from "../../hooks/usePermissions";
 
 import {
@@ -34,20 +35,23 @@ import {
 // =============================================================
 
 const CONTENT_MAP: Record<string, ReactNode> = {
-  "org-profile":   <OrganizationProfileContent />,
-  "org-modules":   <OrganizationModulesContent />,
-  "org-statutory": <OrganizationStatutoryContent />,
-  "org-documents": <OrganizationDocumentsContent />,
-  branches:        <BranchListContent />,
-  departments:     <DepartmentContent />,
-  designations:    <DesignationContent />,
-  "leave-types":   <LeaveTypeContent />,
-  "shift-master":  <ShiftContent />,
+  "org-profile":       <OrganizationProfileContent />,
+  "employee-code":     <EmployeeCodeConfigContent />,
+  "org-modules":       <OrganizationModulesContent />,
+  "org-statutory":     <OrganizationStatutoryContent />,
+  "org-documents":     <OrganizationDocumentsContent />,
+  "custom-fields":     <CustomFieldsSettingsTab />,
+  "roles-permissions": <RolesListContent />,
+  branches:            <BranchListContent />,
+  departments:         <DepartmentContent />,
+  designations:        <DesignationContent />,
+  "leave-types":       <LeaveTypeContent />,
+  "shift-master":      <ShiftContent />,
 };
 
 // =============================================================
 // SettingsView — orchestrates the 2-column nested settings layout
-// Responsive: sidebar on md+, drawer on mobile, tabs on sm
+// Responsive: sidebar on md+, scrollable tabs on sm/xs
 // =============================================================
 
 function SettingsView() {
@@ -62,15 +66,13 @@ function SettingsView() {
   const [activeSubItem, setActiveSubItem] = useState(
     permittedSubItems[0]?.id ?? ""
   );
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const handleNavClick = (id: string) => {
     setActiveSubItem(id);
-    setMobileDrawerOpen(false);
   };
 
   // Sidebar nav content (shared between desktop sidebar & mobile drawer)
-  const SidebarNav = () => (
+  const renderSidebarNav = () => (
     <Box sx={{ py: 2 }}>
       {SETTINGS_CATEGORIES.map((cat) => {
         const subItems = permittedSubItems.filter((item) => item.categoryId === cat.id);
@@ -107,11 +109,11 @@ function SettingsView() {
                       cursor: "pointer",
                       borderRadius: 1.5,
                       backgroundColor: isActive ? "#EEF2FF" : "transparent",
-                      color: isActive ? "#6D5DF6" : "#4B5563",
+                      color: isActive ? "primary.main" : "text.secondary",
                       transition: "all 0.2s ease",
                       "&:hover": {
                         backgroundColor: isActive ? "#EEF2FF" : "#F3F4F6",
-                        color: isActive ? "#6D5DF6" : "#111827",
+                        color: isActive ? "primary.main" : "text.primary",
                       },
                     }}
                   >
@@ -139,24 +141,10 @@ function SettingsView() {
       <Box sx={{ p: { xs: 2, md: 3 } }}>
 
         {/* Page Title Row */}
-        <Box sx={{ mb: { xs: 2, md: 3 }, display: "flex", alignItems: "center", gap: 1 }}>
-          {/* Hamburger menu only on mobile */}
-          <IconButton
-            onClick={() => setMobileDrawerOpen(true)}
-            size="small"
-            sx={{ display: { xs: "inline-flex", md: "none" }, mr: 0.5, color: "#4B5563" }}
-          >
-            <MenuIcon />
-          </IconButton>
-
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", fontSize: { xs: "1.1rem", md: "1.4rem" } }}>
-              Settings &amp; Administration
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, display: { xs: "none", sm: "block" } }}>
-              Configure NexusHR for your organization
-            </Typography>
-          </Box>
+        <Box sx={{ mb: { xs: 2, md: 3 } }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary", fontSize: { xs: "1.1rem", md: "1.4rem" } }}>
+            Settings &amp; Administration
+          </Typography>
         </Box>
 
         {permittedSubItems.length === 0 ? (
@@ -167,68 +155,130 @@ function SettingsView() {
           </Box>
         ) : (
           <>
-            {/* ── TABLET: Horizontal Scrollable Tabs (sm only) ── */}
-            <Box sx={{ display: { xs: "none", sm: "block", md: "none" }, mb: 2 }}>
-              <Paper elevation={0} sx={{ borderRadius: 2.5, border: "1px solid #E5E7EB", overflow: "hidden" }}>
+            {/* ── MOBILE & TABLET: Horizontal Scrollable Tabs ── */}
+            <Box sx={{ display: { xs: "block", md: "none" }, mb: 2 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  borderRadius: "12px",
+                  border: "1px solid #E5E7EB",
+                  backgroundColor: "#FFFFFF",
+                  overflow: "hidden",
+                }}
+              >
                 <Tabs
                   value={activeSubItem}
                   onChange={(_, val) => setActiveSubItem(val)}
                   variant="scrollable"
                   scrollButtons="auto"
-                  sx={{
-                    px: 1,
-                    "& .MuiTab-root": {
-                      textTransform: "none",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      minHeight: 44,
-                      color: "#6B7280",
-                    },
-                    "& .Mui-selected": {
-                      color: "#6D5DF6 !important",
-                      fontWeight: 700,
-                    },
-                    "& .MuiTabs-indicator": {
-                      backgroundColor: "#6D5DF6",
-                    },
+                  allowScrollButtonsMobile
+                  slots={{
+                    startScrollButtonIcon: ChevronLeftRoundedIcon,
+                    endScrollButtonIcon: ChevronRightRoundedIcon,
                   }}
-                >
-                  {permittedSubItems.map((item) => (
-                    <Tab key={item.id} label={item.label} value={item.id} />
-                  ))}
-                </Tabs>
-              </Paper>
-            </Box>
+                  sx={{
+                    minHeight: 44,
 
-            {/* ── MOBILE: Horizontal Scrollable Tabs (xs only) ── */}
-            <Box sx={{ display: { xs: "block", sm: "none" }, mb: 2 }}>
-              <Paper elevation={0} sx={{ borderRadius: 2.5, border: "1px solid #E5E7EB", overflow: "hidden" }}>
-                <Tabs
-                  value={activeSubItem}
-                  onChange={(_, val) => setActiveSubItem(val)}
-                  variant="scrollable"
-                  scrollButtons={false}
-                  sx={{
-                    px: 0.5,
+                    "& .MuiTabs-scroller": {
+                      scrollbarWidth: "none",
+
+                      "&::-webkit-scrollbar": {
+                        display: "none",
+                      },
+                    },
+
+                    // Keep tab container properly aligned
+                    "& .MuiTabs-list": {
+                      alignItems: "stretch",
+                    },
+
+                    // Chevron buttons
+                    "& .MuiTabScrollButton-root": {
+                      flexShrink: 0,
+                      width: 28,
+                      minWidth: 28,
+                      color: "primary.main",
+                      opacity: 0.9,
+                      transition: "all 0.2s ease",
+
+                      "&.Mui-disabled": {
+                        opacity: 0.25,
+
+                        // DON'T remove width, otherwise visible tab
+                        // widths keep changing when button enables/disables
+                      },
+
+                      "&:hover": {
+                        backgroundColor: "primary.lighter",
+                      },
+                    },
+
                     "& .MuiTab-root": {
                       textTransform: "none",
-                      fontSize: "12px",
+                      fontSize: {
+                        xs: "12px",
+                        sm: "13px",
+                      },
                       fontWeight: 500,
-                      minHeight: 40,
-                      color: "#6B7280",
-                      px: 1.5,
+
+                      minHeight: 44,
+
+                      // Important ↓
+                      boxSizing: "border-box",
+
+                      // Exactly 2 tabs visible on mobile
+                      flex: {
+                        xs: "0 0 50%",
+                        sm: "0 0 auto",
+                      },
+
+                      width: {
+                        xs: "50%",
+                        sm: "auto",
+                      },
+
+                      minWidth: {
+                        xs: "50%",
+                        sm: "auto",
+                      },
+
+                      maxWidth: {
+                        xs: "50%",
+                        sm: "none",
+                      },
+
+                      px: {
+                        xs: 1,
+                        sm: 1.75,
+                      },
+
+                      py: 1,
+
+                      color: "#64748B",
+                      whiteSpace: "nowrap",
+
+                      // Make sure text isn't clipped unnecessarily
+                      overflow: "visible",
                     },
+
                     "& .Mui-selected": {
-                      color: "#6D5DF6 !important",
+                      color: "primary.main !important",
                       fontWeight: 700,
                     },
+
                     "& .MuiTabs-indicator": {
-                      backgroundColor: "#6D5DF6",
+                      backgroundColor: "primary.main",
+                      height: 3,
+                      borderRadius: "3px 3px 0 0",
                     },
                   }}
                 >
                   {permittedSubItems.map((item) => (
-                    <Tab key={item.id} label={item.label} value={item.id} />
+                    <Tab
+                      key={item.id}
+                      label={item.label}
+                      value={item.id}
+                    />
                   ))}
                 </Tabs>
               </Paper>
@@ -251,7 +301,7 @@ function SettingsView() {
                   top: 80,
                 }}
               >
-                <SidebarNav />
+                {renderSidebarNav()}
               </Box>
 
               {/* Main Content Panel */}
@@ -261,24 +311,6 @@ function SettingsView() {
                 </SettingsContentPanel>
               </Box>
             </Box>
-
-            {/* ── MOBILE: Slide-in Drawer Navigation ── */}
-            <Drawer
-              anchor="left"
-              open={mobileDrawerOpen}
-              onClose={() => setMobileDrawerOpen(false)}
-              slotProps={{ paper: { sx: { width: 260, borderRadius: "0 16px 16px 0" } } }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, pt: 2, pb: 1 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
-                  Settings
-                </Typography>
-                <IconButton size="small" onClick={() => setMobileDrawerOpen(false)}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-              <SidebarNav />
-            </Drawer>
           </>
         )}
 

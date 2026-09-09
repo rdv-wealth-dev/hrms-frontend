@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
@@ -45,6 +46,7 @@ import AttendanceStatusChip from "../components/AttendanceStatusChip";
 import { formatWorkedTime } from "../../../utils/time";
 
 export default function MyAttendanceView() {
+  const theme = useTheme();
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("attendance.create");
   const [manualOpen, setManualOpen] = useState(false);
@@ -118,8 +120,8 @@ export default function MyAttendanceView() {
     ...companyEvents.map((evt) => ({
       title: `📢 ${evt.title}`,
       start: evt.date ? evt.date.split("T")[0] : "",
-      backgroundColor: "#6D5DF6",
-      borderColor: "#6D5DF6",
+      backgroundColor: theme.palette.primary.main,
+      borderColor: theme.palette.primary.main,
       allDay: true,
       extendedProps: { type: "company_event", event: evt },
     }))
@@ -298,9 +300,9 @@ export default function MyAttendanceView() {
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <CalendarMonthOutlinedIcon sx={{ fontSize: 32, color: "#6D5DF6" }} />
+          <CalendarMonthOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
               Attendance
             </Typography>
           </Box>
@@ -313,13 +315,13 @@ export default function MyAttendanceView() {
           sx={{
             mb: 3,
             borderBottom: "1px solid rgba(0,0,0,0.08)",
-            "& .MuiTabs-indicator": { backgroundColor: "#6D5DF6" },
+            "& .MuiTabs-indicator": { backgroundColor: "primary.main" },
             "& .MuiTab-root": {
               textTransform: "none",
               fontWeight: 600,
               fontSize: "0.95rem",
               color: "#6B7280",
-              "&.Mui-selected": { color: "#6D5DF6" },
+              "&.Mui-selected": { color: "primary.main" },
             },
           }}
         >
@@ -375,8 +377,8 @@ export default function MyAttendanceView() {
                   borderRadius: 2,
                   px: 3,
                   height: 40,
-                  backgroundColor: "#6D5DF6",
-                  "&:hover": { backgroundColor: "#5B4BEA" },
+                  backgroundColor: "primary.main",
+                  "&:hover": { backgroundColor: "primary.dark" },
                 }}
               >
                 Apply Filter
@@ -392,11 +394,11 @@ export default function MyAttendanceView() {
                     borderRadius: 2,
                     px: 3,
                     height: 40,
-                    color: "#6D5DF6",
-                    borderColor: "#6D5DF6",
+                    color: "primary.main",
+                    borderColor: "primary.main",
                     "&:hover": {
-                      borderColor: "#5B4BEA",
-                      backgroundColor: "rgba(109, 93, 246, 0.04)",
+                      borderColor: "primary.dark",
+                      backgroundColor: "primary.lighter",
                     },
                   }}
                 >
@@ -415,7 +417,7 @@ export default function MyAttendanceView() {
                     px: 2,
                     py: 0.5,
                     backgroundColor: viewMode === "list" ? "#FFF" : "transparent",
-                    color: viewMode === "list" ? "#111827" : "#6B7280",
+                    color: viewMode === "list" ? "text.primary" : "#6B7280",
                     boxShadow: viewMode === "list" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
                     "&:hover": { backgroundColor: viewMode === "list" ? "#FFF" : "rgba(0,0,0,0.04)" },
                   }}
@@ -432,7 +434,7 @@ export default function MyAttendanceView() {
                     px: 2,
                     py: 0.5,
                     backgroundColor: viewMode === "calendar" ? "#FFF" : "transparent",
-                    color: viewMode === "calendar" ? "#111827" : "#6B7280",
+                    color: viewMode === "calendar" ? "text.primary" : "#6B7280",
                     boxShadow: viewMode === "calendar" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
                     "&:hover": { backgroundColor: viewMode === "calendar" ? "#FFF" : "rgba(0,0,0,0.04)" },
                   }}
@@ -463,7 +465,7 @@ export default function MyAttendanceView() {
           {tabValue === 0 ? (
             loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             ) : viewMode === "calendar" ? (
               <Box
@@ -478,7 +480,7 @@ export default function MyAttendanceView() {
                   "& .fc-toolbar-title": {
                     fontSize: "1.25rem !important",
                     fontWeight: 700,
-                    color: "#111827",
+                    color: "text.primary",
                   },
                   "& .fc-button-primary": {
                     backgroundColor: "#FFF !important",
@@ -576,13 +578,13 @@ export default function MyAttendanceView() {
                   <TableBody>
                     {records.map((row) => (
                       <TableRow key={row._id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                        <TableCell sx={{ fontWeight: 500, color: "#111827" }}>
+                        <TableCell sx={{ fontWeight: 500, color: "text.primary" }}>
                           {formatDate(row.attendanceDate)}
                         </TableCell>
                         <TableCell sx={{ fontSize: 13, color: "#4B5563" }}>
                           General Shift
                         </TableCell>
-                        <TableCell sx={{ color: "#111827", fontWeight: 500 }}>
+                        <TableCell sx={{ color: "text.primary", fontWeight: 500 }}>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
                             <span>{formatTime(row.firstCheckIn)}</span>
                             {row.isLate && (
@@ -603,7 +605,7 @@ export default function MyAttendanceView() {
                             )}
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ color: "#111827", fontWeight: 500 }}>
+                        <TableCell sx={{ color: "text.primary", fontWeight: 500 }}>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
                             <span>{formatTime(row.lastCheckOut)}</span>
                             {row.isCheckOutEarly && (
@@ -634,7 +636,7 @@ export default function MyAttendanceView() {
                           <IconButton
                             size="small"
                             onClick={() => handleOpenDetails(row)}
-                            sx={{ color: "#6D5DF6", "&:hover": { backgroundColor: "rgba(109, 93, 246, 0.08)" } }}
+                            sx={{ color: "primary.main", "&:hover": { backgroundColor: "primary.lighter" } }}
                             title="View Details"
                           >
                             <InfoOutlinedIcon fontSize="small" />
@@ -662,7 +664,7 @@ export default function MyAttendanceView() {
           ) : (
             loadingRegs ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-                <CircularProgress sx={{ color: "#6D5DF6" }} />
+                <CircularProgress sx={{ color: "primary.main" }} />
               </Box>
             ) : regRequests.length === 0 ? (
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 8, gap: 1.5 }}>
@@ -689,13 +691,13 @@ export default function MyAttendanceView() {
                   <TableBody>
                     {regRequests.map((row) => (
                       <TableRow key={row._id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                        <TableCell sx={{ fontWeight: 500, color: "#111827" }}>
+                        <TableCell sx={{ fontWeight: 500, color: "text.primary" }}>
                           {formatDate(row.attendanceDate)}
                         </TableCell>
-                        <TableCell sx={{ color: "#111827", fontWeight: 500 }}>
+                        <TableCell sx={{ color: "text.primary", fontWeight: 500 }}>
                           {formatTime(row.requestedCheckIn)}
                         </TableCell>
-                        <TableCell sx={{ color: "#111827", fontWeight: 500 }}>
+                        <TableCell sx={{ color: "text.primary", fontWeight: 500 }}>
                           {formatTime(row.requestedCheckOut)}
                         </TableCell>
                         <TableCell sx={{ fontSize: 13, color: "#4B5563", maxWidth: 220, wordBreak: "break-word" }}>
@@ -728,7 +730,7 @@ export default function MyAttendanceView() {
           slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
         >
           <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
               Attendance Details
             </Typography>
             <IconButton onClick={handleCloseDetails} size="small" sx={{ color: "#9CA3AF" }}>
@@ -744,7 +746,7 @@ export default function MyAttendanceView() {
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                       Date
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                       {formatDate(selectedRecord.attendanceDate)}
                     </Typography>
                   </Box>
@@ -758,7 +760,7 @@ export default function MyAttendanceView() {
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                       Worked Duration
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#6D5DF6" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
                       {formatWorkedTime(selectedRecord.workedMinutes)}
                     </Typography>
                   </Box>
@@ -806,7 +808,7 @@ export default function MyAttendanceView() {
                                 }}
                               />
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827" }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
                                   {new Date(session.timestamp).toLocaleTimeString(navigator.language, {
                                     hour: "numeric",
                                     minute: "2-digit",
@@ -945,8 +947,8 @@ export default function MyAttendanceView() {
               sx={{
                 textTransform: "none",
                 fontWeight: 600,
-                backgroundColor: "#6D5DF6",
-                "&:hover": { backgroundColor: "#5B4BE5" },
+                backgroundColor: "primary.main",
+                "&:hover": { backgroundColor: "primary.dark" },
                 m: "0 !important"
               }}
             >
@@ -962,9 +964,9 @@ export default function MyAttendanceView() {
               sx={{
                 textTransform: "none",
                 fontWeight: 600,
-                color: "#6D5DF6",
-                borderColor: "#6D5DF6",
-                "&:hover": { borderColor: "#5B4BE5", backgroundColor: "rgba(109,93,246,0.04)" },
+                color: "primary.main",
+                borderColor: "primary.main",
+                "&:hover": { borderColor: "primary.dark", backgroundColor: "primary.lighter" },
                 m: "0 !important"
               }}
             >
@@ -1002,7 +1004,7 @@ export default function MyAttendanceView() {
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
               Date & Time
             </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "#111827", mb: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", mb: 2 }}>
               {selectedEventDetails?.date
                 ? new Date(selectedEventDetails.date).toLocaleString(navigator.language, {
                     dateStyle: "medium",

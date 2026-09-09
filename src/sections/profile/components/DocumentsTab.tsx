@@ -150,9 +150,9 @@ export default function DocumentsTab({
           <Grid container spacing={2}>
             {documents.map((doc, index) => (
               <Grid key={doc.id || doc._id || index} size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box sx={{ p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider", backgroundColor: "action.hover", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>{doc.fileName}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>{doc.fileName}</Typography>
                     <Chip label={doc.documentType} size="small" variant="outlined" sx={{ mt: 0.5, fontSize: "0.7rem" }} />
                   </Box>
                   <Button size="small" onClick={() => handleDocDownload(doc.id || doc._id)} sx={{ color: "#4F46E5" }}>
@@ -182,7 +182,7 @@ export default function DocumentsTab({
         }}
       >
         <DialogTitle component="div" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Upload Document
           </Typography>
           <IconButton onClick={() => setDocUploadDialogOpen(false)} size="small" sx={{ color: "#9CA3AF" }} disabled={docUploading}>
@@ -239,7 +239,7 @@ export default function DocumentsTab({
 
           {docUploading && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, color: "#6B7280" }}>
-              <CircularProgress size={16} sx={{ color: "#6D5DF6" }} />
+              <CircularProgress size={16} sx={{ color: "primary.main" }} />
               <Typography variant="caption">Uploading to server...</Typography>
             </Box>
           )}
@@ -260,8 +260,8 @@ export default function DocumentsTab({
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4CE5" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
               px: 3,
             }}
           >

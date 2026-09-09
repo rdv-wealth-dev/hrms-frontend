@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -28,6 +29,7 @@ import {
   signupSchema,
   type SignupFormData,
 } from "../../../validations/auth/signup.schema";
+import type { SignupRequest } from "../../../auth/types";
 
 // Employee count options matching backend enum exactly
 const EMPLOYEE_COUNT_OPTIONS = [
@@ -38,15 +40,11 @@ const EMPLOYEE_COUNT_OPTIONS = [
   { value: "500+", label: "500+ employees" },
 ];
 
-// Sanitise company name → workspace slug suggestion
+// Sanitise company name → workspace slug suggestion (alphanumeric only, no hyphens)
 function toSlug(name: string): string {
   return name
     .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function SignupView() {
@@ -62,6 +60,15 @@ function SignupView() {
   // Track whether the user has manually edited the slug field
   // If true, stop auto-generating from company name
   const isSlugManuallyEdited = useRef(false);
+
+  // Trigger toast on API / DTO registration errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        duration: 5000,
+      });
+    }
+  }, [error]);
 
   useEffect(() => {
     if (isRegisterSuccess) {
@@ -83,11 +90,10 @@ function SignupView() {
       companyName: "",
       workspaceSlug: "",
       employeeCountRange: undefined,
-      industry: "",
       firstName: "",
       lastName: "",
       email: "",
-      countryCode: "",
+      countryCode: "IN",
       phone: "",
       password: "",
       confirmPassword: "",
@@ -108,19 +114,25 @@ function SignupView() {
     // Block submit if slug is confirmed taken
     if (slugAvailable === false) return;
 
-    const { confirmPassword, ...rest } = data;
-    setSubmittedEmail(rest.email);
+    setSubmittedEmail(data.email);
 
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const phone = rest.phone ? rest.phone.replace(/\D/g, "") : undefined;
+    const phone = data.phone ? data.phone.replace(/\D/g, "") : undefined;
 
-    dispatch(
-      registerRequest({
-        ...rest,
-        phone,
-        timezone,
-      })
-    );
+    const payload: SignupRequest = {
+      companyName: data.companyName,
+      workspaceSlug: data.workspaceSlug,
+      employeeCountRange: data.employeeCountRange,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      countryCode: data.countryCode,
+      password: data.password,
+      phone,
+      timezone,
+    };
+
+    dispatch(registerRequest(payload));
   };
 
   return (
@@ -233,7 +245,7 @@ function SignupView() {
           {/* Row 6: Phone Number (full width, same as Work Email) */}
           <Box sx={{ gridColumn: "1 / 3" }}>
             <PhoneInput
-              label="Phone Number (optional)"
+              label="Phone Number"
               phoneRegistration={register("phone")}
               countryCodeRegistration={register("countryCode")}
               phoneError={errors.phone?.message}
@@ -243,18 +255,6 @@ function SignupView() {
             />
           </Box>
 
-          {/* API Error */}
-          {error && (
-            <Box sx={{ gridColumn: "1 / 3" }}>
-              <Typography
-                color="error"
-                variant="body2"
-                sx={{ textAlign: "center", fontSize: { xs: "11px", sm: "13px" } }}
-              >
-                {error}
-              </Typography>
-            </Box>
-          )}
 
           {/* Slug taken warning */}
           {slugAvailable === false && !errors.workspaceSlug && (

@@ -3,9 +3,9 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
 import TableRowsOutlinedIcon from "@mui/icons-material/TableRowsOutlined";
-import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 
-export type ViewMode = "classic" | "people_hub" | "directory";
+export type ViewMode = "classic" | "people_hub" | "org_chart";
 
 interface ViewModeSwitcherProps {
   viewMode: ViewMode;
@@ -22,10 +22,12 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
     }
   };
 
+  const selectedValue = viewMode === "org_chart" ? "org_chart" : "people_hub";
+
   return (
     <Box sx={{ display: "inline-flex", alignItems: "center" }}>
       <ToggleButtonGroup
-        value={viewMode === "classic" ? "people_hub" : viewMode}
+        value={selectedValue}
         exclusive
         onChange={handleViewChange}
         size="small"
@@ -49,11 +51,11 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
             color: "#64748B",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             "&.Mui-selected": {
-              backgroundColor: "#6D5DF6",
+              backgroundColor: "primary.main",
               color: "#FFFFFF",
               boxShadow: "0 2px 6px rgba(109, 93, 246, 0.35)",
               "&:hover": {
-                backgroundColor: "#5B4BEA",
+                backgroundColor: "primary.dark",
               },
             },
             "&:hover": {
@@ -68,9 +70,9 @@ export function ViewModeSwitcher({ viewMode, onChange }: ViewModeSwitcherProps) 
           </ToggleButton>
         </Tooltip>
 
-        <Tooltip title="Employee Directory View" placement="top">
-          <ToggleButton value="directory" aria-label="Employee Directory View">
-            <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
+        <Tooltip title="Organization Hierarchy Chart" placement="top">
+          <ToggleButton value="org_chart" aria-label="Organization Hierarchy Chart">
+            <AccountTreeOutlinedIcon sx={{ fontSize: 20 }} />
           </ToggleButton>
         </Tooltip>
       </ToggleButtonGroup>

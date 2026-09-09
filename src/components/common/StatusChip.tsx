@@ -35,12 +35,12 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   EARLY_LEAVE: { label: "Early Leave", color: "#C2410C", bg: "#FFEDD5", borderColor: "#FED7AA" },
 };
 
-// Fallback configuration for unknown statuses
+// Fallback configuration for unknown statuses using theme-aware variables
 const FALLBACK_CONFIG: StatusConfig = {
   label: "Unknown",
-  color: "#475569",
-  bg: "#F1F5F9",
-  borderColor: "#E2E8F0",
+  color: "text.secondary",
+  bg: "action.hover",
+  borderColor: "divider",
 };
 
 export interface StatusChipProps extends Omit<ChipProps, "color"> {

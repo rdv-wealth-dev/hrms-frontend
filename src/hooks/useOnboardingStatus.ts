@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { getOnboardingStatus, type OnboardingStatusResponse } from "../api/onboarding.api";
 import { useRole } from "../auth/hooks/use-role";
 import type { RootState } from "../store/rootReducer";
@@ -8,6 +9,7 @@ export type OnboardingPhase = "GRACE" | "NUDGE" | "RESTRICTED" | "COMPLETE";
 
 export function useOnboardingStatus() {
   const { role } = useRole();
+  const location = useLocation();
   const isOrgAdmin = role === "ORG_ADMIN";
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth?.isAuthenticated ?? false
@@ -44,9 +46,11 @@ export function useOnboardingStatus() {
     } else {
       setLoading(false);
     }
-  }, [fetchStatus, isOrgAdmin, isAuthenticated]);
+  }, [fetchStatus, isOrgAdmin, isAuthenticated, location.pathname]);
 
-  const isProfileComplete = isOrgAdmin ? true : (statusData?.isProfileComplete ?? statusData?.onboardingComplete ?? false);
+  const isProfileComplete = isOrgAdmin
+    ? true
+    : Boolean(statusData?.onboardingComplete || statusData?.isProfileComplete);
   const phase: OnboardingPhase = isOrgAdmin ? "COMPLETE" : (statusData?.onboardingPhase ?? (isProfileComplete ? "COMPLETE" : "GRACE"));
   const completionPct = isOrgAdmin ? 100 : (statusData?.profileCompletionPct ?? (isProfileComplete ? 100 : 0));
 

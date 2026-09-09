@@ -191,8 +191,9 @@ export const MonthlyAttendanceSummaryCard: React.FC<
               sx={{
                 p: 2,
                 borderRadius: "10px",
-                backgroundColor: "#F8FAFC",
-                border: "1px solid #E2E8F0",
+                backgroundColor: "action.hover",
+                border: "1px solid",
+                borderColor: "divider",
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
@@ -203,7 +204,7 @@ export const MonthlyAttendanceSummaryCard: React.FC<
                 <Typography variant="body2" sx={{ color: "#64748B", fontWeight: 600 }}>
                   Working Days:
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
                   {summaryData?.totalDays ?? 0} Days
                 </Typography>
               </Box>
@@ -237,8 +238,9 @@ export const MonthlyAttendanceSummaryCard: React.FC<
               sx={{
                 p: 2,
                 borderRadius: "10px",
-                backgroundColor: "#F8FAFC",
-                border: "1px solid #E2E8F0",
+                backgroundColor: "action.hover",
+                border: "1px solid",
+                borderColor: "divider",
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
@@ -297,8 +299,9 @@ export const MonthlyAttendanceSummaryCard: React.FC<
               sx={{
                 p: 2,
                 borderRadius: "10px",
-                backgroundColor: "#F8FAFC",
-                border: "1px solid #E2E8F0",
+                backgroundColor: "action.hover",
+                border: "1px solid",
+                borderColor: "divider",
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",

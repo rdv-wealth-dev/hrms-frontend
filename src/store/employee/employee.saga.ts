@@ -5,6 +5,7 @@ import { call, put, takeLatest } from "redux-saga/effects";
 import {
   createEmployee,
   listEmployees,
+  getEmployeeById,
   updateEmployee,
   updateEmployeeStatus,
 } from "../../api/employee.api";
@@ -13,6 +14,8 @@ import {
   createEmployeeFailure,
   listEmployeesSuccess,
   listEmployeesFailure,
+  getEmployeeByIdSuccess,
+  getEmployeeByIdFailure,
   updateEmployeeSuccess,
   updateEmployeeFailure,
   updateEmployeeStatusSuccess,
@@ -22,6 +25,7 @@ import {
   EMPLOYEE_ACTIONS,
   type CreateEmployeeRequestAction,
   type ListEmployeesRequestAction,
+  type GetEmployeeByIdRequestAction,
   type UpdateEmployeeRequestAction,
   type UpdateEmployeeStatusRequestAction,
 } from "./employee.types";
@@ -92,6 +96,33 @@ function* handleListEmployees(action: ListEmployeesRequestAction): SagaIterator 
   }
 }
 
+function* handleGetEmployeeById(action: GetEmployeeByIdRequestAction): SagaIterator {
+  try {
+    const response = yield call(getEmployeeById, action.payload);
+
+    if (!response || !response.succeeded || !response.data) {
+      yield put(
+        getEmployeeByIdFailure(response?.message ?? "Failed to fetch employee details")
+      );
+      return;
+    }
+
+    yield put(getEmployeeByIdSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(
+        getEmployeeByIdFailure(
+          error.response?.data?.message ?? "Failed to fetch employee details"
+        )
+      );
+    } else if (error instanceof Error) {
+      yield put(getEmployeeByIdFailure(error.message));
+    } else {
+      yield put(getEmployeeByIdFailure("Something went wrong while fetching employee"));
+    }
+  }
+}
+
 function* handleUpdateEmployee(action: UpdateEmployeeRequestAction): SagaIterator {
   try {
     const response = yield call(
@@ -157,6 +188,7 @@ function* handleUpdateEmployeeStatus(action: UpdateEmployeeStatusRequestAction):
 export function* employeeSaga(): SagaIterator {
   yield takeLatest(EMPLOYEE_ACTIONS.CREATE_REQUEST, handleCreateEmployee);
   yield takeLatest(EMPLOYEE_ACTIONS.LIST_REQUEST, handleListEmployees);
+  yield takeLatest(EMPLOYEE_ACTIONS.GET_BY_ID_REQUEST, handleGetEmployeeById);
   yield takeLatest(EMPLOYEE_ACTIONS.UPDATE_REQUEST, handleUpdateEmployee);
   yield takeLatest(EMPLOYEE_ACTIONS.UPDATE_STATUS_REQUEST, handleUpdateEmployeeStatus);
 }

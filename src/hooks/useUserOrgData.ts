@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/rootReducer";
 
@@ -11,7 +12,7 @@ export function useUserOrgData() {
 
   const org = (storeOrg || authOrg || {}) as any;
 
-  return {
+  return useMemo(() => ({
     user,
     organization: org,
     onboardingCompleted,
@@ -24,7 +25,7 @@ export function useUserOrgData() {
     industry: org?.industry ?? "",
     companyName: org?.companyName ?? "",
     workspaceSlug: org?.workspaceSlug ?? org?.slug ?? "",
-  };
+  }), [user, org, onboardingCompleted]);
 }
 
 export default useUserOrgData;

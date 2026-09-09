@@ -48,8 +48,8 @@ export function TableEmptyState({
           width: 56,
           height: 56,
           borderRadius: "50%",
-          backgroundColor: "#F1F5F9",
-          color: "#94A3B8",
+          backgroundColor: "action.hover",
+          color: "text.secondary",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -59,11 +59,11 @@ export function TableEmptyState({
         {icon || (isSearch ? <SearchOffOutlinedIcon sx={{ fontSize: 28 }} /> : <InboxOutlinedIcon sx={{ fontSize: 28 }} />)}
       </Box>
 
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#1E293B", mb: 0.5 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "text.primary", mb: 0.5 }}>
         {title || defaultTitle}
       </Typography>
 
-      <Typography variant="body2" sx={{ color: "#64748B", maxWidth: 360, mb: 2 }}>
+      <Typography variant="body2" sx={{ color: "text.secondary", maxWidth: 360, mb: 2 }}>
         {description || defaultDescription}
       </Typography>
 
@@ -75,12 +75,12 @@ export function TableEmptyState({
           sx={{
             textTransform: "none",
             borderRadius: "8px",
-            borderColor: "#CBD5E1",
-            color: "#475569",
+            borderColor: "divider",
+            color: "text.secondary",
             fontWeight: 600,
             "&:hover": {
-              borderColor: "#94A3B8",
-              backgroundColor: "#F8FAFC",
+              borderColor: "primary.main",
+              backgroundColor: "action.hover",
             },
           }}
         >
@@ -96,10 +96,11 @@ export function TableEmptyState({
           sx={{
             textTransform: "none",
             borderRadius: "8px",
-            backgroundColor: "#6D5DF6",
+            bgcolor: "primary.main",
+            color: "primary.contrastText",
             fontWeight: 600,
             "&:hover": {
-              backgroundColor: "#5B4BEA",
+              bgcolor: "primary.dark",
             },
           }}
         >

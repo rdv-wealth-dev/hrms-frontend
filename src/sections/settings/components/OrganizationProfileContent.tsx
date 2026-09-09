@@ -35,6 +35,11 @@ import { usePermissions } from "../../../hooks/usePermissions";
 import { CustomWeekOffRulesBuilder } from "../../../components/settings/CustomWeekOffRulesBuilder";
 import type { CustomWeekOffRule } from "../../../store/organization/organization.types";
 import { parseWorkingHoursToDecimal, formatWorkingHoursDisplay } from "../../../utils/format-date";
+import { useFormValidation } from "../../../hooks/useFormValidation";
+import {
+  organizationProfileSchema,
+  type OrganizationProfileFormValues,
+} from "../../../validations/organization/organization-profile.schema";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -116,6 +121,10 @@ function OrganizationProfileContent() {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  // Form Validation Hook with Zod Schema
+  const { errors, validate, clearError, clearAllErrors } =
+    useFormValidation<OrganizationProfileFormValues>(organizationProfileSchema);
+
   useEffect(() => {
     dispatch(loadOrganizationRequest());
     return () => {
@@ -137,7 +146,7 @@ function OrganizationProfileContent() {
       setCountryCode(organization.address?.countryCode || "IN");
       setZip(organization.address?.zip || "");
 
-      setPrimaryColor(organization.branding?.primaryColor || "#2886CE");
+      setPrimaryColor(organization.branding?.primaryColor || "#6D5DF6");
       setWebsite(organization.branding?.website || "");
       setSupportEmail(organization.branding?.supportEmail || "");
 
@@ -174,6 +183,7 @@ function OrganizationProfileContent() {
   }, [success, dispatch, showSnackbar]);
 
   const handleCancel = () => {
+    clearAllErrors();
     if (organization) {
       setCompanyName(organization.companyName || "");
       setLegalName(organization.legalName || "");
@@ -184,7 +194,7 @@ function OrganizationProfileContent() {
       setStateName(organization.address?.state || "");
       setCountryCode(organization.address?.countryCode || "IN");
       setZip(organization.address?.zip || "");
-      setPrimaryColor(organization.branding?.primaryColor || "#2886CE");
+      setPrimaryColor(organization.branding?.primaryColor || "#6D5DF6");
       setWebsite(organization.branding?.website || "");
       setSupportEmail(organization.branding?.supportEmail || "");
       setTimezone(organization.locale?.timezone || "Asia/Kolkata");
@@ -201,25 +211,44 @@ function OrganizationProfileContent() {
     e.preventDefault();
     if (!canUpdate) return;
 
+    const validation = validate({
+      companyName,
+      legalName,
+      industry,
+      phone,
+      addressLine1,
+      city,
+      state: stateName,
+      countryCode,
+      zip,
+      website,
+      primaryColor,
+      supportEmail,
+    });
+
+    if (!validation.isValid) {
+      return;
+    }
+
     localStorage.setItem("hrms_org_custom_week_off_rules", JSON.stringify(customWeekOffRules));
 
     dispatch(
       updateOrganizationRequest({
-        companyName,
-        legalName,
-        industry,
-        phone,
+        companyName: validation.data?.companyName ?? companyName,
+        legalName: validation.data?.legalName ?? legalName,
+        industry: validation.data?.industry ?? industry,
+        phone: validation.data?.phone ?? phone,
         address: {
-          addressLine1,
-          city,
-          state: stateName,
-          countryCode,
-          zip,
+          addressLine1: validation.data?.addressLine1 ?? addressLine1,
+          city: validation.data?.city ?? city,
+          state: validation.data?.state ?? stateName,
+          countryCode: validation.data?.countryCode ?? countryCode,
+          zip: validation.data?.zip ?? zip,
         },
         branding: {
-          primaryColor,
-          website,
-          supportEmail,
+          primaryColor: validation.data?.primaryColor ?? primaryColor,
+          website: validation.data?.website ?? website,
+          supportEmail: validation.data?.supportEmail ?? supportEmail,
         },
         locale: {
           timezone,
@@ -237,7 +266,7 @@ function OrganizationProfileContent() {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
-        <CircularProgress size={40} sx={{ color: "#6D5DF6" }} />
+        <CircularProgress size={40} sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -280,7 +309,7 @@ function OrganizationProfileContent() {
                   p: 1.5,
                   borderRadius: 2,
                   backgroundColor: "rgba(109, 93, 246, 0.08)",
-                  color: "#6D5DF6",
+                  color: "primary.main",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -289,7 +318,7 @@ function OrganizationProfileContent() {
                 <BusinessOutlinedIcon sx={{ fontSize: 32 }} />
               </Box>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 750, color: "#111827" }}>
+                <Typography variant="h6" sx={{ fontWeight: 750, color: "text.primary" }}>
                   Basic Details
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -316,7 +345,11 @@ function OrganizationProfileContent() {
                 <TextInput
                   label="Company Name"
                   value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    if (errors?.companyName) clearError("companyName");
+                  }}
+                  error={errors?.companyName}
                   disabled={!canUpdate || !isEditing}
                   required
                 />
@@ -325,7 +358,11 @@ function OrganizationProfileContent() {
                 <TextInput
                   label="Legal Name"
                   value={legalName}
-                  onChange={(e) => setLegalName(e.target.value)}
+                  onChange={(e) => {
+                    setLegalName(e.target.value);
+                    if (errors?.legalName) clearError("legalName");
+                  }}
+                  error={errors?.legalName}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
@@ -333,7 +370,11 @@ function OrganizationProfileContent() {
                 <TextInput
                   label="Industry"
                   value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
+                  onChange={(e) => {
+                    setIndustry(e.target.value);
+                    if (errors?.industry) clearError("industry");
+                  }}
+                  error={errors?.industry}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
@@ -341,8 +382,12 @@ function OrganizationProfileContent() {
                 <TextInput
                   label="Phone Number"
                   value={phone}
-                  maxLength={10}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  maxLength={15}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 15));
+                    if (errors?.phone) clearError("phone");
+                  }}
+                  error={errors?.phone}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
@@ -427,7 +472,7 @@ function OrganizationProfileContent() {
               height: "100%",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
               Corporate Address
             </Typography>
             <Divider />
@@ -437,32 +482,48 @@ function OrganizationProfileContent() {
                 <TextInput
                   label="Address Line 1"
                   value={addressLine1}
-                  onChange={(e) => setAddressLine1(e.target.value)}
+                  onChange={(e) => {
+                    setAddressLine1(e.target.value);
+                    if (errors?.addressLine1) clearError("addressLine1");
+                  }}
+                  error={errors?.addressLine1}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   label="City"
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    if (errors?.city) clearError("city");
+                  }}
+                  error={errors?.city}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   label="State"
                   value={stateName}
-                  onChange={(e) => setStateName(e.target.value)}
+                  onChange={(e) => {
+                    setStateName(e.target.value);
+                    if (errors?.state) clearError("state");
+                  }}
+                  error={errors?.state}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   select
                   label="Country"
                   value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
+                  onChange={(e) => {
+                    setCountryCode(e.target.value);
+                    if (errors?.countryCode) clearError("countryCode");
+                  }}
+                  error={errors?.countryCode}
                   disabled={!canUpdate || !isEditing}
                 >
                   {COUNTRIES.map((c) => (
@@ -472,11 +533,15 @@ function OrganizationProfileContent() {
                   ))}
                 </TextInput>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   label="Zip Code"
                   value={zip}
-                  onChange={(e) => setZip(e.target.value)}
+                  onChange={(e) => {
+                    setZip(e.target.value);
+                    if (errors?.zip) clearError("zip");
+                  }}
+                  error={errors?.zip}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
@@ -498,7 +563,7 @@ function OrganizationProfileContent() {
               height: "100%",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
               Branding & Support
             </Typography>
             <Divider />
@@ -508,24 +573,39 @@ function OrganizationProfileContent() {
                 <TextInput
                   label="Website URL"
                   value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://example.com"
+                  onChange={(e) => {
+                    setWebsite(e.target.value);
+                    if (errors?.website) clearError("website");
+                  }}
+                  error={errors?.website}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   label="Primary Branding Color"
                   value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  placeholder="#6D5DF6"
+                  onChange={(e) => {
+                    setPrimaryColor(e.target.value);
+                    if (errors?.primaryColor) clearError("primaryColor");
+                  }}
+                  error={errors?.primaryColor}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   label="Support Email"
                   type="email"
                   value={supportEmail}
-                  onChange={(e) => setSupportEmail(e.target.value)}
+                  placeholder="support@company.com"
+                  onChange={(e) => {
+                    setSupportEmail(e.target.value);
+                    if (errors?.supportEmail) clearError("supportEmail");
+                  }}
+                  error={errors?.supportEmail}
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
@@ -547,15 +627,15 @@ function OrganizationProfileContent() {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <LanguageOutlinedIcon sx={{ color: "#6D5DF6" }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+              <LanguageOutlinedIcon sx={{ color: "primary.main" }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
                 Locale & Regional Settings
               </Typography>
             </Box>
             <Divider />
 
             <Grid container spacing={2}>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   select
                   label="Timezone"
@@ -570,7 +650,7 @@ function OrganizationProfileContent() {
                   ))}
                 </TextInput>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   select
                   label="Date Format"
@@ -585,7 +665,7 @@ function OrganizationProfileContent() {
                   ))}
                 </TextInput>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   select
                   label="Time Format"
@@ -600,7 +680,7 @@ function OrganizationProfileContent() {
                   ))}
                 </TextInput>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   select
                   label="Fiscal Year Start"
@@ -615,7 +695,7 @@ function OrganizationProfileContent() {
                   ))}
                 </TextInput>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   type="text"
                   label="Working Hours / Day"
@@ -625,7 +705,7 @@ function OrganizationProfileContent() {
                   disabled={!canUpdate || !isEditing}
                 />
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextInput
                   select
                   label="Weekly Off Days"
@@ -679,8 +759,8 @@ function OrganizationProfileContent() {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <GavelOutlinedIcon sx={{ color: "#6D5DF6" }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "#111827" }}>
+              <GavelOutlinedIcon sx={{ color: "primary.main" }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: "text.primary" }}>
                 Statutory Registration Identifiers
               </Typography>
             </Box>
@@ -748,7 +828,7 @@ function OrganizationProfileContent() {
                   )
                 }
                 sx={{
-                  backgroundColor: "#6D5DF6",
+                  backgroundColor: "primary.main",
                   color: "#fff",
                   px: 4,
                   py: 1.5,
@@ -757,7 +837,7 @@ function OrganizationProfileContent() {
                   fontWeight: 600,
                   boxShadow: "0px 4px 12px rgba(109, 93, 246, 0.2)",
                   "&:hover": {
-                    backgroundColor: "#5B4EE4",
+                    backgroundColor: "primary.dark",
                     boxShadow: "0px 6px 16px rgba(109, 93, 246, 0.3)",
                   },
                 }}

@@ -1,7 +1,6 @@
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import Typography from "@mui/material/Typography";
 import KpiCardsGrid, { type KpiCardItem } from "../../../components/card/KpiCard";
 
 interface LeaveKpiCardsProps {
@@ -22,29 +21,41 @@ export default function LeaveKpiCards({
       title: "ON LEAVE TODAY",
       value: String(onLeaveTodayCount),
       subtext: "2.1% of workforce",
-      icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 20, color: "#D97706" }} />,
-      iconBg: "#FEF3C7",
+      trend: "0.6%",
+      trendType: "positive",
+      icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 20, color: "#6366F1" }} />,
+      iconBg: "rgba(99, 102, 241, 0.08)",
     },
     {
       title: "PENDING APPROVALS",
       value: String(pendingApprovalsCount),
       subtext: "Require your action",
-      icon: <AccessTimeOutlinedIcon sx={{ fontSize: 20, color: "#EF4444" }} />,
-      iconBg: "#FEE2E2",
+      trend: "-1",
+      trendType: "negative",
+      icon: <AccessTimeOutlinedIcon sx={{ fontSize: 20, color: "#F59E0B" }} />,
+      iconBg: "rgba(245, 158, 11, 0.1)",
     },
     {
       title: "LEAVE UTILIZATION",
       value: `${utilizationPercentage}%`,
       subtext: "Annual leave — YTD",
-      icon: <AssessmentOutlinedIcon sx={{ fontSize: 20, color: "#2563EB" }} />,
-      iconBg: "#DBEAFE",
+      trend: "8.4%",
+      trendType: "positive",
+      progress: utilizationPercentage,
+      progressColor: "#10B981",
     },
     {
       title: "LEAVE LIABILITY",
       value: liabilityAmount,
       subtext: "Unencashed balance",
-      icon: <AttachMoneyOutlinedIcon sx={{ fontSize: 20, color: "#7C3AED" }} />,
-      iconBg: "#EDE9FE",
+      trend: "AS ON TODAY",
+      trendType: "neutral",
+      icon: (
+        <Typography sx={{ fontSize: "16px", fontWeight: 700, color: "#6366F1", lineHeight: 1 }}>
+          ₹
+        </Typography>
+      ),
+      iconBg: "rgba(99, 102, 241, 0.08)",
     },
   ];
 

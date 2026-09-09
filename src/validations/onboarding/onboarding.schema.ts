@@ -15,27 +15,130 @@ export const emergencyContactSchema = z.object({
   name: z.string().trim().min(2, "Name must be 2-100 characters").max(100, "Max 100 characters"),
   relationship: z.string().trim().min(2, "Relationship must be 2-50 characters").max(50, "Max 50 characters"),
   phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  email: z.string().trim().min(1, "Emergency contact email is required").email("Invalid email address"),
+  email: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().trim().email("Invalid email address").optional()
+  ),
+
+
 });
 
-export const onboardingStep1Schema = z.object({
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
-  gender: z.union([z.enum(["MALE", "FEMALE", "OTHER"]), z.literal("")]).refine(
-    (v): v is "MALE" | "FEMALE" | "OTHER" | "" => v !== "",
-    { message: "Gender is required" }
+export const educationDetailSchema = z.object({
+  qualificationLevel: z.enum([
+    "DOCTORATE",
+    "POST_GRADUATE",
+    "UNDER_GRADUATE",
+    "DIPLOMA",
+    "HIGHER_SECONDARY",
+    "SECONDARY",
+    "OTHER",
+  ]),
+  degree: z.string().trim().min(1, "Degree is required").max(150, "Max 150 characters"),
+  fieldOfStudy: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
+  institutionName: z.string().trim().min(1, "Institution name is required").max(200, "Max 200 characters"),
+  yearOfPassing: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int("Passing year must be a whole number").min(1950, "Passing year must be 1950 or later").max(2100, "Invalid passing year").optional()
   ),
-  bloodGroup: z.enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).optional().or(z.literal("")),
-  maritalStatus: z.union([z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]), z.literal("")]).refine(
-    (v): v is "SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED" | "" => v !== "",
-    { message: "Marital status is required" }
-  ),
-  phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  pan: z.string().trim().transform((v) => v.toUpperCase()).refine((v) => !v || v.length === 10, "PAN must be exactly 10 characters").optional().or(z.literal("")),
-  aadhaar: z.string().trim().refine((v) => !v || /^\d{12}$/.test(v), "Aadhaar must be exactly 12 numeric digits").optional().or(z.literal("")),
-  passportNo: z.string().trim().optional().or(z.literal("")),
-  currentAddress: currentAddressSchema,
-  emergencyContact: z.array(emergencyContactSchema).min(1, "At least 1 emergency contact is required"),
+  percentageOrCgpa: z.string().trim().max(50, "Max 50 characters").optional().or(z.literal("")),
+
+
+  isCustom: z.boolean().optional(),
+  boardCode: z.string().trim().optional().or(z.literal("")),
+  boardName: z.string().trim().optional().or(z.literal("")),
+  boardDescription: z.string().trim().optional().or(z.literal("")),
+  stateBoardState: z.string().trim().optional().or(z.literal("")),
+  otherBoardName: z.string().trim().optional().or(z.literal("")),
+  degreeDescription: z.string().trim().optional().or(z.literal("")),
 });
+
+
+export type EducationDetailFormData = z.infer<typeof educationDetailSchema>;
+
+export const onboardingStep1Schema = z
+  .object({
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"]).or(z.literal("")),
+    bloodGroup: z.enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).optional().or(z.literal("")),
+    maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]).or(z.literal("")),
+    religion: z
+      .enum([
+        "HINDUISM",
+        "ISLAM",
+        "CHRISTIANITY",
+        "SIKHISM",
+        "BUDDHISM",
+        "JAINISM",
+        "ZOROASTRIANISM",
+        "JUDAISM",
+        "OTHER",
+        "PREFER_NOT_TO_SAY",
+      ])
+      .optional()
+      .or(z.literal("")),
+    phone: z.string().trim().min(10, "Phone number must be at least 10 digits"),
+    fatherName: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
+    fatherPhone: z.string().trim().optional().or(z.literal("")),
+    motherName: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
+    motherPhone: z.string().trim().optional().or(z.literal("")),
+    highestQualification: z
+      .enum([
+        "DOCTORATE",
+        "POST_GRADUATE",
+        "UNDER_GRADUATE",
+        "DIPLOMA",
+        "HIGHER_SECONDARY",
+        "SECONDARY",
+        "OTHER",
+      ])
+      .or(z.literal("")),
+    educationDetails: z.array(educationDetailSchema).min(1, "At least 1 education qualification is required"),
+    previousEmployerName: z.string().trim().max(100, "Max 100 characters").optional().or(z.literal("")),
+    previousEmployerLastWorkingDate: z.string().optional().or(z.literal("")),
+    pan: z
+      .string()
+      .trim()
+      .transform((v) => v.toUpperCase())
+      .refine((v) => !v || v.length === 10, "PAN must be exactly 10 characters")
+      .optional()
+      .or(z.literal("")),
+    aadhaar: z
+      .string()
+      .trim()
+      .refine(
+        (v) => !v || /^[2-9]\d{11}$/.test(v),
+        "Aadhaar must be exactly 12 numeric digits and cannot start with 0 or 1"
+      )
+      .optional()
+      .or(z.literal("")),
+    passportNo: z.string().trim().optional().or(z.literal("")),
+    currentAddress: currentAddressSchema,
+    emergencyContact: z.array(emergencyContactSchema).optional(),
+  })
+  .refine((data) => !!data.gender, {
+    message: "Gender is required",
+    path: ["gender"],
+  })
+  .refine((data) => !!data.maritalStatus, {
+    message: "Marital status is required",
+    path: ["maritalStatus"],
+  })
+  .refine((data) => !!data.highestQualification, {
+    message: "Highest qualification is required",
+    path: ["highestQualification"],
+  })
+  .refine(
+    (data) => {
+      if (data.previousEmployerName && data.previousEmployerName.trim().length > 0) {
+        return !!data.previousEmployerLastWorkingDate && data.previousEmployerLastWorkingDate.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Last working date is required when previous employer name is provided",
+      path: ["previousEmployerLastWorkingDate"],
+    }
+  );
 
 export type OnboardingStep1FormData = z.infer<typeof onboardingStep1Schema>;
 
@@ -56,10 +159,22 @@ export const familyMemberSchema = z.object({
 });
 
 export const onboardingStep2Schema = z.object({
+  isNotApplicable: z.boolean(),
   familyMembers: z.array(familyMemberSchema),
-});
+}).refine(
+  (data) => {
+    if (data.isNotApplicable) return true;
+    return Array.isArray(data.familyMembers) && data.familyMembers.length > 0;
+  },
+  {
+    message: "Please add at least one family member or check 'Not Applicable' (NA) to proceed.",
+    path: ["familyMembers"],
+  }
+);
 
 export type OnboardingStep2FormData = z.infer<typeof onboardingStep2Schema>;
+
+
 
 // ── Step 3 Schema ──────────────────────────────────────────
 

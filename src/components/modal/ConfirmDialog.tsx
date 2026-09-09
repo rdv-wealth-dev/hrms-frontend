@@ -36,8 +36,8 @@ export default function ConfirmDialog({
       slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5, pb: 1 }}>
-        <WarningAmberRoundedIcon sx={{ color: "#EF4444" }} />
-        <Typography component="span" variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+        <WarningAmberRoundedIcon sx={{ color: "error.main" }} />
+        <Typography component="span" variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
           {title}
         </Typography>
       </DialogTitle>
@@ -50,7 +50,7 @@ export default function ConfirmDialog({
         <Button
           onClick={onClose}
           disabled={loading}
-          sx={{ textTransform: "none", fontWeight: 600, color: "#4B5563" }}
+          sx={{ textTransform: "none", fontWeight: 600, color: "text.secondary" }}
         >
           {cancelLabel}
         </Button>

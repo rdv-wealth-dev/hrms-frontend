@@ -313,7 +313,7 @@ export default function DailyPunchCard() {
           </Box>
 
           <Box sx={{ textAlign: "center", maxWidth: 360 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", mb: 0.5 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 0.5 }}>
               Profile Incomplete
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -363,8 +363,8 @@ export default function DailyPunchCard() {
               borderRadius: 2.5,
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: "#6D5DF6",
-              "&:hover": { backgroundColor: "#5B4BEA" },
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
             Complete Profile
@@ -375,8 +375,8 @@ export default function DailyPunchCard() {
           {/* Title & Live Status Chip */}
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AccessTimeIcon sx={{ color: isOnBreak ? "#F59E0B" : isActiveShift ? "#10B981" : hasCheckedOut ? "#6366F1" : "#6D5DF6" }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#111827" }}>
+          <AccessTimeIcon sx={{ color: isOnBreak ? "#F59E0B" : isActiveShift ? "#10B981" : hasCheckedOut ? "#6366F1" : "primary.main" }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
             Daily Attendance
           </Typography>
         </Box>
@@ -463,10 +463,10 @@ export default function DailyPunchCard() {
                 fontSize: "1rem",
                 fontWeight: 600,
                 textTransform: "none",
-                backgroundColor: "#6D5DF6",
+                backgroundColor: "primary.main",
                 boxShadow: "0 4px 14px rgba(109, 93, 246, 0.25)",
                 "&:hover": {
-                  backgroundColor: "#5B4BEA",
+                  backgroundColor: "primary.dark",
                   boxShadow: "0 6px 20px rgba(109, 93, 246, 0.35)",
                 },
               }}

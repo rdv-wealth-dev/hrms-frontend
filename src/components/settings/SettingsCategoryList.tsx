@@ -1,28 +1,27 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import type { SettingsCategory } from "../../sections/settings/settings-config";
+
+type Category = {
+  id: string;
+  label: string;
+};
 
 type Props = {
-  categories: SettingsCategory[];
+  categories: Category[];
   activeId: string;
   onSelect: (id: string) => void;
 };
-
-// Left column of the Settings 3-column layout.
-// Renders the top-level settings categories (Master Data, Company Settings, etc.)
-// Reusable — knows nothing about what the categories contain.
 
 function SettingsCategoryList({ categories, activeId, onSelect }: Props) {
   return (
     <Box
       sx={{
-        width: 200,
-        flexShrink: 0,
-        backgroundColor: "#fff",
-        borderRadius: 3,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        py: 1,
-        height: "fit-content",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 0.5,
+        mb: 2,
       }}
     >
       {categories.map((cat) => {
@@ -37,9 +36,9 @@ function SettingsCategoryList({ categories, activeId, onSelect }: Props) {
               cursor: "pointer",
               borderRadius: 2,
               mx: 1,
-              backgroundColor: isActive ? "#EEF2FF" : "transparent",
+              backgroundColor: isActive ? "primary.lighter" : "transparent",
               "&:hover": {
-                backgroundColor: isActive ? "#EEF2FF" : "#F9FAFB",
+                backgroundColor: isActive ? "primary.lighter" : "action.hover",
               },
             }}
           >
@@ -47,7 +46,7 @@ function SettingsCategoryList({ categories, activeId, onSelect }: Props) {
               sx={{
                 fontSize: 13,
                 fontWeight: isActive ? 600 : 400,
-                color: isActive ? "#6D5DF6" : "#374151",
+                color: isActive ? "primary.main" : "text.secondary",
               }}
             >
               {cat.label}

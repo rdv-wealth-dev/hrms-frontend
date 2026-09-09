@@ -1,4 +1,5 @@
 import axiosInstance from "./axios";
+import type { CustomFieldDefinition } from "./custom-field.api";
 
 export interface CurrentAddress {
   addressLine1: string;
@@ -16,17 +17,84 @@ export interface EmergencyContact {
   email?: string;
 }
 
+export interface EducationDetail {
+  qualificationLevel:
+    | "DOCTORATE"
+    | "POST_GRADUATE"
+    | "UNDER_GRADUATE"
+    | "DIPLOMA"
+    | "HIGHER_SECONDARY"
+    | "SECONDARY"
+    | "OTHER";
+  degree: string;
+  fieldOfStudy?: string;
+  institutionName: string;
+  yearOfPassing?: number;
+  percentageOrCgpa?: string;
+  isCustom?: boolean;
+  boardCode?: string;
+  boardName?: string;
+  boardDescription?: string;
+  stateBoardState?: string;
+  otherBoardName?: string;
+  degreeDescription?: string;
+}
+
+export interface SchoolBoardOption {
+  code: string;
+  name: string;
+  description?: string;
+  requiresStateSelection?: boolean;
+}
+
+export interface StateBoardOption {
+  state: string;
+  boardName: string;
+  boardCode: string;
+}
+
+export interface EducationStreamCategory {
+  category: string;
+  degrees: string[];
+}
+
+export interface EducationOptionsResponse {
+  succeeded?: boolean;
+  message?: string;
+  data?: {
+    qualificationLevel?: string;
+    countryCode?: string;
+    searchQuery?: string;
+    totalMatches?: number;
+    categories?: EducationStreamCategory[];
+    allDegrees?: string[];
+    boardOptions?: SchoolBoardOption[];
+    stateBoards?: StateBoardOption[];
+  };
+}
+
+
 export interface Step1Payload {
   dateOfBirth: string;
   gender: "MALE" | "FEMALE" | "OTHER";
   bloodGroup?: string;
   maritalStatus: "SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED";
+  religion?: string;
   phone: string;
+  fatherName?: string;
+  fatherPhone?: string;
+  motherName?: string;
+  motherPhone?: string;
+  highestQualification?: string;
+  educationDetails?: EducationDetail[];
+  previousEmployerName?: string;
+  previousEmployerLastWorkingDate?: string;
   currentAddress: CurrentAddress;
   emergencyContact: EmergencyContact[];
   pan?: string;
   aadhaar?: string;
   passportNo?: string;
+  customFields?: Record<string, any>;
 }
 
 export interface FamilyMember {
@@ -42,8 +110,10 @@ export interface FamilyMember {
 }
 
 export interface Step2Payload {
+  isNotApplicable?: boolean;
   familyMembers: FamilyMember[];
 }
+
 
 export interface Step3Payload {
   bankName: string;
@@ -77,8 +147,11 @@ export interface OnboardingStatusResponse {
     step1Data?: Partial<Step1Payload>;
     step2Data?: Partial<Step2Payload>;
     step3Data?: Partial<Step3Payload>;
+    step4Data?: any;
+    step5Data?: any;
     missingDocuments?: string[];
     mandatoryDocumentTypes?: string[];
+    customFieldDefinitions?: CustomFieldDefinition[];
   };
 }
 
@@ -174,3 +247,80 @@ export const submitOnboardingStep5 = async (_payload: Step5Payload): Promise<Onb
     return { succeeded: false, message: msg };
   }
 };
+
+export const getEducationOptions = async (
+  qualificationLevel?: string,
+  countryCode: string = "IN",
+  search?: string
+): Promise<EducationOptionsResponse> => {
+  try {
+    const params: Record<string, string> = { countryCode };
+    if (qualificationLevel) {
+      params.qualificationLevel = qualificationLevel;
+    }
+    if (search && search.trim().length >= 2) {
+      params.search = search.trim();
+    }
+
+    const response = await axiosInstance.get<EducationOptionsResponse>(
+      "/onboarding/education-options",
+      { params }
+    );
+    if (response.data?.data) {
+      const rawData = response.data.data as any;
+      const rawItems = rawData.categories || rawData.degrees || [];
+      response.data.data.categories = rawItems.map((item: any) => ({
+        category: item.category || item.degree || "",
+        degrees: item.degrees || item.specialization || [],
+      }));
+    }
+    return response.data;
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || "Failed to fetch education options";
+    return {
+      succeeded: false,
+      message: msg,
+      data: { categories: [], allDegrees: [], boardOptions: [], stateBoards: [] },
+    };
+  }
+};
+
+export const skipOnboardingStep = async (step?: number): Promise<OnboardingStepResponse> => {
+  try {
+    const payload = step ? { step } : {};
+    const response = await axiosInstance.post<OnboardingStepResponse>(
+      "/onboarding/skip",
+      payload
+    );
+    return response.data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.error?.message ||
+      err?.response?.data?.message ||
+      err?.response?.data?.errors?.[0] ||
+      err?.message ||
+      "Failed to skip step";
+    return { succeeded: false, message: msg };
+  }
+};
+
+export const navigateOnboardingStep = async (step: number): Promise<OnboardingStepResponse> => {
+  try {
+    const response = await axiosInstance.post<OnboardingStepResponse>(
+      "/onboarding/navigate",
+      { step }
+    );
+    return response.data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.error?.message ||
+      err?.response?.data?.message ||
+      err?.response?.data?.errors?.[0] ||
+      err?.message ||
+      "Failed to navigate step";
+    return { succeeded: false, message: msg };
+  }
+};
+
+
+

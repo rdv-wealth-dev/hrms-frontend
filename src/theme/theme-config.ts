@@ -1,21 +1,16 @@
 // src/theme/theme-config.ts
+import { lightPaletteTokens, darkPaletteTokens, brandColors } from "./tokens/color.tokens";
 
 export const themeConfig = {
   palette: {
-    primary: {
-      main: "#6D5DF6",
-      light: "#818CF8",
-      dark: "#5B4BEA",
-    },
-
-    background: {
-      default: "#FFFFFF",
-      paper: "#FCFCFD",
-    },
-
-    text: {
-      primary: "#111827",
-      secondary: "#6B7280",
-    },
+    primary: lightPaletteTokens.primary,
+    divider: lightPaletteTokens.divider,
+    background: lightPaletteTokens.background,
+    text: lightPaletteTokens.text,
+    neutral: lightPaletteTokens.neutral,
   },
+  darkPalette: darkPaletteTokens,
+  brand: brandColors,
 };
+
+export type ThemeConfig = typeof themeConfig;

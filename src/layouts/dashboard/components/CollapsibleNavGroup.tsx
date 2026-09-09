@@ -5,7 +5,6 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -69,73 +68,86 @@ function NestedSubGroupItem({
             sx={{
               display: "flex",
               alignItems: "center",
+              gap: 1.25,
               width: "100%",
-              px: 1.5,
-              py: 0.75,
-              borderRadius: 2,
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                minWidth: permanentOpen ? 34 : 0,
-                mr: permanentOpen ? 0 : 1.5,
-                color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.7)",
-              }}
-            >
-              {item?.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <Typography
-                  sx={{
-                    fontSize: "0.8125rem",
-                    fontWeight: 600,
-                    color: isChildActive ? "#4F46E5" : "#6B6699",
-                  }}
-                >
-                  {item?.label}
-                </Typography>
-              }
-            />
-          </Box>
-        ) : (
-          <ListItemButton
-            onClick={() => setOpen((prev) => !prev)}
-            sx={{
-              borderRadius: 2,
-              px: 1.5,
-              py: 0.75,
-              transition: "all 0.2s ease",
-              backgroundColor: isChildActive && !open ? "#4F46E5" : "transparent",
-              border: "1px solid transparent",
-              "&:hover": {
-                backgroundColor: isChildActive && !open ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
-              },
+              px: 1.25,
+              py: 0.85,
+              borderRadius: 2.5,
             }}
           >
             <ListItemIcon
               sx={{
                 minWidth: 0,
-                mr: 1.5,
-                color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+                mr: 0,
+                color: isChildActive ? "#A855F7" : "rgba(168, 85, 247, 0.7)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {item?.icon}
             </ListItemIcon>
-            <ListItemText
-              primary={
-                <Typography
-                  sx={{
-                    fontSize: "0.8125rem",
-                    fontWeight: isChildActive ? 700 : 500,
-                    color: isChildActive ? "#FFFFFF" : "#6B6699",
-                  }}
-                >
-                  {item?.label}
-                </Typography>
-              }
-            />
-            <Box sx={{ color: isChildActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: isChildActive ? "#A855F7" : "#475569",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                lineHeight: 1.2,
+              }}
+            >
+              {item?.label}
+            </Typography>
+          </Box>
+        ) : (
+          <ListItemButton
+            onClick={() => setOpen((prev) => !prev)}
+            sx={{
+              borderRadius: 2.5,
+              px: 1.25,
+              py: 0.85,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1.25,
+              transition: "all 0.2s ease",
+              backgroundColor: isChildActive && !open ? "rgba(168, 85, 247, 0.08)" : "transparent",
+              border: "1px solid transparent",
+              "&:hover": {
+                backgroundColor: "rgba(168, 85, 247, 0.08)",
+              },
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0, flexGrow: 1 }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: 0,
+                  color: isChildActive ? "#A855F7" : "rgba(168, 85, 247, 0.7)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {item?.icon}
+              </ListItemIcon>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  fontWeight: isChildActive ? 600 : 500,
+                  color: isChildActive ? "#A855F7" : "#475569",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  lineHeight: 1.2,
+                }}
+              >
+                {item?.label}
+              </Typography>
+            </Box>
+            <Box sx={{ color: isChildActive ? "#A855F7" : "rgba(168, 85, 247, 0.5)", display: "flex", alignItems: "center", flexShrink: 0 }}>
               {open ? (
                 <ExpandMoreIcon sx={{ fontSize: 16 }} />
               ) : (
@@ -147,7 +159,7 @@ function NestedSubGroupItem({
       </ListItem>
 
       <Collapse in={permanentOpen || open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 2, mt: 0.25 }}>
+        <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 1, mt: 0.25 }}>
           {visibleChildren.map((child) => {
             const isActive = child?.path ? location.pathname === child.path : false;
 
@@ -156,40 +168,49 @@ function NestedSubGroupItem({
                 <ListItemButton
                   onClick={() => child?.path && onNavigate(child.path)}
                   sx={{
-                    borderRadius: 2,
-                    px: 1.5,
-                    py: 0.65,
+                    borderRadius: 2.5,
+                    px: 1.25,
+                    py: 0.85,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.25,
                     transition: "all 0.2s ease",
-                    backgroundColor: isActive ? "#4F46E5" : "transparent",
+                    background: isActive ? "linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)" : "transparent",
                     border: "1px solid transparent",
-                    boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.15)" : "none",
+                    boxShadow: isActive ? "0px 4px 14px rgba(168, 85, 247, 0.25)" : "none",
                     "&:hover": {
-                      backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
+                      background: isActive
+                        ? "linear-gradient(135deg, #B76EF9 0%, #9A6FF8 100%)"
+                        : "rgba(168, 85, 247, 0.08)",
+                      border: "1px solid transparent",
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: permanentOpen ? 34 : 0,
-                      mr: permanentOpen ? 0 : 1.25,
-                      color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+                      minWidth: 0,
+                      mr: 0,
+                      color: isActive ? "#FFFFFF" : "#A855F7",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
                     {child?.icon}
                   </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        sx={{
-                          fontSize: "0.78rem",
-                          fontWeight: isActive ? 700 : 500,
-                          color: isActive ? "#FFFFFF" : "#6B6699",
-                        }}
-                      >
-                        {child?.label}
-                      </Typography>
-                    }
-                  />
+                  <Typography
+                    sx={{
+                      fontSize: 13,
+                      fontWeight: isActive ? 600 : 500,
+                      color: isActive ? "#FFFFFF" : "#475569",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {child?.label}
+                  </Typography>
                 </ListItemButton>
               </ListItem>
             );
@@ -213,8 +234,11 @@ export default function CollapsibleNavGroup({
 
   // Filter items according to permissions & role rules
   const visibleItems = items.filter((item) => {
-    if (item?.children && item.children.length > 0) {
-      return item.children.some((child) => !child?.permission || hasPermission(child.permission));
+    if (item?.children) {
+      return (
+        item.children.length > 0 &&
+        item.children.some((child) => !child?.permission || hasPermission(child.permission))
+      );
     }
     if (!item?.permission) return true;
     return hasPermission(item.permission);
@@ -258,6 +282,7 @@ export default function CollapsibleNavGroup({
             sx={{
               display: "flex",
               alignItems: "center",
+              gap: 1.25,
               width: "100%",
               px: 1.5,
               py: 1,
@@ -268,7 +293,7 @@ export default function CollapsibleNavGroup({
               sx={{
                 minWidth: isCollapsed ? 0 : 34,
                 mr: 0,
-                color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.6)",
+                color: isChildActive ? "#A855F7" : "#A855F7",
                 justifyContent: "center",
               }}
             >
@@ -276,13 +301,14 @@ export default function CollapsibleNavGroup({
             </ListItemIcon>
             {!isCollapsed && (
               <Typography
-                variant="caption"
                 sx={{
-                  fontWeight: 700,
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.05em",
-                  color: isChildActive ? "#4F46E5" : "#6B6699",
-                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  color: isChildActive ? "#A855F7" : "#475569",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  lineHeight: 1.2,
                 }}
               >
                 {title}
@@ -298,17 +324,18 @@ export default function CollapsibleNavGroup({
               py: 1,
               justifyContent: isCollapsed ? "center" : "space-between",
               transition: "all 0.2s ease",
-              backgroundColor: isChildActive && !open ? "rgba(79, 70, 229, 0.08)" : "transparent",
+              backgroundColor: isChildActive && !open ? "rgba(168, 85, 247, 0.08)" : "transparent",
+              border: "1px solid transparent",
               "&:hover": {
-                backgroundColor: "rgba(79, 70, 229, 0.06)",
+                backgroundColor: "rgba(168, 85, 247, 0.08)",
               },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0 }}>
               <ListItemIcon
                 sx={{
                   minWidth: 0,
-                  color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.6)",
+                  color: isChildActive ? "#A855F7" : "#A855F7",
                   justifyContent: "center",
                 }}
               >
@@ -316,13 +343,14 @@ export default function CollapsibleNavGroup({
               </ListItemIcon>
               {!isCollapsed && (
                 <Typography
-                  variant="caption"
                   sx={{
-                    fontWeight: 700,
-                    fontSize: "0.75rem",
-                    letterSpacing: "0.05em",
-                    color: isChildActive ? "#4F46E5" : "#6B6699",
-                    textTransform: "uppercase",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: isChildActive ? "#A855F7" : "#475569",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    lineHeight: 1.2,
                   }}
                 >
                   {title}
@@ -331,7 +359,7 @@ export default function CollapsibleNavGroup({
             </Box>
 
             {!isCollapsed && (
-              <Box sx={{ color: isChildActive ? "#4F46E5" : "rgba(79, 70, 229, 0.5)", display: "flex", alignItems: "center" }}>
+              <Box sx={{ color: isChildActive ? "#A855F7" : "rgba(168, 85, 247, 0.5)", display: "flex", alignItems: "center" }}>
                 {open ? (
                   <ExpandMoreIcon sx={{ fontSize: 18 }} />
                 ) : (
@@ -345,7 +373,7 @@ export default function CollapsibleNavGroup({
 
       {/* Sub-Items List */}
       <Collapse in={permanentOpen ? !isCollapsed : open && !isCollapsed} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 1.5, mt: 0.5 }}>
+        <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 1, mt: 0.5 }}>
           {visibleItems.map((item) => {
             if (item?.children && item.children.length > 0) {
               return (
@@ -364,40 +392,49 @@ export default function CollapsibleNavGroup({
                 <ListItemButton
                   onClick={() => item?.path && onNavigate(item.path)}
                   sx={{
-                    borderRadius: 2,
-                    px: 1.5,
-                    py: 0.75,
+                    borderRadius: 2.5,
+                    px: 1.25,
+                    py: 0.85,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.25,
                     transition: "all 0.2s ease",
-                    backgroundColor: isActive ? "#4F46E5" : "transparent",
+                    background: isActive ? "linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)" : "transparent",
                     border: "1px solid transparent",
-                    boxShadow: isActive ? "0px 2px 6px rgba(79, 70, 229, 0.15)" : "none",
+                    boxShadow: isActive ? "0px 4px 14px rgba(168, 85, 247, 0.25)" : "none",
                     "&:hover": {
-                      backgroundColor: isActive ? "#4338CA" : "rgba(79, 70, 229, 0.08)",
+                      background: isActive
+                        ? "linear-gradient(135deg, #B76EF9 0%, #9A6FF8 100%)"
+                        : "rgba(168, 85, 247, 0.08)",
+                      border: "1px solid transparent",
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: permanentOpen ? 34 : 0,
-                      mr: permanentOpen ? 0 : 1.5,
-                      color: isActive ? "#FFFFFF" : "rgba(79, 70, 229, 0.7)",
+                      minWidth: 0,
+                      mr: 0,
+                      color: isActive ? "#FFFFFF" : "#A855F7",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
                     {item?.icon}
                   </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        sx={{
-                          fontSize: "0.8125rem",
-                          fontWeight: isActive ? 700 : 500,
-                          color: isActive ? "#FFFFFF" : "#6B6699",
-                        }}
-                      >
-                        {item?.label}
-                      </Typography>
-                    }
-                  />
+                  <Typography
+                    sx={{
+                      fontSize: 13,
+                      fontWeight: isActive ? 600 : 500,
+                      color: isActive ? "#FFFFFF" : "#475569",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {item?.label}
+                  </Typography>
                 </ListItemButton>
               </ListItem>
             );

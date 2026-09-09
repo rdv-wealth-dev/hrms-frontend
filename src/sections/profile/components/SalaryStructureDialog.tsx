@@ -162,7 +162,7 @@ export const SalaryStructureDialog: React.FC<SalaryStructureDialogProps> = ({
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <PaymentsOutlinedIcon sx={{ color: "#4F46E5" }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
             Assign / Revise Salary Structure
           </Typography>
         </Box>

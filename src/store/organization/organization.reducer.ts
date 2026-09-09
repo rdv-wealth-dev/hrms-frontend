@@ -40,6 +40,7 @@ export function organizationReducer(
     case ORGANIZATION_ACTIONS.UPDATE_MODS_REQUEST:
     case ORGANIZATION_ACTIONS.UPDATE_STATUTORY_REQUEST:
     case ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_REQUEST:
+    case ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_REQUEST:
       return {
         ...state,
         submitting: true,
@@ -59,10 +60,22 @@ export function organizationReducer(
         error: null,
       };
 
+    case ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_SUCCESS:
+      return {
+        ...state,
+        submitting: false,
+        success: true,
+        organization: state.organization
+          ? { ...state.organization, employeeCodeConfig: action.payload }
+          : state.organization,
+        error: null,
+      };
+
     case ORGANIZATION_ACTIONS.UPDATE_FAILURE:
     case ORGANIZATION_ACTIONS.UPDATE_MODS_FAILURE:
     case ORGANIZATION_ACTIONS.UPDATE_STATUTORY_FAILURE:
     case ORGANIZATION_ACTIONS.UPDATE_MANDATORY_DOCS_FAILURE:
+    case ORGANIZATION_ACTIONS.UPDATE_EMPLOYEE_CODE_CONFIG_FAILURE:
       return {
         ...state,
         submitting: false,
