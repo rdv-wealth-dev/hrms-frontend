@@ -4,7 +4,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
@@ -133,12 +132,14 @@ export function CreateStructureTemplateDialog({
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
-      PaperProps={{
-        sx: {
-          borderRadius: "16px",
-          p: 1,
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: "16px",
+            p: 1,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+          },
         },
       }}
     >
@@ -247,53 +248,47 @@ export function CreateStructureTemplateDialog({
               )}
 
               {/* Add Earning Row */}
-              <Grid container spacing={1.5} alignItems="center">
-                <Grid item xs={5}>
-                  <TextInput
-                    select
-                    menuPlacement="top"
-                    placeholder="Choose..."
-                    value={earningComponent}
-                    onChange={(e) => setEarningComponent(e.target.value)}
-                  >
-                    <MenuItem value="" disabled>
-                      Choose...
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 1.5, alignItems: "center" }}>
+                <TextInput
+                  select
+                  menuPlacement="top"
+                  placeholder="Choose..."
+                  value={earningComponent}
+                  onChange={(e) => setEarningComponent(e.target.value)}
+                >
+                  <MenuItem value="" disabled>
+                    Choose...
+                  </MenuItem>
+                  {earningOptions.map((c) => (
+                    <MenuItem key={c.id} value={c.code}>
+                      {c.name} ({c.code})
                     </MenuItem>
-                    {earningOptions.map((c) => (
-                      <MenuItem key={c.id} value={c.code}>
-                        {c.name} ({c.code})
-                      </MenuItem>
-                    ))}
-                  </TextInput>
-                </Grid>
-                <Grid item xs={5}>
-                  <TextInput
-                    placeholder="e.g. 40% of CTC"
-                    value={earningCalc}
-                    onChange={(e) => setEarningCalc(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <Button
-                    type="button"
-                    variant="contained"
-                    fullWidth
-                    onClick={handleAddEarning}
-                    sx={{
-                      backgroundColor: "#E2E8F0",
-                      color: "#1E293B",
-                      fontWeight: 700,
-                      textTransform: "none",
-                      height: 40,
-                      borderRadius: "10px",
-                      boxShadow: "none",
-                      "&:hover": { backgroundColor: "#CBD5E1", boxShadow: "none" },
-                    }}
-                  >
-                    Add
-                  </Button>
-                </Grid>
-              </Grid>
+                  ))}
+                </TextInput>
+                <TextInput
+                  placeholder="e.g. 40% of CTC"
+                  value={earningCalc}
+                  onChange={(e) => setEarningCalc(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="contained"
+                  onClick={handleAddEarning}
+                  sx={{
+                    backgroundColor: "#E2E8F0",
+                    color: "#1E293B",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    height: 40,
+                    px: 2.5,
+                    borderRadius: "10px",
+                    boxShadow: "none",
+                    "&:hover": { backgroundColor: "#CBD5E1", boxShadow: "none" },
+                  }}
+                >
+                  Add
+                </Button>
+              </Box>
             </Box>
 
             {/* Deductions Section */}
@@ -346,53 +341,47 @@ export function CreateStructureTemplateDialog({
               )}
 
               {/* Add Deduction Row */}
-              <Grid container spacing={1.5} alignItems="center">
-                <Grid item xs={5}>
-                  <TextInput
-                    select
-                    menuPlacement="top"
-                    placeholder="Choose..."
-                    value={deductionComponent}
-                    onChange={(e) => setDeductionComponent(e.target.value)}
-                  >
-                    <MenuItem value="" disabled>
-                      Choose...
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 1.5, alignItems: "center" }}>
+                <TextInput
+                  select
+                  menuPlacement="top"
+                  placeholder="Choose..."
+                  value={deductionComponent}
+                  onChange={(e) => setDeductionComponent(e.target.value)}
+                >
+                  <MenuItem value="" disabled>
+                    Choose...
+                  </MenuItem>
+                  {deductionOptions.map((c) => (
+                    <MenuItem key={c.id} value={c.code}>
+                      {c.name} ({c.code})
                     </MenuItem>
-                    {deductionOptions.map((c) => (
-                      <MenuItem key={c.id} value={c.code}>
-                        {c.name} ({c.code})
-                      </MenuItem>
-                    ))}
-                  </TextInput>
-                </Grid>
-                <Grid item xs={5}>
-                  <TextInput
-                    placeholder="e.g. 12% of Basic"
-                    value={deductionCalc}
-                    onChange={(e) => setDeductionCalc(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <Button
-                    type="button"
-                    variant="contained"
-                    fullWidth
-                    onClick={handleAddDeduction}
-                    sx={{
-                      backgroundColor: "#E2E8F0",
-                      color: "#1E293B",
-                      fontWeight: 700,
-                      textTransform: "none",
-                      height: 40,
-                      borderRadius: "10px",
-                      boxShadow: "none",
-                      "&:hover": { backgroundColor: "#CBD5E1", boxShadow: "none" },
-                    }}
-                  >
-                    Add
-                  </Button>
-                </Grid>
-              </Grid>
+                  ))}
+                </TextInput>
+                <TextInput
+                  placeholder="e.g. 12% of Basic"
+                  value={deductionCalc}
+                  onChange={(e) => setDeductionCalc(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="contained"
+                  onClick={handleAddDeduction}
+                  sx={{
+                    backgroundColor: "#E2E8F0",
+                    color: "#1E293B",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    height: 40,
+                    px: 2.5,
+                    borderRadius: "10px",
+                    boxShadow: "none",
+                    "&:hover": { backgroundColor: "#CBD5E1", boxShadow: "none" },
+                  }}
+                >
+                  Add
+                </Button>
+              </Box>
             </Box>
           </Box>
         </DialogContent>

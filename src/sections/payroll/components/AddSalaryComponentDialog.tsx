@@ -3,7 +3,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
@@ -106,12 +106,14 @@ export function AddSalaryComponentDialog({
       onClose={handleClose}
       fullWidth
       maxWidth="md"
-      PaperProps={{
-        sx: {
-          borderRadius: "16px",
-          p: 1.5,
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: "16px",
+            p: 1.5,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+          },
         },
       }}
     >
@@ -137,103 +139,89 @@ export function AddSalaryComponentDialog({
             </Alert>
           )}
 
-          <Grid container spacing={2.5}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5 }}>
             {/* Row 1: Code & Name */}
-            <Grid item xs={12} sm={6}>
-              <TextInput
-                label="Code"
-                placeholder="e.g. BASIC"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                disabled={loading}
-              />
-            </Grid>
+            <TextInput
+              label="Code"
+              placeholder="e.g. BASIC"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              disabled={loading}
+            />
 
-            <Grid item xs={12} sm={6}>
-              <TextInput
-                label="Name"
-                placeholder="e.g. Basic Salary"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={loading}
-              />
-            </Grid>
+            <TextInput
+              label="Name"
+              placeholder="e.g. Basic Salary"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+            />
 
             {/* Row 2: Type & Calculation Type */}
-            <Grid item xs={12} sm={6}>
-              <TextInput
-                label="Type"
-                select
-                value={type}
-                onChange={(e) => setType(e.target.value as SalaryComponentType)}
-                disabled={loading}
-              >
-                <MenuItem value="EARNING">EARNING</MenuItem>
-                <MenuItem value="DEDUCTION">DEDUCTION</MenuItem>
-              </TextInput>
-            </Grid>
+            <TextInput
+              label="Type"
+              select
+              value={type}
+              onChange={(e) => setType(e.target.value as SalaryComponentType)}
+              disabled={loading}
+            >
+              <MenuItem value="EARNING">EARNING</MenuItem>
+              <MenuItem value="DEDUCTION">DEDUCTION</MenuItem>
+            </TextInput>
 
-            <Grid item xs={12} sm={6}>
-              <TextInput
-                label="Calculation Type"
-                select
-                value={calculationType}
-                onChange={(e) => setCalculationType(e.target.value as CalculationType)}
-                disabled={loading}
-              >
-                <MenuItem value="FLAT">FLAT</MenuItem>
-                <MenuItem value="PERCENTAGE">PERCENTAGE</MenuItem>
-                <MenuItem value="FORMULA">FORMULA</MenuItem>
-              </TextInput>
-            </Grid>
+            <TextInput
+              label="Calculation Type"
+              select
+              value={calculationType}
+              onChange={(e) => setCalculationType(e.target.value as CalculationType)}
+              disabled={loading}
+            >
+              <MenuItem value="FLAT">FLAT</MenuItem>
+              <MenuItem value="PERCENTAGE">PERCENTAGE</MenuItem>
+              <MenuItem value="FORMULA">FORMULA</MenuItem>
+            </TextInput>
 
             {/* Row 3: Options & Flags */}
-            <Grid item xs={12}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isTaxable}
-                        onChange={(e) => setIsTaxable(e.target.checked)}
-                        disabled={loading}
-                        sx={{
-                          color: "#94A3B8",
-                          "&.Mui-checked": { color: "#EF4444" },
-                        }}
-                      />
-                    }
-                    label={
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                        Is Taxable Component
-                      </Typography>
-                    }
+            <Box sx={{ gridColumn: { xs: "1", sm: "1 / -1" }, display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isTaxable}
+                    onChange={(e) => setIsTaxable(e.target.checked)}
+                    disabled={loading}
+                    sx={{
+                      color: "#94A3B8",
+                      "&.Mui-checked": { color: "#EF4444" },
+                    }}
                   />
-                </Grid>
+                }
+                label={
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+                    Is Taxable Component
+                  </Typography>
+                }
+              />
 
-                <Grid item xs={12} sm={6}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isPartOfWages}
-                        onChange={(e) => setIsPartOfWages(e.target.checked)}
-                        disabled={loading}
-                        sx={{
-                          color: "#94A3B8",
-                          "&.Mui-checked": { color: "#EF4444" },
-                        }}
-                      />
-                    }
-                    label={
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                        Is Part of Minimum Wages
-                      </Typography>
-                    }
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isPartOfWages}
+                    onChange={(e) => setIsPartOfWages(e.target.checked)}
+                    disabled={loading}
+                    sx={{
+                      color: "#94A3B8",
+                      "&.Mui-checked": { color: "#EF4444" },
+                    }}
                   />
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
+                }
+                label={
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+                    Is Part of Minimum Wages
+                  </Typography>
+                }
+              />
+            </Box>
+          </Box>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 2.5, pt: 2, gap: 1.5, justifyContent: "flex-end" }}>
