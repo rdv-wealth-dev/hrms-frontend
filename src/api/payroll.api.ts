@@ -2,28 +2,33 @@ import axios from "./axios";
 import type {
   SalaryComponentItem,
   StructureTemplateItem,
+  CreateSalaryComponentPayload,
+  CreatePtSlabsPayload,
+  PtSlabConfigItem,
 } from "../types/payroll.types";
 
 export async function getSalaryComponents(): Promise<SalaryComponentItem[]> {
   try {
     const response = await axios.get("/payroll/components");
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
-    console.warn("GET /payroll/components API call failed, using mock fallback", error);
+    console.warn("GET /payroll/components API call failed", error);
     throw error;
   }
 }
 
 export async function createSalaryComponent(
-  data: Omit<SalaryComponentItem, "id">
+  payload: CreateSalaryComponentPayload
 ): Promise<SalaryComponentItem> {
-  try {
-    const response = await axios.post("/payroll/components", data);
-    return response.data;
-  } catch (error) {
-    console.warn("POST /payroll/components API call failed, local state fallback active", error);
-    throw error;
-  }
+  const response = await axios.post("/payroll/components", payload);
+  return response.data?.data ?? response.data;
+}
+
+export async function saveProfessionalTaxSlabs(
+  payload: CreatePtSlabsPayload
+): Promise<PtSlabConfigItem> {
+  const response = await axios.post("/payroll/statutory/pt", payload);
+  return response.data?.data ?? response.data;
 }
 
 export async function getStructureTemplates(): Promise<StructureTemplateItem[]> {

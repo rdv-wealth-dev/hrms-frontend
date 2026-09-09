@@ -241,93 +241,105 @@ export function SalaryComponentsContent({
                 </TableCell>
               </TableRow>
             ) : (
-              componentsList.map((row) => (
-              <TableRow
-                key={row?.id}
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                  "&:hover": { backgroundColor: "action.hover" },
-                }}
-              >
-                <TableCell
-                  sx={{
-                    fontFamily: "monospace",
-                    fontWeight: 600,
-                    fontSize: "0.8125rem",
-                    color: "text.primary",
-                    py: 1.75,
-                    borderBottomColor: "divider",
-                  }}
-                >
-                  {row?.code}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 500,
-                    fontSize: "0.875rem",
-                    color: "text.primary",
-                    py: 1.75,
-                    borderBottomColor: "divider",
-                  }}
-                >
-                  {row?.name}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    py: 1.75,
-                    borderBottomColor: "divider",
-                  }}
-                >
-                  <StatusChip
-                    variant="outlined"
-                    label={row?.type}
+              componentsList.map((row) => {
+                const rowKey = row?._id || row?.id || row?.code;
+                const calcType = row?.calculationType || row?.calculation || row?.category || "FLAT";
+                const flagList: string[] = [];
+                if (row?.isTaxable) flagList.push("Taxable");
+                if (row?.isPartOfWages) flagList.push("Min Wages");
+                if (row?.isStatutory) flagList.push("Statutory");
+                if (flagList.length === 0 && row?.flags) flagList.push(row.flags);
+                const flagDisplay = flagList.length > 0 ? flagList.join(" · ") : "Regular";
+
+                return (
+                  <TableRow
+                    key={rowKey}
                     sx={{
-                      fontSize: "0.7rem",
-                      fontWeight: 700,
-                      height: 22,
-                      borderColor: row?.type === "DEDUCTION" ? "error.main" : "error.light",
-                      color: "error.main",
-                      backgroundColor: "transparent",
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      "&:hover": { backgroundColor: "action.hover" },
                     }}
-                  />
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 500,
-                    fontSize: "0.8125rem",
-                    color: "text.secondary",
-                    textTransform: "uppercase",
-                    py: 1.75,
-                    borderBottomColor: "divider",
-                  }}
-                >
-                  {row?.category}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontFamily: "monospace",
-                    fontWeight: 500,
-                    fontSize: "0.8125rem",
-                    color: "text.secondary",
-                    py: 1.75,
-                    borderBottomColor: "divider",
-                  }}
-                >
-                  {row?.calculation}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 500,
-                    fontSize: "0.8125rem",
-                    color: "text.secondary",
-                    py: 1.75,
-                    borderBottomColor: "divider",
-                  }}
-                >
-                  {row?.flags}
-                </TableCell>
-              </TableRow>
-            )))}
+                  >
+                    <TableCell
+                      sx={{
+                        fontFamily: "monospace",
+                        fontWeight: 600,
+                        fontSize: "0.8125rem",
+                        color: "text.primary",
+                        py: 1.75,
+                        borderBottomColor: "divider",
+                      }}
+                    >
+                      {row?.code}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 500,
+                        fontSize: "0.875rem",
+                        color: "text.primary",
+                        py: 1.75,
+                        borderBottomColor: "divider",
+                      }}
+                    >
+                      {row?.name}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        py: 1.75,
+                        borderBottomColor: "divider",
+                      }}
+                    >
+                      <StatusChip
+                        variant="outlined"
+                        label={row?.type}
+                        sx={{
+                          fontSize: "0.7rem",
+                          fontWeight: 700,
+                          height: 22,
+                          borderColor: row?.type === "DEDUCTION" ? "error.main" : "error.light",
+                          color: "error.main",
+                          backgroundColor: "transparent",
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 500,
+                        fontSize: "0.8125rem",
+                        color: "text.secondary",
+                        textTransform: "uppercase",
+                        py: 1.75,
+                        borderBottomColor: "divider",
+                      }}
+                    >
+                      {row?.category || (row?.type === "EARNING" ? "RECURRING" : "STATUTORY")}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontFamily: "monospace",
+                        fontWeight: 500,
+                        fontSize: "0.8125rem",
+                        color: "text.secondary",
+                        py: 1.75,
+                        borderBottomColor: "divider",
+                      }}
+                    >
+                      {calcType}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 500,
+                        fontSize: "0.8125rem",
+                        color: "text.secondary",
+                        py: 1.75,
+                        borderBottomColor: "divider",
+                      }}
+                    >
+                      {flagDisplay}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </TableContainer>

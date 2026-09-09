@@ -8,25 +8,24 @@ import Typography from "@mui/material/Typography";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import TextInput from "../../../components/input/TextInput";
-import type { SalaryComponentItem, SalaryComponentType } from "../../../types/payroll.types";
+import type {
+  SalaryComponentItem,
+  SalaryComponentType,
+  CalculationType,
+  CreateSalaryComponentPayload,
+} from "../../../types/payroll.types";
+import { createSalaryComponent } from "../../../api/payroll.api";
 
 interface AddSalaryComponentDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (component: Omit<SalaryComponentItem, "id">) => void;
+  onSubmit: (component: SalaryComponentItem) => void;
 }
-
-const CATEGORY_OPTIONS = [
-  "RECURRING",
-  "STATUTORY",
-  "BASE",
-  "BONUS",
-  "OVERTIME",
-  "VARIABLE",
-  "OTHER",
-];
 
 export function AddSalaryComponentDialog({
   open,
@@ -36,25 +35,30 @@ export function AddSalaryComponentDialog({
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [type, setType] = useState<SalaryComponentType>("EARNING");
-  const [category, setCategory] = useState("RECURRING");
-  const [formula, setFormula] = useState("");
+  const [calculationType, setCalculationType] = useState<CalculationType>("FLAT");
+  const [isTaxable, setIsTaxable] = useState(true);
+  const [isPartOfWages, setIsPartOfWages] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const resetForm = () => {
     setCode("");
     setName("");
     setType("EARNING");
-    setCategory("RECURRING");
-    setFormula("");
+    setCalculationType("FLAT");
+    setIsTaxable(true);
+    setIsPartOfWages(true);
+    setLoading(false);
     setError(null);
   };
 
   const handleClose = () => {
+    if (loading) return;
     resetForm();
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -70,16 +74,30 @@ export function AddSalaryComponentDialog({
 
     const formattedCode = code.trim().toUpperCase().replace(/\s+/g, "_");
 
-    onSubmit({
-      code: formattedCode,
+    const payload: CreateSalaryComponentPayload = {
       name: name.trim(),
+      code: formattedCode,
       type,
-      category,
-      calculation: formula.trim() || "FLAT_AMOUNT",
-      flags: type === "EARNING" ? "In CTC · Taxable" : "Deduction",
-    });
+      calculationType,
+      isTaxable,
+      isPartOfWages,
+    };
 
-    handleClose();
+    setLoading(true);
+    try {
+      const createdComponent = await createSalaryComponent(payload);
+      onSubmit(createdComponent);
+      handleClose();
+    } catch (err: any) {
+      const apiMessage =
+        err?.response?.data?.message ||
+        (Array.isArray(err?.response?.data?.errors) && err?.response?.data?.errors[0]) ||
+        err?.message ||
+        "Failed to create salary component. Please try again.";
+      setError(apiMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -124,56 +142,96 @@ export function AddSalaryComponentDialog({
             <Grid item xs={12} sm={6}>
               <TextInput
                 label="Code"
-                placeholder="SPECIAL_ALLOWANCE"
+                placeholder="e.g. BASIC"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
+                disabled={loading}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextInput
                 label="Name"
-                placeholder="Special Allowance"
+                placeholder="e.g. Basic Salary"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={loading}
               />
             </Grid>
 
-            {/* Row 2: Type, Category, Formula Expression */}
-            <Grid item xs={12} sm={3.5}>
+            {/* Row 2: Type & Calculation Type */}
+            <Grid item xs={12} sm={6}>
               <TextInput
                 label="Type"
                 select
                 value={type}
                 onChange={(e) => setType(e.target.value as SalaryComponentType)}
+                disabled={loading}
               >
                 <MenuItem value="EARNING">EARNING</MenuItem>
                 <MenuItem value="DEDUCTION">DEDUCTION</MenuItem>
               </TextInput>
             </Grid>
 
-            <Grid item xs={12} sm={3.5}>
+            <Grid item xs={12} sm={6}>
               <TextInput
-                label="Category"
+                label="Calculation Type"
                 select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={calculationType}
+                onChange={(e) => setCalculationType(e.target.value as CalculationType)}
+                disabled={loading}
               >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <MenuItem key={cat} value={cat}>
-                    {cat}
-                  </MenuItem>
-                ))}
+                <MenuItem value="FLAT">FLAT</MenuItem>
+                <MenuItem value="PERCENTAGE">PERCENTAGE</MenuItem>
+                <MenuItem value="FORMULA">FORMULA</MenuItem>
               </TextInput>
             </Grid>
 
-            <Grid item xs={12} sm={5}>
-              <TextInput
-                label="Formula Expression"
-                placeholder="BASIC * 0.40"
-                value={formula}
-                onChange={(e) => setFormula(e.target.value)}
-              />
+            {/* Row 3: Options & Flags */}
+            <Grid item xs={12}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isTaxable}
+                        onChange={(e) => setIsTaxable(e.target.checked)}
+                        disabled={loading}
+                        sx={{
+                          color: "#94A3B8",
+                          "&.Mui-checked": { color: "#EF4444" },
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+                        Is Taxable Component
+                      </Typography>
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isPartOfWages}
+                        onChange={(e) => setIsPartOfWages(e.target.checked)}
+                        disabled={loading}
+                        sx={{
+                          color: "#94A3B8",
+                          "&.Mui-checked": { color: "#EF4444" },
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+                        Is Part of Minimum Wages
+                      </Typography>
+                    }
+                  />
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </DialogContent>
@@ -181,6 +239,7 @@ export function AddSalaryComponentDialog({
         <DialogActions sx={{ px: 3, pb: 2.5, pt: 2, gap: 1.5, justifyContent: "flex-end" }}>
           <Button
             onClick={handleClose}
+            disabled={loading}
             variant="contained"
             sx={{
               color: "#334155",
@@ -202,6 +261,7 @@ export function AddSalaryComponentDialog({
           </Button>
           <Button
             type="submit"
+            disabled={loading}
             variant="contained"
             sx={{
               backgroundColor: "#EF4444",
@@ -211,6 +271,7 @@ export function AddSalaryComponentDialog({
               fontSize: "14px",
               px: 3,
               py: 1,
+              minWidth: 150,
               borderRadius: "10px",
               boxShadow: "0 4px 12px rgba(239, 68, 68, 0.25)",
               "&:hover": {
@@ -219,7 +280,7 @@ export function AddSalaryComponentDialog({
               },
             }}
           >
-            Create Component
+            {loading ? <CircularProgress size={20} color="inherit" /> : "Create Component"}
           </Button>
         </DialogActions>
       </form>

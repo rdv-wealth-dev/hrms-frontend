@@ -34,29 +34,72 @@ export interface PayrollOverviewData {
 }
 
 export type SalaryComponentType = "EARNING" | "DEDUCTION";
+export type CalculationType = "FLAT" | "PERCENTAGE" | "FORMULA";
 
 export interface SalaryComponentItem {
-  id: string;
+  _id?: string;
+  id?: string;
   code: string;
   name: string;
   type: SalaryComponentType;
-  category: string;
-  calculation: string;
-  flags: string;
+  calculationType?: CalculationType;
+  isTaxable?: boolean;
+  isPartOfWages?: boolean;
+  isStatutory?: boolean;
+  isActive?: boolean;
+  tenantId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  category?: string;
+  calculation?: string;
+  flags?: string;
+}
+
+export interface CreateSalaryComponentPayload {
+  name: string;
+  code: string;
+  type: SalaryComponentType;
+  calculationType: CalculationType;
+  isTaxable?: boolean;
+  isPartOfWages?: boolean;
 }
 
 export interface PtSlabItem {
-  id: string;
-  minSalary: string;
-  maxSalary: string;
-  ptAmount: string;
+  id?: string;
+  minSalary: string | number;
+  maxSalary: string | number;
+  ptAmount: string | number;
 }
 
 export interface PtStateGroup {
-  id: string;
+  id?: string;
   stateName: string;
   stateCode: string;
+  financialYear?: string;
+  frequency?: string;
   slabs: PtSlabItem[];
+}
+
+export interface PtSlabRule {
+  minSalary: number;
+  maxSalary: number;
+  ptAmount: number;
+}
+
+export interface CreatePtSlabsPayload {
+  stateCode: string;
+  stateName: string;
+  financialYear: string;
+  frequency: "MONTHLY" | "HALF_YEARLY" | "ANNUALLY" | string;
+  slabs: PtSlabRule[];
+}
+
+export interface PtSlabConfigItem extends CreatePtSlabsPayload {
+  _id?: string;
+  id?: string;
+  tenantId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface StructureLineItem {
