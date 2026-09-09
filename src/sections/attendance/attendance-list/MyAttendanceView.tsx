@@ -21,6 +21,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
+import Tooltip from "@mui/material/Tooltip";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
@@ -633,27 +634,50 @@ export default function MyAttendanceView() {
                           <AttendanceStatusChip status={row.status} />
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenDetails(row)}
-                            sx={{ color: "primary.main", "&:hover": { backgroundColor: "primary.lighter" } }}
-                            title="View Details"
-                          >
-                            <InfoOutlinedIcon fontSize="small" />
-                          </IconButton>
-                          {!row.isRegularized && (
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                setRegTarget(row);
-                                setRegOpen(true);
-                              }}
-                              sx={{ color: "#10B981", "&:hover": { backgroundColor: "rgba(16, 185, 129, 0.08)" }, ml: 1 }}
-                              title="Request Regularization"
+                          <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0.5, minWidth: 72 }}>
+                            <Tooltip title="View Details" arrow placement="top">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleOpenDetails(row)}
+                                sx={{
+                                  color: "#64748B",
+                                  "&:hover": { color: "primary.main", backgroundColor: "primary.lighter" },
+                                  transition: "all 0.15s ease",
+                                }}
+                              >
+                                <InfoOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip
+                              title={row.isRegularized ? "Already Regularized" : "Request Regularization"}
+                              arrow
+                              placement="top"
                             >
-                              <HistoryIcon fontSize="small" />
-                            </IconButton>
-                          )}
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  disabled={Boolean(row.isRegularized)}
+                                  onClick={() => {
+                                    if (!row.isRegularized) {
+                                      setRegTarget(row);
+                                      setRegOpen(true);
+                                    }
+                                  }}
+                                  sx={{
+                                    color: row.isRegularized ? "#CBD5E1" : "#10B981",
+                                    "&:hover": {
+                                      backgroundColor: row.isRegularized
+                                        ? "transparent"
+                                        : "rgba(16, 185, 129, 0.08)",
+                                    },
+                                    transition: "all 0.15s ease",
+                                  }}
+                                >
+                                  <HistoryIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}

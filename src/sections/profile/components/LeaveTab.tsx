@@ -252,25 +252,7 @@ export default function LeaveTab({
             </Typography>
           </Box>
 
-          {!isOrgAdmin && !isViewingOther && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-              onClick={() => setApplyLeaveDialogOpen(true)}
-              sx={{
-                borderRadius: "10px",
-                borderColor: "divider",
-                color: "#4F46E5",
-                fontWeight: 600,
-                fontSize: "13px",
-                textTransform: "none",
-                "&:hover": { borderColor: "primary.main", backgroundColor: "primary.lighter" },
-              }}
-            >
-              Apply Leave
-            </Button>
-          )}
+
         </Box>
 
         {uniqueLeaves.length === 0 ? (
