@@ -7,17 +7,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 
 import StatusChip from "../../../components/common/StatusChip";
-import {
-  SALARY_STRUCTURE_EMPLOYEES_MOCK_DATA,
-  type EmployeeSalaryStructureOption,
-} from "../mock/payroll-data";
+import type { EmployeeSalaryStructureOption } from "../../../types/payroll.types";
 
 interface SalaryStructureViewContentProps {
   data?: EmployeeSalaryStructureOption[];
 }
 
 export function SalaryStructureViewContent({
-  data = SALARY_STRUCTURE_EMPLOYEES_MOCK_DATA,
+  data = [],
 }: SalaryStructureViewContentProps) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 

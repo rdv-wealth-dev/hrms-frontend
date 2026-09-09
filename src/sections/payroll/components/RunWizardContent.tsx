@@ -31,10 +31,39 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import StatusChip from "../../../components/common/StatusChip";
-import { PAYROLL_RUN_WIZARD_MOCK_DATA, type AdhocVariablePayItem, type SalaryOnHoldItem, type TaxOverrideItem } from "../mock/payroll-data";
+import type { PayrollRunWizardData, AdhocVariablePayItem, SalaryOnHoldItem, TaxOverrideItem } from "../../../types/payroll.types";
+
+const EMPTY_WIZARD_DATA: PayrollRunWizardData = {
+  periodLabel: "Aug 2026",
+  periodStatus: "DRAFT",
+  currentStep: 1,
+  apiEndpoint: "POST /payroll/runs",
+  runTitle: "August 2026 · Salary Run",
+  branchName: "All Branches",
+  employeeCount: 0,
+  runStatus: "DRAFT",
+  notes: "August 2026 Salary Run",
+  preflightChecks: [],
+  wageInputs: [],
+  adhocVariablePay: [],
+  salaryOnHold: [],
+  taxOverrides: [],
+  steps: [
+    { stepNumber: 1, label: "Overview" },
+    { stepNumber: 2, label: "Validation" },
+    { stepNumber: 3, label: "Attendance & LOP" },
+    { stepNumber: 4, label: "Wage Inputs" },
+    { stepNumber: 5, label: "Adhoc Variable Pay" },
+    { stepNumber: 6, label: "Salary On-Hold" },
+    { stepNumber: 7, label: "Tax Overrides" },
+    { stepNumber: 8, label: "Generate Pay Register" },
+    { stepNumber: 9, label: "CFO Approval" },
+    { stepNumber: 10, label: "Payout & Mark Paid" },
+  ],
+};
 
 export default function RunWizardContent() {
-  const data = PAYROLL_RUN_WIZARD_MOCK_DATA;
+  const data = EMPTY_WIZARD_DATA;
   const [currentStep, setCurrentStep] = useState<number>(data.currentStep);
   const [notes, setNotes] = useState<string>(data.notes);
   const [runningPreflight, setRunningPreflight] = useState<boolean>(false);

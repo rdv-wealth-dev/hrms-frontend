@@ -34,6 +34,7 @@ export type TextInputProps = {
   size?: "small" | "medium";
   maxLength?: number;
   min?: number;
+  menuPlacement?: "top" | "bottom" | "auto";
   slotProps?: any;
   InputProps?: any;
   inputProps?: any;
@@ -62,14 +63,15 @@ function TextInput({
   size,
   maxLength,
   min,
+  menuPlacement,
   slotProps,
   InputProps,
   inputProps,
   sx,
 }: TextInputProps) {
 
-
   const [showPassword, setShowPassword] = useState(false);
+  const isTop = menuPlacement === "top";
 
   const isPassword = type === "password";
   const resolvedType = isPassword ? (showPassword ? "text" : "password") : type;
@@ -178,42 +180,42 @@ function TextInput({
       displayEmpty: true,
       MenuProps: {
         disableScrollLock: true,
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        transformOrigin: { vertical: "top", horizontal: "left" },
-        slotProps: {
-          backdrop: {
-            invisible: true,
-            style: { backdropFilter: "none", backgroundColor: "transparent" },
-          },
-          paper: {
-            sx: {
-              maxHeight: { xs: "184px !important", sm: "176px !important" },
-              maxWidth: "calc(100vw - 32px)",
-              borderRadius: "12px",
-              border: "1px solid",
-              borderColor: "divider",
-              boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)",
-              overflowY: "auto",
-              scrollbarWidth: "thin",
-              scrollbarColor: "divider transparent",
-              "&::-webkit-scrollbar": { width: "5px" },
-              "&::-webkit-scrollbar-track": { background: "transparent" },
-              "&::-webkit-scrollbar-thumb": { backgroundColor: "divider", borderRadius: "10px" },
-              "& .MuiMenuItem-root": {
-                fontSize: { xs: "13.5px", sm: "14px" },
-                minHeight: { xs: "44px !important", sm: "40px !important" },
-                height: { xs: "auto", sm: "40px" },
-                whiteSpace: { xs: "normal", sm: "nowrap" },
-                wordBreak: { xs: "break-word", sm: "normal" },
-                py: { xs: 1, sm: 0 },
-                px: { xs: 1.5, sm: 1.8 },
-                borderRadius: "6px",
-                mx: 0.5,
-                my: 0.2,
-                color: "text.primary",
-                "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
-                "&.Mui-selected": { backgroundColor: "primary.lighter", color: "primary.main", fontWeight: 600 },
-              },
+        anchorOrigin: isTop
+          ? { vertical: "top", horizontal: "left" }
+          : { vertical: "bottom", horizontal: "left" },
+        transformOrigin: isTop
+          ? { vertical: "bottom", horizontal: "left" }
+          : { vertical: "top", horizontal: "left" },
+        PaperProps: {
+          sx: {
+            marginTop: isTop ? 0 : "6px",
+            marginBottom: isTop ? "6px" : 0,
+            maxHeight: { xs: "184px", sm: "220px" },
+            maxWidth: "calc(100vw - 32px)",
+            borderRadius: "12px",
+            border: "1px solid",
+            borderColor: "divider",
+            boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.08)",
+            overflowY: "auto",
+            scrollbarWidth: "thin",
+            scrollbarColor: "divider transparent",
+            "&::-webkit-scrollbar": { width: "5px" },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+            "&::-webkit-scrollbar-thumb": { backgroundColor: "divider", borderRadius: "10px" },
+            "& .MuiMenuItem-root": {
+              fontSize: { xs: "13.5px", sm: "14px" },
+              minHeight: { xs: "44px !important", sm: "40px !important" },
+              height: { xs: "auto", sm: "40px" },
+              whiteSpace: { xs: "normal", sm: "nowrap" },
+              wordBreak: { xs: "break-word", sm: "normal" },
+              py: { xs: 1, sm: 0 },
+              px: { xs: 1.5, sm: 1.8 },
+              borderRadius: "6px",
+              mx: 0.5,
+              my: 0.2,
+              color: "text.primary",
+              "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+              "&.Mui-selected": { backgroundColor: "primary.lighter", color: "primary.main", fontWeight: 600 },
             },
           },
         },
@@ -389,6 +391,7 @@ function TextInput({
         placeholder={placeholder}
         variant={variant === "underlined" ? "standard" : "outlined"}
         select={select}
+        SelectProps={select ? (mergedSlotProps.select as any) : undefined}
         required={required}
         disabled={disabled}
         multiline={multiline}

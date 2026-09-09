@@ -11,17 +11,14 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Button from "@mui/material/Button";
 
 import StatusChip from "../../../components/common/StatusChip";
-import {
-  PROFESSIONAL_TAX_SLABS_MOCK_DATA,
-  type PtStateGroup,
-} from "../mock/payroll-data";
+import type { PtStateGroup } from "../../../types/payroll.types";
 
 interface ProfessionalTaxSlabsContentProps {
   data?: PtStateGroup[];
 }
 
 export function ProfessionalTaxSlabsContent({
-  data = PROFESSIONAL_TAX_SLABS_MOCK_DATA,
+  data = [],
 }: ProfessionalTaxSlabsContentProps) {
   const stateGroups = data ?? [];
 

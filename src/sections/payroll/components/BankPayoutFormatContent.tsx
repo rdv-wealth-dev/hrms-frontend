@@ -9,18 +9,28 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
 import StatusChip from "../../../components/common/StatusChip";
-import {
-  BANK_PAYOUT_FORMAT_MOCK_DATA,
-  type BankPayoutFormatData,
-  type BankPayoutColumnItem,
-} from "../mock/payroll-data";
+import type {
+  BankPayoutFormatData,
+  BankPayoutColumnItem,
+} from "../../../types/payroll.types";
+
+const EMPTY_BANK_PAYOUT_FORMAT: BankPayoutFormatData = {
+  id: "",
+  title: "Bank Advice Format",
+  bankCode: "NONE",
+  delimiter: "','",
+  fileExtension: ".csv",
+  endpointLabel: "POST /payroll/bank-formats",
+  activePeriodLabel: "Aug 2026 · DRAFT",
+  columns: [],
+};
 
 interface BankPayoutFormatContentProps {
   data?: BankPayoutFormatData;
 }
 
 export function BankPayoutFormatContent({
-  data = BANK_PAYOUT_FORMAT_MOCK_DATA,
+  data = EMPTY_BANK_PAYOUT_FORMAT,
 }: BankPayoutFormatContentProps) {
   const [columns, setColumns] = useState<BankPayoutColumnItem[]>(data?.columns ?? []);
   const [newColumnHeader, setNewColumnHeader] = useState("");

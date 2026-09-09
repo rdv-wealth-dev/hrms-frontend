@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -7,22 +8,48 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import {
-  SALARY_COMPONENTS_MOCK_DATA,
-  type SalaryComponentItem,
-} from "../mock/payroll-data";
+import type { SalaryComponentItem } from "../../../types/payroll.types";
+import AddSalaryComponentDialog from "./AddSalaryComponentDialog";
+
+const DEFAULT_COMPONENTS: SalaryComponentItem[] = [];
 
 interface SalaryComponentsContentProps {
   data?: SalaryComponentItem[];
 }
 
 export function SalaryComponentsContent({
-  data = SALARY_COMPONENTS_MOCK_DATA,
+  data = DEFAULT_COMPONENTS,
 }: SalaryComponentsContentProps) {
-  const components = data ?? [];
+  const [componentsList, setComponentsList] = useState<SalaryComponentItem[]>(data ?? []);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setComponentsList(data);
+    }
+  }, [data]);
+
+  const handleAddComponent = (newCompData: Omit<SalaryComponentItem, "id">) => {
+    const newComponent: SalaryComponentItem = {
+      ...newCompData,
+      id: `comp-${Date.now()}`,
+    };
+
+    setComponentsList((prev) => [newComponent, ...prev]);
+    setToast({
+      open: true,
+      message: `Salary component "${newCompData.name}" (${newCompData.code}) added successfully!`,
+    });
+  };
 
   return (
     <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
@@ -108,7 +135,7 @@ export function SalaryComponentsContent({
         </Box>
 
         <Box sx={{ width: { xs: "100%", sm: "auto" }, flexShrink: 0 }}>
-          <PrimaryButton>
+          <PrimaryButton onClick={() => setIsAddDialogOpen(true)}>
             Add Component +
           </PrimaryButton>
         </Box>
@@ -205,7 +232,16 @@ export function SalaryComponentsContent({
           </TableHead>
 
           <TableBody>
-            {components.map((row) => (
+            {componentsList.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                  <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 500 }}>
+                    No salary components configured yet. Click <strong>"Add Component +"</strong> to create one.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              componentsList.map((row) => (
               <TableRow
                 key={row?.id}
                 sx={{
@@ -291,10 +327,33 @@ export function SalaryComponentsContent({
                   {row?.flags}
                 </TableCell>
               </TableRow>
-            ))}
+            )))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Add Salary Component Dialog */}
+      <AddSalaryComponentDialog
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onSubmit={handleAddComponent}
+      />
+
+      {/* Toast Notification */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          severity="success"
+          sx={{ width: "100%", fontWeight: 600 }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

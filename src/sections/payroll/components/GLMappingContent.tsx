@@ -6,25 +6,31 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import {
-  GL_MAPPING_MOCK_DATA,
-  type GLMappingData,
-} from "../mock/payroll-data";
+import type { GLMappingData } from "../../../types/payroll.types";
+
+const EMPTY_GL_MAPPING: GLMappingData = {
+  grossSalaryAccount: "",
+  netPayableAccount: "",
+  tdsPayableAccount: "",
+  pfPayableAccount: "",
+  esiPayableAccount: "",
+  ptPayableAccount: "",
+};
 
 interface GLMappingContentProps {
   data?: GLMappingData;
 }
 
 export function GLMappingContent({
-  data = GL_MAPPING_MOCK_DATA,
+  data = EMPTY_GL_MAPPING,
 }: GLMappingContentProps) {
   const [formData, setFormData] = useState<GLMappingData>({
-    grossSalaryAccount: data?.grossSalaryAccount ?? "5100-WAGES-EXPENSE",
-    netPayableAccount: data?.netPayableAccount ?? "1100-BANK-ACCOUNT",
-    tdsPayableAccount: data?.tdsPayableAccount ?? "2200-TDS-PAYABLE",
-    pfPayableAccount: data?.pfPayableAccount ?? "2210-PF-PAYABLE",
-    esiPayableAccount: data?.esiPayableAccount ?? "2220-ESI-PAYABLE",
-    ptPayableAccount: data?.ptPayableAccount ?? "2230-PT-PAYABLE",
+    grossSalaryAccount: data?.grossSalaryAccount ?? "",
+    netPayableAccount: data?.netPayableAccount ?? "",
+    tdsPayableAccount: data?.tdsPayableAccount ?? "",
+    pfPayableAccount: data?.pfPayableAccount ?? "",
+    esiPayableAccount: data?.esiPayableAccount ?? "",
+    ptPayableAccount: data?.ptPayableAccount ?? "",
   });
 
   const handleChange = (field: keyof GLMappingData, value: string) => {

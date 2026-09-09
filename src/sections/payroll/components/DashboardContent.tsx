@@ -12,13 +12,32 @@ import Divider from "@mui/material/Divider";
 import KpiCardsGrid from "../../../components/card/KpiCard";
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import { PAYROLL_OVERVIEW_MOCK_DATA, type PayrollOverviewData } from "../mock/payroll-data";
+import type { PayrollOverviewData } from "../../../types/payroll.types";
+
+const EMPTY_PAYROLL_OVERVIEW: PayrollOverviewData = {
+  periodLabel: "Aug 2026",
+  periodStatus: "DRAFT",
+  kpiItems: [
+    { id: "emp-payroll", title: "EMPLOYEES ON PAYROLL", value: 0, variant: "rose" },
+    { id: "proj-gross", title: "PROJECTED GROSS (AUG)", value: "₹0", variant: "amber" },
+    { id: "curr-run", title: "CURRENT RUN", value: "NOT_STARTED", subtext: "No active run", variant: "purple" },
+    { id: "pending-appr", title: "PENDING APPROVALS", value: 0, variant: "green" },
+  ],
+  currentRun: {
+    title: "Start Payroll Run",
+    description: "Initialize the 10-step processing wizard — attendance sync, wage inputs, adjustments, tax overrides, batch generation and CFO approval.",
+    buttonText: "Open Run Wizard →",
+    stepInfo: "Step 0 of 10",
+  },
+  statutoryDueDates: [],
+  recentActivity: [],
+};
 
 interface DashboardContentProps {
   data?: PayrollOverviewData;
 }
 
-export function DashboardContent({ data = PAYROLL_OVERVIEW_MOCK_DATA }: DashboardContentProps) {
+export function DashboardContent({ data = EMPTY_PAYROLL_OVERVIEW }: DashboardContentProps) {
   const kpiItems = data?.kpiItems ?? [];
   const currentRun = data?.currentRun;
   const statutoryDueDates = data?.statutoryDueDates ?? [];

@@ -7,17 +7,14 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 
 import StatusChip from "../../../components/common/StatusChip";
-import {
-  PAYSLIP_TEMPLATES_MOCK_DATA,
-  type PayslipTemplateItem,
-} from "../mock/payroll-data";
+import type { PayslipTemplateItem } from "../../../types/payroll.types";
 
 interface PayslipTemplatesContentProps {
   data?: PayslipTemplateItem[];
 }
 
 export function PayslipTemplatesContent({
-  data = PAYSLIP_TEMPLATES_MOCK_DATA,
+  data = [],
 }: PayslipTemplatesContentProps) {
   const [templates, setTemplates] = useState<PayslipTemplateItem[]>(data ?? []);
 

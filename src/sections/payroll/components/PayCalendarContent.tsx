@@ -11,17 +11,28 @@ import Radio from "@mui/material/Radio";
 
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import {
-  PAY_CALENDAR_POLICY_MOCK_DATA,
-  type PayCalendarPolicyData,
-} from "../mock/payroll-data";
+import type { PayCalendarPolicyData } from "../../../types/payroll.types";
+
+const EMPTY_POLICY_DATA: PayCalendarPolicyData = {
+  payCycleType: "FIRST_TO_LAST",
+  payCycleOptions: [
+    { label: "FIRST_TO_LAST", value: "FIRST_TO_LAST" },
+    { label: "CUSTOM_RANGE", value: "CUSTOM_RANGE" },
+  ],
+  attendanceCutoffDay: "",
+  startDay: 1,
+  endDay: 31,
+  paymentDay: "",
+  paidWeeklyOffs: true,
+  useFixed30DayDivisor: false,
+};
 
 interface PayCalendarContentProps {
   data?: PayCalendarPolicyData;
 }
 
 export function PayCalendarContent({
-  data = PAY_CALENDAR_POLICY_MOCK_DATA,
+  data = EMPTY_POLICY_DATA,
 }: PayCalendarContentProps) {
   const [payCycleType, setPayCycleType] = useState(data?.payCycleType ?? "FIRST_TO_LAST");
   const [attendanceCutoffDay, setAttendanceCutoffDay] = useState(data?.attendanceCutoffDay ?? 20);

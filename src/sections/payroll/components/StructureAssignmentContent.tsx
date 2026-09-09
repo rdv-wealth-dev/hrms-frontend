@@ -11,17 +11,14 @@ import Checkbox from "@mui/material/Checkbox";
 
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import {
-  EMPLOYEE_STRUCTURE_ASSIGNMENTS_MOCK_DATA,
-  type EmployeeStructureAssignmentItem,
-} from "../mock/payroll-data";
+import type { EmployeeStructureAssignmentItem } from "../../../types/payroll.types";
 
 interface StructureAssignmentContentProps {
   data?: EmployeeStructureAssignmentItem[];
 }
 
 export function StructureAssignmentContent({
-  data = EMPLOYEE_STRUCTURE_ASSIGNMENTS_MOCK_DATA,
+  data = [],
 }: StructureAssignmentContentProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 

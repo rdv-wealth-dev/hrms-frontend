@@ -10,7 +10,14 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Divider from "@mui/material/Divider";
 
-import { RUN_HISTORY_AUDIT_MOCK_DATA } from "../mock/payroll-data";
+import type { RunHistoryAuditData } from "../../../types/payroll.types";
+
+const EMPTY_RUN_HISTORY_DATA: RunHistoryAuditData = {
+  periodLabel: "Aug 2026",
+  periodStatus: "DRAFT",
+  runHistory: [],
+  auditTrail: [],
+};
 
 // ---------- helpers ----------
 function statusChipSx(status: string) {
@@ -49,7 +56,7 @@ const TABLE_HEAD_SX = {
 };
 
 export default function RunHistoryAuditContent() {
-  const data = RUN_HISTORY_AUDIT_MOCK_DATA;
+  const data = EMPTY_RUN_HISTORY_DATA;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: { xs: 2, md: 3 } }}>

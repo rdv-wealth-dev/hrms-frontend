@@ -1,23 +1,50 @@
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 import PrimaryButton from "../../../components/button/PrimaryButton";
-import {
-  STRUCTURE_TEMPLATES_MOCK_DATA,
-  type StructureTemplateItem,
-} from "../mock/payroll-data";
+import type { StructureTemplateItem } from "../../../types/payroll.types";
+import CreateStructureTemplateDialog from "./CreateStructureTemplateDialog";
+
+const DEFAULT_TEMPLATES: StructureTemplateItem[] = [];
 
 interface StructureTemplatesContentProps {
   data?: StructureTemplateItem[];
 }
 
 export function StructureTemplatesContent({
-  data = STRUCTURE_TEMPLATES_MOCK_DATA,
+  data = DEFAULT_TEMPLATES,
 }: StructureTemplatesContentProps) {
-  const templates = data ?? [];
+  const [templatesList, setTemplatesList] = useState<StructureTemplateItem[]>(data ?? []);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setTemplatesList(data);
+    }
+  }, [data]);
+
+  const handleCreateTemplate = (newTemplateData: Omit<StructureTemplateItem, "id">) => {
+    const newTemplate: StructureTemplateItem = {
+      ...newTemplateData,
+      id: `struct-${Date.now()}`,
+    };
+
+    setTemplatesList((prev) => [newTemplate, ...prev]);
+    setToast({
+      open: true,
+      message: `Structure template "${newTemplateData.title}" created successfully!`,
+    });
+  };
 
   return (
     <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
@@ -51,15 +78,35 @@ export function StructureTemplatesContent({
         </Box>
 
         <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-          <PrimaryButton>
+          <PrimaryButton onClick={() => setIsAddDialogOpen(true)}>
             Create Structure +
           </PrimaryButton>
         </Box>
       </Box>
 
       {/* 2. Templates Grid */}
-      <Grid container spacing={3}>
-        {templates.map((template) => (
+      {templatesList.length === 0 ? (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 6,
+            textAlign: "center",
+            borderRadius: 3,
+            border: "1px dashed",
+            borderColor: "divider",
+            backgroundColor: "background.paper",
+          }}
+        >
+          <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary", mb: 0.5 }}>
+            No Structure Templates Created
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            Click <strong>"Create Structure +"</strong> above to build a salary structure blueprint.
+          </Typography>
+        </Paper>
+      ) : (
+        <Grid container spacing={3}>
+          {templatesList.map((template) => (
           <Grid key={template?.id} size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
@@ -155,15 +202,17 @@ export function StructureTemplatesContent({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        py: 1.25,
+                        py: 0.75,
                         borderBottom: "1px solid",
                         borderColor: "divider",
+                        "&:last-child": { borderBottom: 0 },
                       }}
                     >
                       <Typography
                         sx={{
+                          fontFamily: "monospace",
+                          fontWeight: 600,
                           fontSize: "0.8125rem",
-                          fontWeight: 500,
                           color: "text.primary",
                         }}
                       >
@@ -204,15 +253,17 @@ export function StructureTemplatesContent({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        py: 1.25,
+                        py: 0.75,
                         borderBottom: "1px solid",
                         borderColor: "divider",
+                        "&:last-child": { borderBottom: 0 },
                       }}
                     >
                       <Typography
                         sx={{
+                          fontFamily: "monospace",
+                          fontWeight: 600,
                           fontSize: "0.8125rem",
-                          fontWeight: 500,
                           color: "text.primary",
                         }}
                       >
@@ -257,6 +308,30 @@ export function StructureTemplatesContent({
           </Grid>
         ))}
       </Grid>
+      )}
+
+      {/* Create Structure Template Dialog */}
+      <CreateStructureTemplateDialog
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onSubmit={handleCreateTemplate}
+      />
+
+      {/* Toast Notification */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          severity="success"
+          sx={{ width: "100%", fontWeight: 600 }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
