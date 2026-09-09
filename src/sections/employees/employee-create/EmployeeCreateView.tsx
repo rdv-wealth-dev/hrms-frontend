@@ -52,9 +52,17 @@ import { useEligibleManagers } from "../../../hooks/useEligibleManagers";
 import { useEmployeeRoleAutoFill } from "../../../hooks/useEmployeeRoleAutoFill";
 import { getApiErrorMessage } from "../../../utils/handle-api-error";
 
+const PRODUCT_MANAGER_ROLE: RoleItem = {
+  _id: "product-manager",
+  name: "Product Manager",
+  slug: "PRODUCT_MANAGER",
+  description: "Product team attendance & approvals",
+};
+
 const DEFAULT_FALLBACK_ROLES: RoleItem[] = [
   { _id: "1", name: "Employee", slug: "EMPLOYEE", description: "Self-service access" },
   { _id: "2", name: "Manager", slug: "MANAGER", description: "Team attendance & approvals" },
+  PRODUCT_MANAGER_ROLE,
   { _id: "3", name: "Team Leader", slug: "TEAM_LEADER", description: "Squad lead & member view" },
   { _id: "4", name: "HR Admin", slug: "HR_ADMIN", description: "Full operational HR access" },
   { _id: "5", name: "Branch Admin", slug: "BRANCH_ADMIN", description: "Branch operational access" },
@@ -133,7 +141,14 @@ export default function EmployeeCreateView() {
         if (!isMounted) return;
         const list = Array.isArray(res?.data) ? res.data : [];
         if (list.length > 0) {
-          setRolesList(list);
+          const hasProductManager = list.some(
+            (role) => role?.slug?.toUpperCase() === PRODUCT_MANAGER_ROLE.slug
+          );
+          setRolesList(
+            hasProductManager
+              ? list
+              : [...list, PRODUCT_MANAGER_ROLE].sort((a, b) => a.name.localeCompare(b.name))
+          );
         }
       })
       .catch((err) => {

@@ -81,6 +81,7 @@ export function VirtualizedTable<T>({
             fontSize: "13.5px",
             color: "text.primary",
             py: 1.2,
+            whiteSpace: "nowrap",
           },
         }}
       >
@@ -94,17 +95,17 @@ export function VirtualizedTable<T>({
                 width: col.width,
                 minWidth: col.minWidth,
                 ...(col.sticky === "left" && {
-                  position: "sticky",
+                  position: { xs: "static", sm: "sticky" },
                   left: 0,
                   backgroundColor: "background.paper",
-                  boxShadow: "3px 0 6px -2px rgba(0, 0, 0, 0.08)",
+                  boxShadow: { xs: "none", sm: "3px 0 6px -2px rgba(0, 0, 0, 0.08)" },
                   zIndex: 2,
                 }),
                 ...(col.sticky === "right" && {
-                  position: "sticky",
+                  position: { xs: "static", sm: "sticky" },
                   right: 0,
                   backgroundColor: "background.paper",
-                  boxShadow: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)",
+                  boxShadow: { xs: "none", sm: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)" },
                   zIndex: 2,
                 }),
               }}
@@ -136,6 +137,7 @@ export function VirtualizedTable<T>({
             ? { maxHeight, overflowY: "auto" }
             : { overflowY: "visible" }),
           overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
           scrollbarWidth: "thin",
           scrollbarColor: "divider transparent",
           "&::-webkit-scrollbar": {
@@ -166,6 +168,7 @@ export function VirtualizedTable<T>({
                   borderColor: "divider",
                   py: 1.6,
                   zIndex: 3,
+                  whiteSpace: "nowrap",
                 },
               }}
             >
@@ -177,17 +180,17 @@ export function VirtualizedTable<T>({
                     width: col.width,
                     minWidth: col.minWidth,
                     ...(col.sticky === "left" && {
-                      position: "sticky",
+                      position: { xs: "static", sm: "sticky" },
                       left: 0,
                       backgroundColor: "background.paper",
-                      boxShadow: "3px 0 6px -2px rgba(0, 0, 0, 0.08)",
+                      boxShadow: { xs: "none", sm: "3px 0 6px -2px rgba(0, 0, 0, 0.08)" },
                       zIndex: 5,
                     }),
                     ...(col.sticky === "right" && {
-                      position: "sticky",
+                      position: { xs: "static", sm: "sticky" },
                       right: 0,
                       backgroundColor: "background.paper",
-                      boxShadow: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)",
+                      boxShadow: { xs: "none", sm: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)" },
                       zIndex: 5,
                     }),
                   }}

@@ -276,7 +276,7 @@ export default function LeaveRequestsTable({
                   >
                     {initials}
                   </Avatar>
-                  <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary" }}>
+                  <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "text.primary", whiteSpace: "nowrap" }}>
                     {empName}
                   </Typography>
                 </Box>
@@ -288,7 +288,7 @@ export default function LeaveRequestsTable({
             header: "TYPE",
             minWidth: 120,
             cell: (req) => (
-              <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
+              <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569", whiteSpace: "nowrap" }}>
                 {req?.leaveTypeId?.name || "Leave"}
               </Typography>
             ),
@@ -298,7 +298,7 @@ export default function LeaveRequestsTable({
             header: "PERIOD",
             minWidth: 150,
             cell: (req) => (
-              <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}>
+              <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#475569", whiteSpace: "nowrap" }}>
                 {formatDateRange(req?.fromDate, req?.toDate)}
               </Typography>
             ),

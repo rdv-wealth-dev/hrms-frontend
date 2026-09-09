@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -19,11 +18,18 @@ import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
 
 import ApplyLeaveDialog from "../../leave/leave-apply/ApplyLeaveDialog";
 import LeaveBalanceDetailsDialog from "../../leave/leave-apply/LeaveBalanceDetailsDialog";
-import { applyLeaveRequest, getMyLeaveRequestsRequest, getMyLeaveBalancesRequest } from "../../../store/leave";
+import type { CreateLeaveRequest } from "../../../api/leave.api";
+import {
+  applyLeaveRequest,
+  getMyLeaveRequestsRequest,
+  getMyLeaveBalancesRequest,
+  resetLeaveStatus,
+} from "../../../store/leave";
 import type { RootState } from "../../../store/rootReducer";
 import { useSnackbar } from "../../../components/snackbar";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { useSubmitSuccess } from "../../../hooks/useSubmitSuccess";
 import SoftGateLockCard from "../../../components/common/SoftGateLockCard";
 import KpiCardsGrid, { type KpiCardItem } from "../../../components/card/KpiCard";
 import StatusChip from "../../../components/common/StatusChip";
@@ -50,17 +56,23 @@ export default function LeaveTab({
 
   const [applyLeaveDialogOpen, setApplyLeaveDialogOpen] = useState(false);
   const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
-  const [localUserLeaves, setLocalUserLeaves] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem("hrms_local_user_leaves");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
 
-  const { myRequests: myLeaveRequests = [], leaveTypes = [], balances = [], submitting = false, error = null } = useSelector(
-    (state: RootState) => state.leave ?? { myRequests: [], leaveTypes: [], balances: [], submitting: false, error: null }
+  const {
+    myRequests: myLeaveRequests = [],
+    leaveTypes = [],
+    balances = [],
+    submitting = false,
+    success = false,
+    error = null,
+  } = useSelector(
+    (state: RootState) => state.leave ?? {
+      myRequests: [],
+      leaveTypes: [],
+      balances: [],
+      submitting: false,
+      success: false,
+      error: null,
+    }
   );
 
   useEffect(() => {
@@ -68,83 +80,32 @@ export default function LeaveTab({
     dispatch(getMyLeaveBalancesRequest(new Date().getFullYear()));
   }, [dispatch]);
 
-  const handleApplyLeaveSubmit = useCallback((data: any) => {
+  const handleApplyLeaveSubmit = useCallback((data: CreateLeaveRequest) => {
     dispatch(applyLeaveRequest(data));
+  }, [dispatch]);
 
-    const selectedTypeObj = leaveTypes.find((lt: any) => lt._id === data.leaveTypeId);
-    const typeName = selectedTypeObj?.name || "Emergency Leave";
-
-    let diffDays = 1;
-    if (data.fromDate && data.toDate) {
-      const f = new Date(data.fromDate);
-      const t = new Date(data.toDate);
-      const ms = Math.abs(t.getTime() - f.getTime());
-      diffDays = Math.ceil(ms / (1000 * 60 * 60 * 24)) + 1;
-    }
-
-    const newLocalLeave = {
-      _id: `local-leave-${Date.now()}`,
-      employeeId: {
-        _id: user?.employeeId || "emp-me",
-        firstName: user?.firstName || "My",
-        lastName: user?.lastName || "Profile",
-        avatarUrl: user?.avatarUrl,
-      },
-      leaveTypeId: {
-        _id: data.leaveTypeId,
-        name: typeName,
-        code: selectedTypeObj?.code || "EL",
-      },
-      fromDate: data.fromDate,
-      toDate: data.toDate,
-      totalDays: diffDays,
-      reason: data.reason || "Emergency Leave",
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-    };
-
-    setLocalUserLeaves((prev) => {
-      const updatedLocal = [newLocalLeave, ...prev];
-      try {
-        localStorage.setItem("hrms_local_user_leaves", JSON.stringify(updatedLocal));
-      } catch (e) {
-        console.error("Failed saving local leave request", e);
-      }
-      return updatedLocal;
-    });
-
-    showSnackbar("Leave application submitted successfully!", "success");
+  const handleApplyLeaveSuccess = useCallback(() => {
     setApplyLeaveDialogOpen(false);
-  }, [dispatch, leaveTypes, user, showSnackbar]);
+    showSnackbar("Leave application submitted successfully!", "success");
+    dispatch(getMyLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
+    dispatch(getMyLeaveBalancesRequest(new Date().getFullYear()));
+  }, [dispatch, showSnackbar]);
 
-  // Merge backend & local leaves
-  const uniqueLeaves = useMemo(() => {
-    const allLeavesCombined = [...localUserLeaves, ...myLeaveRequests];
-    return Array.from(new Map(allLeavesCombined.map((item) => [item._id, item])).values());
-  }, [localUserLeaves, myLeaveRequests]);
+  useSubmitSuccess({
+    submitting,
+    success,
+    error,
+    onSuccess: handleApplyLeaveSuccess,
+  });
 
-  // Saved mock status overrides
-  const statusMap = useMemo(() => {
-    try {
-      const saved = localStorage.getItem("hrms_leave_status_map");
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  }, []);
+  const uniqueLeaves = myLeaveRequests;
 
   const pendingCount = useMemo(() => {
     return uniqueLeaves.filter((r: any) => {
       const rawStatus = (r?.status || "PENDING").toUpperCase();
-      const status = (
-        statusMap[r._id] ||
-        statusMap[r.reason] ||
-        statusMap[`${r.fromDate}_${r.toDate}`] ||
-        rawStatus
-      ).toUpperCase();
-      return status === "PENDING";
+      return rawStatus === "PENDING";
     }).length;
-  }, [uniqueLeaves, statusMap]);
+  }, [uniqueLeaves]);
 
   const totalAvailableDays = useMemo(() => {
     return balances.length > 0
@@ -165,7 +126,12 @@ export default function LeaveTab({
         iconBg: "rgba(79, 70, 229, 0.1)",
         trend: "NEW",
         trendType: "positive" as const,
-        onClick: () => !isViewingOther && setApplyLeaveDialogOpen(true),
+        onClick: () => {
+          if (!isViewingOther) {
+            dispatch(resetLeaveStatus());
+            setApplyLeaveDialogOpen(true);
+          }
+        },
       }] : []),
       {
         id: "pending-requests",
@@ -202,7 +168,7 @@ export default function LeaveTab({
         trendType: "neutral" as const,
       },
     ];
-  }, [isOrgAdmin, isViewingOther, pendingCount, totalAvailableDays]);
+  }, [dispatch, isOrgAdmin, isViewingOther, pendingCount, totalAvailableDays]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -279,10 +245,21 @@ export default function LeaveTab({
             </Typography>
           </Box>
         ) : (
-          <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <TableContainer
+            sx={{
+              width: "100%",
+              maxWidth: "100%",
+              overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "thin",
+              scrollbarColor: "#CBD5E1 transparent",
+              "&::-webkit-scrollbar": { height: "6px" },
+              "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "6px" },
+            }}
+          >
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
-                <TableRow>
+                <TableRow sx={{ "& th": { whiteSpace: "nowrap" } }}>
                   <TableCell sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px", py: 1.5, px: 2.5 }}>
                     Leave Type
                   </TableCell>
@@ -303,12 +280,7 @@ export default function LeaveTab({
               <TableBody>
                 {uniqueLeaves.map((req: any) => {
                   const rawStatus = (req?.status || "PENDING").toUpperCase();
-                  const status = (
-                    statusMap[req._id] ||
-                    statusMap[req.reason] ||
-                    statusMap[`${req.fromDate}_${req.toDate}`] ||
-                    rawStatus
-                  ).toUpperCase();
+                  const status = rawStatus;
 
                   const leaveTypeName = typeof req?.leaveTypeId === "object" ? req?.leaveTypeId?.name : "Emergency Leave";
                   const fromStr = req?.fromDate ? new Date(req.fromDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
@@ -323,6 +295,7 @@ export default function LeaveTab({
                         borderBottom: "1px solid #F1F5F9",
                         transition: "background-color 0.15s ease",
                         "&:hover": { backgroundColor: "#F8FAFC" },
+                        "& td": { whiteSpace: "nowrap" },
                       }}
                     >
                       <TableCell sx={{ py: 1.75, px: 2.5 }}>

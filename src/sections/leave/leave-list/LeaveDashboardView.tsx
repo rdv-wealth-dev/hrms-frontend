@@ -53,6 +53,11 @@ import LeavePolicyView from "../components/LeavePolicyView";
 
 // Real live team leave requests handled dynamically via Redux & backend APIs
 
+type ApiError = {
+  response?: { data?: { message?: string } };
+  message?: string;
+};
+
 // ============================================================
 // Detail Dialog Component
 // ============================================================
@@ -249,47 +254,26 @@ export default function LeaveDashboardView() {
     dispatch(applyLeaveRequest(data));
   };
 
-  const [localStatusMap, setLocalStatusMap] = useState<Record<string, "APPROVED" | "REJECTED">>(() => {
-    try {
-      const saved = localStorage.getItem("hrms_leave_status_map");
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  const saveStatusOverride = (id: string, status: "APPROVED" | "REJECTED", reason?: string, dateRange?: string) => {
-    setLocalStatusMap((prev) => {
-      const updated = { ...prev, [id]: status };
-      if (reason) updated[reason] = status;
-      if (dateRange) updated[dateRange] = status;
-      try {
-        localStorage.setItem("hrms_leave_status_map", JSON.stringify(updated));
-      } catch (err) {
-        console.error("Failed to persist leave status override", err);
-      }
-      return updated;
-    });
-  };
-
   const handleQuickApprove = async (req: LeaveRequest) => {
     if (!req?._id) return;
     const empName = `${req?.employeeId?.firstName ?? ""} ${req?.employeeId?.lastName ?? ""}`.trim() || "Employee";
-    const dateRange = `${req.fromDate}_${req.toDate}`;
-
-    saveStatusOverride(req._id, "APPROVED", req.reason, dateRange);
-    showSnackbar(`Leave request approved for ${empName}`, "success");
 
     if (!req._id.startsWith("sample-") && !req._id.startsWith("local-")) {
       setActionLoading(true);
       try {
         await reviewLeaveRequest(req._id, "APPROVED", "Approved via Quick Action");
+        showSnackbar(`Leave request approved for ${empName}`, "success");
         fetchOrgLeaves();
         dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
         dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
         dispatch(getMyLeaveBalancesRequest(selectedYear));
-      } catch (err) {
+      } catch (err: unknown) {
+        const apiError = err as ApiError;
         console.error("Failed to approve leave request", err);
+        showSnackbar(
+          apiError?.response?.data?.message || apiError?.message || "Failed to approve leave request",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
@@ -299,21 +283,23 @@ export default function LeaveDashboardView() {
   const handleQuickReject = async (req: LeaveRequest) => {
     if (!req?._id) return;
     const empName = `${req?.employeeId?.firstName ?? ""} ${req?.employeeId?.lastName ?? ""}`.trim() || "Employee";
-    const dateRange = `${req.fromDate}_${req.toDate}`;
-
-    saveStatusOverride(req._id, "REJECTED", req.reason, dateRange);
-    showSnackbar(`Leave request rejected for ${empName}`, "info");
 
     if (!req._id.startsWith("sample-") && !req._id.startsWith("local-")) {
       setActionLoading(true);
       try {
         await reviewLeaveRequest(req._id, "REJECTED", "Rejected via Quick Action");
+        showSnackbar(`Leave request rejected for ${empName}`, "info");
         fetchOrgLeaves();
         dispatch(getPendingLeaveRequestsRequest({ pageNumber: 1, pageSize: 50 }));
         dispatch(getMyLeaveRequestsRequest({ pageNumber, pageSize }));
         dispatch(getMyLeaveBalancesRequest(selectedYear));
-      } catch (err) {
+      } catch (err: unknown) {
+        const apiError = err as ApiError;
         console.error("Failed to reject leave request", err);
+        showSnackbar(
+          apiError?.response?.data?.message || apiError?.message || "Failed to reject leave request",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
@@ -332,17 +318,7 @@ export default function LeaveDashboardView() {
     new Map(liveReqs.map((r) => [r._id || r.reason, r])).values()
   );
 
-  const displayRequests = mergedReqs.map((r) => {
-    const overrideStatus =
-      localStatusMap[r._id] ||
-      localStatusMap[r.reason] ||
-      localStatusMap[`${r.fromDate}_${r.toDate}`];
-
-    if (overrideStatus) {
-      return { ...r, status: overrideStatus };
-    }
-    return r;
-  });
+  const displayRequests = mergedReqs;
 
   const pendingCount = displayRequests.filter((r) => (r?.status || "").toUpperCase() === "PENDING").length;
 

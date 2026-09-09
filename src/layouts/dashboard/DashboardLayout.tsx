@@ -368,7 +368,7 @@ function DashboardLayout() {
                 >
                     <ListItemIcon
                         sx={{
-                            minWidth: isCollapsed ? 0 : 34,
+                            minWidth: isCollapsed ? 0 : 30,
                             mr: isCollapsed ? 0 : 0,
                             justifyContent: "center",
                             color: isActive ? "#FFFFFF" : "#A855F7",
@@ -377,12 +377,15 @@ function DashboardLayout() {
                         {item.icon}
                     </ListItemIcon>
                     {!isCollapsed && (
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", minWidth: 0 }}>
                             <Typography
                                 sx={{
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: isActive ? 700 : 500,
                                     color: isActive ? "#FFFFFF" : "#475569",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                 }}
                             >
                                 {getItemLabel(item)}
