@@ -26,9 +26,9 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
-import { listShifts, getShiftAssignments, listRotationPlans, createRotationPlan, assignRotationPlan } from "../../../api/attendance.api";
-import type { Shift, ShiftAssignment, ShiftRotationPlan, CreateRotationPlanRequest, RotationSlot, AssignRotationPlanRequest } from "../../../store/attendance/attendance.types";
-import { usePermissions } from "../../../hooks/usePermissions";
+import { listShifts, getShiftAssignments, listRotationPlans, createRotationPlan, assignRotationPlan } from "@/api/attendance.api";
+import type { Shift, ShiftAssignment, ShiftRotationPlan, CreateRotationPlanRequest, RotationSlot, AssignRotationPlanRequest } from "@/store/attendance/attendance.types";
+import { usePermissions } from "@/hooks/usePermissions";
 import ShiftFormDialog from "./ShiftFormDialog";
 import RotationPlanFormDialog from "./RotationPlanFormDialog";
 import AssignRotationPlanDialog from "./AssignRotationPlanDialog";
@@ -268,7 +268,7 @@ export default function ShiftContent() {
         )}
       </Box>
 
-      {/* Tabs Navigation (Outer Sub-Nav Responsive Pattern) */}
+      {/* Tabs Navigation */}
       <Box sx={{ mb: 3 }}>
         <Paper
           elevation={0}
@@ -303,7 +303,6 @@ export default function ShiftContent() {
                 alignItems: "stretch",
               },
 
-              // Chevron buttons matching outer navigation
               "& .MuiTabScrollButton-root": {
                 flexShrink: 0,
                 width: 28,
@@ -321,7 +320,6 @@ export default function ShiftContent() {
                 },
               },
 
-              // Tab Styling (Auto content fit without truncation, smooth scroll chevrons)
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontSize: {

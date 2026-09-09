@@ -11,8 +11,8 @@ import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
-import { deleteShift } from "../../../api/attendance.api";
-import type { Shift } from "../../../store/attendance/attendance.types";
+import { deleteShift } from "@/api/attendance.api";
+import type { Shift } from "@/store/attendance/attendance.types";
 
 interface DeleteShiftDialogProps {
   open: boolean;

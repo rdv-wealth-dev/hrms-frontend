@@ -13,14 +13,14 @@ import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
 
-import { listEmployees } from "../../../api/employee.api";
-import type { EmployeeListItem } from "../../../store/employee/employee.types";
+import { listEmployees } from "@/api/employee.api";
+import type { EmployeeListItem } from "@/store/employee/employee.types";
 import type {
   ShiftRotationPlan,
   AssignRotationPlanRequest,
-} from "../../../store/attendance/attendance.types";
+} from "@/store/attendance/attendance.types";
 
-import TextInput from "../../../components/input/TextInput";
+import TextInput from "@/components/input/TextInput";
 
 type Props = {
   open: boolean;

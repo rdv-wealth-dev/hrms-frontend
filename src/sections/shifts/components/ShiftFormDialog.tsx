@@ -11,10 +11,10 @@ import Divider from "@mui/material/Divider";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import CircularProgress from "@mui/material/CircularProgress";
-import TextInput from "../../../components/input/TextInput";
+import TextInput from "@/components/input/TextInput";
 
-import type { Shift, CreateShiftRequest, UpdateShiftRequest } from "../../../store/attendance/attendance.types";
-import { createShift, updateShift } from "../../../api/attendance.api";
+import type { Shift, CreateShiftRequest, UpdateShiftRequest } from "@/store/attendance/attendance.types";
+import { createShift, updateShift } from "@/api/attendance.api";
 
 interface ShiftFormDialogProps {
   open: boolean;

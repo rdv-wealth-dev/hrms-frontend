@@ -12,7 +12,7 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import SettingsContentPanel from "../../components/settings/SettingsContentPanel";
 import DepartmentContent from "../departments/components/DepartmentContent";
 import DesignationContent from "../designations/components/DesignationContent";
-import ShiftContent from "../attendance/components/ShiftContent";
+import ShiftContent from "../shifts/components/ShiftContent";
 import LeaveTypeContent from "../leave/leave-policy/LeaveTypeContent";
 import OrganizationProfileContent from "./components/OrganizationProfileContent";
 import OrganizationModulesContent from "./components/OrganizationModulesContent";

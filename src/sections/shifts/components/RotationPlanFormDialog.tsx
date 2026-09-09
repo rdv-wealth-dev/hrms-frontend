@@ -14,14 +14,14 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
-import TextInput from "../../../components/input/TextInput";
+import TextInput from "@/components/input/TextInput";
 
 import type {
   Shift,
   CreateRotationPlanRequest,
   CycleDuration,
   RotationSlot,
-} from "../../../store/attendance/attendance.types";
+} from "@/store/attendance/attendance.types";
 
 type Props = {
   open: boolean;
