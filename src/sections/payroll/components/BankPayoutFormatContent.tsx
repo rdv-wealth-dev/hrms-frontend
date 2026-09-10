@@ -6,6 +6,7 @@ import Paper from "@mui/material/Paper";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
 import CloseIcon from "@mui/icons-material/Close";
 
 import StatusChip from "../../../components/common/StatusChip";
@@ -74,16 +75,30 @@ export function BankPayoutFormatContent({
           borderColor: "divider",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          Bank Payout Format
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            Bank Payout Format
+          </Typography>
+          <Chip
+            label="Coming Soon"
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(99, 102, 241, 0.12)",
+              color: "#4F46E5",
+              border: "1px solid rgba(99, 102, 241, 0.3)",
+            }}
+          />
+        </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <StatusChip

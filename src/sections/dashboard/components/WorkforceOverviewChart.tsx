@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
+import Chip from "@mui/material/Chip";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useTheme } from "@mui/material/styles";
 
@@ -110,6 +111,18 @@ export function WorkforceOverviewChart() {
             <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
               Workforce Overview
             </Typography>
+            <Chip
+              label="Coming Soon"
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                backgroundColor: "rgba(59, 130, 246, 0.12)",
+                color: "#2563EB",
+                border: "1px solid rgba(59, 130, 246, 0.3)",
+              }}
+            />
             <Tooltip title="Tracks total headcount, new hires, and exits over time." arrow>
               <InfoOutlinedIcon sx={{ fontSize: 16, color: "#9CA3AF", cursor: "pointer" }} />
             </Tooltip>

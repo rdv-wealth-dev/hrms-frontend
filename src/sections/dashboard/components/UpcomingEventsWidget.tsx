@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
 import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import FestivalOutlinedIcon from "@mui/icons-material/FestivalOutlined";
@@ -59,10 +60,22 @@ export function UpcomingEventsWidget() {
       }}
     >
       {/* Header */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
           Upcoming Events
         </Typography>
+        <Chip
+          label="Coming Soon"
+          size="small"
+          sx={{
+            height: 20,
+            fontSize: "0.7rem",
+            fontWeight: 700,
+            backgroundColor: "rgba(139, 92, 246, 0.12)",
+            color: "#7C3AED",
+            border: "1px solid rgba(139, 92, 246, 0.3)",
+          }}
+        />
       </Box>
 
       {/* Events List */}

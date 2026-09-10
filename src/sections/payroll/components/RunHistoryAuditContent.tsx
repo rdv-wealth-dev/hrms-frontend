@@ -70,9 +70,23 @@ export default function RunHistoryAuditContent() {
           gap: 2,
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
-          Run History &amp; Audit Trail
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
+            Run History &amp; Audit Trail
+          </Typography>
+          <Chip
+            label="Coming Soon"
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(99, 102, 241, 0.12)",
+              color: "#4F46E5",
+              border: "1px solid rgba(99, 102, 241, 0.3)",
+            }}
+          />
+        </Box>
 
         <Chip
           label={`${data?.periodLabel} \u00b7 ${data?.periodStatus}`}

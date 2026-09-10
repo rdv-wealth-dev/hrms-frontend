@@ -391,7 +391,7 @@ function TextInput({
         placeholder={placeholder}
         variant={variant === "underlined" ? "standard" : "outlined"}
         select={select}
-        SelectProps={select ? (mergedSlotProps.select as any) : undefined}
+        {...(select && mergedSlotProps.select ? { SelectProps: mergedSlotProps.select as any } : {})}
         required={required}
         disabled={disabled}
         multiline={multiline}

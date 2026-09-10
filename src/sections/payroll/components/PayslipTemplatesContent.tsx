@@ -43,16 +43,30 @@ export function PayslipTemplatesContent({
           borderColor: "divider",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          Payslip Templates
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            Payslip Templates
+          </Typography>
+          <Chip
+            label="Coming Soon"
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(99, 102, 241, 0.12)",
+              color: "#4F46E5",
+              border: "1px solid rgba(99, 102, 241, 0.3)",
+            }}
+          />
+        </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <StatusChip

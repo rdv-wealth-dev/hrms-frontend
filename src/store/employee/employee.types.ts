@@ -132,6 +132,7 @@ export interface EmployeeListItem {
   countryCode?: string;
   avatarUrl?: string;
   departmentId: string;
+  departmentIds?: string[];
   designationId: string;
   managerId: string | null;
   employeeType: string;
@@ -196,6 +197,7 @@ export interface EmployeeDetail {
   tenantId?: string;
   branchId?: string | PopulatedEntityRef;
   departmentId?: string | PopulatedEntityRef;
+  departmentIds?: Array<string | PopulatedEntityRef>;
   designationId?: string | PopulatedEntityRef;
   teamId?: string | PopulatedEntityRef | null;
   managerId?: string | PopulatedEntityRef | null;
@@ -260,6 +262,7 @@ export interface UpdateEmployeeRequest {
   drivingLicense?: string;
   voterId?: string;
   departmentId?: string;
+  departmentIds?: string[];
   designationId?: string;
   branchId?: string;
   teamId?: string | null;
@@ -419,4 +422,3 @@ export type EmployeeAction =
   | UpdateEmployeeStatusRequestAction
   | UpdateEmployeeStatusSuccessAction
   | UpdateEmployeeStatusFailureAction;
-

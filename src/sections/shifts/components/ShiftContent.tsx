@@ -227,9 +227,23 @@ export default function ShiftContent() {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <ScheduleOutlinedIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
-              Shift Master
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
+                Shift Master
+              </Typography>
+              <Chip
+                label="Coming Soon"
+                size="small"
+                sx={{
+                  height: 20,
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  backgroundColor: "rgba(99, 102, 241, 0.12)",
+                  color: "#4F46E5",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                }}
+              />
+            </Box>
             <Typography variant="body2" color="text.secondary">
               Configure shift timings and rules for your organization
             </Typography>

@@ -8,11 +8,13 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 import Divider from "@mui/material/Divider";
+import { useNavigate } from "react-router-dom";
 
 import KpiCardsGrid from "../../../components/card/KpiCard";
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
 import type { PayrollOverviewData } from "../../../types/payroll.types";
+import { paths } from "../../../routes/paths";
 
 const EMPTY_PAYROLL_OVERVIEW: PayrollOverviewData = {
   periodLabel: "Aug 2026",
@@ -38,6 +40,7 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ data = EMPTY_PAYROLL_OVERVIEW }: DashboardContentProps) {
+  const navigate = useNavigate();
   const kpiItems = data?.kpiItems ?? [];
   const currentRun = data?.currentRun;
   const statutoryDueDates = data?.statutoryDueDates ?? [];
@@ -126,7 +129,7 @@ export function DashboardContent({ data = EMPTY_PAYROLL_OVERVIEW }: DashboardCon
                 {currentRun?.description}
               </Typography>
 
-              <PrimaryButton>
+              <PrimaryButton onClick={() => navigate(paths.payroll.runWizard)}>
                 {currentRun?.buttonText ?? "Open Run Wizard →"}
               </PrimaryButton>
             </Paper>

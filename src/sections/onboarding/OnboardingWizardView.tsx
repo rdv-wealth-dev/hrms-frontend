@@ -105,8 +105,9 @@ export default function OnboardingWizardView() {
             navigate(paths.dashboard);
             return;
           }
-          const step = res.data.onboardingStep || res.data.currentStep || 1;
-          setActiveStep(Math.min(step - 1, 4));
+          // Always start a new wizard visit at Step 1. The backend's
+          // onboardingStep is persistence metadata, not frontend navigation state.
+          setActiveStep(0);
           const step1 = (res.data.step1Data as Partial<OnboardingStep1FormData>) || {};
           if (!step1.phone && user?.phone) {
             step1.phone = user.phone;
@@ -149,6 +150,25 @@ export default function OnboardingWizardView() {
   };
 
   const handleSkipStep = async (stepNumber: number) => {
+    if (stepNumber === 4) {
+      setStepError(null);
+
+      // Step 4 intentionally uses fire-and-forget: start the database update,
+      // then redirect without waiting for the response.
+      void skipOnboardingStep(4)
+        .then((res) => {
+          if (!res?.succeeded) {
+            console.warn("Failed to persist the Step 4 onboarding skip:", res?.message);
+          }
+        })
+        .catch((err) => {
+          console.warn("Failed to persist the Step 4 onboarding skip:", err);
+        });
+
+      navigate(paths.dashboard);
+      return;
+    }
+
     setSubmitting(true);
     setStepError(null);
     try {

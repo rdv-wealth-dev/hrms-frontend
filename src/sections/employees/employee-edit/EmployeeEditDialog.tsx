@@ -31,6 +31,7 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import TextInput from "../../../components/input/TextInput";
 import PhoneInput from "../../../components/input/PhoneInput";
 import CascadingSelect, { type SelectOption } from "../../../components/input/CascadingSelect";
+import { MultiSelect } from "../../../components/input/MultiSelect";
 import CustomAvatar from "../../../components/avatar/CustomAvatar";
 import { StatusChip } from "../../../components/common/StatusChip";
 
@@ -62,6 +63,7 @@ type Props = {
   open: boolean;
   employee: EmployeeListItem | null;
   onClose: () => void;
+  initialTab?: number;
 };
 
 const DEFAULT_FALLBACK_ROLES: RoleItem[] = [
@@ -129,7 +131,7 @@ const formatDateInput = (dateVal?: string | Date | null): string => {
   }
 };
 
-function EmployeeEditDialog({ open, employee, onClose }: Props) {
+function EmployeeEditDialog({ open, employee, onClose, initialTab = 0 }: Props) {
   const dispatch = useDispatch<AppDispatch>();
 
   const {
@@ -144,7 +146,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     (state: RootState) => state.branch?.branches ?? []
   );
 
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(initialTab);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   // Global Form Validation Hook
@@ -159,7 +161,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
   // Form State: 1. Organization & Placement
   const [branchId, setBranchId] = useState<string>("");
-  const [departmentId, setDepartmentId] = useState<string>("");
+  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
+  const departmentId = departmentIds[0] ?? "";
   const [designationId, setDesignationId] = useState<string>("");
   const [teamId, setTeamId] = useState<string>("");
   const [managerId, setManagerId] = useState<string>("");
@@ -282,8 +285,8 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     setManagerId("");
     clearError("managerId");
 
-    if (targetDepartmentId && departmentId !== targetDepartmentId) {
-      setDepartmentId(targetDepartmentId);
+    if (targetDepartmentId && departmentIds[0] !== targetDepartmentId) {
+      setDepartmentIds([targetDepartmentId]);
       setDesignationId("");
       clearError("departmentId");
       return;
@@ -294,7 +297,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       clearError("designationId");
     }
   }, [
-    departmentId,
+    departmentIds,
     designationId,
     clearError,
     isCeoRole,
@@ -307,7 +310,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
     if (open && employee?._id) {
       dispatch(clearEmployeeError());
       dispatch(getEmployeeByIdRequest(employee._id));
-      setActiveTab(0);
+      setActiveTab(initialTab);
       setHasSubmitted(false);
       clearAllErrors();
     }
@@ -316,7 +319,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
         dispatch(clearSelectedEmployee());
       }
     };
-  }, [open, employee?._id, dispatch, clearAllErrors]);
+  }, [open, employee?._id, initialTab, dispatch, clearAllErrors]);
 
   // 2. Populate form fields safely whenever fresh server data arrives
   useEffect(() => {
@@ -341,14 +344,17 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
       // Organization Placement
       const resolvedBranch = resolveId(data.branchId);
-      const resolvedDept = resolveId(data.departmentId);
+      const resolvedDeptIds = resolveIds(data.departmentIds);
+      const departmentSelection = resolvedDeptIds.length
+        ? resolvedDeptIds
+        : [resolveId(data.departmentId)].filter(Boolean);
       const resolvedDesig = resolveId(data.designationId);
       const resolvedTeam = resolveId((data as any).teamId);
       const resolvedMgr = resolveId(data.managerId);
       const resolvedSecondary = resolveIds((data as any).secondaryManagerIds);
 
       setBranchId(resolvedBranch);
-      setDepartmentId(resolvedDept);
+      setDepartmentIds(departmentSelection);
       setDesignationId(resolvedDesig);
       setTeamId(resolvedTeam);
       setManagerId(resolvedMgr);
@@ -639,6 +645,11 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
       voterId: voterId.trim().toUpperCase() || undefined,
 
       branchId: branchId || undefined,
+      departmentIds: isCeoRole
+        ? [targetDepartmentId].filter(Boolean)
+        : departmentIds.length
+          ? departmentIds
+          : undefined,
       departmentId: (isCeoRole ? targetDepartmentId : departmentId) || undefined,
       designationId: (isCeoRole ? targetDesignationId : designationId) || undefined,
       teamId: teamId || null,
@@ -718,7 +729,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <Typography sx={{ fontSize: { xs: "16px", sm: "19px" }, fontWeight: 700, color: "text.primary" }}>
-                  Edit {fullName}
+                  {fullName}
                 </Typography>
                 {activeEmployee?.employeeCode && (
                   <Chip
@@ -915,7 +926,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
 
                 <Grid container spacing={2.5}>
                   {/* Step 1: Branch Location */}
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
                       label="STEP 1: Branch Location"
@@ -925,7 +936,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                       onChange={(e) => {
                         clearError("branchId");
                         setBranchId(e.target.value);
-                        setDepartmentId("");
+                        setDepartmentIds([]);
                         setDesignationId("");
                         setManagerId("");
                         setSecondaryManagerIds([]);
@@ -942,30 +953,38 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     </TextInput>
                   </Grid>
 
-                  {/* Step 2: Department */}
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <CascadingSelect
-                      label="STEP 2: Department"
-                      required
-                      value={departmentId}
+                  {/* Step 2: Departments (first selection is primary) */}
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <MultiSelect
+                      label="STEP 2: Department(s)"
                       options={departmentOptions}
-                      loading={loadingDepartments}
-                      disabled={!branchId || isCeoRole}
-                      disabledPlaceholder={isCeoRole ? "Selected automatically for CEO" : "Select Branch first"}
-                      emptyPlaceholder="No departments in branch"
+                      value={departmentIds}
+                      disabled={!branchId || isCeoRole || loadingDepartments}
+                      placeholder={
+                        isCeoRole
+                          ? "Selected automatically for CEO"
+                          : !branchId
+                            ? "Select Branch first"
+                            : loadingDepartments
+                              ? "Loading departments..."
+                              : "Select department(s)"
+                      }
                       error={errors.departmentId}
-                      onChange={(e) => {
+                      onChange={(values) => {
                         clearError("departmentId");
-                        setDepartmentId(e.target.value);
-                        setDesignationId("");
-                        setManagerId("");
-                        setSecondaryManagerIds([]);
+                        setDepartmentIds(values);
+                        if ((values[0] ?? "") !== departmentId) {
+                          setDesignationId("");
+                          setManagerId("");
+                          setSecondaryManagerIds([]);
+                        }
                       }}
+                      searchable
                     />
                   </Grid>
 
                   {/* Step 3: Designation */}
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <CascadingSelect
                       label="STEP 3: Designation"
                       required
@@ -984,7 +1003,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Grid>
 
                   {/* Step 4: Squad Team */}
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <CascadingSelect
                       label="STEP 4: Squad Team"
                       value={teamId}
@@ -1001,7 +1020,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Grid>
 
                   {/* Step 5: Primary Reporting Manager */}
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <CascadingSelect
                       label="STEP 5: Primary Reporting Manager"
                       value={managerId}
@@ -1019,7 +1038,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Grid>
 
                   {/* Step 6: Secondary Managers (Multi-Select) */}
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
                       label="STEP 6: Secondary Managers"
@@ -1048,10 +1067,10 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Grid>
 
                   {/* Step 7: System Access Security Role */}
-                  <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
-                      label="System Security Role"
+                      label="STEP 7: System Security Role"
                       required
                       value={role}
                       error={errors.role}
@@ -1069,10 +1088,10 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Grid>
 
                   {/* Step 8: Employee Type */}
-                  <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
-                      label="Employee Type"
+                      label="STEP 8: Employee Type"
                       required
                       value={employeeType}
                       error={errors.employeeType}
@@ -1154,7 +1173,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       type="date"
                       label="Date of Birth"
@@ -1168,7 +1187,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
                       label="Gender"
@@ -1188,7 +1207,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     </TextInput>
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
                       label="Blood Group"
@@ -1208,7 +1227,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     </TextInput>
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       select
                       label="Marital Status"
@@ -1227,7 +1246,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     </TextInput>
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="Nationality"
                       value={nationality}
@@ -1239,7 +1258,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="PAN Card Number"
                       format="pan"
@@ -1253,7 +1272,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="Aadhaar Card Number"
                       format="aadhaar"
@@ -1267,7 +1286,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="Passport Number"
                       value={passportNo}
@@ -1280,7 +1299,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="Driving License"
                       value={drivingLicense}
@@ -1293,7 +1312,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextInput
                       label="Voter ID"
                       value={voterId}
@@ -1401,7 +1420,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                   </Typography>
 
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 8 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <TextInput
                         label="Address Line 1"
                         placeholder="Flat / Building / Street"
@@ -1413,7 +1432,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                         }}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <TextInput
                         label="Address Line 2"
                         placeholder="Landmark / Area"
@@ -1425,7 +1444,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                         }}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <TextInput
                         label="City"
                         value={currCity}
@@ -1436,7 +1455,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                         }}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <TextInput
                         label="State / Province"
                         value={currState}
@@ -1447,7 +1466,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                         }}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <TextInput
                         label="Postal / Zip Code"
                         value={currZip}
@@ -1487,7 +1506,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                     </Typography>
 
                     <Grid container spacing={2}>
-                      <Grid size={{ xs: 12, sm: 8 }}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput
                           label="Address Line 1"
                           placeholder="Flat / Building / Street"
@@ -1499,7 +1518,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                           }}
                         />
                       </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput
                           label="Address Line 2"
                           placeholder="Landmark / Area"
@@ -1511,7 +1530,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                           }}
                         />
                       </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput
                           label="City"
                           value={permCity}
@@ -1522,7 +1541,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                           }}
                         />
                       </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput
                           label="State / Province"
                           value={permState}
@@ -1533,7 +1552,7 @@ function EmployeeEditDialog({ open, employee, onClose }: Props) {
                           }}
                         />
                       </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextInput
                           label="Postal / Zip Code"
                           value={permZip}

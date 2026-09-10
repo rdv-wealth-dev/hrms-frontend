@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 import { DASHBOARD_MOCK_DATA } from "../mock/dashboard-data";
@@ -27,9 +28,23 @@ export function RecruitmentPipelineFunnel() {
     >
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
-          Recruitment Pipeline
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
+            Recruitment Pipeline
+          </Typography>
+          <Chip
+            label="Coming Soon"
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(245, 158, 11, 0.12)",
+              color: "#D97706",
+              border: "1px solid rgba(245, 158, 11, 0.3)",
+            }}
+          />
+        </Box>
         <Button size="small" sx={{ textTransform: "none", color: "primary.main", fontWeight: 600 }}>
           View All Jobs ({metrics.totalOpenJobs})
         </Button>

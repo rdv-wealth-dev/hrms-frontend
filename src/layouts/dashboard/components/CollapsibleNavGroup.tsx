@@ -42,12 +42,18 @@ function NestedSubGroupItem({
   const location = useLocation();
   const { hasPermission } = usePermissions();
 
+  const currentFullPath = `${location.pathname}${location.search}`;
+  const checkPathActive = (targetPath?: string) => {
+    if (!targetPath) return false;
+    return location.pathname === targetPath || currentFullPath === targetPath;
+  };
+
   const visibleChildren = (item?.children || []).filter((child) => {
     if (!child?.permission) return true;
     return hasPermission(child.permission);
   });
 
-  const isChildActive = visibleChildren.some((child) => child?.path && location.pathname === child.path);
+  const isChildActive = visibleChildren.some((child) => checkPathActive(child?.path));
   const [open, setOpen] = useState(permanentOpen || isChildActive);
 
   useEffect(() => {
@@ -161,7 +167,7 @@ function NestedSubGroupItem({
       <Collapse in={permanentOpen || open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding sx={{ pl: permanentOpen ? 0 : 1, mt: 0.25 }}>
           {visibleChildren.map((child) => {
-            const isActive = child?.path ? location.pathname === child.path : false;
+            const isActive = checkPathActive(child?.path);
 
             return (
               <ListItem key={child?.label} disablePadding sx={{ mb: 0.5 }}>
@@ -232,6 +238,12 @@ export default function CollapsibleNavGroup({
   const location = useLocation();
   const { hasPermission } = usePermissions();
 
+  const currentFullPath = `${location.pathname}${location.search}`;
+  const checkPathActive = (targetPath?: string) => {
+    if (!targetPath) return false;
+    return location.pathname === targetPath || currentFullPath === targetPath;
+  };
+
   // Filter items according to permissions & role rules
   const visibleItems = items.filter((item) => {
     if (item?.children) {
@@ -246,9 +258,9 @@ export default function CollapsibleNavGroup({
 
   const isChildActive = visibleItems.some((item) => {
     if (item?.children && item.children.length > 0) {
-      return item.children.some((child) => child?.path && location.pathname === child.path);
+      return item.children.some((child) => checkPathActive(child?.path));
     }
-    return item?.path && location.pathname === item.path;
+    return checkPathActive(item?.path);
   });
 
   const [open, setOpen] = useState(permanentOpen || isChildActive);
@@ -386,7 +398,7 @@ export default function CollapsibleNavGroup({
               );
             }
 
-            const isActive = item?.path ? location.pathname === item.path : false;
+            const isActive = checkPathActive(item?.path);
             return (
               <ListItem key={item?.label} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton

@@ -11,14 +11,14 @@ import RecentEmployeesTable from "./components/RecentEmployeesTable";
 import UpcomingEventsWidget from "./components/UpcomingEventsWidget";
 
 interface DashboardLayoutProps {
-  userName?: string;
+  companyName?: string;
   lastLoginAt?: string | null;
   lastLoginIp?: string | null;
   lastLoginDevice?: string | null;
 }
 
 export function DashboardLayout({
-  userName,
+  companyName,
   lastLoginAt,
   lastLoginIp,
   lastLoginDevice,
@@ -26,7 +26,7 @@ export function DashboardLayout({
   return (
     <Box sx={{ width: "100%", boxSizing: "border-box" }}>
       {/* 1. Header & Greeting */}
-      <DashboardHeader userName={userName} lastLoginAt={lastLoginAt} lastLoginIp={lastLoginIp} lastLoginDevice={lastLoginDevice} />
+      <DashboardHeader companyName={companyName} lastLoginAt={lastLoginAt} lastLoginIp={lastLoginIp} lastLoginDevice={lastLoginDevice} />
 
       <OrgSetupGuidanceWidget />
 

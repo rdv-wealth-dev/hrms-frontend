@@ -234,6 +234,39 @@ export interface PayrollRunWizardStep {
   label: string;
 }
 
+export interface InitiatePayrollRunRequest {
+  month: number;
+  year: number;
+  branchId: string;
+}
+
+export type PayrollRunStatus =
+  | "DRAFT"
+  | "PROCESSING"
+  | "GENERATED"
+  | "APPROVED"
+  | "PAID"
+  | "FAILED";
+
+export interface PayrollRunSummary {
+  _id: string;
+  runNumber: string;
+  month: number;
+  year: number;
+  status: PayrollRunStatus;
+  totalEmployees: number;
+  totalGross: number;
+  totalNet: number;
+  createdAt: string;
+}
+
+export interface InitiatePayrollRunResponse {
+  succeeded: boolean;
+  message?: string;
+  errors?: string[];
+  data?: PayrollRunSummary | null;
+}
+
 export interface PayrollRunWizardData {
   periodLabel: string;
   periodStatus: string;

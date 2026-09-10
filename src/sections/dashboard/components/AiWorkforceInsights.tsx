@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
@@ -54,6 +55,18 @@ export function AiWorkforceInsights() {
           <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.1rem" }}>
             AI Workforce Insights
           </Typography>
+          <Chip
+            label="Coming Soon"
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(139, 92, 246, 0.12)",
+              color: "#7C3AED",
+              border: "1px solid rgba(139, 92, 246, 0.3)",
+            }}
+          />
         </Box>
         <Button
           size="small"

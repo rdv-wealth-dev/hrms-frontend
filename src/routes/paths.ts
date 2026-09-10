@@ -13,6 +13,7 @@ export const paths = {
   dashboard: "/dashboard",
 
   settings: "/settings",
+  settingsTab: (tabId: string) => `/settings?tab=${tabId}`,
 
   departments: "/departments",
   designations: "/designations", // ✅

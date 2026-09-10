@@ -16,6 +16,7 @@ import ConfirmDialog from "../../../components/modal/ConfirmDialog";
 import { useDialog } from "../../../hooks/useDialog";
 import { useProfileSelfUpdate } from "../../../hooks/useProfileSelfUpdate";
 import EmergencyContactDialog from "./EmergencyContactDialog";
+import PersonalEditDialog from "./PersonalEditDialog";
 import type { CompleteProfileEmployee, EmergencyContact } from "../../../api/employee.api";
 
 import TuneIcon from "@mui/icons-material/Tune";
@@ -30,6 +31,7 @@ interface PersonalTabProps {
   handleOpenEditProfile: () => void;
   onRefreshProfileData: () => Promise<void>;
   showSnackbar: (msg: string, variant: "success" | "error" | "info" | "warning") => void;
+  onOpenEdit?: (tabIndex: number) => void;
 }
 
 export default function PersonalTab({
@@ -38,9 +40,9 @@ export default function PersonalTab({
   displayFirstName,
   displayLastName,
   displayEmail,
-  handleOpenEditProfile,
   onRefreshProfileData,
   showSnackbar,
+  onOpenEdit: _onOpenEdit,
 }: PersonalTabProps) {
   const { customFields: activeCustomFields } = useEffectiveCustomFields({
     branchId: (empProfile as any)?.branchId,
@@ -50,6 +52,7 @@ export default function PersonalTab({
   const [ecDeleteTarget, setEcDeleteTarget] = useState<number | null>(null);
   const [ecDeleteConfirmOpen, setEcDeleteConfirmOpen] = useState(false);
   const [ecSuccessMessage, setEcSuccessMessage] = useState("");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const onEcUpdated = useCallback(async () => {
     await onRefreshProfileData();
@@ -83,11 +86,20 @@ export default function PersonalTab({
             <BadgeOutlinedIcon sx={{ color: "#4F46E5" }} />
             Personal Information
           </Typography>
-          {!isViewingOther && (
-            <Button size="small" startIcon={<EditOutlinedIcon />} onClick={handleOpenEditProfile} sx={{ textTransform: "none", color: "#4F46E5", fontWeight: 600 }}>
-              Edit Details
-            </Button>
-          )}
+          <IconButton
+            size="small"
+            onClick={() => setEditDialogOpen(true)}
+            sx={{
+              color: "#4F46E5",
+              bgcolor: "#EEF2FF",
+              borderRadius: "8px",
+              p: 0.8,
+              "&:hover": { bgcolor: "#E0E7FF" },
+            }}
+            title="Edit Personal Information"
+          >
+            <EditOutlinedIcon sx={{ fontSize: 18 }} />
+          </IconButton>
         </Box>
         <Grid container spacing={2.5}>
           <Grid size={{ xs: 12, sm: 6 }}>
@@ -216,6 +228,15 @@ export default function PersonalTab({
         loading={ecUpdater.submitting}
         onConfirm={handleDeleteEmergencyContact}
         onClose={() => { if (!ecUpdater.submitting) { setEcDeleteConfirmOpen(false); setEcDeleteTarget(null); } }}
+      />
+
+      {/* Personal Edit Modal */}
+      <PersonalEditDialog
+        open={editDialogOpen}
+        empProfile={empProfile}
+        displayEmail={displayEmail}
+        onClose={() => setEditDialogOpen(false)}
+        onSuccess={onRefreshProfileData}
       />
     </Box>
   );

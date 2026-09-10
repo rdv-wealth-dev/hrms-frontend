@@ -175,9 +175,23 @@ export function TeamsListContent() {
             <GroupsIcon sx={{ fontSize: 22 }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.2 }}>
-              Teams & Squads Directory
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.2 }}>
+                Teams & Squads Directory
+              </Typography>
+              <Chip
+                label="Coming Soon"
+                size="small"
+                sx={{
+                  height: 20,
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  backgroundColor: "rgba(99, 102, 241, 0.12)",
+                  color: "#4F46E5",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                }}
+              />
+            </Box>
             <Typography variant="body2" color="text.secondary">
               {filteredTeams.length} {filteredTeams.length === 1 ? "team" : "teams"} available
             </Typography>

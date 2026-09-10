@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
@@ -31,7 +32,43 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import StatusChip from "../../../components/common/StatusChip";
-import type { PayrollRunWizardData, AdhocVariablePayItem, SalaryOnHoldItem, TaxOverrideItem } from "../../../types/payroll.types";
+import TextInput from "../../../components/input/TextInput";
+import { useSnackbar } from "../../../components/snackbar";
+import { initiatePayrollRun } from "../../../api/payroll.api";
+import { listBranchesRequest } from "../../../store/branch";
+import type { AppDispatch } from "../../../store/store";
+import type { RootState } from "../../../store/rootReducer";
+import { getApiErrorMessage } from "../../../utils/handle-api-error";
+import type {
+  PayrollRunWizardData,
+  AdhocVariablePayItem,
+  SalaryOnHoldItem,
+  TaxOverrideItem,
+  PayrollRunSummary,
+} from "../../../types/payroll.types";
+
+const MONTH_OPTIONS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const getDefaultPayrollPeriod = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - 1);
+  return { month: date.getMonth() + 1, year: date.getFullYear() };
+};
+
+const DEFAULT_PAYROLL_PERIOD = getDefaultPayrollPeriod();
 
 const EMPTY_WIZARD_DATA: PayrollRunWizardData = {
   periodLabel: "Aug 2026",
@@ -63,13 +100,47 @@ const EMPTY_WIZARD_DATA: PayrollRunWizardData = {
 };
 
 export default function RunWizardContent() {
-  const data = EMPTY_WIZARD_DATA;
+  const dispatch = useDispatch<AppDispatch>();
+  const { showSnackbar } = useSnackbar();
+  const branches = useSelector((state: RootState) => state.branch?.branches ?? []);
+  const branchesLoading = useSelector((state: RootState) => state.branch?.loading ?? false);
+  const activeBranches = useMemo(
+    () => branches.filter((branch) => branch?.isActive !== false),
+    [branches]
+  );
+
+  const [selectedMonth, setSelectedMonth] = useState(DEFAULT_PAYROLL_PERIOD.month);
+  const [selectedYear, setSelectedYear] = useState(DEFAULT_PAYROLL_PERIOD.year);
+  const [selectedBranchId, setSelectedBranchId] = useState("");
+  const [payrollRun, setPayrollRun] = useState<PayrollRunSummary | null>(null);
+  const [initiatingRun, setInitiatingRun] = useState(false);
+  const [initiationError, setInitiationError] = useState<string | null>(null);
+  const effectiveSelectedBranchId =
+    selectedBranchId || (activeBranches.length === 1 ? activeBranches[0]._id : "");
+  const selectedBranch = activeBranches.find(
+    (branch) => branch?._id === effectiveSelectedBranchId
+  );
+  const periodLabel = `${MONTH_OPTIONS[selectedMonth - 1]} ${selectedYear}`;
+
+  const data: PayrollRunWizardData = {
+    ...EMPTY_WIZARD_DATA,
+    periodLabel,
+    periodStatus: payrollRun?.status ?? "DRAFT",
+    runTitle: `${periodLabel} · ${payrollRun ? "Salary Run" : "New Payroll Run"}`,
+    branchName: selectedBranch?.name ?? "Select Branch",
+    employeeCount: payrollRun?.totalEmployees ?? 0,
+    runStatus: payrollRun?.status ?? "DRAFT",
+  };
   const [currentStep, setCurrentStep] = useState<number>(data.currentStep);
   const [notes, setNotes] = useState<string>(data.notes);
   const [runningPreflight, setRunningPreflight] = useState<boolean>(false);
   const [preflightExecuted, setPreflightExecuted] = useState<boolean>(false);
   const [attendanceLocked, setAttendanceLocked] = useState<boolean>(true);
   const [attendanceLockTime, setAttendanceLockTime] = useState<string>("2026-09-08 08:26");
+
+  useEffect(() => {
+    dispatch(listBranchesRequest());
+  }, [dispatch]);
 
   // Step 5 Adhoc Variable Pay state
   const [adhocList, setAdhocList] = useState<AdhocVariablePayItem[]>(data.adhocVariablePay || []);
@@ -222,7 +293,47 @@ export default function RunWizardContent() {
     setAttendanceLocked(true);
   };
 
+  const handleInitiatePayrollRun = async () => {
+    if (!effectiveSelectedBranchId) {
+      setInitiationError("Please select a branch before initiating payroll.");
+      return;
+    }
+
+    setInitiatingRun(true);
+    setInitiationError(null);
+
+    try {
+      const response = await initiatePayrollRun({
+        month: selectedMonth,
+        year: selectedYear,
+        branchId: effectiveSelectedBranchId,
+      });
+
+      if (response?.succeeded && response?.data?._id) {
+        setPayrollRun(response.data);
+        setCurrentStep(2);
+        showSnackbar(response?.message || "Payroll run initiated successfully", "success");
+        return;
+      }
+
+      setInitiationError(
+        response?.message || response?.errors?.[0] || "Failed to initiate payroll run."
+      );
+    } catch (error: unknown) {
+      setInitiationError(
+        getApiErrorMessage(error, "Failed to initiate payroll run. Please try again.")
+      );
+    } finally {
+      setInitiatingRun(false);
+    }
+  };
+
   const handleNextStep = () => {
+    if (currentStep === 1 && !payrollRun?._id) {
+      void handleInitiatePayrollRun();
+      return;
+    }
+
     if (currentStep < data.steps.length) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -304,8 +415,15 @@ export default function RunWizardContent() {
             {data.steps.map((step) => (
               <Step
                 key={step.stepNumber}
-                onClick={() => setCurrentStep(step.stepNumber)}
-                sx={{ cursor: "pointer" }}
+                onClick={() => {
+                  if (step.stepNumber === 1 || payrollRun?._id) {
+                    setCurrentStep(step.stepNumber);
+                  }
+                }}
+                sx={{
+                  cursor: step.stepNumber === 1 || payrollRun?._id ? "pointer" : "not-allowed",
+                  opacity: step.stepNumber === 1 || payrollRun?._id ? 1 : 0.6,
+                }}
               >
                 <StepLabel
                   slotProps={{
@@ -354,6 +472,93 @@ export default function RunWizardContent() {
             </Box>
 
             <Box sx={{ mt: 1 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
+                  gap: 2,
+                  mb: 2.5,
+                }}
+              >
+                <TextInput
+                  select
+                  label="Payroll Month"
+                  value={selectedMonth}
+                  onChange={(event) => {
+                    setSelectedMonth(Number(event.target.value));
+                    setPayrollRun(null);
+                    setInitiationError(null);
+                  }}
+                  disabled={initiatingRun || Boolean(payrollRun)}
+                >
+                  {MONTH_OPTIONS.map((month, index) => (
+                    <MenuItem key={month} value={index + 1}>
+                      {month}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+
+                <TextInput
+                  select
+                  label="Payroll Year"
+                  value={selectedYear}
+                  onChange={(event) => {
+                    setSelectedYear(Number(event.target.value));
+                    setPayrollRun(null);
+                    setInitiationError(null);
+                  }}
+                  disabled={initiatingRun || Boolean(payrollRun)}
+                >
+                  {Array.from(
+                    { length: Math.max(new Date().getFullYear() + 1 - 2020 + 1, 1) },
+                    (_, index) => new Date().getFullYear() + 1 - index
+                  ).map((year) => (
+                    <MenuItem key={year} value={year}>
+                      {year}
+                    </MenuItem>
+                  ))}
+                </TextInput>
+
+                <Box sx={{ gridColumn: { xs: "auto", sm: "1 / -1" } }}>
+                  <TextInput
+                    select
+                    label="Branch"
+                    required
+                    value={effectiveSelectedBranchId}
+                    error={!effectiveSelectedBranchId && initiationError ? "Branch is required" : undefined}
+                    onChange={(event) => {
+                      setSelectedBranchId(event.target.value);
+                      setPayrollRun(null);
+                      setInitiationError(null);
+                    }}
+                    disabled={branchesLoading || initiatingRun || Boolean(payrollRun)}
+                  >
+                    <MenuItem value="" disabled>
+                      {branchesLoading ? "Loading branches..." : "Select Branch"}
+                    </MenuItem>
+                    {activeBranches.map((branch) => (
+                      <MenuItem key={branch._id} value={branch._id}>
+                        {branch.name} {branch.isHeadOffice ? "(HQ)" : ""}
+                      </MenuItem>
+                    ))}
+                  </TextInput>
+                </Box>
+              </Box>
+
+              {initiationError && (
+                <Alert severity="error" sx={{ mb: 2, borderRadius: 1.5 }}>
+                  {initiationError}
+                </Alert>
+              )}
+
+              {payrollRun && (
+                <Alert severity="success" sx={{ mb: 2, borderRadius: 1.5 }}>
+                  {payrollRun.runNumber} initiated with {payrollRun.totalEmployees ?? 0} employees · Gross ₹
+                  {(payrollRun.totalGross ?? 0).toLocaleString("en-IN")} · Net ₹
+                  {(payrollRun.totalNet ?? 0).toLocaleString("en-IN")}
+                </Alert>
+              )}
+
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}>
                 Notes
               </Typography>
@@ -1613,8 +1818,8 @@ export default function RunWizardContent() {
         <Button
           variant="contained"
           onClick={handleNextStep}
-          disabled={currentStep === data.steps.length}
-          endIcon={<ArrowForwardIcon />}
+          disabled={currentStep === data.steps.length || initiatingRun}
+          endIcon={initiatingRun ? <CircularProgress size={18} color="inherit" /> : <ArrowForwardIcon />}
           sx={{
             px: 4,
             py: 1.2,
@@ -1633,7 +1838,11 @@ export default function RunWizardContent() {
             },
           }}
         >
-          Next Step
+          {currentStep === 1 && !payrollRun
+            ? initiatingRun
+              ? "Initiating Payroll Run..."
+              : "Initiate Payroll Run"
+            : "Next Step"}
         </Button>
       </Box>
     </Box>

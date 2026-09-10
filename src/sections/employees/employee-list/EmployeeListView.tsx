@@ -108,7 +108,7 @@ function EmployeeListView() {
   const [compOffOpen, setCompOffOpen] = useState(false);
   const [compOffTarget, setCompOffTarget] = useState<EmployeeListItem | null>(null);
   const [compOffSuccess, setCompOffSuccess] = useState<string | null>(null);
-  const [statusVal, setStatusVal] = useState(status || "");
+  const [statusVal, setStatusVal] = useState(status || "ACTIVE");
 
   const debouncedSearchVal = useDebounce(searchVal, 500);
 
@@ -328,7 +328,7 @@ function EmployeeListView() {
     "Resigned",
   ];
 
-  const [filters, setFilters] = useState<FilterState>({});
+  const [filters, setFilters] = useState<FilterState>({ status: "Active" });
 
   const mapJoiningPeriodToBackend = (label?: string): string | undefined => {
     if (!label) return undefined;
@@ -356,12 +356,14 @@ function EmployeeListView() {
 
   // Sync page state and fetch data safely with Zod enum validation mapping
   useEffect(() => {
-    let backendStatus: string | undefined = undefined;
-    const effectiveStatus = getFilterString(filters.status) || statusVal;
+    let backendStatus: string | undefined = "ACTIVE";
+    const effectiveStatus = getFilterString(filters?.status) || statusVal;
     if (effectiveStatus) {
       const upper = effectiveStatus.toUpperCase();
       if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
         backendStatus = upper;
+      } else if (upper === "ALL STATUSES" || upper === "ALL") {
+        backendStatus = undefined;
       }
     }
 

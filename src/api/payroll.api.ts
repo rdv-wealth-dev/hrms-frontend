@@ -5,7 +5,19 @@ import type {
   CreateSalaryComponentPayload,
   CreatePtSlabsPayload,
   PtSlabConfigItem,
+  InitiatePayrollRunRequest,
+  InitiatePayrollRunResponse,
 } from "../types/payroll.types";
+
+export async function initiatePayrollRun(
+  payload: InitiatePayrollRunRequest
+): Promise<InitiatePayrollRunResponse> {
+  const response = await axios.post<InitiatePayrollRunResponse>(
+    "/payroll/runs",
+    payload
+  );
+  return response.data;
+}
 
 export async function getSalaryComponents(): Promise<SalaryComponentItem[]> {
   try {

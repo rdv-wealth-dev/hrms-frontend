@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import OutlinedInput from "@mui/material/OutlinedInput";
+import Chip from "@mui/material/Chip";
 
 import StatusChip from "../../../components/common/StatusChip";
 import PrimaryButton from "../../../components/button/PrimaryButton";
@@ -40,13 +41,13 @@ export function GLMappingContent({
     }));
   };
 
-  const fields: { key: keyof GLMappingData; label: string }[] = [
-    { key: "grossSalaryAccount", label: "Gross Salary Account" },
-    { key: "netPayableAccount", label: "Net Payable Account" },
-    { key: "tdsPayableAccount", label: "TDS Payable Account" },
-    { key: "pfPayableAccount", label: "PF Payable Account" },
-    { key: "esiPayableAccount", label: "ESI Payable Account" },
-    { key: "ptPayableAccount", label: "PT Payable Account" },
+  const fields: { label: string; key: keyof GLMappingData; placeholder: string }[] = [
+    { label: "Gross Salary Expense Account", key: "grossSalaryAccount", placeholder: "e.g. 5001 - Salary Expense" },
+    { label: "Net Payable Liability Account", key: "netPayableAccount", placeholder: "e.g. 2001 - Net Pay Payable" },
+    { label: "TDS Payable Liability Account", key: "tdsPayableAccount", placeholder: "e.g. 2002 - TDS Payable" },
+    { label: "PF Payable Liability Account", key: "pfPayableAccount", placeholder: "e.g. 2003 - Provident Fund Payable" },
+    { label: "ESI Payable Liability Account", key: "esiPayableAccount", placeholder: "e.g. 2004 - ESI Payable" },
+    { label: "PT Payable Liability Account", key: "ptPayableAccount", placeholder: "e.g. 2005 - Professional Tax Payable" },
   ];
 
   return (
@@ -65,16 +66,30 @@ export function GLMappingContent({
           borderColor: "divider",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          General Ledger Mapping
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            General Ledger Mapping
+          </Typography>
+          <Chip
+            label="Coming Soon"
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(99, 102, 241, 0.12)",
+              color: "#4F46E5",
+              border: "1px solid rgba(99, 102, 241, 0.3)",
+            }}
+          />
+        </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <StatusChip
@@ -125,7 +140,7 @@ export function GLMappingContent({
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {fields.map(({ key, label }) => (
+          {fields.map(({ key, label, placeholder }) => (
             <Box key={key}>
               <Typography
                 variant="caption"
@@ -142,6 +157,7 @@ export function GLMappingContent({
               <OutlinedInput
                 size="small"
                 fullWidth
+                placeholder={placeholder}
                 value={formData[key]}
                 onChange={(e) => handleChange(key, e.target.value)}
                 sx={{

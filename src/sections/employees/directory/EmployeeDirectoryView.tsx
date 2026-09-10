@@ -106,7 +106,7 @@ function EmployeeDirectoryView() {
 
   const [searchVal, setSearchVal] = useState("");
   const [selectedDeptFilter, setSelectedDeptFilter] = useState("");
-  const [filters, setFilters] = useState<FilterState>({});
+  const [filters, setFilters] = useState<FilterState>({ status: "Active" });
   const debouncedSearchVal = useDebounce(searchVal, 500);
 
   // Fetch initial setup data if not loaded
@@ -132,28 +132,30 @@ function EmployeeDirectoryView() {
     let departmentId: string | undefined = undefined;
     let designationId: string | undefined = undefined;
 
-    const branchStr = getFilterString(filters.branch);
+    const branchStr = getFilterString(filters?.branch);
     if (branchStr && branchStr !== "All Branches") {
-      const found = branches.find((b: any) => b.name === branchStr || (b as any).branchName === branchStr);
+      const found = branches.find((b: any) => b?.name === branchStr || (b as any)?.branchName === branchStr);
       if (found) branchId = found._id;
     }
-    const deptStr = getFilterString(filters.department);
+    const deptStr = getFilterString(filters?.department);
     if (deptStr && deptStr !== "All Departments") {
-      const found = departments.find((d: any) => d.name === deptStr);
+      const found = departments.find((d: any) => d?.name === deptStr);
       if (found) departmentId = found._id;
     }
-    const desigStr = getFilterString(filters.designation);
+    const desigStr = getFilterString(filters?.designation);
     if (desigStr && desigStr !== "All Designations") {
-      const found = designations.find((d: any) => d.name === desigStr);
+      const found = designations.find((d: any) => d?.name === desigStr);
       if (found) designationId = found._id;
     }
 
-    let backendStatus: string | undefined = undefined;
-    const statusStr = getFilterString(filters.status);
-    if (statusStr && statusStr !== "All Statuses") {
+    let backendStatus: string | undefined = "ACTIVE";
+    const statusStr = getFilterString(filters?.status);
+    if (statusStr) {
       const upper = statusStr.toUpperCase();
       if (["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED", "RESIGNED"].includes(upper)) {
         backendStatus = upper;
+      } else if (upper === "ALL STATUSES" || upper === "ALL") {
+        backendStatus = undefined;
       }
     }
 

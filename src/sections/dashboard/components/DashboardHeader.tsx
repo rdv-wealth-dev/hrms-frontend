@@ -4,14 +4,14 @@ import Typography from "@mui/material/Typography";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 
 interface DashboardHeaderProps {
-  userName?: string;
+  companyName?: string;
   lastLoginAt?: string | null;
   lastLoginIp?: string | null;
   lastLoginDevice?: string | null;
 }
 
 export function DashboardHeader({
-  userName = "Alex",
+  companyName = "Your Company",
   lastLoginAt,
   lastLoginIp,
   lastLoginDevice,
@@ -74,7 +74,7 @@ export function DashboardHeader({
           lineHeight: 1.3,
         }}
       >
-        Good morning, {userName} 👋
+        {companyName}
       </Typography>
       <Typography
         variant="body2"

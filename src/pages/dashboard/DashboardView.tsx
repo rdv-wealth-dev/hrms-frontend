@@ -11,18 +11,19 @@ import type { RootState } from "../../store/rootReducer";
 function DashboardView() {
   const { role } = usePermissions();
   const user = useSelector((state: RootState) => state.auth.user);
+  const organization = useSelector((state: RootState) => (state as any).organization?.organization);
   const lastLoginAt = user?.lastLoginAt;
   const lastLoginIp = user?.lastLoginIp;
   const lastLoginDevice = user?.lastLoginDevice;
 
-  const userName = user?.firstName || user?.fullName || "Alex";
+  const companyName = organization?.companyName || user?.firstName || "Welcome";
 
   return (
     <>
       <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
         {/* NEW Reference HR Dashboard Layout */}
         <DashboardLayout
-          userName={userName}
+          companyName={companyName}
           lastLoginAt={lastLoginAt}
           lastLoginIp={lastLoginIp}
           lastLoginDevice={lastLoginDevice}

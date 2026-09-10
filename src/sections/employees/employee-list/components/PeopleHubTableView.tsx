@@ -246,14 +246,21 @@ export function PeopleHubTableView({
           data={safeEmployees}
           loading={loading}
           maxHeight="none"
-          minWidth={1080}
+          minWidth="100%"
+          headerBg="transparent"
+          sx={{
+            backgroundColor: "transparent",
+            border: "none",
+            boxShadow: "none",
+            borderRadius: 0,
+          }}
           estimateRowHeight={64}
           rowKey={(emp, index) => emp?._id || `emp-${index}`}
           columns={[
             {
               id: "employee",
               header: "EMPLOYEE",
-              minWidth: 200,
+              minWidth: 160,
               cell: (emp, index) => {
                 const fullName = `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.trim() || "Employee";
                 const initials = `${emp?.firstName?.[0] ?? ""}${emp?.lastName?.[0] ?? ""}`.toUpperCase() || "E";
@@ -310,7 +317,7 @@ export function PeopleHubTableView({
             {
               id: "designation",
               header: "DESIGNATION",
-              minWidth: 150,
+              minWidth: 130,
               cell: (emp) => (
                 <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap" }}>
                   {typeof emp?.designationId === "object" ? (emp?.designationId as any)?.name || "Software Developer" : emp?.designationId || "Software Developer"}
@@ -320,7 +327,7 @@ export function PeopleHubTableView({
             {
               id: "department",
               header: "DEPARTMENT",
-              minWidth: 130,
+              minWidth: 110,
               cell: (emp) => (
                 <Typography variant="body2" sx={{ color: "#334155", fontWeight: 500, fontSize: "13px", whiteSpace: "nowrap" }}>
                   {typeof emp?.departmentId === "object" ? (emp?.departmentId as any)?.name || "Engineering" : "Engineering"}
@@ -330,12 +337,12 @@ export function PeopleHubTableView({
             {
               id: "email",
               header: "EMAIL",
-              minWidth: 200,
-              align: "center",
+              minWidth: 150,
+              align: "left",
               cell: (emp, index) => {
                 const meta = getPeopleHubMeta(index, emp);
                 return (
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0.75, color: "#64748B" }}>
+                  <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
                     <EmailOutlinedIcon sx={{ fontSize: 16, color: meta.isArchive ? "#CBD5E1" : "#94A3B8" }} />
                     <Typography
                       variant="body2"
@@ -343,7 +350,7 @@ export function PeopleHubTableView({
                         color: meta.isArchive ? "#94A3B8" : "#475569",
                         fontStyle: meta.isArchive ? "italic" : "normal",
                         fontSize: meta.isArchive ? "12px" : "13px",
-                        maxWidth: 180,
+                        maxWidth: 160,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -358,7 +365,7 @@ export function PeopleHubTableView({
             {
               id: "phone",
               header: "PHONE NUMBER",
-              minWidth: 130,
+              minWidth: 110,
               cell: (emp, index) => {
                 const meta = getPeopleHubMeta(index, emp);
                 return (
@@ -374,7 +381,7 @@ export function PeopleHubTableView({
             {
               id: "joiningDate",
               header: "JOINING DATE",
-              minWidth: 120,
+              minWidth: 100,
               cell: (emp, index) => (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "#64748B" }}>
                   <CalendarMonthOutlinedIcon sx={{ fontSize: 15, color: "#94A3B8" }} />
@@ -389,7 +396,7 @@ export function PeopleHubTableView({
             {
               id: "status",
               header: "STATUS",
-              minWidth: 100,
+              minWidth: 80,
               cell: (emp) => {
                 const statusStyle = getEmployeeStatusStyle(emp?.status, emp?.employeeType, emp?.isActive);
                 return (
@@ -412,7 +419,7 @@ export function PeopleHubTableView({
             {
               id: "actions",
               header: "QUICK ACTION",
-              minWidth: 100,
+              minWidth: 60,
               align: "center",
               cell: (emp) => (
                 <IconButton

@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
+import Chip from "@mui/material/Chip";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
@@ -21,6 +22,7 @@ export interface KpiCardItem {
   progressColor?: string;
   variant?: KpiCardVariant;
   size?: "small" | "medium";
+  isComingSoon?: boolean;
   onClick?: () => void;
 }
 
@@ -82,11 +84,14 @@ export function KpiCard({
   progressColor = "#10B981",
   variant = "green",
   size = "medium",
+  isComingSoon,
   onClick,
 }: KpiCardItem) {
   const isSmall = size === "small";
   const config = VARIANT_CONFIGS[variant] || VARIANT_CONFIGS.green;
   const gradientId = `kpi-wedge-${variant}-${title.replace(/[^a-zA-Z0-9]/g, "")}`;
+  const isComingSoonCard = isComingSoon || title.toLowerCase().includes("coming soon");
+  const cleanTitle = title.replace(/\s*\(\s*Coming Soon\s*\)/gi, "").trim();
 
   // Infer trend type if not explicitly provided
   const resolvedTrendType =
@@ -165,21 +170,38 @@ export function KpiCard({
       >
         {/* 1. Header Row: Title & (Icon Badge or Circular Progress Ring) */}
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1, mb: 1.5 }}>
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 700,
-              color: "#64748B",
-              letterSpacing: "0.5px",
-              fontSize: "11px",
-              textTransform: "uppercase",
-              lineHeight: 1.3,
-              flex: 1,
-              minWidth: 0,
-            }}
-          >
-            {title}
-          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 700,
+                color: "#64748B",
+                letterSpacing: "0.5px",
+                fontSize: "11px",
+                textTransform: "uppercase",
+                lineHeight: 1.3,
+              }}
+            >
+              {cleanTitle}
+            </Typography>
+            {isComingSoonCard && (
+              <Chip
+                label="Coming Soon"
+                size="small"
+                sx={{
+                  height: 16,
+                  fontSize: "0.6rem",
+                  fontWeight: 700,
+                  backgroundColor: "rgba(139, 92, 246, 0.12)",
+                  color: "#7C3AED",
+                  border: "1px solid rgba(139, 92, 246, 0.25)",
+                  borderRadius: "6px",
+                  alignSelf: "flex-start",
+                  px: 0.25,
+                }}
+              />
+            )}
+          </Box>
 
           {progress !== undefined ? (
             <Box

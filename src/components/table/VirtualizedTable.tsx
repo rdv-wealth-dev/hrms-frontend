@@ -30,6 +30,7 @@ export interface VirtualizedTableProps<T> {
   overscan?: number;
   loading?: boolean;
   stickyHeader?: boolean;
+  headerBg?: string;
   emptyState?: ReactNode;
   onRowClick?: (item: T) => void;
   sx?: SxProps<Theme>;
@@ -52,6 +53,7 @@ export function VirtualizedTable<T>({
   overscan = 5,
   loading = false,
   stickyHeader = true,
+  headerBg,
   emptyState,
   onRowClick,
   sx,
@@ -81,6 +83,7 @@ export function VirtualizedTable<T>({
             fontSize: "13.5px",
             color: "text.primary",
             py: 1.2,
+            px: 1,
             whiteSpace: "nowrap",
           },
         }}
@@ -94,17 +97,18 @@ export function VirtualizedTable<T>({
               sx={{
                 width: col.width,
                 minWidth: col.minWidth,
+                px: 1,
                 ...(col.sticky === "left" && {
                   position: { xs: "static", sm: "sticky" },
                   left: 0,
-                  backgroundColor: "background.paper",
+                  backgroundColor: headerBg || "background.paper",
                   boxShadow: { xs: "none", sm: "3px 0 6px -2px rgba(0, 0, 0, 0.08)" },
                   zIndex: 2,
                 }),
                 ...(col.sticky === "right" && {
                   position: { xs: "static", sm: "sticky" },
                   right: 0,
-                  backgroundColor: "background.paper",
+                  backgroundColor: headerBg || "background.paper",
                   boxShadow: { xs: "none", sm: "-3px 0 6px -2px rgba(0, 0, 0, 0.08)" },
                   zIndex: 2,
                 }),
@@ -159,7 +163,7 @@ export function VirtualizedTable<T>({
             <TableRow
               sx={{
                 "& th": {
-                  backgroundColor: "background.paper",
+                  backgroundColor: headerBg || "background.paper",
                   color: "text.secondary",
                   fontWeight: 700,
                   fontSize: "12px",
@@ -167,6 +171,7 @@ export function VirtualizedTable<T>({
                   letterSpacing: "0.5px",
                   borderColor: "divider",
                   py: 1.6,
+                  px: 1,
                   zIndex: 3,
                   whiteSpace: "nowrap",
                 },

@@ -65,6 +65,7 @@ export function PeopleHubDepartmentTabs({
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [localFilters, setLocalFilters] = useState<FilterState>({
     department: selectedDepartment,
+    status: "Active",
     ...filters,
   });
 
@@ -89,7 +90,7 @@ export function PeopleHubDepartmentTabs({
       fromDate: "",
       toDate: "",
       department: "",
-      status: "",
+      status: "Active",
     };
     setLocalFilters(reset);
     onFilterChange?.(reset);
@@ -98,7 +99,16 @@ export function PeopleHubDepartmentTabs({
   };
 
   const activeCategoryObj = CATEGORIES.find((c) => c.id === activeCategory);
-  const hasActiveFilters = Object.values(localFilters).some((val) => Boolean(val));
+  const hasActiveFilters = Object.entries(localFilters).some(([key, val]) => {
+    if (!val) return false;
+    if (key === "status") {
+      const sVal = Array.isArray(val) ? val[0] : val;
+      return Boolean(sVal && sVal !== "Active" && !sVal.startsWith("All"));
+    }
+    if (typeof val === "string") return !val.startsWith("All");
+    if (Array.isArray(val)) return val.length > 0;
+    return Boolean(val);
+  });
 
   const getCategoryOptions = (catId: string) => {
     if (catId === "department" && departmentsList && departmentsList.length > 0) return departmentsList;
@@ -159,7 +169,12 @@ export function PeopleHubDepartmentTabs({
               ? (localFilters.dateOfJoining ? 1 : 0)
               : selectedArray.length;
 
-            const isSelected = count > 0;
+            const isDefaultStatus =
+              cat.id === "status" &&
+              selectedArray.length === 1 &&
+              selectedArray[0] === "Active";
+
+            const isSelected = count > 0 && !isDefaultStatus;
             const isOpen = activeCategory === cat.id;
 
             let labelText = cat.label;

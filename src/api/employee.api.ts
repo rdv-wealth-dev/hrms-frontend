@@ -466,6 +466,7 @@ export interface CompleteProfileEmployee {
   lastName: string;
   email: string;
   phone?: string;
+  countryCode?: string;
   avatarUrl?: string;
   dateOfBirth?: string;
   gender?: string;
@@ -478,9 +479,18 @@ export interface CompleteProfileEmployee {
   status?: string;
   joiningDate?: string;
   confirmationDate?: string;
-  currentAddress?: Record<string, unknown>;
+  currentAddress?: {
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    countryCode?: string;
+    zip?: string;
+    [key: string]: unknown;
+  };
   emergencyContacts?: EmergencyContact[];
   departmentId?: { _id?: string; id?: string; name: string; code?: string };
+  departmentIds?: Array<{ _id?: string; id?: string; name: string; code?: string }>;
   designationId?: { _id?: string; id?: string; name: string };
   branchId?: { _id?: string; id?: string; name?: string; code?: string } | string;
   shiftId?: { _id?: string; id?: string; name?: string; startTime?: string; endTime?: string } | string;
@@ -1138,5 +1148,3 @@ export const getSalaryStructure = async (
   );
   return response.data;
 };
-
-

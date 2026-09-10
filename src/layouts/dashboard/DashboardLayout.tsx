@@ -115,15 +115,96 @@ const topNavItems: NavItem[] = [
 
 const bottomNavItems: NavItem[] = [
     {
-        label: "Settings",
-        icon: <SettingsIcon fontSize="small" />,
-        path: paths.settings,
-        permission: "settings.read",
-    },
-    {
         label: "My Profile",
         icon: <PersonIcon fontSize="small" />,
         path: paths.profile,
+    },
+];
+
+const companySettingsNavItems: NavSubItem[] = [
+    {
+        label: "Company Settings",
+        icon: <SettingsSuggestOutlinedIcon fontSize="small" />,
+        children: [
+            {
+                label: "Organization Profile",
+                icon: <TuneIcon fontSize="small" />,
+                path: paths.settingsTab("org-profile"),
+                permission: "settings.read",
+            },
+            {
+                label: "Employee Code",
+                icon: <DescriptionOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("employee-code"),
+                permission: "settings.read",
+            },
+            {
+                label: "Modules Activation",
+                icon: <LayersOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("org-modules"),
+                permission: "settings.read",
+            },
+            {
+                label: "Statutory Settings",
+                icon: <ReceiptLongOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("org-statutory"),
+                permission: "settings.read",
+            },
+            {
+                label: "Mandatory Documents",
+                icon: <ArticleOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("org-documents"),
+                permission: "settings.read",
+            },
+            {
+                label: "Custom Fields",
+                icon: <BarChartOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("custom-fields"),
+                permission: "settings.read",
+            },
+            {
+                label: "Roles & Permissions",
+                icon: <AssignmentIndOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("roles-permissions"),
+                permission: "role.read",
+            },
+            {
+                label: "Branches",
+                icon: <VisibilityOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("branches"),
+                permission: "branch.read",
+            },
+        ],
+    },
+    {
+        label: "Master Data",
+        icon: <SettingsSuggestOutlinedIcon fontSize="small" />,
+        children: [
+            {
+                label: "Departments",
+                icon: <PeopleAltIcon fontSize="small" />,
+                path: paths.settingsTab("departments"),
+                permission: "department.read",
+            },
+            {
+                label: "Designations",
+                icon: <AssignmentIndOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("designations"),
+                permission: "designation.read",
+            },
+            {
+                label: "Leave Types",
+                icon: <CalendarTodayOutlinedIcon fontSize="small" />,
+                path: paths.settingsTab("leave-types"),
+                permission: "leave.read",
+            },
+            {
+                label: "Shift Master",
+                icon: <TuneIcon fontSize="small" />,
+                path: paths.settingsTab("shift-master"),
+                permission: "attendance.read",
+            },
+        ],
     },
 ];
 
@@ -505,6 +586,15 @@ function DashboardLayout() {
                         title="Payroll"
                         icon={<AccountBalanceWalletOutlinedIcon fontSize="small" />}
                         items={payrollNavItems}
+                        isCollapsed={isCollapsed}
+                        onNavigate={handleMobileNavigation}
+                    />
+
+                    {/* Settings Collapsible Nav Group */}
+                    <CollapsibleNavGroup
+                        title="Settings"
+                        icon={<SettingsIcon fontSize="small" />}
+                        items={companySettingsNavItems}
                         isCollapsed={isCollapsed}
                         onNavigate={handleMobileNavigation}
                     />

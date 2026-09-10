@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 
 import { DASHBOARD_MOCK_DATA } from "../mock/dashboard-data";
@@ -25,10 +26,22 @@ export function DepartmentDistributionChart() {
       }}
     >
       {/* Header */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", fontSize: "1.05rem" }}>
           Department Distribution
         </Typography>
+        <Chip
+          label="Coming Soon"
+          size="small"
+          sx={{
+            height: 20,
+            fontSize: "0.7rem",
+            fontWeight: 700,
+            backgroundColor: "rgba(16, 185, 129, 0.12)",
+            color: "#059669",
+            border: "1px solid rgba(16, 185, 129, 0.3)",
+          }}
+        />
       </Box>
 
       {/* Horizontal Bar Items */}

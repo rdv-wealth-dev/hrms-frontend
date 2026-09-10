@@ -25,6 +25,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { formatDate } from "../../../utils/format-date";
 
 import type { CompleteProfileEmployee } from "../../../api/employee.api";
@@ -32,6 +33,7 @@ import TextInput from "../../../components/input/TextInput";
 import type { RootState } from "../../../store/rootReducer";
 import { listBranchesRequest } from "../../../store/branch";
 import { usePermissions } from "../../../hooks/usePermissions";
+import OverviewEditDialog from "./OverviewEditDialog";
 
 interface OverviewTabProps {
   empProfile: CompleteProfileEmployee | null;
@@ -41,6 +43,8 @@ interface OverviewTabProps {
   displayId?: string;
   user: any;
   showSnackbar: (msg: string, variant: "success" | "error" | "info" | "warning") => void;
+  onOpenEdit?: (tabIndex: number) => void;
+  onRefreshProfileData?: () => Promise<void>;
 }
 
 export default function OverviewTab({
@@ -51,11 +55,15 @@ export default function OverviewTab({
   displayId: _displayId,
   user,
   showSnackbar,
+  onOpenEdit: _onOpenEdit,
+  onRefreshProfileData,
 }: OverviewTabProps) {
   const dispatch = useDispatch<any>();
   const { hasPermission } = usePermissions();
   const branches = useSelector((state: RootState) => state.branch?.branches);
   const branchesLoading = useSelector((state: RootState) => state.branch?.loading);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!branches?.length && !branchesLoading && hasPermission("branch.read")) {
@@ -103,6 +111,23 @@ export default function OverviewTab({
     return "Head Office";
   }, [empProfile, branches]);
 
+  const resolvedDepartmentNames = useMemo(() => {
+    const departments = empProfile?.departmentIds;
+    if (Array.isArray(departments) && departments.length > 0) {
+      const names = departments
+        .map((department) =>
+          typeof department === "object" && department !== null ? department.name : ""
+        )
+        .filter(Boolean);
+      if (names.length > 0) return names;
+    }
+
+    const primaryDepartment = empProfile?.departmentId;
+    return primaryDepartment && typeof primaryDepartment === "object" && primaryDepartment.name
+      ? [primaryDepartment.name]
+      : ["—"];
+  }, [empProfile]);
+
   return (
     <Grid container spacing={3}>
       {/* Left Column (~75% Width on md/lg screens, 100% on small and below) */}
@@ -111,6 +136,26 @@ export default function OverviewTab({
           
           {/* 1. Contact Information & Employment Details Grid */}
           <Card sx={{ p: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2.5, pb: 1.5, borderBottom: "1px solid", borderColor: "divider" }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.95rem" }}>
+                Overview & Employment Details
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() => setEditDialogOpen(true)}
+                sx={{
+                  color: "#4F46E5",
+                  bgcolor: "#EEF2FF",
+                  borderRadius: "8px",
+                  p: 0.8,
+                  "&:hover": { bgcolor: "#E0E7FF" },
+                }}
+                title="Edit Overview & Employment Details"
+              >
+                <EditOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+
             <Grid container spacing={3}>
               {/* Sub-card 1: Contact Information */}
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -188,7 +233,19 @@ export default function OverviewTab({
                       label: "Branch Name",
                       value: resolvedBranchName,
                     },
-                    { label: "Department", value: empProfile?.departmentId?.name || "Engineering" },
+                    {
+                      label: "Department",
+                      value:
+                        resolvedDepartmentNames.length > 1 ? (
+                          <Box sx={{ display: "flex", justifyContent: "flex-end", flexWrap: "wrap", gap: 0.5 }}>
+                            {resolvedDepartmentNames.map((name, index) => (
+                              <Chip key={`${name}-${index}`} label={name} size="small" />
+                            ))}
+                          </Box>
+                        ) : (
+                          resolvedDepartmentNames[0]
+                        ),
+                    },
                     { label: "Grade / Band", value: String((empProfile as any)?.band || "L5") },
                     { label: "Business Unit", value: "Technology" },
                     {
@@ -206,7 +263,13 @@ export default function OverviewTab({
                   ].map((row, idx) => (
                     <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Typography variant="body2" sx={{ color: "#64748B" }}>{row.label}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>{row.value}</Typography>
+                      {typeof row.value === "string" ? (
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
+                          {row.value}
+                        </Typography>
+                      ) : (
+                        row.value
+                      )}
                     </Box>
                   ))}
                 </Box>
@@ -542,6 +605,16 @@ export default function OverviewTab({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Overview Edit Modal */}
+      <OverviewEditDialog
+        open={editDialogOpen}
+        empProfile={empProfile}
+        onClose={() => setEditDialogOpen(false)}
+        onSuccess={async () => {
+          if (onRefreshProfileData) await onRefreshProfileData();
+        }}
+      />
     </Grid>
   );
 }
