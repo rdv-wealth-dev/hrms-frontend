@@ -768,17 +768,23 @@ function EmployeeEditDialog({ open, employee, onClose, initialTab = 0 }: Props) 
           onChange={(_e, val) => setActiveTab(val)}
           variant="scrollable"
           scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
             mt: 2,
             minHeight: 44,
             borderBottom: "1px solid",
             borderColor: "divider",
+            "& .MuiTabs-scrollButtons": {
+              width: { xs: 28, sm: 40 },
+              flexShrink: 0,
+            },
             "& .MuiTab-root": {
               textTransform: "none",
               fontWeight: 600,
               fontSize: "13.5px",
               minHeight: 44,
-              px: 2,
+              minWidth: { xs: "100%", sm: "auto" },
+              px: { xs: 1, sm: 2 },
               gap: 1,
             },
           }}

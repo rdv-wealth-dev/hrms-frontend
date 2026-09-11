@@ -452,228 +452,230 @@ export function CreateTeamDialog({
             </Alert>
           )}
 
-          <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-            {/* Section 1: Basic Identity */}
-            <Grid size={12}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                1. Basic Identity & Hierarchy
-              </Typography>
-            </Grid>
+         <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+  {/* Section 1: Basic Identity */}
+  <Grid size={12}>
+    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+      1. Basic Identity & Hierarchy
+    </Typography>
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 7 }}>
-              <TextInput
-                label="Team Name"
-                placeholder="e.g. Bangalore Backend Core Team"
-                registration={register("name")}
-                error={errors.name?.message}
-                required
-              />
-            </Grid>
+  {/* 2x2 TextInput block — row 1 */}
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <TextInput
+      label="Team Name"
+      placeholder="e.g. Bangalore Backend Core Team"
+      registration={register("name")}
+      error={errors.name?.message}
+      required
+    />
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 5 }}>
-              <TextInput
-                label="Team Code"
-                placeholder="e.g. BLR-ENG-BE"
-                registration={register("code", {
-                  onChange: (e) => {
-                    setValue("code", (e.target.value ?? "").toUpperCase(), { shouldValidate: true });
-                  },
-                })}
-                error={errors.code?.message}
-                slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
-                required
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <TextInput
+      label="Team Code"
+      placeholder="e.g. BLR-ENG-BE"
+      registration={register("code", {
+        onChange: (e) => {
+          setValue("code", (e.target.value ?? "").toUpperCase(), { shouldValidate: true });
+        },
+      })}
+      error={errors.code?.message}
+      slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
+      required
+    />
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name="departmentId"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    label="Parent Department"
-                    placeholder={loadingMeta ? "Loading departments..." : "Select Department"}
-                    options={departments}
-                    value={field.value}
-                    onChange={(val) => field.onChange(String(val))}
-                    error={errors.departmentId?.message}
-                    searchable
-                    required
-                  />
-                )}
-              />
-            </Grid>
+  {/* 2x2 TextInput block — row 2 */}
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <Controller
+      name="departmentId"
+      control={control}
+      render={({ field }) => (
+        <CustomSelect
+          label="Parent Department"
+          placeholder={loadingMeta ? "Loading departments..." : "Select Department"}
+          options={departments}
+          value={field.value}
+          onChange={(val) => field.onChange(String(val))}
+          error={errors.departmentId?.message}
+          searchable
+          required
+        />
+      )}
+    />
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name="branchId"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    label="Branch"
-                    placeholder={loadingMeta ? "Loading branches..." : "All / Head Office"}
-                    options={[{ value: "", label: "No specific branch (Global)" }, ...branches]}
-                    value={field.value || ""}
-                    onChange={(val) => field.onChange(String(val))}
-                    error={errors.branchId?.message}
-                    searchable
-                  />
-                )}
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <Controller
+      name="branchId"
+      control={control}
+      render={({ field }) => (
+        <CustomSelect
+          label="Branch"
+          placeholder={loadingMeta ? "Loading branches..." : "All / Head Office"}
+          options={[{ value: "", label: "No specific branch (Global)" }, ...branches]}
+          value={field.value || ""}
+          onChange={(val) => field.onChange(String(val))}
+          error={errors.branchId?.message}
+          searchable
+        />
+      )}
+    />
+  </Grid>
 
-            {/* Section 2: Leadership & Reporting */}
-            <Grid size={12} sx={{ mt: 1 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                2. Leadership & Reporting Structure
-              </Typography>
-            </Grid>
+  {/* Section 2: Leadership & Reporting */}
+  <Grid size={12} sx={{ mt: 1 }}>
+    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+      2. Leadership & Reporting Structure
+    </Typography>
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name="leadId"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    label="Team Lead"
-                    placeholder={loadingManagers ? "Loading leads..." : "Select Team Lead"}
-                    options={[{ value: "", label: "No assigned lead yet" }, ...leadOptions]}
-                    value={field.value || ""}
-                    onChange={(val) => field.onChange(String(val))}
-                    error={errors.leadId?.message}
-                    searchable
-                  />
-                )}
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <Controller
+      name="leadId"
+      control={control}
+      render={({ field }) => (
+        <CustomSelect
+          label="Team Lead"
+          placeholder={loadingManagers ? "Loading leads..." : "Select Team Lead"}
+          options={[{ value: "", label: "No assigned lead yet" }, ...leadOptions]}
+          value={field.value || ""}
+          onChange={(val) => field.onChange(String(val))}
+          error={errors.leadId?.message}
+          searchable
+        />
+      )}
+    />
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name="reporting.type"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    label="Reporting Target"
-                    options={REPORTING_TYPE_OPTIONS}
-                    value={field.value || "DEPARTMENT_HEAD"}
-                    onChange={(val) => field.onChange(val as any)}
-                  />
-                )}
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <Controller
+      name="reporting.type"
+      control={control}
+      render={({ field }) => (
+        <CustomSelect
+          label="Reporting Target"
+          options={REPORTING_TYPE_OPTIONS}
+          value={field.value || "DEPARTMENT_HEAD"}
+          onChange={(val) => field.onChange(val as any)}
+        />
+      )}
+    />
+  </Grid>
 
-            {/* Section 3: Operational Rules & Metadata */}
-            <Grid size={12} sx={{ mt: 1 }}>
-              <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                3. Operational Rules & Metadata
-              </Typography>
-            </Grid>
+  {/* Section 3: Operational Rules & Metadata */}
+  <Grid size={12} sx={{ mt: 1 }}>
+    <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+      3. Operational Rules & Metadata
+    </Typography>
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    label="Team Type"
-                    options={TEAM_TYPE_OPTIONS}
-                    value={field.value}
-                    onChange={(val) => field.onChange(val as any)}
-                    error={errors.type?.message}
-                    required
-                  />
-                )}
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <Controller
+      name="type"
+      control={control}
+      render={({ field }) => (
+        <CustomSelect
+          label="Team Type"
+          options={TEAM_TYPE_OPTIONS}
+          value={field.value}
+          onChange={(val) => field.onChange(val as any)}
+          error={errors.type?.message}
+          required
+        />
+      )}
+    />
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextInput
-                label="Max Concurrent Leaves"
-                type="number"
-                placeholder="e.g. 2"
-                registration={register("maxConcurrentLeaves", {
-                  valueAsNumber: true,
-                })}
-                error={errors.maxConcurrentLeaves?.message}
-                min={0}
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <TextInput
+      label="Max Concurrent Leaves"
+      type="number"
+      placeholder="e.g. 2"
+      registration={register("maxConcurrentLeaves", {
+        valueAsNumber: true,
+      })}
+      error={errors.maxConcurrentLeaves?.message}
+      min={0}
+    />
+  </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextInput
-                label="Start Date"
-                type="date"
-                registration={register("startDate")}
-                error={errors.startDate?.message}
-              />
-            </Grid>
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <TextInput
+      label="Start Date"
+      type="date"
+      registration={register("startDate")}
+      error={errors.startDate?.message}
+    />
+  </Grid>
 
-            {/* Tags */}
-            <Grid size={12}>
-              <Controller
-                name="tags"
-                control={control}
-                render={({ field }) => (
-                  <TagInput
-                    label="Team Tags (Tech Stack / Focus)"
-                    placeholder="Type tag (e.g. NodeJS, Backend) and hit Enter..."
-                    tags={field.value || []}
-                    onChange={(newTags) => field.onChange(newTags)}
-                    error={errors.tags?.message}
-                  />
-                )}
-              />
-            </Grid>
+  {/* Tags */}
+  <Grid size={{ xs: 12, sm: 6 }}>
+    <Controller
+      name="tags"
+      control={control}
+      render={({ field }) => (
+        <TagInput
+          label="Team Tags (Tech Stack / Focus)"
+          placeholder="Type tag (e.g. NodeJS, Backend) and hit Enter..."
+          tags={field.value || []}
+          onChange={(newTags) => field.onChange(newTags)}
+          error={errors.tags?.message}
+        />
+      )}
+    />
+  </Grid>
 
-            {/* Cross-functional switch */}
-            <Grid size={12}>
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: "12px",
-                  backgroundColor: "action.hover",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box>
-                  <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "text.primary" }}>
-                    Cross-Functional Squad
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                    Allow members from different parent departments to join this squad
-                  </Typography>
-                </Box>
-                <Controller
-                  name="isCrossFunctional"
-                  control={control}
-                  render={({ field }) => (
-                    <Switch
-                      checked={Boolean(field.value)}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      color="primary"
-                    />
-                  )}
-                />
-              </Box>
-            </Grid>
+  {/* Cross-functional switch */}
+  <Grid size={12}>
+    <Box
+      sx={{
+        p: 1.5,
+        borderRadius: "12px",
+        backgroundColor: "action.hover",
+        border: "1px solid",
+        borderColor: "divider",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <Box>
+        <Typography sx={{ fontSize: "13.5px", fontWeight: 600, color: "text.primary" }}>
+          Cross-Functional Squad
+        </Typography>
+        <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+          Allow members from different parent departments to join this squad
+        </Typography>
+      </Box>
+      <Controller
+        name="isCrossFunctional"
+        control={control}
+        render={({ field }) => (
+          <Switch
+            checked={Boolean(field.value)}
+            onChange={(e) => field.onChange(e.target.checked)}
+            color="primary"
+          />
+        )}
+      />
+    </Box>
+  </Grid>
 
-            {/* Description */}
-            <Grid size={12}>
-              <TextInput
-                label="Description"
-                placeholder="Briefly describe the purpose, goals, or scope of this team..."
-                multiline
-                rows={2}
-                registration={register("description")}
-                error={errors.description?.message}
-                maxLength={500}
-              />
-            </Grid>
-          </Grid>
+  {/* Description */}
+  <Grid size={12}>
+    <TextInput
+      label="Description"
+      placeholder="Briefly describe the purpose, goals, or scope of this team..."
+      multiline
+      rows={2}
+      registration={register("description")}
+      error={errors.description?.message}
+      maxLength={500}
+    />
+  </Grid>
+</Grid>
         </DialogContent>
 
         {/* Modal Footer Actions */}

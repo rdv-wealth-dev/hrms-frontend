@@ -212,14 +212,146 @@ export interface PreflightValidationApiResponse {
   data?: PreflightValidationResult | null;
 }
 
+export type WageWorkerType = "HOURLY" | "DAILY" | "JOB_BASED";
+
 export interface WageInputItem {
   id: string;
+  employeeId?: string;
+  employeeCode?: string;
   employeeName: string;
-  type: "HOURLY" | "DAILY";
-  rate: string;
+  type: WageWorkerType;
+  rate: string | number;
   unitsWorked: number;
   otHours: number;
-  otAmount: string;
+  otAmount: string | number;
+}
+
+export interface SaveWageInputsPayload {
+  wageInputs: Array<{
+    employeeId: string;
+    type: WageWorkerType;
+    rate: number;
+    unitsWorked: number;
+    overtimeHours?: number;
+    overtimeAmount?: number;
+  }>;
+}
+
+export interface SaveWageInputsApiResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data?: PayrollRunSummary | null;
+}
+
+export interface LockAttendancePayload {
+  year: number;
+  month: number;
+  branchId?: string;
+}
+
+export interface LockAttendanceApiResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data?: {
+    period?: string;
+    status?: string;
+    lockedAt?: string;
+    lockedBy?: string;
+    [key: string]: any;
+  } | null;
+}
+export type AdjustmentType = "EARNING" | "DEDUCTION";
+
+export type AdjustmentCategory =
+  | "BONUS"
+  | "COMMISSION"
+  | "INCENTIVE"
+  | "ARREARS"
+  | "REIMBURSEMENT"
+  | "ALLOWANCE"
+  | "LOAN_REPAYMENT"
+  | "ADVANCE_RECOVERY"
+  | "PENALTY"
+  | "NOTICE_PAY"
+  | "CUSTOM";
+
+export type AdjustmentStatus = "PENDING" | "APPROVED" | "REJECTED" | "PROCESSED" | "CANCELLED";
+
+export interface CreatePayrollAdjustmentPayload {
+  employeeId: string;
+  type: AdjustmentType;
+  category: AdjustmentCategory;
+  customLabel: string;
+  amount: number;
+  month: number;
+  year: number;
+  frequency?: "ONE_TIME" | "RECURRING";
+  recurringStartMonth?: number;
+  recurringStartYear?: number;
+  recurringEndMonth?: number;
+  recurringEndYear?: number;
+  isTaxable?: boolean;
+  affectsPfWages?: boolean;
+  affectsEsiWages?: boolean;
+  notes?: string;
+}
+
+export interface BulkCreatePayrollAdjustmentPayload {
+  adjustments: CreatePayrollAdjustmentPayload[];
+}
+
+export interface PayrollAdjustmentItem {
+  _id: string;
+  tenantId?: string;
+  employeeId:
+    | string
+    | {
+        _id: string;
+        employeeCode: string;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+      };
+  branchId?: string;
+  payrollRunId?: string;
+  type: AdjustmentType;
+  category: AdjustmentCategory;
+  customLabel: string;
+  amount: number;
+  month: number;
+  year: number;
+  frequency: "ONE_TIME" | "RECURRING";
+  isTaxable: boolean;
+  affectsPfWages: boolean;
+  affectsEsiWages: boolean;
+  status: AdjustmentStatus;
+  notes?: string;
+  rejectionReason?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GetAdjustmentsParams {
+  year?: number;
+  month?: number;
+  employeeId?: string;
+  branchId?: string;
+  status?: string;
+  type?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PayrollAdjustmentListResponse {
+  items: PayrollAdjustmentItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface AdhocVariablePayItem {
@@ -231,19 +363,73 @@ export interface AdhocVariablePayItem {
   remarks: string;
 }
 
+export interface SalaryHoldInputItem {
+  employeeId: string;
+  reason?: string;
+}
+
+export interface SaveSalaryHoldPayload {
+  holdList: SalaryHoldInputItem[];
+}
+
+export interface SaveSalaryHoldApiResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data?: {
+    _id: string;
+    wizardStep?: string;
+    salaryOnHoldEmployees?: Array<{
+      employeeId: string;
+      reason?: string;
+    }>;
+    [key: string]: any;
+  } | null;
+}
+
 export interface SalaryOnHoldItem {
   id: string;
+  employeeId: string;
   employeeCode: string;
   employeeName: string;
   reason: string;
 }
 
+export interface TaxOverrideInputItem {
+  employeeId: string;
+  incomeTaxOverride?: number;
+  ptOverride?: number;
+  remarks?: string;
+}
+
+export interface SaveTaxOverridePayload {
+  overrides: TaxOverrideInputItem[];
+}
+
+export interface SaveTaxOverrideApiResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data?: {
+    _id: string;
+    wizardStep?: string;
+    manualTaxOverrides?: Array<{
+      employeeId: string;
+      incomeTaxOverride?: number;
+      ptOverride?: number;
+      remarks?: string;
+    }>;
+    [key: string]: any;
+  } | null;
+}
+
 export interface TaxOverrideItem {
   id: string;
+  employeeId: string;
   employeeCode: string;
   employeeName: string;
-  incomeTax: string;
-  pt: string;
+  incomeTax: number;
+  pt: number;
   remarks: string;
 }
 
@@ -275,7 +461,22 @@ export interface PayrollRunSummary {
   totalEmployees: number;
   totalGross: number;
   totalNet: number;
+  totalGrossAmount?: number;
+  totalDeductionsAmount?: number;
+  totalNetAmount?: number;
   createdAt: string;
+  generatedAt?: string;
+  wizardStep?: string;
+  salaryOnHoldEmployees?: Array<{
+    employeeId: any;
+    reason?: string;
+  }>;
+  manualTaxOverrides?: Array<{
+    employeeId: any;
+    incomeTaxOverride?: number;
+    ptOverride?: number;
+    remarks?: string;
+  }>;
 }
 
 export interface InitiatePayrollRunResponse {
@@ -327,4 +528,63 @@ export interface RunHistoryAuditData {
   periodStatus: string;
   runHistory: RunHistoryItem[];
   auditTrail: AuditTrailItem[];
+}
+
+export interface BatchGeneratePayslipsPayload {
+  employeeIds?: string[];
+  sendEmailNotification?: boolean;
+  sendSmsNotification?: boolean;
+}
+
+export interface BatchGeneratePayslipsApiResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data?: {
+    run: PayrollRunSummary;
+    generatedCount: number;
+    skippedCount: number;
+    errorCount: number;
+    skipped?: string[];
+    errors?: string[];
+  } | null;
+}
+
+export interface PayslipItem {
+  _id: string;
+  payrollRunId: string;
+  employeeId:
+    | {
+        _id: string;
+        employeeCode: string;
+        firstName: string;
+        lastName: string;
+      }
+    | string;
+  month: number;
+  year: number;
+  grossEarned: number;
+  totalDeductions: number;
+  netPay: number;
+  lopAmount?: number;
+  attendanceSummary?: {
+    totalDaysInMonth?: number;
+    payableDays?: number;
+    presentDays?: number;
+    absentDays?: number;
+    paidLeaveDays?: number;
+    unpaidLeaveDays?: number;
+  };
+  earnings?: Array<{ componentCode: string; componentName: string; amount: number }>;
+  deductions?: Array<{ componentCode: string; componentName: string; amount: number }>;
+  pfEmployeeContribution?: number;
+  ptAmount?: number;
+  tdsAmount?: number;
+}
+
+export interface GetRunPayslipsApiResponse {
+  succeeded: boolean;
+  message: string;
+  errors?: string[];
+  data?: PayslipItem[] | null;
 }
