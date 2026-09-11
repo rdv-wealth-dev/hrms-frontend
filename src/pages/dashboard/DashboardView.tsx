@@ -11,12 +11,14 @@ import type { RootState } from "../../store/rootReducer";
 function DashboardView() {
   const { role } = usePermissions();
   const user = useSelector((state: RootState) => state.auth.user);
-  const organization = useSelector((state: RootState) => (state as any).organization?.organization);
+  const organization = useSelector(
+    (state: RootState) => state.organization.organization ?? state.auth.organization
+  );
   const lastLoginAt = user?.lastLoginAt;
   const lastLoginIp = user?.lastLoginIp;
   const lastLoginDevice = user?.lastLoginDevice;
 
-  const companyName = organization?.companyName || user?.firstName || "Welcome";
+  const companyName = organization?.companyName ?? "Your Company";
 
   return (
     <>

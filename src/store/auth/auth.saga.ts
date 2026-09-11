@@ -247,15 +247,21 @@ function* handleRestoreSession(): SagaIterator {
     // ⚠️ NOTE: /auth/me does not return `permissions`. Defaulting to [] until
     // the backend includes it here too — permission-based RoleGuard checks
     // will fail-closed after a refresh until that's added.
+    const { organization = null, branch = null, ...user } = response.data;
+
     yield put(
       restoreSessionSuccess({
-        ...response.data,
-        permissions: [],
+        user: {
+          ...user,
+          permissions: [],
+        },
+        organization,
+        branch,
       })
     );
 
     // Keep the "persistent" cache in sync with the freshest server data
-    localStorage.setItem("persistent", JSON.stringify(response.data));
+    localStorage.setItem("persistent", JSON.stringify(user));
   } catch {
     // Token invalid/expired/rejected — clear it, don't leave a dead session lying around
     localStorage.removeItem("accessToken");

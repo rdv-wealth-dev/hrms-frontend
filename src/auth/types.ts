@@ -370,7 +370,11 @@ export interface MeResponseData {
   branchIds: string[];
   tenantId?: string;
   lastLoginAt?: string;
+  lastLoginIp?: string;
+  lastLoginDevice?: string;
   createdAt?: string;
+  organization?: Organization | null;
+  branch?: Branch | null;
 }
 
 export interface MeResponse {

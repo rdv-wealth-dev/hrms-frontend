@@ -1,5 +1,5 @@
 // src/theme/create-theme.ts
-import { createTheme, alpha } from "@mui/material/styles";
+import { createTheme, alpha, darken, lighten } from "@mui/material/styles";
 import { themeConfig } from "./theme-config";
 import { typographyTokens } from "./tokens/typography.tokens";
 
@@ -15,10 +15,10 @@ export function createAppTheme(
   const primary = customPrimaryColor
     ? {
         main: customPrimaryColor,
-        light: alpha(customPrimaryColor, 0.8),
-        dark: customPrimaryColor,
+        light: lighten(customPrimaryColor, 0.18),
+        dark: darken(customPrimaryColor, 0.18),
         lighter: alpha(customPrimaryColor, 0.08),
-        darker: customPrimaryColor,
+        darker: darken(customPrimaryColor, 0.3),
         contrastText: "#FFFFFF",
       }
     : basePalette.primary;

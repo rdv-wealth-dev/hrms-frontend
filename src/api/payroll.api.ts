@@ -7,6 +7,7 @@ import type {
   PtSlabConfigItem,
   InitiatePayrollRunRequest,
   InitiatePayrollRunResponse,
+  PreflightValidationApiResponse,
 } from "../types/payroll.types";
 
 export async function initiatePayrollRun(
@@ -63,4 +64,20 @@ export async function createStructureTemplate(
     console.warn("POST /payroll/structures/templates API call failed, local state fallback active", error);
     throw error;
   }
+}
+
+/**
+ * POST /payroll/runs/:id/validate
+ * Runs 7-point pre-flight validation on all active employees for the given payroll run.
+ * No request body — payrollRunId is passed via the URL path.
+ * Returns: { valid, totalChecked, errors[] } where errors[] is a flat array with
+ * "CRITICAL:" and "WARNING" prefixes for categorisation on the frontend.
+ */
+export async function validatePayrollRun(
+  payrollRunId: string
+): Promise<PreflightValidationApiResponse> {
+  const response = await axios.post<PreflightValidationApiResponse>(
+    `/payroll/runs/${payrollRunId}/validate`
+  );
+  return response.data;
 }

@@ -194,6 +194,24 @@ export interface PreflightCheckItem {
   status: string;
 }
 
+// ── Pre-flight Validation API  ─────────────────────────────────────────────
+// Real response shape for POST /payroll/runs/:id/validate
+// data.errors[] is a flat mixed array:
+//   - "CRITICAL: ..." prefix  → blocking issues (must fix before generating)
+//   - "WARNING ..."  prefix   → informational only (can still proceed)
+export interface PreflightValidationResult {
+  valid: boolean;       // true when zero CRITICAL errors exist
+  totalChecked: number; // total active employees validated
+  errors: string[];     // flat mixed array with CRITICAL / WARNING prefixes
+}
+
+export interface PreflightValidationApiResponse {
+  succeeded: boolean;
+  message?: string;
+  errors?: string[];
+  data?: PreflightValidationResult | null;
+}
+
 export interface WageInputItem {
   id: string;
   employeeName: string;

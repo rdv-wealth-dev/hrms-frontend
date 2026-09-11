@@ -34,7 +34,7 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import StatusChip from "../../../components/common/StatusChip";
 import TextInput from "../../../components/input/TextInput";
 import { useSnackbar } from "../../../components/snackbar";
-import { initiatePayrollRun } from "../../../api/payroll.api";
+import { initiatePayrollRun, validatePayrollRun } from "../../../api/payroll.api";
 import { listBranchesRequest } from "../../../store/branch";
 import type { AppDispatch } from "../../../store/store";
 import type { RootState } from "../../../store/rootReducer";
@@ -45,6 +45,7 @@ import type {
   SalaryOnHoldItem,
   TaxOverrideItem,
   PayrollRunSummary,
+  PreflightValidationResult,
 } from "../../../types/payroll.types";
 
 const MONTH_OPTIONS = [
@@ -133,8 +134,10 @@ export default function RunWizardContent() {
   };
   const [currentStep, setCurrentStep] = useState<number>(data.currentStep);
   const [notes, setNotes] = useState<string>(data.notes);
-  const [runningPreflight, setRunningPreflight] = useState<boolean>(false);
+  const [runningPreflight, setRunningPreflight]   = useState<boolean>(false);
   const [preflightExecuted, setPreflightExecuted] = useState<boolean>(false);
+  const [preflightResult, setPreflightResult]     = useState<PreflightValidationResult | null>(null);
+  const [preflightError, setPreflightError]       = useState<string | null>(null);
   const [attendanceLocked, setAttendanceLocked] = useState<boolean>(true);
   const [attendanceLockTime, setAttendanceLockTime] = useState<string>("2026-09-08 08:26");
 
@@ -277,12 +280,36 @@ export default function RunWizardContent() {
     }, 900);
   };
 
-  const handleRunPreflight = () => {
+  const handleRunPreflight = async () => {
+    if (!payrollRun?._id) {
+      showSnackbar("No active payroll run. Please initiate a run first.", "warning");
+      return;
+    }
     setRunningPreflight(true);
-    setTimeout(() => {
+    setPreflightError(null);
+    setPreflightResult(null);
+    setPreflightExecuted(false);
+
+    try {
+      const response = await validatePayrollRun(payrollRun._id);
+
+      if (response?.succeeded && response?.data) {
+        setPreflightResult(response.data);
+        setPreflightExecuted(true);
+      } else {
+        setPreflightError(
+          response?.message ??
+          response?.errors?.[0] ??
+          "Validation returned an unexpected response."
+        );
+      }
+    } catch (error: unknown) {
+      setPreflightError(
+        getApiErrorMessage(error, "Pre-flight validation failed. Please try again.")
+      );
+    } finally {
       setRunningPreflight(false);
-      setPreflightExecuted(true);
-    }, 600);
+    }
   };
 
   const handleLockAttendance = () => {
@@ -332,6 +359,19 @@ export default function RunWizardContent() {
     if (currentStep === 1 && !payrollRun?._id) {
       void handleInitiatePayrollRun();
       return;
+    }
+
+    // Step 2 gate: preflight must be run and must have no CRITICAL errors
+    if (currentStep === 2) {
+      if (!preflightExecuted || !preflightResult) {
+        showSnackbar("Please run the pre-flight validation check before proceeding.", "warning");
+        return;
+      }
+      const hasCriticals = preflightResult.errors.some((e) => e.startsWith("CRITICAL"));
+      if (hasCriticals) {
+        showSnackbar("Resolve all critical issues before moving to the next step.", "error");
+        return;
+      }
     }
 
     if (currentStep < data.steps.length) {
@@ -642,41 +682,101 @@ export default function RunWizardContent() {
                 {runningPreflight ? "Running Validation Checks..." : "Run Pre-Flight Check"}
               </Button>
 
-              {/* Pre-Flight Inspection Results (Expanded on Click / Executed) */}
-              {preflightExecuted && (
-                <Box sx={{ mt: 2.5, pt: 0.5 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 600,
-                      color: "text.primary",
-                      mb: 2,
-                      fontSize: "14px",
-                    }}
-                  >
-                    Checked 12 employees ·{" "}
-                    <Box component="span" sx={{ color: "error.main", fontWeight: 700 }}>
-                      0 critical errors
-                    </Box>
-                  </Typography>
-
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <WarningAmberIcon sx={{ fontSize: 18, color: "text.secondary", opacity: 0.7 }} />
-                      <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "13.5px", fontWeight: 500 }}>
-                        2 employees missing PAN on file
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <WarningAmberIcon sx={{ fontSize: 18, color: "text.secondary", opacity: 0.7 }} />
-                      <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "13.5px", fontWeight: 500 }}>
-                        1 employee has an unverified bank IFSC
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
+              {/* Pre-Flight API error — shown inside the container when the call itself fails */}
+              {preflightError && (
+                <Alert severity="error" sx={{ mt: 2, borderRadius: 1.5, fontSize: "13.5px" }}>
+                  {preflightError}
+                </Alert>
               )}
+
+              {/* Pre-Flight Results — shown after a successful API call */}
+              {preflightExecuted && preflightResult && (() => {
+                const criticals = preflightResult.errors.filter((e) => e.startsWith("CRITICAL"));
+                const warnings  = preflightResult.errors.filter((e) => !e.startsWith("CRITICAL"));
+                const allClear  = preflightResult.errors.length === 0;
+
+                return (
+                  <Box sx={{ mt: 2.5, pt: 0.5 }}>
+
+                    {/* Summary bar */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: 0.75,
+                        mb: 2,
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", fontSize: "14px" }}>
+                        Checked {preflightResult.totalChecked}{" "}
+                        {preflightResult.totalChecked === 1 ? "employee" : "employees"}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "text.secondary" }}>·</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: "14px",
+                          color: criticals.length > 0 ? "error.main" : "success.main",
+                        }}
+                      >
+                        {criticals.length} critical {criticals.length === 1 ? "issue" : "issues"}
+                      </Typography>
+                      {warnings.length > 0 && (
+                        <>
+                          <Typography variant="body2" sx={{ color: "text.secondary" }}>·</Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600, fontSize: "14px", color: "warning.dark" }}
+                          >
+                            {warnings.length} {warnings.length === 1 ? "warning" : "warnings"}
+                          </Typography>
+                        </>
+                      )}
+                    </Box>
+
+                    {/* All clear */}
+                    {allClear && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <CheckCircleIcon sx={{ fontSize: 18, color: "success.main", flexShrink: 0 }} />
+                        <Typography variant="body2" sx={{ color: "success.main", fontWeight: 600, fontSize: "13.5px" }}>
+                          All checks passed. Ready to proceed to the next step.
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Critical issues — red, blocking */}
+                    {criticals.length > 0 && (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mb: warnings.length > 0 ? 2 : 0 }}>
+                        {criticals.map((issue, i) => (
+                          <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                            <WarningAmberIcon sx={{ fontSize: 17, color: "error.main", mt: "2px", flexShrink: 0 }} />
+                            <Typography variant="body2" sx={{ color: "error.main", fontSize: "13.5px", fontWeight: 500 }}>
+                              {issue.replace(/^CRITICAL:\s*/i, "")}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    {/* Warnings — amber, non-blocking */}
+                    {warnings.length > 0 && (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                        {warnings.map((warn, i) => (
+                          <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                            <WarningAmberIcon sx={{ fontSize: 17, color: "warning.main", mt: "2px", flexShrink: 0 }} />
+                            <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "13.5px", fontWeight: 500 }}>
+                              {warn.replace(/^WARNING[:\s]*/i, "")}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                  </Box>
+                );
+              })()}
             </Box>
           </Box>
         </Card>

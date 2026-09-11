@@ -244,25 +244,14 @@ function SignupView() {
 
           {/* Row 6: Phone Number (full width, same as Work Email) */}
           <Box sx={{ gridColumn: "1 / 3" }}>
-            <PhoneInput
-              label="Phone Number"
-              phoneRegistration={register("phone")}
-              countryCodeRegistration={register("countryCode")}
-              phoneError={errors.phone?.message}
-              countryCodeError={errors.countryCode?.message}
-              setValue={setValue}
-              watch={watch}
-            />
+            <PhoneInput label="Phone Number" phoneRegistration={register("phone")} countryCodeRegistration={register("countryCode")} phoneError={errors.phone?.message} countryCodeError={errors.countryCode?.message} setValue={setValue} watch={watch}/>
           </Box>
 
 
           {/* Slug taken warning */}
           {slugAvailable === false && !errors.workspaceSlug && (
             <Box sx={{ gridColumn: "1 / 3" }}>
-              <Typography
-                variant="caption"
-                sx={{ color: "#EF4444", fontSize: "12px" }}
-              >
+              <Typography variant="caption" sx={{ color: "#EF4444", fontSize: "12px" }}>
                 Please choose an available workspace URL before continuing.
               </Typography>
             </Box>
@@ -270,21 +259,13 @@ function SignupView() {
 
           {/* Submit */}
           <Box sx={{ gridColumn: "1 / 3", mt: { xs: 0.3, sm: 0.6 } }}>
-            <PrimaryButton
-              type="submit"
-              loading={loading}
-              disabled={loading || slugAvailable === false}
-            >
+            <PrimaryButton type="submit" loading={loading} disabled={loading || slugAvailable === false}>
               Create Account
             </PrimaryButton>
           </Box>
         </Box>
 
-        <AuthFooter
-          text="Already have an account?"
-          linkText="Sign In"
-          onClick={() => navigate(paths.auth.login)}
-        />
+        <AuthFooter text="Already have an account?" linkText="Sign In" onClick={() => navigate(paths.auth.login)}/>
       </Box>
     </AuthLayout>
   );

@@ -23,7 +23,9 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps) => {
   });
 
   const tenantPrimaryColor = useSelector(
-    (state: RootState) => (state.auth?.organization as any)?.branding?.primaryColor as string | undefined
+    (state: RootState) =>
+      state.organization.organization?.branding?.primaryColor ??
+      state.auth.organization?.branding?.primaryColor
   );
 
   const toggleThemeMode = useCallback(() => {

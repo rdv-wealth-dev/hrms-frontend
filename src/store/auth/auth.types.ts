@@ -141,7 +141,11 @@ export type CheckEmailRequestPayload = CheckEmailRequest;
 export type CheckEmailSuccessPayload = CheckEmailResponseData;
 
 // ✅ New — Restore Session
-export type RestoreSessionSuccessPayload = User;
+export type RestoreSessionSuccessPayload = {
+  user: User;
+  organization: Organization | null;
+  branch: Branch | null;
+};
 
 export type ActivateAccountRequestPayload = ActivateAccountRequest;
 export type ActivateAccountSuccessPayload = ActivateAccountResponseData;

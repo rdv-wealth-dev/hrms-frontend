@@ -187,7 +187,9 @@ export function authReducer(state = initialState, action: AuthAction): AuthState
         isRestoringSession: false,
         sessionChecked: true,
         isAuthenticated: true,
-        user: action.payload,
+        user: action.payload.user,
+        organization: action.payload.organization,
+        branch: action.payload.branch,
       };
 
     case AUTH_ACTIONS.RESTORE_SESSION_FAILURE:
